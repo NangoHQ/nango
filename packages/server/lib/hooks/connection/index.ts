@@ -78,3 +78,5 @@ export { default as zerobounceCredentialsVerification } from './providers/zerobo
 export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
 export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';
 export { default as batchdataCredentialsVerification } from './providers/batchdata/credentials-verification.js';
+export { default as ngrokCredentialsVerification } from './providers/ngrok/credentials-verification.js';
+export { default as imgixCredentialsVerification } from './providers/imgix/credentials-verification.js';

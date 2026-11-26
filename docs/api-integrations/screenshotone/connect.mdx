@@ -1,0 +1,41 @@
+---
+title: 'ScreenshotOne - How do I link my account?'
+sidebarTitle: 'ScreenshotOne'
+---
+
+## Overview
+
+To authenticate with ScreenshotOne, you need:
+
+1. **Access Key** - the access key of a ScreenshotOne API key.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A ScreenshotOne account. You can [sign up](https://dash.screenshotone.com/sign-up) for free, with no credit card, using an email address, Google or GitHub.
+
+### Step 1: Create an API key and copy its access key
+
+1. Sign in to the [ScreenshotOne dashboard](https://dash.screenshotone.com/sign-in).
+2. In the left sidebar, open **API Keys** and click **Create API Key**. You can also use the access key of the **Default** key and skip to step 4.
+
+<img src="/api-integrations/screenshotone/api_keys_page.png" alt="ScreenshotOne API Keys page with the Create API Key button"/>
+
+3. Enter a **Name**, for example `Nango`, leave **Accept only signed requests** off, and click **Create**.
+
+<img src="/api-integrations/screenshotone/create_api_key_dialog.png" alt="ScreenshotOne Create API Key dialog with the Name field, the Accept only signed requests toggle off and the Create button"/>
+
+4. In the new key's row, click the copy button next to the **Access Key**. You don't need the secret key.
+
+<img src="/api-integrations/screenshotone/api_key_created.png" alt="ScreenshotOne API Keys table with the copy button next to the new key's Access Key"/>
+
+### Step 2: Enter your access key in the Connect UI
+
+1. Open the form where you need to authenticate with ScreenshotOne.
+2. Enter your **Access Key** in the designated field.
+3. Click **Connect**. Nango checks the key with ScreenshotOne and rejects it if it is wrong.
+
+<img src="/api-integrations/screenshotone/form.png" alt="Nango Connect UI form for entering the ScreenshotOne access key" style={{maxWidth: "450px" }}/>
+
+You are now connected to ScreenshotOne.

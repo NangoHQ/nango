@@ -1,0 +1,41 @@
+---
+title: 'updown.io - How do I link my account?'
+sidebarTitle: 'updown.io'
+---
+
+## Overview
+
+To authenticate with updown.io, you need:
+
+1. **API Key** - your updown.io API key (the read-write key or the read-only key).
+
+This guide shows you where to find it.
+
+### Prerequisites
+
+- An updown.io account. You can [sign up](https://updown.io/users/sign_up) for free; new accounts get 100,000 free credits.
+
+### Step 1: Copy your API key
+
+1. Sign in to [updown.io](https://updown.io/users/sign_in).
+2. Click **Settings** in the top navigation to open your [settings page](https://updown.io/settings/edit).
+3. Scroll to the **API** section at the bottom of the right column.
+4. Next to **Super-powered API key (keep it secret)**, click **click to reveal**.
+
+<img src="/api-integrations/updown-io/settings_api_section.png" alt="updown.io settings page API section with the click to reveal link next to the Super-powered API key"/>
+
+5. Copy the revealed key. This is the read-write key.
+
+<img src="/api-integrations/updown-io/api_key_revealed.png" alt="updown.io settings page API section with the Super-powered API key revealed"/>
+
+If you only need to read data, you can use the **Read-only API key (for js integrations)** below it instead: click **click to reveal** next to it and copy it. The read-only key works only with GET endpoints.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with updown.io.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with updown.io and rejects it if it is wrong.
+
+<img src="/api-integrations/updown-io/form.png" alt="Nango Connect UI form for entering the updown.io API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to updown.io.
