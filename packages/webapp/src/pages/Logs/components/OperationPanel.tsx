@@ -61,7 +61,7 @@ export const OperationPanel: React.FC<{ operationId: string; onClose: () => void
 
     return (
         <DockedPanel aria-label="Operation details" resizeLabel="Resize operation panel" storageKey="nango:logs:operation-panel-width" onKeyDown={onKeyDown}>
-            <div ref={contentRef} tabIndex={-1} className="h-full min-h-0 overflow-y-auto select-text outline-none">
+            <div ref={contentRef} tabIndex={-1} className="isolate h-full min-h-0 overflow-y-auto select-text outline-none">
                 <ShowOperation key={operationId} operationId={operationId} actions={actions} />
             </div>
         </DockedPanel>
