@@ -381,6 +381,9 @@ export function generateJwtAssertion({
 
         const signingKey = interpolateString(providerAssertion.key, interpolationValues);
         const lifetimeInSeconds = Number(providerAssertion.lifetimeInSeconds ?? 3600);
+        if (!Number.isFinite(lifetimeInSeconds)) {
+            return Err(new AuthCredentialsError('failed_to_generate_jwt_assertion'));
+        }
         const now = Math.floor(Date.now() / 1000);
 
         const header: Record<string, any> = {};
