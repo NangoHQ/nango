@@ -198,7 +198,7 @@ export type ApiIntegrationList = ApiIntegration & {
         connectionConfigParams?: string[];
         credentialParams?: string[];
         assertionOptionParams?: string[];
-        authorizationParams?: Record<string, string>;
+        authorizationParams?: Record<string, string | boolean>;
         displayName: string;
         requireClientCertificate?: boolean;
         installation?: 'outbound';

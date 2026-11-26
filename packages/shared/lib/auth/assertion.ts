@@ -380,7 +380,7 @@ export function generateJwtAssertion({
         };
 
         const signingKey = interpolateString(providerAssertion.key, interpolationValues);
-        const lifetimeInSeconds = providerAssertion.lifetimeInSeconds ?? 3600;
+        const lifetimeInSeconds = Number(providerAssertion.lifetimeInSeconds ?? 3600);
         const now = Math.floor(Date.now() / 1000);
 
         const header: Record<string, any> = {};

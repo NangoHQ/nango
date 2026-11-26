@@ -1689,8 +1689,6 @@ airtable:
     authorization_url: https://airtable.com/oauth2/v1/authorize
     token_url: https://airtable.com/oauth2/v1/token
     authorization_method: header
-    auth:
-        response_type: code
     proxy:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
@@ -3614,8 +3612,6 @@ asana:
     token_url: https://app.asana.com/-/oauth_token
     token_params:
         grant_type: authorization_code
-    auth:
-        response_type: code
     default_scopes:
         - default
     refresh_params:
@@ -4304,8 +4300,6 @@ attio:
     token_url: https://app.attio.com/oauth/token
     token_params:
         grant_type: authorization_code
-    auth:
-        response_type: code
     refresh_params:
         grant_type: refresh_token
     proxy:
@@ -4681,8 +4675,6 @@ aws:
     token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
     token_params:
         grant_type: authorization_code
-    auth:
-        response_type: code
     refresh_params:
         grant_type: refresh_token
     default_scopes:
@@ -6146,8 +6138,6 @@ bing-webmasters:
         response_type: code
     token_params:
         grant_type: authorization_code
-    refresh_token_params:
-        grant_type: refresh_token
     proxy:
         base_url: https://www.bing.com/webmaster/api.svc/json
     docs: https://nango.dev/docs/api-integrations/bing-webmasters
@@ -7734,8 +7724,6 @@ bullhorn:
             bhresttoken: ${accessToken}
     post_connection_script: bullhornPostConnection
     token_response_metadata:
-        - restUrl
-    refresh_token_response_metadata:
         - restUrl
     docs: https://nango.dev/docs/integrations/all/bullhorn
     docs_connect: https://nango.dev/docs/integrations/all/bullhorn/connect
@@ -12884,8 +12872,6 @@ deputy:
         grant_type: refresh_token
         scope: longlife_refresh_token
     token_response_metadata:
-        - endpoint
-    refresh_token_response_metadata:
         - endpoint
     proxy:
         base_url: https://${connectionConfig.endpoint}/api
@@ -34127,7 +34113,6 @@ salesforce-cc:
         base_url: ${connectionConfig.instance_url}
     docs: https://nango.dev/docs/api-integrations/salesforce-cc
     docs_connect: https://nango.dev/docs/api-integrations/salesforce-cc/connect
-    token_expires_in_ms: 0
     connection_config:
         instance_url:
             type: string
@@ -37116,7 +37101,6 @@ squareup:
     authorization_url: https://connect.squareup.com/oauth2/authorize
     token_url: https://connect.squareup.com/oauth2/token
     disable_pkce: true
-    decode_url: true
     authorization_params:
         response_type: code
         session: false
@@ -41444,7 +41428,8 @@ whoop:
                 - 'x-ratelimit-reset'
         paginate:
             type: cursor
-            offset_name_in_request: nextToken
+            cursor_name_in_request: nextToken
+            cursor_path_in_response: next_token
             limit_name_in_request: limit
     docs: https://nango.dev/docs/integrations/all/whoop
 
