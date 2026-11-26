@@ -11,8 +11,11 @@ const mocks = vi.hoisted(() => ({
     upsert: vi.fn(),
     getCountsByModel: vi.fn(),
     deleteRecords: vi.fn(),
+    getAgentSession: vi.fn(),
     setTag: vi.fn()
 }));
+
+vi.mock('./agentSession.service.js', () => ({ getAgentSession: mocks.getAgentSession }));
 
 vi.mock('dd-trace', () => {
     const span = {
@@ -45,6 +48,8 @@ const CONNECTION: AgentSessionResolvedConnection = {
 
 const SESSION = {
     id: 'session-1',
+    accountId: 2,
+    endedAt: null,
     metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} }, nangoQueryResult: true },
     resolvedConnections: { gmail: CONNECTION }
 } as unknown as AgentSession;
@@ -65,6 +70,7 @@ async function resultFor(data: unknown, session: AgentSession = SESSION): Promis
 beforeEach(() => {
     mocks.upsert.mockReset().mockResolvedValue(Ok({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] }));
     mocks.setTag.mockReset();
+    mocks.getAgentSession.mockReset().mockResolvedValue(Ok(SESSION));
     mocks.getCountsByModel.mockReset();
     mocks.deleteRecords.mockReset();
 });
@@ -109,6 +115,18 @@ describe('toolResultForAgent', () => {
             hint: expect.stringContaining('nango_query_result')
         });
         expect(result).not.toHaveProperty('data');
+        expect(mocks.getAgentSession).toHaveBeenCalledWith(expect.anything(), { id: 'session-1', accountId: 2, environmentId: 1 });
+        expect(mocks.deleteRecords).not.toHaveBeenCalled();
+    });
+
+    it('deletes what it stored and returns the result in full when the session ended while the tool ran', async () => {
+        mocks.getAgentSession.mockResolvedValue(Ok({ ...SESSION, endedAt: new Date() }));
+        mocks.getCountsByModel.mockResolvedValue(Ok({ [MODEL]: { count: 1 } }));
+        mocks.deleteRecords.mockResolvedValue(Ok({ count: 1, lastCursor: null }));
+
+        await expect(resultFor(LARGE)).resolves.toBe(LARGE);
+        expect(mocks.upsert).toHaveBeenCalled();
+        expect(mocks.deleteRecords).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, environmentId: 1, model: MODEL, mode: 'hard' }));
     });
 
     it('returns the result in full with a notice when it is too large to store', async () => {
