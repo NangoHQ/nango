@@ -22,6 +22,7 @@ const queryStringValidation = z
             .pipe(z.array(providerConfigKeySchema))
             .optional(),
         search: z.string().max(255).optional(),
+        endUserEmail: z.string().max(255).optional(),
         withError: z.stringbool().optional(),
         env: envSchema,
         page: z.coerce.number().min(0).max(50).optional()
@@ -45,6 +46,7 @@ export const getConnections = asyncWrapperWithEnvironment<GetConnections>(async 
         limit: 20,
         page: queryString.page,
         search: queryString.search,
+        ...(queryString.endUserEmail ? { tags: { end_user_email: queryString.endUserEmail } } : {}),
         integrationIds: queryString.integrationIds,
         withError: queryString.withError
     });

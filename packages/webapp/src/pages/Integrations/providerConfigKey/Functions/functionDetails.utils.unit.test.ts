@@ -71,8 +71,6 @@ describe('toFunctionDetails', () => {
                 properties: { id: { type: 'integer' } }
             });
         }
-        expect(native.typeLabel).toBe('tool');
-        expect(legacy.typeLabel).toBe('tool');
     });
 
     it('supports pulling native tools while keeping execution, source loading, and deletion type-specific', () => {

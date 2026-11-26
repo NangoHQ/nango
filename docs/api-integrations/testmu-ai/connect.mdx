@@ -1,0 +1,45 @@
+---
+title: 'TestMu AI - How do I link my account?'
+sidebarTitle: 'TestMu AI'
+---
+
+## Overview
+
+To authenticate with TestMu AI, you need:
+
+1. **Username** — your TestMu AI account username.
+2. **Access Key** — the access key of your account.
+3. **Data Center Region** — the API host of the data center your account is in.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- A TestMu AI account. You can sign up at [testmuai.com](https://www.testmuai.com/register/).
+
+### Step 1: Copy your username and access key
+
+1. Log in to [TestMu AI](https://www.testmuai.com/login/).
+2. Open the **Profile** dropdown in the top right and select **Account Settings**.
+3. Open the **Password & Security** tab, then **Username and Access Key**.
+4. Copy the **Username**. Enter it in the **Username** field.
+5. Select the copy button next to **Access Key** to copy the key. Enter it in the **Access Key** field.
+
+<img src="/api-integrations/testmu-ai/copy_access_key.png" alt="TestMu AI Account Settings, Password & Security tab, with the Username and the copy button next to Access Key"/>
+
+### Step 2: Find your data center region
+
+TestMu AI has a US and an EU data center. Accounts in the EU data center (GDPR) sign in at `eu-accounts.lambdatest.com`.
+
+- If you sign in at `eu-accounts.lambdatest.com`, select `eu-api.lambdatest.com`.
+- Otherwise, select `api.lambdatest.com`.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with TestMu AI.
+2. Select your **Data Center Region**, then enter your **Username** and **Access Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/testmu-ai/form.png" alt="TestMu AI connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to TestMu AI.

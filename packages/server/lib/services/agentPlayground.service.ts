@@ -29,6 +29,7 @@ import type { CatalogEntry } from './agentPlaygroundSetUpTool.js';
 import type { PlaygroundStep, PlaygroundTurn, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type { AuditAttribution } from '@nangohq/audit';
 import type {
+    AgentPlaygroundDataParts,
     AgentPlaygroundIntegrationSetup,
     AgentPlaygroundMessageMetadata,
     AgentPlaygroundSessionChange,
@@ -44,7 +45,7 @@ import type {
     Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { JSONSchema7, ToolSet, UIMessage, UIMessageChunk } from 'ai';
+import type { InferUIMessageChunk, JSONSchema7, ToolSet, UIMessage } from 'ai';
 
 const logger = getLogger('AgentPlayground');
 
@@ -58,7 +59,8 @@ function providerCatalog(): CatalogEntry[] {
     return Object.entries(getProviders() ?? {}).map(([provider, properties]) => ({ provider, name: properties.display_name }));
 }
 
-export type PlaygroundUIMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+export type PlaygroundUIMessage = UIMessage<AgentPlaygroundMessageMetadata, AgentPlaygroundDataParts>;
+type PlaygroundChunk = InferUIMessageChunk<PlaygroundUIMessage>;
 
 export interface PlaygroundContext {
     account: DBTeam;
@@ -325,7 +327,20 @@ async function getOrCreateSession(
     return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
 }
 
-function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
+function withSessionPart(stream: ReadableStream<PlaygroundChunk>, created: AgentPlaygroundSessionCreated): ReadableStream<PlaygroundChunk> {
+    return stream.pipeThrough(
+        new TransformStream<PlaygroundChunk, PlaygroundChunk>({
+            transform(chunk, controller) {
+                controller.enqueue(chunk);
+                if (chunk.type === 'start') {
+                    controller.enqueue({ type: 'data-session', data: created });
+                }
+            }
+        })
+    );
+}
+
+function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<PlaygroundChunk> {
     return new ReadableStream({
         start(controller) {
             controller.enqueue({ type: 'start', messageMetadata });
@@ -409,8 +424,12 @@ function textOf(message: PlaygroundUIMessage | undefined): string {
         .trim();
 }
 
+export function isEmptyReply(message: PlaygroundUIMessage): boolean {
+    return message.role === 'assistant' && message.parts.every((part) => part.type.startsWith('data-'));
+}
+
 export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
-    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && message.parts.length > 0);
+    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && !isEmptyReply(message));
 
     return {
         isFirstTurn,
@@ -432,7 +451,7 @@ export async function startTurn({
     messages: PlaygroundUIMessage[];
     timeZone: string;
     abortSignal?: AbortSignal;
-}): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
+}): Promise<Result<ReadableStream<PlaygroundChunk>, AgentPlaygroundError>> {
     const lastMessage = messages.at(-1);
     const requestedStarter = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
     // The provider comes from the browser, so only the playground's own providers are set up or tracked.
@@ -466,9 +485,6 @@ export async function startTurn({
     if (integrationSetup) {
         startMetadata.integrationSetup = integrationSetup;
     }
-    if (sessionCreated) {
-        startMetadata.sessionCreated = sessionCreated;
-    }
 
     const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
@@ -492,8 +508,8 @@ export async function startTurn({
         [tools, modelMessages] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
-                // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
-                messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
+                // A setup-only reply, or a Stop before the first part, leaves an assistant message the model can't see. OpenAI rejects an empty turn.
+                messages.filter((message) => !isEmptyReply(message)),
                 // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
                 { ignoreIncompleteToolCalls: true }
             )
@@ -550,46 +566,45 @@ export async function startTurn({
         }
     });
 
-    return Ok(
-        toUIMessageStream({
-            stream: result.stream,
-            originalMessages: messages,
-            onError: (error) => {
-                const category = modelErrorCategory(error);
-                if (category) {
-                    return JSON.stringify(modelUnavailableError(category));
-                }
-                return error instanceof Error ? error.message : 'The agent failed to answer';
-            },
-            messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
-                if (part.type === 'start') {
-                    return startMetadata;
-                }
-                if (part.type === 'finish') {
-                    return { ...sessionMetadata, usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } };
-                }
-                return undefined;
-            },
-            // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
-            onEnd: ({ isAborted, isCancelled, outcome }) => {
-                let turnOutcome: PlaygroundTurnOutcome = 'complete';
-                if (isAborted || isCancelled || outcome.status === 'aborted') {
-                    turnOutcome = 'aborted';
-                } else if (failed || outcome.status === 'failed') {
-                    turnOutcome = 'error';
-                }
-                void labelRequest.then((labelled) => {
-                    trackPlaygroundTurn({
-                        ctx,
-                        sessionId: session.id,
-                        chatId,
-                        turn: labelled ? { ...turn, request: labelled } : turn,
-                        outcome: turnOutcome,
-                        steps,
-                        errorCategory: failedCategory
-                    });
-                });
+    const uiStream = toUIMessageStream({
+        stream: result.stream,
+        originalMessages: messages,
+        onError: (error) => {
+            const category = modelErrorCategory(error);
+            if (category) {
+                return JSON.stringify(modelUnavailableError(category));
             }
-        })
-    );
+            return error instanceof Error ? error.message : 'The agent failed to answer';
+        },
+        messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
+            if (part.type === 'start') {
+                return startMetadata;
+            }
+            if (part.type === 'finish') {
+                return { ...sessionMetadata, usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } };
+            }
+            return undefined;
+        },
+        // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
+        onEnd: ({ isAborted, isCancelled, outcome }) => {
+            let turnOutcome: PlaygroundTurnOutcome = 'complete';
+            if (isAborted || isCancelled || outcome.status === 'aborted') {
+                turnOutcome = 'aborted';
+            } else if (failed || outcome.status === 'failed') {
+                turnOutcome = 'error';
+            }
+            void labelRequest.then((labelled) => {
+                trackPlaygroundTurn({
+                    ctx,
+                    sessionId: session.id,
+                    chatId,
+                    turn: labelled ? { ...turn, request: labelled } : turn,
+                    outcome: turnOutcome,
+                    steps,
+                    errorCategory: failedCategory
+                });
+            });
+        }
+    });
+    return Ok(sessionCreated ? withSessionPart(uiStream, sessionCreated) : uiStream);
 }

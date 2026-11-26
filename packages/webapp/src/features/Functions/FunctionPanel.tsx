@@ -4,9 +4,9 @@ import { CountBadge } from '@/components/ui/CountBadge';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { JsonSchemaTopLevelObject } from '@/pages/Integrations/components/jsonSchema/JsonSchema';
 
-import type { FunctionSchemas } from './functionDetails.utils';
+import type { FunctionSchemas } from './schemas';
 import type { JSONSchema7 } from 'json-schema';
 
 export const FunctionPanel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -46,12 +46,11 @@ interface ExtraTab {
 
 interface FunctionSchemaTabsProps extends FunctionSchemas {
     extraTabs?: ExtraTab[];
-    showFieldCounts?: boolean;
 }
 
-export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [], showFieldCounts = false }) => {
-    const inputCount = showFieldCounts ? countFields(inputSchema ? [inputSchema] : []) : null;
-    const outputCount = showFieldCounts ? countFields(outputSchemas.map((output) => output.schema)) : null;
+export const FunctionSchemaTabs: React.FC<FunctionSchemaTabsProps> = ({ inputSchema, outputSchemas, extraTabs = [] }) => {
+    const inputCount = countFields(inputSchema ? [inputSchema] : []);
+    const outputCount = countFields(outputSchemas.map((output) => output.schema));
     return (
         <Tabs defaultValue="input" className="gap-3 px-3 pt-3">
             <TabsList className="w-fit gap-3">

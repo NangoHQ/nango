@@ -345,6 +345,16 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
         properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
     },
+    'connections:test_connection_button_click': {
+        surface: 'app',
+        insight: 'Whether people who already have a test connection open it from the integration page, or add another one',
+        fires: 'When someone opens or adds a test connection from the buttons on an integration page',
+        properties: z.object({
+            provider: z.string(),
+            action: z.enum(['open_one', 'open_from_menu', 'add']),
+            own_connection_count: z.number()
+        })
+    },
     'connections:share_link_button_click': {
         surface: 'app',
         insight: 'How often people hand connection setup to an end user instead of doing it themselves',
@@ -389,10 +399,10 @@ export const analyticsEventCatalogue = defineCatalogue({
     'catalog:setup_button_click': {
         surface: 'app',
         insight: 'How many catalog detail visits lead to adding an integration, whether in one click or through the setup form, and which button people use',
-        fires: "When someone clicks Add integration, Advanced… or Add another integration on an API's catalog page",
+        fires: "When someone clicks Add integration, Advanced… or Add another on an API's catalog page",
         properties: z.object({
             provider: z.string(),
-            source: z.enum(['header', 'panel', 'more_menu']),
+            source: z.enum(['header', 'panel', 'callout']),
             setup_type: z.enum(['one_click', 'form', 'advanced']).optional()
         })
     },

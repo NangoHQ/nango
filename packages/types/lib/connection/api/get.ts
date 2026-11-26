@@ -34,6 +34,8 @@ export type GetConnections = ApiEndpoint<{
         env: string;
         integrationIds?: string[] | undefined;
         search?: string | undefined;
+        /** Matches the `end_user_email` tag exactly. */
+        endUserEmail?: string | undefined;
         withError?: boolean | undefined;
         page?: number | undefined;
     };
