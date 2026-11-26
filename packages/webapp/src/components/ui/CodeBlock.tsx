@@ -111,6 +111,19 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
     const [isExecuting, setIsExecuting] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const codeRef = useRef<HTMLDivElement>(null);
+
+    // CSS can't indent a wrapped line by its own leading spaces, so each line gets its indent set here.
+    useLayoutEffect(() => {
+        if (editing || !codeRef.current) {
+            return;
+        }
+        for (const line of codeRef.current.querySelectorAll<HTMLElement>('.codeblock-line')) {
+            const hang = wrapLines ? `${(line.textContent?.match(/^ */)?.[0].length ?? 0) + 2}ch` : '';
+            line.style.paddingLeft = hang;
+            line.style.textIndent = hang && `-${hang}`;
+        }
+    }, [wrapLines, editing, shownCode]);
 
     const adjustTextareaHeight = useCallback(() => {
         const el = textareaRef.current;
@@ -300,10 +313,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         />
                     </div>
                 ) : (
-                    <div className="relative">
+                    <div ref={codeRef} className="relative">
                         {!isSecretVisible && <div className="absolute z-10 w-full h-full backdrop-blur-xs bg-black/0"></div>}
                         <Prism
                             className="w-full min-w-0"
+                            classNames={{ lineContent: 'codeblock-line' }}
                             // A language without a grammar skips tokenizing and renders the same box as plain text.
                             language={syntaxHighlight && shownCode.length <= MAX_HIGHLIGHTED_LENGTH ? language : ('plain' as PrismProps['language'])}
                             colorScheme={darkMode ? 'dark' : 'light'}
