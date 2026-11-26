@@ -1132,6 +1132,21 @@ agenty:
             example: aev8************************su9j
             doc_section: '#step-1-create-an-api-key'
 
+aggregate-mcp:
+    display_name: Aggregate (MCP)
+    categories:
+        - accounting
+        - banking
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    mcp_server_url: https://app.aggregate.finance/mcp
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://app.aggregate.finance
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/aggregate-mcp
+
 agility-cms:
     display_name: Agility CMS
     categories:
