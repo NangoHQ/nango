@@ -81,6 +81,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Authentication failed. The provided secret key is not a UUID v4.';
                 break;
 
+            case 'too_many_unknown_secret_keys':
+                this.status = 429;
+                this.message = 'Authentication failed. Too many unrecognized secret keys were sent from this address. Retry later.';
+                break;
+
             case 'invalid_connect_session_token_format':
                 this.status = 401;
                 this.message = 'Authentication failed. The provided connect session token is not following correct format: nango_connect_session_RANDOM)';

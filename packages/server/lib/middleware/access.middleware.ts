@@ -4,7 +4,17 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { jwtHeaderAlg } from '@nangohq/internal-auth';
-import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
+import {
+    accountService,
+    environmentService,
+    errorManager,
+    ErrorSourceEnum,
+    getPlan,
+    isSandboxApiKey,
+    LogActionEnum,
+    SecretHashThrottledError,
+    userService
+} from '@nangohq/shared';
 import {
     Err,
     flagHasPlan,
@@ -49,6 +59,11 @@ export function eddsaBearerToken(header: string | undefined): string | undefined
     return token;
 }
 
+/** `req.ip` is undefined once the socket is gone; those callers share one budget rather than escaping it. */
+function clientIp(req: Request): string {
+    return req.ip ?? 'unknown';
+}
+
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = [
     '/api/v1/environments',
@@ -77,16 +92,25 @@ const ignoreEnvPaths = [
 ];
 
 export class AccessMiddleware {
-    private async validateApiKey(secret: string, opts: { isScript: boolean }): Promise<Result<ApiKeyContext>> {
+    private async validateApiKey(secret: string, opts: { isScript: boolean; clientIp: string }): Promise<Result<ApiKeyContext>> {
         const isSandboxApiKeyToken = isSandboxApiKey(secret);
 
         if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
             return Err('invalid_secret_key_format');
         }
 
-        const accountContext = await accountService.getAccountContextByApiKey(
-            isSandboxApiKeyToken || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
-        );
+        let accountContext: ApiKeyContext | null;
+        try {
+            accountContext = await accountService.getAccountContextByApiKey({
+                ...(isSandboxApiKeyToken || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }),
+                clientIp: opts.clientIp
+            });
+        } catch (err) {
+            if (err instanceof SecretHashThrottledError) {
+                return Err('too_many_unknown_secret_keys');
+            }
+            throw err;
+        }
         if (!accountContext) {
             return Err('unknown_account');
         }
@@ -160,7 +184,7 @@ export class AccessMiddleware {
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';
-            const result = await this.validateApiKey(secret, { isScript });
+            const result = await this.validateApiKey(secret, { isScript, clientIp: clientIp(req) });
             if (result.isErr()) {
                 return Err(result.error);
             }
@@ -529,7 +553,7 @@ export class AccessMiddleware {
                     return;
                 }
 
-                const apiKeyResult = await this.validateApiKey(token, { isScript: false });
+                const apiKeyResult = await this.validateApiKey(token, { isScript: false, clientIp: clientIp(req) });
                 if (apiKeyResult.isErr()) {
                     errorManager.errRes(res, apiKeyResult.error.message);
                     return;
@@ -673,7 +697,7 @@ export class AccessMiddleware {
                 return;
             }
 
-            const result = await this.validateApiKey(secret, { isScript: false });
+            const result = await this.validateApiKey(secret, { isScript: false, clientIp: clientIp(req) });
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
