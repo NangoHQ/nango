@@ -6544,7 +6544,7 @@ We run regular penetration tests, a secure development lifecycle, incident respo
 | Account secrets | Integration OAuth client secrets, Nango API keys, environment variables | **AES-256-GCM** | Until you delete or rotate them |
 | Synced records | Record payloads in the [records cache](/guides/syncs/records-cache) | **AES-256-GCM** | Payload **30 days**, record **60 days** |
 | [Nango logs](#nango-logs) | Function run logs with their input, proxy requests without bodies, forwarded webhooks with their payload | Storage-level | **15 days** |
-| Function run data | Input and output of each tool and function run, used to execute it and return the result | Storage-level | **5 days** after the run was scheduled. The latest run of each sync is kept until the next one replaces it |
+| Function run data | Input and output of each tool and function run, used to execute it and return the result | Storage-level | **5 days** after the run was scheduled |
 | Audit trail | Control-plane changes | Storage-level | **1 year** |
 | Backups | Copies of the database | Storage-level | **7 days** |
 | Monitoring telemetry | Nango's service logs, traces, and metrics in Datadog | Storage-level | Service logs **7 days** (archived **365 days**, Nango Cloud only), traces and metrics **15 days** |
