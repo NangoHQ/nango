@@ -93,6 +93,7 @@ export interface BaseProvider {
     webhook_user_defined_secret?: boolean;
     webhook_signature_enforced?: boolean;
     webhook_allowed_query_params?: string[];
+    webhook_get_verification?: boolean;
     post_connection_script?: string;
     pre_connection_deletion_script?: string;
     credentials_verification_script?: string;

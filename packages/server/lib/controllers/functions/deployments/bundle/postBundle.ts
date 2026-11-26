@@ -70,7 +70,6 @@ export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunc
         const deployed = await deployBundle({
             accountId: account.id,
             environmentId: environment.id,
-            environmentName: environment.name,
             reconciliation: prepared.value,
             orchestrator: getOrchestrator()
         });

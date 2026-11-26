@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
     stories: ['../tokens/**/*.stories.@(ts|tsx)', '../src/**/*.stories.@(ts|tsx)', '../stories/**/*.stories.@(ts|tsx)', '../stories/**/*.mdx'],
+    staticDirs: [{ from: '../../webapp/public/images', to: '/images' }],
     addons: ['@storybook/addon-a11y', '@storybook/addon-docs', '@storybook/addon-mcp', '@storybook/addon-themes'],
     framework: {
         name: '@storybook/react-vite',

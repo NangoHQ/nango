@@ -3,7 +3,7 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 import { APIError, apiFetch } from '../utils/api';
 
 import type {
-    FunctionType,
+    FunctionListType,
     GetFunctionCode,
     GetIntegrationFunction,
     GetIntegrationFunctions,
@@ -133,7 +133,7 @@ interface UseGetTemplateFunctionCodeArgs {
     env: string;
     provider: string;
     name: string;
-    type: FunctionType | undefined;
+    type: FunctionListType | undefined;
     enabled?: boolean;
 }
 

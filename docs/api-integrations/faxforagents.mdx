@@ -1,0 +1,82 @@
+---
+title: 'Fax for Agents'
+sidebarTitle: 'Fax for Agents'
+description: 'Integrate your application with the Fax for Agents API'
+---
+
+## 🚀 Quickstart
+
+Connect to Fax for Agents with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Fax for Agents_.
+    </Step>
+    <Step id="authorize-faxforagents" title="Authorize Fax for Agents">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Fax for Agents API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-faxforagents-api" title="Call the Fax for Agents API">
+    Let's make your first request to the Fax for Agents API: get the identity behind the API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Fax for Agents integration guides
+
+- [How do I link my account?](/api-integrations/faxforagents/connect)  
+Create a test or live API key in the Fax for Agents dashboard to connect your account.
+
+Official docs: [Fax for Agents API documentation](https://faxforagents.com/docs/api/)
+
+## 🧩 Pre-built syncs & tools for Fax for Agents
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/faxforagents/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The Fax for Agents MCP server is served from `https://mcp.faxforagents.com` (path `/mcp/`), not from `https://api.faxforagents.com`, and takes the same API key. Call it with `baseUrlOverride` set to `https://mcp.faxforagents.com`; Nango keeps the connection's credentials and headers. See [MCP setup: Claude Code, Claude Desktop, Cursor, Codex, n8n](https://faxforagents.com/docs/mcp-setup/).
+- Nango sends the key as `Authorization: Bearer <apiKey>` on every call. Calls that need it in the `X-API-Key` header instead can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+
+---
