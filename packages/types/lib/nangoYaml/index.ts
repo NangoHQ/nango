@@ -175,7 +175,7 @@ export interface FlowsYaml {
     integrations: Record<string, NangoYamlV2Integration & { models: NangoYamlModel }>;
 }
 
-// --- flows.zero.json is a parsed nango.yaml
+// --- A provider's templates in the catalog (catalog/<provider>.json, written by integration-templates): a parsed nango.yaml
 export type FlowZeroJson = NangoYamlParsedIntegration & {
     functions?: CatalogFunctionManifestEntry[];
     jsonSchema?: JSONSchema7;
@@ -185,7 +185,7 @@ export type FlowZeroJson = NangoYamlParsedIntegration & {
 };
 export type FlowsZeroJson = FlowZeroJson[];
 
-// --- catalog.json: the same catalog as flows.zero.json, split per provider (written by integration-templates)
+// --- catalog.json: the catalog's index, one entry per provider (written by integration-templates)
 export interface CatalogIndexProvider {
     /** Path of the provider's definitions (a FlowZeroJson without `symLinkTargetName`), relative to catalog.json's folder. */
     file: string;

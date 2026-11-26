@@ -5,7 +5,7 @@ import { catalogStore } from './store.js';
 import { generateCatalogFunctionUuid } from './uuid.js';
 
 describe('catalog tools reader', () => {
-    it('returns github create-issue from flows.zero.json', () => {
+    it('returns github create-issue from the catalog', () => {
         const tool = getCatalogTool('github', 'create-issue');
         expect(tool).toBeDefined();
         expect(tool?.name).toBe('create-issue');

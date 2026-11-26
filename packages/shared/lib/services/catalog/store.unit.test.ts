@@ -8,14 +8,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { report } from '@nangohq/utils';
 
 import { isTool } from '../functions/models/functions.js';
-import { CatalogStore, catalogStore, startCatalogFlagRefresh, stopCatalogFlagRefresh } from './store.js';
+import { CatalogStore, catalogStore, loadCatalog } from './store.js';
 
 import type { CatalogIndex, FlowZeroJson } from '@nangohq/types';
 
 vi.mock('@nangohq/utils', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), report: vi.fn() }));
-
-let indexFileFlag = false;
-vi.mock('@nangohq/feature-flags', () => ({ getFlags: () => ({ isCatalogIndexFileEnabled: () => Promise.resolve(indexFileFlag) }) }));
 
 const onEventScripts = {
     'post-connection-creation': [],
@@ -43,14 +40,7 @@ const linear = entry('linear', ['create-issue'], [], [
 ] as unknown as FlowZeroJson['functions']);
 const notion = entry('notion', [], ['pages', 'databases']);
 
-function writeCatalog(dir: string, { withIndex = true, formatVersion = 1 }: { withIndex?: boolean; formatVersion?: number } = {}): void {
-    const alias: FlowZeroJson = { ...github, providerConfigKey: 'github-app', symLinkTargetName: 'github' };
-    const legacy = [{ ...github, symLinkTargetName: null }, alias, { ...linear, symLinkTargetName: null }, { ...notion, symLinkTargetName: null }];
-    fs.writeFileSync(path.join(dir, 'flows.zero.json'), JSON.stringify(legacy));
-    if (!withIndex) {
-        return;
-    }
-
+function writeCatalog(dir: string, { formatVersion = 1 }: { formatVersion?: number } = {}): void {
     fs.mkdirSync(path.join(dir, 'catalog'));
     const providers: CatalogIndex['providers'] = {};
     for (const provider of [github, linear, notion]) {
@@ -73,13 +63,11 @@ function writeCatalog(dir: string, { withIndex = true, formatVersion = 1 }: { wi
 
 describe('CatalogStore', () => {
     let dir: string;
-    let useIndexFile: boolean;
     const store = (limits: { maxProviders?: number; maxBytes?: number } = {}) =>
-        new CatalogStore({ dir, maxProviders: limits.maxProviders ?? 200, maxBytes: limits.maxBytes ?? 60 * 1024 * 1024, useIndexFile: () => useIndexFile });
+        new CatalogStore({ dir, maxProviders: limits.maxProviders ?? 200, maxBytes: limits.maxBytes ?? 60 * 1024 * 1024 });
 
     beforeEach(() => {
         dir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalog-store-'));
-        useIndexFile = true;
         vi.mocked(report).mockClear();
     });
 
@@ -155,35 +143,6 @@ describe('CatalogStore', () => {
         });
     });
 
-    describe('with the flag off', () => {
-        it('reads flows.zero.json', () => {
-            writeCatalog(dir);
-            useIndexFile = false;
-            const readFile = vi.spyOn(fs, 'readFileSync');
-            const catalog = store();
-
-            expect(catalog.getEntry('github')).toStrictEqual({ ...github, symLinkTargetName: null });
-            expect(catalog.getEntry('github-app')).toMatchObject({ providerConfigKey: 'github-app', symLinkTargetName: 'github' });
-            expect(catalog.getCounts('notion')).toStrictEqual({ actions: 0, syncs: 2, functions: 0, tools: 0 });
-            expect(catalog.getCounts('linear')).toStrictEqual({ actions: 1, syncs: 0, functions: 2, tools: 1 });
-            expect(catalog.listProvidersWithFunctions()).toStrictEqual(['linear']);
-            expect(catalog.getSymLinkTargetName('github-app')).toBe('github');
-            expect(catalog.listProviders()).toStrictEqual(['github', 'github-app', 'linear', 'notion']);
-            expect(readFile.mock.calls.map(([file]) => path.basename(String(file)))).toStrictEqual(['flows.zero.json']);
-        });
-
-        it("gives an empty catalog, reported, when flows.zero.json can't be read", () => {
-            writeCatalog(dir);
-            fs.rmSync(path.join(dir, 'flows.zero.json'));
-            useIndexFile = false;
-            const catalog = store();
-
-            expect(catalog.listProviders()).toStrictEqual([]);
-            expect(catalog.getEntry('linear')).toBeNull();
-            expect(report).toHaveBeenCalledTimes(1);
-        });
-    });
-
     describe("an empty catalog, reported, when catalog.json can't be used", () => {
         const editIndex = (edit: (index: CatalogIndex) => unknown) => {
             const indexPath = path.join(dir, 'catalog.json');
@@ -211,7 +170,8 @@ describe('CatalogStore', () => {
             expect(catalog.getEntry('linear')).toBeNull();
             expect(catalog.getCounts('linear')).toBeNull();
             expect(report).toHaveBeenCalledTimes(1);
-            expect(readFile.mock.calls.map(([file]) => path.basename(String(file)))).not.toContain('flows.zero.json');
+            // Only catalog.json was read (or attempted): no provider file
+            expect(readFile.mock.calls.map(([file]) => path.basename(String(file)))).toStrictEqual(['catalog.json']);
         });
     });
 
@@ -257,40 +217,16 @@ describe('CatalogStore', () => {
             expect(report).toHaveBeenCalledTimes(1);
         });
     });
-
-    it('follows the flag when it changes while running', () => {
-        writeCatalog(dir);
-        const catalog = store();
-
-        useIndexFile = false;
-        expect(catalog.getEntry('linear')).toHaveProperty('symLinkTargetName', null);
-        useIndexFile = true;
-        expect(catalog.getEntry('linear')).toStrictEqual(linear);
-        useIndexFile = false;
-        expect(catalog.getEntry('linear')).toHaveProperty('symLinkTargetName', null);
-    });
 });
 
-describe('startCatalogFlagRefresh', () => {
+describe('loadCatalog', () => {
     afterEach(() => {
-        stopCatalogFlagRefresh();
-        vi.useRealTimers();
         vi.restoreAllMocks();
     });
 
-    it('reads the catalog at startup, and again when the flag changes', async () => {
-        vi.useFakeTimers();
+    it('reads the index', () => {
         const listProviders = vi.spyOn(catalogStore, 'listProviders').mockReturnValue([]);
-        indexFileFlag = false;
-
-        await startCatalogFlagRefresh();
+        loadCatalog();
         expect(listProviders).toHaveBeenCalledTimes(1);
-
-        indexFileFlag = true;
-        await vi.advanceTimersByTimeAsync(30_000);
-        expect(listProviders).toHaveBeenCalledTimes(2);
-
-        await vi.advanceTimersByTimeAsync(30_000);
-        expect(listProviders).toHaveBeenCalledTimes(2);
     });
 });

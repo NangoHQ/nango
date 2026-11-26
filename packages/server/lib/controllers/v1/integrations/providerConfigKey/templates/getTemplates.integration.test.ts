@@ -185,7 +185,7 @@ describe(`GET ${route}`, () => {
 
     it('should return empty data when the integration has no template entries', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        // Use a unique_key for a provider that has no templates in flows.zero.json.
+        // Use a unique_key for a provider that has no templates in the catalog.
         await seeders.createConfigSeed(env, 'custom', 'unauthenticated');
 
         const res = await api.fetch(route, {

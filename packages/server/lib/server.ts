@@ -28,10 +28,9 @@ import {
     getProviders,
     getServerPort,
     getWebsocketsPath,
+    loadCatalog,
     productTracking,
-    pubsub,
-    startCatalogFlagRefresh,
-    stopCatalogFlagRefresh
+    pubsub
 } from '@nangohq/shared';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
@@ -140,8 +139,8 @@ if (pubsubConnect.isErr()) {
 }
 
 await initializeFeatureFlags();
-// Decides whether the template catalog is read from catalog.json; read before serving requests.
-await startCatalogFlagRefresh();
+// Read before serving requests, rather than in the first one that needs the catalog.
+loadCatalog();
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -173,7 +172,6 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
-        stopCatalogFlagRefresh();
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();

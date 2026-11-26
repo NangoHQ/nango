@@ -5,18 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 import { z } from 'zod';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
-import { isTool } from '../functions/models/functions.js';
 
-import type { CatalogIndex, CatalogIndexAlias, CatalogIndexProvider, FlowsZeroJson, FlowZeroJson } from '@nangohq/types';
+import type { CatalogIndex, CatalogIndexAlias, CatalogIndexProvider, FlowZeroJson } from '@nangohq/types';
 
-/** `packages/shared`, where integration-templates writes flows.zero.json, catalog.json and catalog/. Same depth from lib/ and dist/. */
+/** `packages/shared`, where integration-templates writes catalog.json and catalog/. Same depth from lib/ and dist/. */
 const SHARED_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-
-const FLAG_REFRESH_INTERVAL_MS = 30_000;
 
 export interface CatalogCounts {
     actions: number;
@@ -62,13 +58,10 @@ const catalogIndexSchema = z
 /**
  * Reads the template catalog that integration-templates writes into `packages/shared`.
  *
- * - With the `catalog-index-file` flag on, only `catalog.json` (the index) is read up front. A provider's
- *   definitions (`catalog/<provider>.json`) are read when a request needs them and kept in an LRU bounded
- *   by provider count and by total file size, so memory doesn't grow with the catalog.
- * - With the flag off, the whole of `flows.zero.json` is read once and kept, as before.
- *
- * Both return the same entries: a provider's flows.zero.json entry, with aliases (symlinked providers)
- * under their own key and `symLinkTargetName` set. The catalog never changes while a process runs, so
+ * Only `catalog.json` (the index) is read up front. A provider's definitions (`catalog/<provider>.json`) are
+ * read when a request needs them and kept in an LRU bounded by provider count and by total file size, so
+ * memory doesn't grow with the catalog. An alias (a symlinked provider) is returned under its own key, with
+ * its target's templates and `symLinkTargetName` set. The catalog never changes while a process runs, so
  * nothing expires; the LRU only caps memory.
  *
  * Nothing here throws on a bad file: a catalog file that's missing, unreadable or corrupt is reported, and
@@ -78,30 +71,23 @@ export class CatalogStore {
     private readonly dir: string;
     private readonly maxProviders: number;
     private readonly maxBytes: number;
-    private readonly useIndexFile: () => boolean;
 
     /** `undefined`: not read yet. */
     private index: CatalogIndex | undefined;
-    private legacy: Map<string, FlowZeroJson> | undefined;
     /** Provider files found missing, unreadable or corrupt: their providers have no templates. */
     private readonly unusableFiles = new Set<string>();
     private readonly cache = new Map<string, { entry: FlowZeroJson; bytes: number }>();
     private cachedBytes = 0;
 
-    constructor({ dir, maxProviders, maxBytes, useIndexFile }: { dir: string; maxProviders: number; maxBytes: number; useIndexFile: () => boolean }) {
+    constructor({ dir, maxProviders, maxBytes }: { dir: string; maxProviders: number; maxBytes: number }) {
         this.dir = dir;
         this.maxProviders = maxProviders;
         this.maxBytes = maxBytes;
-        this.useIndexFile = useIndexFile;
     }
 
     /** A provider's catalog entry (its templates), or null when the catalog has none for it. */
     getEntry(provider: string): FlowZeroJson | null {
-        const index = this.currentIndex();
-        if (!index) {
-            return this.legacyEntries().get(provider) ?? null;
-        }
-
+        const index = this.loadIndex();
         const cached = this.cache.get(provider);
         if (cached) {
             // Map keeps insertion order: re-inserting marks the provider as most recently used.
@@ -126,23 +112,15 @@ export class CatalogStore {
 
     /** Every provider with templates, aliases included. */
     listProviders(): string[] {
-        const index = this.currentIndex();
-        if (!index) {
-            return [...this.legacyEntries().keys()];
-        }
+        const index = this.loadIndex();
         return Object.entries(index.providers)
             .filter(([, summary]) => this.fileSummary(index, summary))
             .map(([provider]) => provider);
     }
 
-    /** How many templates a provider has, without reading its definitions when catalog.json is used. */
+    /** How many templates a provider has, from the index alone. */
     getCounts(provider: string): CatalogCounts | null {
-        const index = this.currentIndex();
-        if (!index) {
-            const entry = this.legacyEntries().get(provider);
-            return entry ? countTemplates(entry) : null;
-        }
-
+        const index = this.loadIndex();
         const summary = index.providers[provider];
         return (summary && this.fileSummary(index, summary)?.counts) ?? null;
     }
@@ -154,25 +132,12 @@ export class CatalogStore {
 
     /** The provider a symlinked provider points to in integration-templates, or null. */
     getSymLinkTargetName(provider: string): string | null {
-        const index = this.currentIndex();
-        if (!index) {
-            return this.legacyEntries().get(provider)?.symLinkTargetName ?? null;
-        }
-        const summary = index.providers[provider];
+        const summary = this.loadIndex().providers[provider];
         return summary && isAlias(summary) ? summary.aliasOf : null;
     }
 
-    /** The index when the flag is on, or null when flows.zero.json is used. */
-    private currentIndex(): CatalogIndex | null {
-        if (!this.useIndexFile()) {
-            if (this.cache.size > 0) {
-                this.clearCache();
-            }
-            return null;
-        }
+    private loadIndex(): CatalogIndex {
         this.index ??= this.readIndex();
-        // Switched from flows.zero.json: let it be garbage collected.
-        this.legacy = undefined;
         return this.index;
     }
 
@@ -233,20 +198,6 @@ export class CatalogStore {
         }
     }
 
-    /** flows.zero.json, or no providers (reported) when it can't be read. */
-    private legacyEntries(): Map<string, FlowZeroJson> {
-        if (!this.legacy) {
-            try {
-                const flows = JSON.parse(fs.readFileSync(path.join(this.dir, 'flows.zero.json'), 'utf8')) as FlowsZeroJson;
-                this.legacy = new Map(flows.map((entry) => [entry.providerConfigKey, entry]));
-            } catch (err) {
-                report(new Error(`${path.join(this.dir, 'flows.zero.json')} can't be read, so the template catalog is empty`, { cause: err }));
-                this.legacy = new Map();
-            }
-        }
-        return this.legacy;
-    }
-
     private remember(provider: string, entry: FlowZeroJson, bytes: number): void {
         this.cache.set(provider, { entry, bytes });
         this.cachedBytes += bytes;
@@ -263,63 +214,15 @@ export class CatalogStore {
             this.cachedBytes -= cached.bytes;
         }
     }
-
-    private clearCache(): void {
-        this.cache.clear();
-        this.cachedBytes = 0;
-    }
-}
-
-function countTemplates(entry: FlowZeroJson): CatalogCounts {
-    const functions = entry.functions ?? [];
-    return { actions: entry.actions.length, syncs: entry.syncs.length, functions: functions.length, tools: functions.filter(isTool).length };
-}
-
-// The `catalog-index-file` flag is global and only changes how the catalog is read, so its value is kept
-// here and refreshed in the background: lookups stay synchronous, and turning the flag on or off takes
-// effect within the refresh interval, without restarting pods.
-let indexFileEnabled = false;
-let refreshTimer: NodeJS.Timeout | undefined;
-
-async function refreshIndexFileFlag(): Promise<void> {
-    try {
-        const enabled = await getFlags().isCatalogIndexFileEnabled();
-        const changed = enabled !== indexFileEnabled;
-        indexFileEnabled = enabled;
-        if (changed && refreshTimer) {
-            // Read the other file now rather than in the next request that needs the catalog.
-            catalogStore.listProviders();
-        }
-    } catch (err) {
-        report(err);
-    }
-}
-
-/**
- * Reads the `catalog-index-file` flag and the catalog it points at, then the flag again every 30 seconds. Call
- * at startup, after the feature flags are initialized, so the first lookups already use the right file. Until
- * then, and in processes that never call it, the flag's default applies.
- */
-export async function startCatalogFlagRefresh(): Promise<void> {
-    if (refreshTimer) {
-        return;
-    }
-    await refreshIndexFileFlag();
-    // Read the catalog (catalog.json, or flows.zero.json with the flag off) at startup, as before, rather than
-    // in the first request that needs it.
-    catalogStore.listProviders();
-    refreshTimer = setInterval(() => void refreshIndexFileFlag(), FLAG_REFRESH_INTERVAL_MS);
-    refreshTimer.unref();
-}
-
-export function stopCatalogFlagRefresh(): void {
-    clearInterval(refreshTimer);
-    refreshTimer = undefined;
 }
 
 export const catalogStore = new CatalogStore({
     dir: SHARED_DIR,
     maxProviders: envs.NANGO_CATALOG_CACHE_MAX_PROVIDERS,
-    maxBytes: envs.NANGO_CATALOG_CACHE_MAX_BYTES,
-    useIndexFile: () => indexFileEnabled
+    maxBytes: envs.NANGO_CATALOG_CACHE_MAX_BYTES
 });
+
+/** Reads the catalog's index. Call at startup, so the first request that needs the catalog doesn't. */
+export function loadCatalog(): void {
+    catalogStore.listProviders();
+}
