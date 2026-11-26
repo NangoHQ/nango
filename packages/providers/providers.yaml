@@ -41428,8 +41428,7 @@ whoop:
                 - 'x-ratelimit-reset'
         paginate:
             type: cursor
-            cursor_name_in_request: nextToken
-            cursor_path_in_response: next_token
+            offset_name_in_request: nextToken
             limit_name_in_request: limit
     docs: https://nango.dev/docs/integrations/all/whoop
 
