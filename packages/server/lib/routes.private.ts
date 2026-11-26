@@ -9,7 +9,6 @@ import { can } from './authz/middleware.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
-import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
 import { createAccountApiKey } from './controllers/v1/account/apiKeys/createApiKey.js';
 import { deleteAccountApiKey } from './controllers/v1/account/apiKeys/deleteApiKey.js';
@@ -404,7 +403,6 @@ web.route('/flows/:id/disable').patch(webAuth, auditSyncDisabled, can('environme
 web.route('/flows/:id/enable').patch(webAuth, auditSyncEnabled, can('environment:syncs:update'), patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, auditSyncFrequencyChanged, can('environment:syncs:update'), patchFlowFrequency);
 web.route('/flows/:id/download').get(webAuth, can('environment:functions:read'), getFlowDownload);
-web.route('/flow/:flowName').get(webAuth, can('environment:functions:read'), flowController.getFlow.bind(syncController));
 
 web.route('/functions/invoke').post(webAuth, can('environment:syncs:execute'), postInvokeFunction);
 

@@ -130,6 +130,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isGithubAppConnectionCredentialsEnabled() {
             return client.isEnabled('github-app-connection-credentials', {}, false);
+        },
+        /**
+         * Whether the template catalog is read from `catalog.json` and one file per provider, loaded on demand,
+         * instead of loading all of `flows.zero.json`. Global. Default `false`.
+         */
+        isCatalogIndexFileEnabled() {
+            return client.isEnabled('catalog-index-file', {}, false);
         }
     };
 }

@@ -22,7 +22,17 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, productTracking, pubsub } from '@nangohq/shared';
+import {
+    getGlobalOAuthCallbackUrl,
+    getOtlpRoutes,
+    getProviders,
+    getServerPort,
+    getWebsocketsPath,
+    productTracking,
+    pubsub,
+    startCatalogFlagRefresh,
+    stopCatalogFlagRefresh
+} from '@nangohq/shared';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
@@ -130,6 +140,8 @@ if (pubsubConnect.isErr()) {
 }
 
 await initializeFeatureFlags();
+// Decides whether the template catalog is read from catalog.json; read before serving requests.
+await startCatalogFlagRefresh();
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -161,6 +173,7 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        stopCatalogFlagRefresh();
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();

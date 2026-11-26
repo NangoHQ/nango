@@ -1,22 +1,13 @@
-import { createRequire } from 'node:module';
-
 import { CatalogReader, TEMPLATES_ZERO_PREFIX } from './reader.js';
+import { catalogStore } from './store.js';
 
 import type { CatalogAction, CatalogEntry, CatalogFunctionDefinition } from './reader.js';
-import type { FlowsZeroJson } from '@nangohq/types';
 
 export { TEMPLATES_ZERO_PREFIX } from './reader.js';
 export type { CatalogEntry, CatalogFunctionDefinition } from './reader.js';
 export type CatalogTool = CatalogAction;
 
-const nodeRequire = createRequire(import.meta.url);
-let flowsJson: FlowsZeroJson | undefined;
-const reader = new CatalogReader(getFlowsJson);
-
-export function getFlowsJson(): FlowsZeroJson {
-    flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
-    return flowsJson;
-}
+const reader = new CatalogReader(catalogStore);
 
 export function listCatalogEntries(provider: string): CatalogEntry[] {
     return reader.listEntries(provider);

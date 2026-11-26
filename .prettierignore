@@ -8,3 +8,7 @@ config/events/*.json
 managed-manifest.json
 docs/**
 !docs/spec.yaml
+
+# Written by integration-templates as is: formatting them would change the hashes in catalog.json
+packages/shared/catalog.json
+packages/shared/catalog/

@@ -80,6 +80,8 @@ export {
     isTemplatesZeroPath
 } from './services/catalog/actions.js';
 export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/catalog/uuid.js';
+export { catalogStore, startCatalogFlagRefresh, stopCatalogFlagRefresh } from './services/catalog/store.js';
+export type { CatalogCounts } from './services/catalog/store.js';
 export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';
