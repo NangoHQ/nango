@@ -1871,8 +1871,11 @@ paths:
                   required: false
                   schema:
                       type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 100
                   description: |
-                      The maximum number of records to return. Defaults to 100. A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
+                      The maximum number of records to return. Defaults to 100, which is also the maximum. A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
                 - name: filter
                   in: query
                   required: false

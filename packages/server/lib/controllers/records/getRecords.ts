@@ -26,7 +26,7 @@ export const validationQuery = z
         variant: variantSchema.optional(),
         delta: withinLookback.optional(),
         modified_after: withinLookback.optional(),
-        limit: z.coerce.number().min(1).max(10000).default(100).optional(),
+        limit: z.coerce.number().min(1).max(100).default(100).optional(),
         filter: z
             .string()
             .transform((value) => value.split(','))

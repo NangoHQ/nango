@@ -624,14 +624,41 @@ describe('getRecordsById', () => {
         const recordsArray = Array.from(records.values());
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: 'next' }))
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: undefined }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: undefined }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+    });
+
+    it('should page through a batch truncated by the response size budget', async () => {
+        const records = new Map<number, { id: string }>();
+        for (let i = 0; i < 150; i++) {
+            records.set(i, { id: i.toString() });
+        }
+
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const recordsArray = Array.from(records.values());
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 60), nextCursor: 'batch1-page1' }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(60, 100), nextCursor: undefined }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 150), nextCursor: undefined }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
+
+        expect(result).toEqual(records);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(3);
+        const calls = vi.mocked(mockPersistClient.getRecords).mock.calls;
+        expect(calls[0]![0].cursor).toBeUndefined();
+        expect(calls[1]![0].cursor).toBe('batch1-page1');
+        expect(calls[1]![0].externalIds).toEqual(calls[0]![0].externalIds);
+        expect(calls[2]![0].cursor).toBeUndefined();
+        expect(calls[2]![0].externalIds).toHaveLength(50);
     });
 });
 
