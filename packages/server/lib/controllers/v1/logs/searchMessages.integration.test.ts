@@ -167,6 +167,55 @@ describe('POST /logs/messages', () => {
         isSuccess(next.json);
         expect(next.json.data).toHaveLength(1);
         expect(next.json.levelCounts).toBeUndefined();
+
+        const end = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1, cursorAfter: next.json.pagination.cursorAfter }
+        });
+        isSuccess(end.json);
+        expect(end.json.data).toHaveLength(0);
+        expect(end.json.pagination.cursorAfter).toBeNull();
+    });
+
+    it('should list oldest first and page forward, counting levels on every page', async () => {
+        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
+        await logCtx.info('first');
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        await logCtx.info('second');
+        await logCtx.success();
+
+        const first = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1, order: 'asc' }
+        });
+        isSuccess(first.json);
+        expect(first.json.data.map((row) => row.message)).toStrictEqual(['first']);
+
+        const next = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1, order: 'asc', cursorAfter: first.json.pagination.cursorAfter }
+        });
+        isSuccess(next.json);
+        expect(next.json.data.map((row) => row.message)).toStrictEqual(['second']);
+        expect(next.json.levelCounts).toStrictEqual({ debug: 0, info: 2, warn: 0, error: 0 });
+
+        const end = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1, order: 'asc', cursorAfter: next.json.pagination.cursorAfter }
+        });
+        isSuccess(end.json);
+        expect(end.json.data).toHaveLength(0);
+        expect(end.json.pagination.cursorAfter).toBe(next.json.pagination.cursorAfter);
     });
 
     it('should reject an empty level filter', async () => {
