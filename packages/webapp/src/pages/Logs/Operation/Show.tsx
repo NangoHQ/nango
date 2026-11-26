@@ -20,7 +20,7 @@ import type { ApiError, OperationRow } from '@nangohq/types';
 const PAYLOAD_COLLAPSED_LINES = 9;
 
 const PanelHeader: React.FC<{ actions: React.ReactNode; children?: React.ReactNode }> = ({ actions, children }) => (
-    <header className="flex items-start gap-3 border-b border-border-muted px-6 py-4">
+    <header className="sticky top-0 z-20 flex items-start gap-3 border-b border-border-muted bg-surface-panel px-6 py-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">{children}</div>
         <div className="flex shrink-0 items-center gap-0.5">{actions}</div>
     </header>
