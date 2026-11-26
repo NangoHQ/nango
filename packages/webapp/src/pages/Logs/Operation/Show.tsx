@@ -35,7 +35,7 @@ const OperationHeading: React.FC<{ operation: OperationRow }> = ({ operation }) 
             <div className="flex">
                 <StatusTag state={operation.state} />
             </div>
-            <h2 className="flex min-w-0 items-baseline gap-1.5 type-heading-sm text-text-strong">
+            <h2 className="flex min-w-0 items-baseline gap-1.5 type-text-medium-md text-text-strong">
                 <span className="shrink-0">{type}</span>
                 <span className="shrink-0 text-text-secondary">{action}</span>
                 {operation.syncConfigName && (
