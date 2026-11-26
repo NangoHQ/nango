@@ -1,12 +1,13 @@
 import { Prism } from '@mantine/prism';
 import { Check, Edit, Eye, EyeOff, Loader, Play, X } from 'lucide-react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge, Button, CopyButton, IconButton, Textarea } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
+import { getTokenPrismTheme } from './prismTheme';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -35,11 +36,19 @@ export type CodeBlockProps = {
     copyValue?: string;
     syntaxHighlight?: boolean;
     bare?: boolean;
+    collapsedLines?: number;
+    /** Controls expanding from outside, with `onExpandedChange`. The block then shows no "Show less" button. */
+    expanded?: boolean;
+    onExpandedChange?: (expanded: boolean) => void;
 } & HTMLAttributes<HTMLDivElement>;
 
 const highlight = {
     color: ''
 };
+
+export const COLLAPSED_MAX_LENGTH = 2_000;
+// Prism highlights the whole block, so a large response freezes the page while it renders.
+const MAX_HIGHLIGHTED_LENGTH = 50_000;
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({
     title,
@@ -62,9 +71,33 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     copyValue,
     syntaxHighlight = true,
     bare = false,
+    collapsedLines,
+    expanded: expandedProp,
+    onExpandedChange,
     ...props
 }) => {
     const darkMode = useThemeStore(darkModeSelector);
+    const [expandedState, setExpandedState] = useState(false);
+    const controlled = expandedProp !== undefined;
+    const expanded = expandedProp ?? expandedState;
+    const setExpanded = (next: boolean) => {
+        if (!controlled) {
+            setExpandedState(next);
+        }
+        onExpandedChange?.(next);
+    };
+
+    const lineCount = useMemo(() => (collapsedLines ? code.split('\n').length : 0), [code, collapsedLines]);
+    const collapsible = collapsedLines !== undefined && (lineCount > collapsedLines || code.length > COLLAPSED_MAX_LENGTH);
+    const collapsed = collapsible && !expanded;
+    const shownCode = useMemo(() => {
+        if (!collapsed) {
+            return code;
+        }
+        // Highlighting runs over every line it is given, so a collapsed block only gets the lines it shows.
+        const head = code.split('\n').slice(0, collapsedLines).join('\n');
+        return head.length > COLLAPSED_MAX_LENGTH ? `${head.slice(0, COLLAPSED_MAX_LENGTH)}…` : head;
+    }, [code, collapsed, collapsedLines]);
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(code);
@@ -272,17 +305,35 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         <Prism
                             className="w-full min-w-0"
                             // A language without a grammar skips tokenizing and renders the same box as plain text.
-                            language={syntaxHighlight ? language : ('plain' as PrismProps['language'])}
+                            language={syntaxHighlight && shownCode.length <= MAX_HIGHLIGHTED_LENGTH ? language : ('plain' as PrismProps['language'])}
                             colorScheme={darkMode ? 'dark' : 'light'}
+                            getPrismTheme={getTokenPrismTheme}
                             noCopy={true}
                             styles={{ code: { fontSize: '12px', ...(wrapLines ? { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } : {}) } }}
                             highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
                         >
-                            {code}
+                            {shownCode}
                         </Prism>
+                        {collapsed && (
+                            <>
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-b from-transparent to-surface-code" />
+                                <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2">
+                                    <Button variant="outline-filled" size="xs" aria-expanded={false} onClick={() => setExpanded(true)}>
+                                        {lineCount > 1 ? `Show all ${lineCount} lines` : 'Show all'}
+                                    </Button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
+            {collapsible && expanded && !controlled && (
+                <div className="flex justify-center border-t border-border-muted py-1.5">
+                    <Button variant="ghost" size="xs" aria-expanded={true} onClick={() => setExpanded(false)}>
+                        Show less
+                    </Button>
+                </div>
+            )}
             {editing && hintText && !error && <p className="px-3 py-2 text-body-small-regular text-text-tertiary">*{hintText}</p>}
         </div>
     );

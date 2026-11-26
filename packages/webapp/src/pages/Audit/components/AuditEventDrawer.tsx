@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { LinkButton } from '@nangohq/design-system';
 
+import { getTokenPrismTheme } from '@/components/ui/prismTheme';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
@@ -111,6 +112,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                             language="json"
                             className="transparent-code"
                             colorScheme={darkMode ? 'dark' : 'light'}
+                            getPrismTheme={getTokenPrismTheme}
                             styles={() => ({ code: { padding: '0', whiteSpace: 'pre-wrap' } })}
                         >
                             {shownJson}

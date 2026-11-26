@@ -9,6 +9,7 @@ import { FieldDescription, LinkButton, SecretInput } from '@nangohq/design-syste
 import Nango, { AuthError } from '@nangohq/frontend';
 
 import { ScopesInput } from '../../components/patterns/ScopesInput';
+import { getTokenPrismTheme } from '../../components/ui/prismTheme';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
@@ -1110,7 +1111,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
+                                        <Prism language="typescript" colorScheme={darkMode ? 'dark' : 'light'} getPrismTheme={getTokenPrismTheme}>
                                             {snippet()}
                                         </Prism>
                                     </div>
