@@ -1,6 +1,7 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import { mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail } from '@nangohq/utils';
 
@@ -17,7 +18,8 @@ const workosMocks = vi.hoisted(() => {
     return {
         authenticateWithCode: vi.fn(),
         authenticateWithEmailVerification: vi.fn(),
-        getOrganization: vi.fn()
+        getOrganization: vi.fn(),
+        get: vi.fn()
     };
 });
 
@@ -29,7 +31,8 @@ vi.mock('../../../../clients/workos.client.js', () => ({
         },
         organizations: {
             getOrganization: workosMocks.getOrganization
-        }
+        },
+        get: workosMocks.get
     })
 }));
 
@@ -393,5 +396,62 @@ describe(`POST ${route}`, () => {
             envs.SIGNUP_AD_CONTEXT_COOKIE_NAME = previousCookieName;
             track.mockRestore();
         }
+    });
+
+    describe('WorkOS organization SSO', () => {
+        function mockOrganization(organization: { id: string; name: string; external_id: string | null }) {
+            workosMocks.get.mockImplementation((path: string) => {
+                if (path !== `/organizations/${organization.id}`) throw new Error(`unexpected WorkOS call: ${path}`);
+                return Promise.resolve({ data: { object: 'organization', ...organization } });
+            });
+        }
+
+        it('should not join an account whose name matches the WorkOS organization', async () => {
+            const organizationId = `org_${nanoid()}`;
+            const organizationName = `Acme ${nanoid()}`;
+            const sameNameAccount = await seeders.createAccount();
+            await db.knex.from('_nango_accounts').where({ id: sameNameAccount.id }).update({ name: organizationName });
+
+            const email = `${nanoid()}@acme.example.com`;
+            mockOrganization({ id: organizationId, name: organizationName, external_id: null });
+            workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Sso', lastName: 'User' }, organizationId });
+
+            const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+
+            expect(callbackRes.status).toBe(302);
+            expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin?error=sso_organization_not_linked');
+            expect(await userService.getUserByEmail(email)).toBeNull();
+            expect(await userService.getUsersByAccountId(sameNameAccount.id)).toEqual([]);
+        });
+
+        it('should not sign up when the external ID does not match an account', async () => {
+            const organizationId = `org_${nanoid()}`;
+            const email = `${nanoid()}@acme.example.com`;
+            mockOrganization({ id: organizationId, name: 'Acme', external_id: '00000000-0000-4000-8000-000000000000' });
+            workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Sso', lastName: 'User' }, organizationId });
+
+            const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+
+            expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin?error=sso_organization_not_linked');
+            expect(await userService.getUserByEmail(email)).toBeNull();
+        });
+
+        it('should join the account whose UUID is the WorkOS organization external ID', async () => {
+            const organizationId = `org_${nanoid()}`;
+            const linked = await seeders.createAccount();
+            // An account renamed to the organization's name must not change the outcome
+            const sameNameAccount = await seeders.createAccount();
+            await db.knex.from('_nango_accounts').where({ id: sameNameAccount.id }).update({ name: 'Acme' });
+
+            const email = `${nanoid()}@acme.example.com`;
+            mockOrganization({ id: organizationId, name: 'Acme', external_id: linked.uuid });
+            workosMocks.authenticateWithCode.mockResolvedValue({ user: { email, firstName: 'Sso', lastName: 'User' }, organizationId });
+
+            const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+
+            expect(callbackRes.status).toBe(302);
+            const user = await userService.getUserByEmail(email);
+            expect(user?.account_id).toBe(linked.id);
+        });
     });
 });
