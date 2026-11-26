@@ -33,6 +33,8 @@ vi.mock('@nangohq/shared', () => ({
 
 let mockConfigs: { id: number; environment_id: number; unique_key: string }[] = [];
 let configsReturned = false;
+let mockConnections: { id: number; environment_id: number; config_id: number | null }[] = [];
+let connectionsReturned = false;
 const from = vi.fn((table: string) => {
     if (table === '_nango_configs') {
         return {
@@ -53,7 +55,11 @@ const from = vi.fn((table: string) => {
         return {
             where: () => ({
                 limit: () => {
-                    steps.push('select:_nango_connections');
+                    if (!connectionsReturned) {
+                        connectionsReturned = true;
+                        steps.push('select:_nango_connections');
+                        return Promise.resolve(mockConnections);
+                    }
                     return Promise.resolve([]);
                 }
             })
@@ -98,6 +104,8 @@ describe('deleteEnvironmentData', () => {
         steps.length = 0;
         mockConfigs = [{ id: 7, environment_id: 42, unique_key: 'github' }];
         configsReturned = false;
+        mockConnections = [{ id: 99, environment_id: 42, config_id: null }];
+        connectionsReturned = false;
         deleteProviderConfigData.mockClear();
         deleteConnectionData.mockClear();
         hardDelete.mockClear();
@@ -121,20 +129,19 @@ describe('deleteEnvironmentData', () => {
             'select:_nango_configs',
             'deleteProviderConfigData',
             'select:_nango_connections',
+            'deleteConnectionData',
             'delete:end_users',
             'delete:_nango_external_webhooks',
             'delete:_nango_slack_notifications',
             'delete:_nango_environment_variables',
             'environmentService.hardDelete'
         ]);
+        expect(deleteConnectionData).toHaveBeenCalledWith({ id: 99, environment_id: 42, config_id: null }, opts);
         expect(hardDelete).toHaveBeenCalledWith(42);
     });
 
-    it('throws DeletionBudgetExceeded between provider configs after making forward progress even when count < limit', async () => {
-        mockConfigs = [
-            { id: 7, environment_id: 42, unique_key: 'github' },
-            { id: 8, environment_id: 42, unique_key: 'slack' }
-        ];
+    it('throws DeletionBudgetExceeded after a completed provider config crosses the deadline, even for a single config (< limit)', async () => {
+        mockConfigs = [{ id: 7, environment_id: 42, unique_key: 'github' }];
         const environment = { id: 42, name: 'old-dev' } as DBEnvironment;
         const opts: BatchDeleteSharedOptions = {
             deadline: new Date(Date.now() - 1),
@@ -146,6 +153,7 @@ describe('deleteEnvironmentData', () => {
         await expect(deleteEnvironmentData(environment, opts)).rejects.toBeInstanceOf(DeletionBudgetExceeded);
 
         expect(deleteProviderConfigData).toHaveBeenCalledTimes(1);
+        expect(deleteConnectionData).not.toHaveBeenCalled();
         expect(hardDelete).not.toHaveBeenCalled();
     });
 });

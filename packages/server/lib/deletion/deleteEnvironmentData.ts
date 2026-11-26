@@ -36,11 +36,9 @@ export async function deleteEnvironmentData(environment: DBEnvironment, opts: Ba
                 .where({ environment_id: environment.id })
                 .limit(opts.limit);
 
-            for (const [index, providerConfig] of providerConfigs.entries()) {
-                if (index > 0) {
-                    assertWithinDeadline(opts.deadline, logger);
-                }
+            for (const providerConfig of providerConfigs) {
                 await deleteProviderConfigData(providerConfig, opts);
+                assertWithinDeadline(opts.deadline, logger);
             }
 
             return providerConfigs.length;
@@ -88,11 +86,9 @@ async function deleteRemainingConnectionsByEnvironmentId(environment: DBEnvironm
                 .where({ environment_id: environment.id })
                 .limit(opts.limit);
 
-            for (const [index, connection] of connections.entries()) {
-                if (index > 0) {
-                    assertWithinDeadline(opts.deadline, logger);
-                }
+            for (const connection of connections) {
                 await deleteConnectionData(connection, opts);
+                assertWithinDeadline(opts.deadline, logger);
             }
 
             return connections.length;

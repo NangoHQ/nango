@@ -31,11 +31,9 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
                 throw functionConfigs.error;
             }
 
-            for (const [index, functionConfig] of functionConfigs.value.entries()) {
-                if (index > 0) {
-                    assertWithinDeadline(deadline, logger);
-                }
+            for (const functionConfig of functionConfigs.value) {
                 await deleteFunctionConfigData(functionConfig, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return functionConfigs.value.length;
@@ -51,11 +49,9 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
                 .where({ nango_config_id: providerConfigId })
                 .limit(opts.limit);
 
-            for (const [index, syncConfig] of (syncConfigs || []).entries()) {
-                if (index > 0) {
-                    assertWithinDeadline(deadline, logger);
-                }
+            for (const syncConfig of syncConfigs || []) {
                 await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return syncConfigs?.length || 0;
@@ -68,11 +64,9 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
         deleteFn: async () => {
             const connections = await db.knex.from<DBConnection, DBConnection[]>('_nango_connections').where({ config_id: providerConfigId }).limit(opts.limit);
 
-            for (const [index, connection] of connections.entries()) {
-                if (index > 0) {
-                    assertWithinDeadline(deadline, logger);
-                }
+            for (const connection of connections) {
                 await deleteConnectionData(connection, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return connections.length;
