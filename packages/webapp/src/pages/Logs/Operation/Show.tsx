@@ -12,7 +12,7 @@ import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { getRunTime } from '../../../utils/utils';
 import { OperationProperties, operationTypeLabel } from '../components/OperationProperties';
-import { StatusTag } from '../components/StatusTag';
+import { OperationStatus } from '../components/OperationStatus';
 import { Logs } from './components/Logs';
 
 import type { ApiError, OperationRow } from '@nangohq/types';
@@ -32,8 +32,8 @@ const OperationHeading: React.FC<{ operation: OperationRow }> = ({ operation }) 
 
     return (
         <>
-            <div className="flex">
-                <StatusTag state={operation.state} />
+            <div className="flex type-text-regular-sm text-text-default">
+                <OperationStatus state={operation.state} />
             </div>
             <h2 className="flex min-w-0 items-baseline gap-1.5 type-text-medium-md text-text-strong">
                 <span className="shrink-0">{type}</span>
