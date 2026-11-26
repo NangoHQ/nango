@@ -1,0 +1,1820 @@
+{
+    "providerConfigKey": "zoho-people",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Record an attendance check-in for an employee.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_checkin",
+            "name": "check-in",
+            "output": ["ActionOutput_zoho_people_checkin"],
+            "scopes": ["ZOHOPEOPLE.attendance.ALL"],
+            "usedModels": ["ActionInput_zoho_people_checkin", "ActionOutput_zoho_people_checkin"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_checkin": {
+                        "type": "object",
+                        "properties": {
+                            "empId": {
+                                "type": "string",
+                                "description": "Employee ID (alphanumeric). Example: \"S20\""
+                            },
+                            "attendanceDate": {
+                                "type": "string",
+                                "description": "Attendance date in dd-MMM-yyyy format. Example: \"15-Jun-2026\""
+                            },
+                            "checkIn": {
+                                "type": "string",
+                                "description": "Check-in time in HH:MM format. Example: \"09:00\""
+                            }
+                        },
+                        "required": ["empId", "attendanceDate", "checkIn"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_checkin": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "recordId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Record an attendance check-out for an employee.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_checkout",
+            "name": "check-out",
+            "output": ["ActionOutput_zoho_people_checkout"],
+            "scopes": ["ZOHOPEOPLE.attendance.ALL"],
+            "usedModels": ["ActionInput_zoho_people_checkout", "ActionOutput_zoho_people_checkout"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_checkout": {
+                        "type": "object",
+                        "properties": {
+                            "empId": {
+                                "type": "string",
+                                "description": "Employee ID (alphanumeric, e.g. \"S20\"). Must belong to an employee with a real Zoho account (ZUID != -1)."
+                            },
+                            "checkOut": {
+                                "type": "string",
+                                "description": "Check-out time in HH:MM format (24-hour). Example: \"17:30\""
+                            },
+                            "attendanceDate": {
+                                "type": "string",
+                                "description": "Attendance date in dd-MMM-yyyy format. Example: \"15-Jun-2026\""
+                            }
+                        },
+                        "required": ["empId", "checkOut", "attendanceDate"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_checkout": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an employee record",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_createemployee",
+            "name": "create-employee",
+            "output": ["ActionOutput_zoho_people_createemployee"],
+            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
+            "usedModels": ["ActionInput_zoho_people_createemployee", "ActionOutput_zoho_people_createemployee"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_createemployee": {
+                        "type": "object",
+                        "properties": {
+                            "FirstName": {
+                                "description": "First name of the employee. Example: \"John\"",
+                                "type": "string"
+                            },
+                            "LastName": {
+                                "description": "Last name of the employee. Example: \"Doe\"",
+                                "type": "string"
+                            },
+                            "EmailID": {
+                                "description": "Email ID of the employee. Example: \"john@example.com\"",
+                                "type": "string"
+                            },
+                            "Department": {
+                                "description": "Department ID. Example: \"972601000000306078\"",
+                                "type": "string"
+                            },
+                            "Dateofjoining": {
+                                "description": "Date of joining in dd-MMM-yyyy format. Example: \"15-Jun-2026\"",
+                                "type": "string"
+                            },
+                            "EmployeeID": {
+                                "description": "Employee ID. Example: \"S21\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": {}
+                    },
+                    "ActionOutput_zoho_people_createemployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The newly created employee record ID"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a record in any form",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_createformrecord",
+            "name": "create-form-record",
+            "output": ["ActionOutput_zoho_people_createformrecord"],
+            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
+            "usedModels": ["ActionInput_zoho_people_createformrecord", "ActionOutput_zoho_people_createformrecord"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_createformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "formLinkName": {
+                                "type": "string",
+                                "description": "The form link name. Example: \"employee\", \"department\", \"designation\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Field name to value mapping. Date fields must use dd-MMM-yyyy format."
+                            }
+                        },
+                        "required": ["formLinkName", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_createformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a holiday entry.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_createholiday",
+            "name": "create-holiday",
+            "output": ["ActionOutput_zoho_people_createholiday"],
+            "scopes": ["ZOHOPEOPLE.leave.CREATE"],
+            "usedModels": ["ActionInput_zoho_people_createholiday", "ActionOutput_zoho_people_createholiday"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_createholiday": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Holiday name. Example: \"Independence Day\""
+                            },
+                            "from": {
+                                "type": "string",
+                                "description": "Start date in dd-MMM-yyyy format. Example: \"15-Jun-2026\""
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "End date in dd-MMM-yyyy format. Example: \"15-Jun-2026\""
+                            },
+                            "holidayType": {
+                                "type": "string",
+                                "enum": ["Mandatory", "Optional"],
+                                "description": "Holiday type. Example: \"Mandatory\""
+                            }
+                        },
+                        "required": ["name", "from", "to", "holidayType"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_createholiday": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a leave request for an employee",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_createleaverequest",
+            "name": "create-leave-request",
+            "output": ["ActionOutput_zoho_people_createleaverequest"],
+            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
+            "usedModels": ["ActionInput_zoho_people_createleaverequest", "ActionOutput_zoho_people_createleaverequest"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_createleaverequest": {
+                        "type": "object",
+                        "properties": {
+                            "employeeRecordId": {
+                                "type": "string",
+                                "description": "Zoho internal record ID of the employee. Example: \"972601000000306080\""
+                            },
+                            "leaveTypeId": {
+                                "type": "string",
+                                "description": "Leave type ID (not name). Example: \"972601000000306562\""
+                            },
+                            "fromDate": {
+                                "type": "string",
+                                "description": "Start date in dd-MMM-yyyy format. Example: \"16-Jun-2026\""
+                            },
+                            "toDate": {
+                                "type": "string",
+                                "description": "End date in dd-MMM-yyyy format. Example: \"17-Jun-2026\""
+                            },
+                            "daysTaken": {
+                                "type": "string",
+                                "description": "Number of days as a string. Example: \"2\""
+                            }
+                        },
+                        "required": ["employeeRecordId", "leaveTypeId", "fromDate", "toDate", "daysTaken"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_createleaverequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The newly created leave record ID"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get attendance report for all employees over a date window",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getattendancereport",
+            "name": "get-attendance-report",
+            "output": ["ActionOutput_zoho_people_getattendancereport"],
+            "scopes": ["ZOHOPEOPLE.attendance.READ"],
+            "usedModels": ["ActionInput_zoho_people_getattendancereport", "ActionOutput_zoho_people_getattendancereport"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getattendancereport": {
+                        "type": "object",
+                        "properties": {
+                            "sdate": {
+                                "type": "string",
+                                "description": "Start date in dd-MMM-yyyy format. Example: 15-Jun-2026"
+                            },
+                            "edate": {
+                                "type": "string",
+                                "description": "End date in dd-MMM-yyyy format. Example: 15-Jun-2026"
+                            },
+                            "startIndex": {
+                                "description": "1-based pagination index. Omit for the first page.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["sdate", "edate"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getattendancereport": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "attendanceDetails": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "employeeDetails": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextStartIndex": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get attendance entries for a specific employee on a given day or date range",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getemployeeattendance",
+            "name": "get-employee-attendance",
+            "output": ["ActionOutput_zoho_people_getemployeeattendance"],
+            "scopes": ["ZOHOPEOPLE.attendance.READ"],
+            "usedModels": ["ActionInput_zoho_people_getemployeeattendance", "ActionOutput_zoho_people_getemployeeattendance"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getemployeeattendance": {
+                        "type": "object",
+                        "properties": {
+                            "empId": {
+                                "type": "string",
+                                "description": "Employee's alphanumeric ID. Example: 'S20'"
+                            },
+                            "dateRange": {
+                                "description": "Predefined date range: 'today', 'yesterday', 'thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'",
+                                "type": "string",
+                                "enum": ["today", "yesterday", "thisWeek", "lastWeek", "thisMonth", "lastMonth"]
+                            },
+                            "date": {
+                                "description": "Specific day in dd-MMM-yyyy format. Example: '15-Jun-2026'",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["empId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getemployeeattendance": {
+                        "type": "object",
+                        "properties": {
+                            "firstIn": {
+                                "type": "string"
+                            },
+                            "lastOut": {
+                                "type": "string"
+                            },
+                            "totalHrs": {
+                                "type": "string"
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "checkIn": {
+                                            "type": "string"
+                                        },
+                                        "checkOut": {
+                                            "type": "string"
+                                        },
+                                        "checkIn_Location": {
+                                            "type": "string"
+                                        },
+                                        "checkOut_Location": {
+                                            "type": "string"
+                                        },
+                                        "checkIn_Building": {
+                                            "type": "string"
+                                        },
+                                        "checkOut_Building": {
+                                            "type": "string"
+                                        },
+                                        "sourceOfPunchIn": {
+                                            "type": "string"
+                                        },
+                                        "sourceOfPunchOut": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "firstIn_Building": {
+                                "type": "string"
+                            },
+                            "lastOut_Building": {
+                                "type": "string"
+                            },
+                            "firstIn_Location": {
+                                "type": "string"
+                            },
+                            "lastOut_Location": {
+                                "type": "string"
+                            },
+                            "unPaidBreak": {
+                                "type": "string"
+                            },
+                            "paidBreak": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "allowedToCheckIn": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single employee by record ID.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getemployee",
+            "name": "get-employee",
+            "output": ["ActionOutput_zoho_people_getemployee"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_getemployee", "ActionOutput_zoho_people_getemployee"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getemployee": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string",
+                                "description": "Zoho internal record ID. Example: \"972601000000306098\""
+                            }
+                        },
+                        "required": ["recordId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getemployee": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string"
+                            },
+                            "sections": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["recordId", "sections"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single record from any form by record ID.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getformrecord",
+            "name": "get-form-record",
+            "output": ["ActionOutput_zoho_people_getformrecord"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_getformrecord", "ActionOutput_zoho_people_getformrecord"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "formLinkName": {
+                                "type": "string",
+                                "description": "The form link name. Example: \"employee\""
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "The Zoho internal record ID. Example: \"972601000000306098\""
+                            }
+                        },
+                        "required": ["formLinkName", "recordId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string"
+                            },
+                            "record": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "status": {
+                                "type": "number"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["recordId", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List configured holidays within a date range",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getholidays",
+            "name": "get-holidays",
+            "output": ["ActionOutput_zoho_people_getholidays"],
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "usedModels": ["ActionInput_zoho_people_getholidays", "ActionOutput_zoho_people_getholidays"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getholidays": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "Start date in dd-MMM-yyyy format. Example: \"01-Jan-2026\""
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "End date in dd-MMM-yyyy format. Example: \"31-Jan-2026\""
+                            }
+                        },
+                        "required": ["from", "to"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getholidays": {
+                        "type": "object",
+                        "properties": {
+                            "holidays": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "from": {
+                                            "type": "string"
+                                        },
+                                        "to": {
+                                            "type": "string"
+                                        },
+                                        "holidayType": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["holidays", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all leave type definitions.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_getleavetypes",
+            "name": "get-leave-types",
+            "output": ["ActionOutput_zoho_people_getleavetypes"],
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "usedModels": ["ActionInput_zoho_people_getleavetypes", "ActionOutput_zoho_people_getleavetypes"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_getleavetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_getleavetypes": {
+                        "type": "object",
+                        "properties": {
+                            "leavetypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "isGrantBased": {
+                                            "type": "boolean"
+                                        },
+                                        "isDisabled": {
+                                            "type": "boolean"
+                                        },
+                                        "isV2": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["leavetypes"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all departments",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listdepartments",
+            "name": "list-departments",
+            "output": ["ActionOutput_zoho_people_listdepartments"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_listdepartments", "ActionOutput_zoho_people_listdepartments"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Zoho record ID"
+                                        },
+                                        "Department": {
+                                            "description": "Department name",
+                                            "type": "string"
+                                        },
+                                        "Department_Lead": {
+                                            "description": "Department lead",
+                                            "type": "string"
+                                        },
+                                        "Parent_Department": {
+                                            "description": "Parent department",
+                                            "type": "string"
+                                        },
+                                        "ZP_Department_Code": {
+                                            "description": "Department code",
+                                            "type": "string"
+                                        },
+                                        "MailAlias": {
+                                            "description": "Mail alias",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all designations (job titles).",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listdesignations",
+            "name": "list-designations",
+            "output": ["ActionOutput_zoho_people_listdesignations"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_listdesignations", "ActionOutput_zoho_people_listdesignations"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listdesignations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listdesignations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "designation": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "mail_alias": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List employees with pagination.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listemployees",
+            "name": "list-employees",
+            "output": ["ActionOutput_zoho_people_listemployees"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_listemployees", "ActionOutput_zoho_people_listemployees"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listemployees": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum records per page. Default 200.",
+                                "type": "number"
+                            },
+                            "modifiedTime": {
+                                "description": "Filter by last modified date (dd-MMM-yyyy).",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listemployees": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "recordId": {
+                                            "type": "string"
+                                        },
+                                        "employee": {
+                                            "type": "object",
+                                            "properties": {
+                                                "EmployeeID": {
+                                                    "type": "string"
+                                                },
+                                                "EmailID": {
+                                                    "type": "string"
+                                                },
+                                                "FirstName": {
+                                                    "type": "string"
+                                                },
+                                                "LastName": {
+                                                    "type": "string"
+                                                },
+                                                "Department": {
+                                                    "type": "string"
+                                                },
+                                                "Designation": {
+                                                    "type": "string"
+                                                },
+                                                "Dateofjoining": {
+                                                    "type": "string"
+                                                },
+                                                "modifiedtime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["recordId", "employee"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List records for any form by its link name.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listformrecords",
+            "name": "list-form-records",
+            "output": ["ActionOutput_zoho_people_listformrecords"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_listformrecords", "ActionOutput_zoho_people_listformrecords"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listformrecords": {
+                        "type": "object",
+                        "properties": {
+                            "formLinkName": {
+                                "type": "string",
+                                "description": "The form link name to list records for. Example: \"employee\""
+                            },
+                            "sIndex": {
+                                "description": "1-based start index for pagination. Omit for the first page.",
+                                "type": "number"
+                            },
+                            "limit": {
+                                "description": "Number of records per page. Defaults to 200.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["formLinkName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listformrecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "recordId": {
+                                            "type": "string",
+                                            "description": "Zoho internal record ID"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Record fields as key-value pairs"
+                                        }
+                                    },
+                                    "required": ["recordId", "fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextSIndex": {
+                                "description": "Next start index for pagination; omit when there are no more pages.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all form definitions in the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listforms",
+            "name": "list-forms",
+            "output": ["ActionOutput_zoho_people_listforms"],
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "usedModels": ["ActionInput_zoho_people_listforms", "ActionOutput_zoho_people_listforms"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listforms": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listforms": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "componentId": {
+                                    "type": ["string", "number"]
+                                },
+                                "formLinkName": {
+                                    "type": "string"
+                                },
+                                "displayName": {
+                                    "type": "string"
+                                },
+                                "PermissionDetails": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Add": {
+                                            "type": "number"
+                                        },
+                                        "Edit": {
+                                            "type": "number"
+                                        },
+                                        "View": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["Add", "Edit", "View"],
+                                    "additionalProperties": false
+                                },
+                                "viewDetails": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "view_Id": {
+                                                    "type": ["string", "number"]
+                                                },
+                                                "view_Name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "view_Id": {
+                                                        "type": ["string", "number"]
+                                                    },
+                                                    "view_Name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    ]
+                                },
+                                "iscustom": {
+                                    "type": "boolean"
+                                },
+                                "isVisible": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": ["componentId", "formLinkName", "displayName"],
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List leave records within a date window.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_listleaverecords",
+            "name": "list-leave-records",
+            "output": ["ActionOutput_zoho_people_listleaverecords"],
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "usedModels": ["ActionInput_zoho_people_listleaverecords", "ActionOutput_zoho_people_listleaverecords"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_listleaverecords": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "Start date in dd-MMM-yyyy format. Example: 01-Jun-2026"
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "End date in dd-MMM-yyyy format. Example: 30-Jun-2026"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of records per page. Default: 100",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["from", "to"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_listleaverecords": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an employee record",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_updateemployee",
+            "name": "update-employee",
+            "output": ["ActionOutput_zoho_people_updateemployee"],
+            "scopes": ["ZOHOPEOPLE.forms.UPDATE"],
+            "usedModels": ["ActionInput_zoho_people_updateemployee", "ActionOutput_zoho_people_updateemployee"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_updateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string",
+                                "description": "Zoho internal record ID of the employee. Example: \"972601000000306098\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Fields to update. Use internal API field names (case-sensitive). Date fields must use dd-MMM-yyyy format."
+                            }
+                        },
+                        "required": ["recordId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_updateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["recordId", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a record in any form.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_people_updateformrecord",
+            "name": "update-form-record",
+            "output": ["ActionOutput_zoho_people_updateformrecord"],
+            "scopes": ["ZOHOPEOPLE.forms.UPDATE"],
+            "usedModels": ["ActionInput_zoho_people_updateformrecord", "ActionOutput_zoho_people_updateformrecord"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_people_updateformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "formLinkName": {
+                                "type": "string",
+                                "description": "The internal form link name (e.g. \"employee\", \"department\", \"designation\")."
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "The Zoho internal record ID to update."
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Changed fields to update. Keys are case-sensitive internal field names."
+                            }
+                        },
+                        "required": ["formLinkName", "recordId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_people_updateformrecord": {
+                        "type": "object",
+                        "properties": {
+                            "recordId": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["recordId", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync attendance records",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/attendance"
+                }
+            ],
+            "input": null,
+            "name": "attendance",
+            "output": ["Attendance"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.attendance.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Attendance"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Attendance": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string"
+                            },
+                            "employeeEmail": {
+                                "type": "string"
+                            },
+                            "employeeFirstName": {
+                                "type": "string"
+                            },
+                            "employeeLastName": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "firstIn": {
+                                "type": "string"
+                            },
+                            "lastOut": {
+                                "type": "string"
+                            },
+                            "totalHours": {
+                                "type": "string"
+                            },
+                            "workingHours": {
+                                "type": "string"
+                            },
+                            "overTime": {
+                                "type": "string"
+                            },
+                            "deviationTime": {
+                                "type": "string"
+                            },
+                            "shiftName": {
+                                "type": "string"
+                            },
+                            "shiftStartTime": {
+                                "type": "string"
+                            },
+                            "shiftEndTime": {
+                                "type": "string"
+                            },
+                            "paidBreakHours": {
+                                "type": "string"
+                            },
+                            "unPaidBreakHours": {
+                                "type": "string"
+                            },
+                            "firstInLocation": {
+                                "type": "string"
+                            },
+                            "lastOutLocation": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "date"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all departments",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/departments"
+                }
+            ],
+            "input": null,
+            "name": "departments",
+            "output": ["Department"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Department"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Department": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "lead": {
+                                "type": "string"
+                            },
+                            "parentDepartment": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "mailAlias": {
+                                "type": "string"
+                            },
+                            "addedTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all designations (job titles)",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/designations",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "designations",
+            "output": ["Designation"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Designation"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Designation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "designation": {
+                                "type": "string"
+                            },
+                            "zp_designation_code": {
+                                "type": "string"
+                            },
+                            "mail_alias": {
+                                "type": "string"
+                            },
+                            "modified_time": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all employees",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/employees"
+                }
+            ],
+            "input": null,
+            "name": "employees",
+            "output": ["Employee"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Employee"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string"
+                            },
+                            "emailId": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "designation": {
+                                "type": "string"
+                            },
+                            "employeeStatus": {
+                                "type": "string"
+                            },
+                            "dateOfJoining": {
+                                "type": "string"
+                            },
+                            "reportingTo": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync records for a configurable set of forms",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "path": "/syncs/form-records",
+                    "method": "GET"
+                }
+            ],
+            "input": "SyncMetadata_zoho_people_formrecords",
+            "name": "form-records",
+            "output": ["FormRecord"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["FormRecord", "SyncMetadata_zoho_people_formrecords"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "FormRecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "form_link_name": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "form_link_name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_zoho_people_formrecords": {
+                        "type": "object",
+                        "properties": {
+                            "form_link_names": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Zoho People form definitions",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/forms"
+                }
+            ],
+            "input": null,
+            "name": "forms",
+            "output": ["Form"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Form"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Form": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "componentId": {
+                                "type": "string"
+                            },
+                            "formLinkName": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "PermissionDetails": {},
+                            "isVisible": {
+                                "type": "boolean"
+                            },
+                            "viewDetails": {}
+                        },
+                        "required": ["id", "componentId", "formLinkName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync configured holidays.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/holidays",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "holidays",
+            "output": ["Holiday"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Holiday"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Holiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "holidayType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync leave records.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/leave-records"
+                }
+            ],
+            "input": null,
+            "name": "leave-records",
+            "output": ["LeaveRecord"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LeaveRecord"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LeaveRecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "leaveTypeId": {
+                                "type": "string"
+                            },
+                            "leaveTypeName": {
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string"
+                            },
+                            "employeeName": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "days": {
+                                "type": "number"
+                            },
+                            "dateOfRequest": {
+                                "type": "string"
+                            },
+                            "unit": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync leave type definitions.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/leave-types",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "leave-types",
+            "output": ["LeaveType"],
+            "runs": "every hour",
+            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LeaveType"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LeaveType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "isGrantBased": {
+                                "type": "boolean"
+                            },
+                            "isDisabled": {
+                                "type": "boolean"
+                            },
+                            "isV2": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

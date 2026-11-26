@@ -1,0 +1,944 @@
+{
+    "providerConfigKey": "exa",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Generate an AI answer to a question, backed by live web citations.",
+            "endpoint": {
+                "path": "/actions/answer",
+                "method": "POST"
+            },
+            "input": "ActionInput_exa_answer",
+            "name": "answer",
+            "output": ["ActionOutput_exa_answer"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exa_answer", "ActionOutput_exa_answer"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exa_answer": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The question to answer. Example: \"What is the capital of France?\""
+                            },
+                            "text": {
+                                "description": "If true, each citation object includes the full page text.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exa_answer": {
+                        "type": "object",
+                        "properties": {
+                            "answer": {
+                                "type": "string",
+                                "description": "The AI-generated answer, may contain markdown."
+                            },
+                            "citations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Citations backing the answer."
+                            }
+                        },
+                        "required": ["answer", "citations"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Find pages semantically similar to a given URL.",
+            "endpoint": {
+                "path": "/actions/find-similar",
+                "method": "POST"
+            },
+            "input": "ActionInput_exa_findsimilar",
+            "name": "find-similar",
+            "output": ["ActionOutput_exa_findsimilar"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exa_findsimilar", "ActionOutput_exa_findsimilar"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exa_findsimilar": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The seed URL for which to find similar pages. Example: \"https://arxiv.org/abs/2307.06435\""
+                            },
+                            "numResults": {
+                                "description": "Number of results to return. Default: 10. Maximum public limit is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "excludeSourceDomain": {
+                                "description": "If true, results from the same domain as the input URL are excluded.",
+                                "type": "boolean"
+                            },
+                            "category": {
+                                "description": "Category filter to focus the search on a specific type of content.",
+                                "type": "string",
+                                "enum": [
+                                    "company",
+                                    "research paper",
+                                    "news",
+                                    "pdf",
+                                    "github",
+                                    "personal site",
+                                    "linkedin profile",
+                                    "people",
+                                    "financial report"
+                                ]
+                            },
+                            "includeDomains": {
+                                "description": "List of domains to include in results.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "excludeDomains": {
+                                "description": "List of domains to exclude from results.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "startPublishedDate": {
+                                "description": "Only include links with a published date after this date. ISO 8601 format.",
+                                "type": "string"
+                            },
+                            "endPublishedDate": {
+                                "description": "Only include links with a published date before this date. ISO 8601 format.",
+                                "type": "string"
+                            },
+                            "contents": {
+                                "description": "Inline content options (text, highlights, summary, extras) to fetch in the same call.",
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "anyOf": [
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "maxCharacters": {
+                                                        "type": "number"
+                                                    },
+                                                    "includeHtmlTags": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "verbosity": {
+                                                        "type": "string",
+                                                        "enum": ["compact", "standard", "full"]
+                                                    },
+                                                    "includeSections": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "excludeSections": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        ]
+                                    },
+                                    "highlights": {
+                                        "anyOf": [
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "query": {
+                                                        "type": "string"
+                                                    },
+                                                    "maxCharacters": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        ]
+                                    },
+                                    "summary": {
+                                        "type": "object",
+                                        "properties": {
+                                            "query": {
+                                                "type": "string"
+                                            },
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "extras": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "number"
+                                            },
+                                            "imageLinks": {
+                                                "type": "number"
+                                            },
+                                            "richImageLinks": {
+                                                "type": "number"
+                                            },
+                                            "richLinks": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["url"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exa_findsimilar": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The result ID, which is the full URL string."
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "description": "Relevance score for the result.",
+                                            "type": "number"
+                                        },
+                                        "publishedDate": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "author": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "image": {
+                                            "type": "string"
+                                        },
+                                        "favicon": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "highlights": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "highlightScores": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "subpages": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "publishedDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "author": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "image": {
+                                                        "type": "string"
+                                                    },
+                                                    "favicon": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["title", "url"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "extras": {
+                                            "type": "object",
+                                            "properties": {
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "entities": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": ["id", "title", "url"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "costDollars": {
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "search": {
+                                        "type": "object",
+                                        "properties": {
+                                            "neural": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "breakDown": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve full page text, highlights, or a summary for one or more URLs.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/get-contents"
+            },
+            "input": "ActionInput_exa_getcontents",
+            "name": "get-contents",
+            "output": ["ActionOutput_exa_getcontents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exa_getcontents", "ActionOutput_exa_getcontents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exa_getcontents": {
+                        "type": "object",
+                        "properties": {
+                            "ids": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Document IDs (URLs) to retrieve content for. Example: [\"https://example.com\"]"
+                            },
+                            "text": {
+                                "type": "object",
+                                "properties": {
+                                    "maxCharacters": {
+                                        "type": "number"
+                                    },
+                                    "includeHtmlTags": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "highlights": {
+                                "type": "object",
+                                "properties": {
+                                    "numSentences": {
+                                        "type": "number"
+                                    },
+                                    "highlightsPerUrl": {
+                                        "type": "number"
+                                    },
+                                    "query": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "query": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "livecrawl": {
+                                "type": "string",
+                                "enum": ["never", "fallback", "always", "auto"]
+                            }
+                        },
+                        "required": ["ids"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exa_getcontents": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "url": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "publishedDate": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "author": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "image": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "favicon": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "text": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "highlights": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "highlightScores": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "summary": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "subpages": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "extras": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "links": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "statuses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["success", "error"]
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "enum": ["cached", "crawled"]
+                                        },
+                                        "error": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "tag": {
+                                                            "type": "string"
+                                                        },
+                                                        "httpStatusCode": {
+                                                            "type": ["number", "null"]
+                                                        }
+                                                    },
+                                                    "required": ["tag", "httpStatusCode"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id", "status"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "costDollars": {
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "search": {
+                                        "type": "object",
+                                        "properties": {
+                                            "neural": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["results", "statuses"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run an Exa neural or keyword search and return ranked results, optionally with inline page content.",
+            "endpoint": null,
+            "input": "ActionInput_exa_search",
+            "name": "search",
+            "output": ["ActionOutput_exa_search"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exa_search", "ActionOutput_exa_search"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exa_search": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The search query string."
+                            },
+                            "type": {
+                                "description": "Search type: 'auto' (default), 'neural' for semantic, 'keyword' for exact-match, 'fast', 'instant', 'deep-lite', 'deep', or 'deep-reasoning'.",
+                                "type": "string",
+                                "enum": ["auto", "neural", "keyword", "fast", "instant", "deep-lite", "deep", "deep-reasoning"]
+                            },
+                            "numResults": {
+                                "description": "Number of results to return (default 10).",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "category": {
+                                "description": "Content category filter.",
+                                "type": "string",
+                                "enum": [
+                                    "company",
+                                    "research paper",
+                                    "news",
+                                    "pdf",
+                                    "github",
+                                    "personal site",
+                                    "linkedin profile",
+                                    "people",
+                                    "financial report"
+                                ]
+                            },
+                            "includeDomains": {
+                                "description": "Only return results from these domains.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "excludeDomains": {
+                                "description": "Exclude results from these domains.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "startPublishedDate": {
+                                "description": "ISO 8601 start published date filter.",
+                                "type": "string"
+                            },
+                            "endPublishedDate": {
+                                "description": "ISO 8601 end published date filter.",
+                                "type": "string"
+                            },
+                            "startCrawlDate": {
+                                "description": "ISO 8601 start crawl date filter.",
+                                "type": "string"
+                            },
+                            "endCrawlDate": {
+                                "description": "ISO 8601 end crawl date filter.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "description": "Inline text extraction options (avoids separate /contents call).",
+                                "type": "object",
+                                "properties": {
+                                    "maxCharacters": {
+                                        "description": "Maximum characters to return for page text.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "includeHtmlTags": {
+                                        "description": "Include HTML tags in returned text.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "highlights": {
+                                "description": "Inline highlight extraction options (avoids separate /contents call).",
+                                "type": "object",
+                                "properties": {
+                                    "query": {
+                                        "description": "Custom query guiding highlight selection.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "summary": {
+                                "description": "Inline summary generation options (avoids separate /contents call).",
+                                "type": "object",
+                                "properties": {
+                                    "query": {
+                                        "description": "Custom query for LLM-generated summary.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exa_search": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "description": "Unique identifier for the request.",
+                                "type": "string"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Result ID (the full URL)."
+                                        },
+                                        "title": {
+                                            "description": "Title of the search result.",
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "description": "URL of the search result.",
+                                            "type": "string"
+                                        },
+                                        "publishedDate": {
+                                            "description": "Estimated published date in ISO 8601 format.",
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "description": "Author of the content, if available.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "score": {
+                                            "description": "Relevance score.",
+                                            "type": "number"
+                                        },
+                                        "image": {
+                                            "description": "URL of an image associated with the result.",
+                                            "type": "string"
+                                        },
+                                        "favicon": {
+                                            "description": "URL of the favicon for the result domain.",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "description": "Full page text, when requested via inline content.",
+                                            "type": "string"
+                                        },
+                                        "highlights": {
+                                            "description": "Highlights extracted from the page, when requested via inline content.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "summary": {
+                                            "description": "LLM-generated summary, when requested via inline content.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "costDollars": {
+                                "description": "Cost breakdown for the request.",
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "description": "Total cost in USD.",
+                                        "type": "number"
+                                    },
+                                    "search": {
+                                        "type": "object",
+                                        "properties": {
+                                            "neural": {
+                                                "description": "Cost for neural search.",
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Periodically run saved Exa search queries and sync new results.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/configured-search-results"
+                }
+            ],
+            "input": "SyncMetadata_exa_configuredsearchresults",
+            "name": "configured-search-results",
+            "output": ["SearchResult"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["SearchResult", "SyncMetadata_exa_configuredsearchresults"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SearchResult": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "publishedDate": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "highlights": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "highlightScores": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": ["id", "query", "title", "url", "publishedDate"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_exa_configuredsearchresults": {
+                        "type": "object",
+                        "properties": {
+                            "queries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "query": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "includeDomains": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "excludeDomains": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["query"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["queries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

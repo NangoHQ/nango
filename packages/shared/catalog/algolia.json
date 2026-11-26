@@ -1,0 +1,3111 @@
+{
+    "providerConfigKey": "algolia",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Batch create, update, or delete Algolia objects.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_batchobjects",
+            "name": "batch-objects",
+            "output": ["ActionOutput_algolia_batchobjects"],
+            "scopes": ["addObject"],
+            "usedModels": ["ActionInput_algolia_batchobjects", "ActionOutput_algolia_batchobjects"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_batchobjects": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "requests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "action": {
+                                            "type": "string",
+                                            "enum": [
+                                                "addObject",
+                                                "updateObject",
+                                                "partialUpdateObject",
+                                                "partialUpdateObjectNoCreate",
+                                                "deleteObject",
+                                                "delete",
+                                                "clear"
+                                            ]
+                                        },
+                                        "body": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["action", "body"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Batch operations to perform on the index."
+                            }
+                        },
+                        "required": ["indexName", "requests"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_batchobjects": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "objectIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["taskID", "objectIDs"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Copy an Algolia index to a new destination index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_copyindex",
+            "name": "copy-index",
+            "output": ["ActionOutput_algolia_copyindex"],
+            "scopes": ["addObject"],
+            "usedModels": ["ActionInput_algolia_copyindex", "ActionOutput_algolia_copyindex"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_copyindex": {
+                        "type": "object",
+                        "properties": {
+                            "sourceIndexName": {
+                                "type": "string",
+                                "description": "Name of the source index to copy. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "destinationIndexName": {
+                                "type": "string",
+                                "description": "Name of the destination index. Example: \"nango_test_copy_index_destination\""
+                            },
+                            "scope": {
+                                "description": "Optional array of scopes to copy. If omitted, the entire index is copied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["settings", "synonyms", "rules"]
+                                }
+                            }
+                        },
+                        "required": ["sourceIndexName", "destinationIndexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_copyindex": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number",
+                                "description": "The Algolia task ID for the copy operation"
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp of when the operation was performed"
+                            }
+                        },
+                        "required": ["taskID", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an API key in Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_createapikey",
+            "name": "create-api-key",
+            "output": ["ActionOutput_algolia_createapikey"],
+            "scopes": ["admin"],
+            "usedModels": ["ActionInput_algolia_createapikey", "ActionOutput_algolia_createapikey"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_createapikey": {
+                        "type": "object",
+                        "properties": {
+                            "acl": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Permissions that determine the type of API requests this key can make. Example: [\"search\", \"addObject\"]"
+                            },
+                            "description": {
+                                "description": "Description of an API key to help you identify this API key. Example: \"Used for indexing by the CLI\"",
+                                "type": "string"
+                            },
+                            "indexes": {
+                                "description": "Index names or patterns that this API key can access. Example: [\"dev_*\", \"prod_en_products\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "maxHitsPerQuery": {
+                                "description": "Maximum number of results this API key can retrieve in one query.",
+                                "type": "number"
+                            },
+                            "maxQueriesPerIPPerHour": {
+                                "description": "Maximum number of API requests allowed per IP address or user token per hour.",
+                                "type": "number"
+                            },
+                            "queryParameters": {
+                                "description": "Query parameters to add when making API requests with this API key. Example: \"typoTolerance=strict&restrictSources=192.168.1.0/24\"",
+                                "type": "string"
+                            },
+                            "referers": {
+                                "description": "Allowed HTTP referrers for this API key. Example: [\"*algolia.com*\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "validity": {
+                                "description": "Duration (in seconds) after which the API key expires. Example: 86400",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["acl"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_createapikey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "The newly created API key. Example: 13ad45b4d0a2f6ea65ecbddf6aa260f2"
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "Date and time when the API key was created, in RFC 3339 format. Example: 2023-07-04T12:49:15Z"
+                            }
+                        },
+                        "required": ["key", "createdAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an object in an Algolia index. Returns a generated objectID.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_createobject",
+            "name": "create-object",
+            "output": ["ActionOutput_algolia_createobject"],
+            "scopes": ["addObject"],
+            "usedModels": ["ActionInput_algolia_createobject", "ActionOutput_algolia_createobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_createobject": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "object": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {},
+                                "description": "The record to add. A schemaless object with attributes that are useful in the context of search and discovery."
+                            },
+                            "objectID": {
+                                "description": "Optional object ID. If provided, the record is added or replaced at this ID instead of auto-generating one.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName", "object"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_createobject": {
+                        "type": "object",
+                        "properties": {
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["objectID", "taskID"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a query rule in an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_createrule",
+            "name": "create-rule",
+            "output": ["ActionOutput_algolia_createrule"],
+            "scopes": ["editSettings"],
+            "usedModels": ["ActionInput_algolia_createrule", "ActionOutput_algolia_createrule"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_createrule": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "Unique identifier for the rule. Example: \"nango-test-rule-create\""
+                            },
+                            "conditions": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string",
+                                            "description": "Query pattern that triggers the rule. Example: \"smartphone\""
+                                        },
+                                        "anchoring": {
+                                            "type": "string",
+                                            "description": "Which part of the search query the pattern should match. Example: \"contains\""
+                                        },
+                                        "alternatives": {
+                                            "description": "Whether the pattern should match plurals, synonyms, and typos.",
+                                            "type": "boolean"
+                                        },
+                                        "context": {
+                                            "description": "An additional restriction that only triggers the rule when the search has the same ruleContexts value.",
+                                            "type": "string"
+                                        },
+                                        "filters": {
+                                            "description": "Filters that trigger the rule. Example: \"genre:comedy\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["pattern", "anchoring"],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Conditions that trigger the rule."
+                            },
+                            "consequence": {
+                                "type": "object",
+                                "properties": {
+                                    "params": {
+                                        "description": "Parameters to apply to this search.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    "promote": {
+                                        "description": "Records to pin to a specific position in the search results.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "filterPromotes": {
+                                        "description": "Whether promoted records must also match active filters.",
+                                        "type": "boolean"
+                                    },
+                                    "hide": {
+                                        "description": "Records to hide from the search results.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "redirect": {
+                                        "description": "Redirect to a virtual replica index.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    "userData": {
+                                        "description": "Custom data appended to the userData array in the response.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {},
+                                "description": "Effect of the rule."
+                            },
+                            "description": {
+                                "description": "Description of the rule.",
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "description": "Whether the rule is active.",
+                                "type": "boolean"
+                            },
+                            "validity": {
+                                "description": "Time periods when the rule is active.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number",
+                                            "description": "Timestamp when the rule should start to be active, measured in seconds since the Unix epoch."
+                                        },
+                                        "until": {
+                                            "type": "number",
+                                            "description": "Timestamp when the rule should stop to be active, measured in seconds since the Unix epoch."
+                                        }
+                                    },
+                                    "required": ["from", "until"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tags": {
+                                "description": "Tags for the rule.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "scope": {
+                                "description": "Scope of the rule.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName", "objectID", "conditions", "consequence"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_createrule": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskID", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a synonym in an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_createsynonym",
+            "name": "create-synonym",
+            "output": ["ActionOutput_algolia_createsynonym"],
+            "scopes": ["editSettings"],
+            "usedModels": ["ActionInput_algolia_createsynonym", "ActionOutput_algolia_createsynonym"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_createsynonym": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier for the synonym. Example: \"nango-test-syn-create-1\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "synonym"
+                                    },
+                                    "synonyms": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Equivalent terms. Example: [\"tv\", \"television\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "synonyms"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier for the synonym. Example: \"nango-test-syn-create-1\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "oneWaySynonym"
+                                    },
+                                    "input": {
+                                        "type": "string",
+                                        "description": "Input term. Example: \"iphone\""
+                                    },
+                                    "synonyms": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "One-way synonym targets. Example: [\"apple phone\", \"smartphone\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "input", "synonyms"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier for the synonym. Example: \"nango-test-syn-create-1\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "altCorrection1"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "description": "Word to correct. Example: \"abdomen\""
+                                    },
+                                    "corrections": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Corrections. Example: [\"stomach\", \"belly\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier for the synonym. Example: \"nango-test-syn-create-1\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "altCorrection2"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "description": "Word to correct. Example: \"abdomen\""
+                                    },
+                                    "corrections": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Corrections. Example: [\"stomach\", \"belly\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier for the synonym. Example: \"nango-test-syn-create-1\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "placeholder"
+                                    },
+                                    "placeholder": {
+                                        "type": "string",
+                                        "description": "Placeholder token. Example: \"<BRAND>\""
+                                    },
+                                    "replacements": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Replacement words. Example: [\"Apple\", \"Samsung\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "placeholder", "replacements"],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "ActionOutput_algolia_createsynonym": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskID"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an API key in Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_deleteapikey",
+            "name": "delete-api-key",
+            "output": ["ActionOutput_algolia_deleteapikey"],
+            "scopes": ["deleteApiKey"],
+            "usedModels": ["ActionInput_algolia_deleteapikey", "ActionOutput_algolia_deleteapikey"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_deleteapikey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "API key to delete. Example: \"0f610218198809c8a7ed8c2fd8867183\""
+                            }
+                        },
+                        "required": ["key"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_deleteapikey": {
+                        "type": "object",
+                        "properties": {
+                            "deletedAt": {
+                                "type": "string",
+                                "description": "Date and time when the key was deleted, in RFC 3339 format."
+                            }
+                        },
+                        "required": ["deletedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an Algolia index and all its objects.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_deleteindex",
+            "name": "delete-index",
+            "output": ["ActionOutput_algolia_deleteindex"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_deleteindex", "ActionOutput_algolia_deleteindex"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_deleteindex": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index to delete. Example: \"my-index\""
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_deleteindex": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "deletedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskID", "deletedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an object from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_deleteobject",
+            "name": "delete-object",
+            "output": ["ActionOutput_algolia_deleteobject"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_deleteobject", "ActionOutput_algolia_deleteobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_deleteobject": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "ID of the object to delete. Example: \"nango-test-obj-delete-1\""
+                            }
+                        },
+                        "required": ["indexName", "objectID"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_deleteobject": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number",
+                                "description": "Algolia task ID for the deletion operation."
+                            },
+                            "deletedAt": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp when the object was deleted."
+                            }
+                        },
+                        "required": ["taskID", "deletedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a query rule from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_deleterule",
+            "name": "delete-rule",
+            "output": ["ActionOutput_algolia_deleterule"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_deleterule", "ActionOutput_algolia_deleterule"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_deleterule": {
+                        "type": "object",
+                        "properties": {
+                            "index_name": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "object_id": {
+                                "type": "string",
+                                "description": "Object ID of the query rule to delete. Example: \"nango-test-rule-update-1\""
+                            }
+                        },
+                        "required": ["index_name", "object_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_deleterule": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "object_id": {
+                                "type": "string"
+                            },
+                            "task_id": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "object_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a synonym from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_deletesynonym",
+            "name": "delete-synonym",
+            "output": ["ActionOutput_algolia_deletesynonym"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_deletesynonym", "ActionOutput_algolia_deletesynonym"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_deletesynonym": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "Synonym object ID. Example: \"nango-test-syn-delete-1\""
+                            }
+                        },
+                        "required": ["indexName", "objectID"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_deletesynonym": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "deletedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskID"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single API key from Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getapikey",
+            "name": "get-api-key",
+            "output": ["ActionOutput_algolia_getapikey"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_getapikey", "ActionOutput_algolia_getapikey"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getapikey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Algolia API key to retrieve. Example: \"59d374984024673eb90738474aa4e9c2\""
+                            }
+                        },
+                        "required": ["key"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getapikey": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "number"
+                            },
+                            "acl": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "indexes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "maxHitsPerQuery": {
+                                "type": "number"
+                            },
+                            "maxQueriesPerIPPerHour": {
+                                "type": "number"
+                            },
+                            "queryParameters": {
+                                "type": "string"
+                            },
+                            "referers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "validity": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["value"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve metadata for a single Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getindex",
+            "name": "get-index",
+            "output": ["ActionOutput_algolia_getindex"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_getindex", "ActionOutput_algolia_getindex"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getindex": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index to retrieve. Example: \"algolia_movie_sample_dataset\""
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getindex": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "entries": {
+                                "type": "number"
+                            },
+                            "dataSize": {
+                                "type": "number"
+                            },
+                            "fileSize": {
+                                "type": "number"
+                            },
+                            "lastBuildTimeS": {
+                                "type": "number"
+                            },
+                            "numberOfPendingTasks": {
+                                "type": "number"
+                            },
+                            "pendingTask": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve recent API operation logs from Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getlogs",
+            "name": "get-logs",
+            "output": ["ActionOutput_algolia_getlogs"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_getlogs", "ActionOutput_algolia_getlogs"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getlogs": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "description": "Index name to filter logs. Example: \"algolia_movie_sample_dataset\"",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Log type filter. Example: \"all\"",
+                                "type": "string",
+                                "enum": ["all", "query", "build", "error"]
+                            },
+                            "offset": {
+                                "description": "Offset for pagination. Example: 0",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "length": {
+                                "description": "Number of logs to retrieve (max 1000). Example: 10",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getlogs": {
+                        "type": "object",
+                        "properties": {
+                            "logs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string"
+                                        },
+                                        "answer_code": {
+                                            "type": "string"
+                                        },
+                                        "query_body": {
+                                            "type": "string"
+                                        },
+                                        "answer": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "ip": {
+                                            "type": "string"
+                                        },
+                                        "query_headers": {
+                                            "type": "string"
+                                        },
+                                        "sha1": {
+                                            "type": "string"
+                                        },
+                                        "nb_api_calls": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "processing_time_ms": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "index": {
+                                            "type": "string"
+                                        },
+                                        "query_params": {
+                                            "type": "string"
+                                        },
+                                        "query_nb_hits": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "inner_queries": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["logs"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single object from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getobject",
+            "name": "get-object",
+            "output": ["ActionOutput_algolia_getobject"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_getobject", "ActionOutput_algolia_getobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getobject": {
+                        "type": "object",
+                        "properties": {
+                            "index_name": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "object_id": {
+                                "type": "string",
+                                "description": "Unique record identifier. Example: \"nango-test-obj-get\""
+                            }
+                        },
+                        "required": ["index_name", "object_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getobject": {
+                        "type": "object",
+                        "properties": {
+                            "objectID": {
+                                "type": "string",
+                                "description": "Unique record identifier."
+                            }
+                        },
+                        "required": ["objectID"],
+                        "additionalProperties": {},
+                        "description": "The requested Algolia record."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single query rule from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getrule",
+            "name": "get-rule",
+            "output": ["ActionOutput_algolia_getrule"],
+            "scopes": ["settings"],
+            "usedModels": ["ActionInput_algolia_getrule", "ActionOutput_algolia_getrule"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getrule": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "Unique identifier of the rule. Example: \"nango-test-rule-get\""
+                            }
+                        },
+                        "required": ["indexName", "objectID"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getrule": {
+                        "type": "object",
+                        "properties": {
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "conditions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string"
+                                        },
+                                        "anchoring": {
+                                            "type": "string"
+                                        },
+                                        "alternatives": {
+                                            "type": "boolean"
+                                        },
+                                        "context": {
+                                            "type": "string"
+                                        },
+                                        "filters": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "consequence": {
+                                "type": "object",
+                                "properties": {
+                                    "params": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "promote": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "filterPromotes": {
+                                        "type": "boolean"
+                                    },
+                                    "hide": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "objectID": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["objectID"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "redirect": {
+                                        "type": "object",
+                                        "properties": {
+                                            "indexName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["indexName"],
+                                        "additionalProperties": {}
+                                    },
+                                    "userData": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "validity": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "until": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "scope": {
+                                "type": "string"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "properties": {
+                                    "pattern": {
+                                        "type": "string"
+                                    },
+                                    "anchoring": {
+                                        "type": "string"
+                                    },
+                                    "alternatives": {
+                                        "type": "boolean"
+                                    },
+                                    "context": {
+                                        "type": "string"
+                                    },
+                                    "filters": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["objectID", "consequence"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve Algolia index settings.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getsettings",
+            "name": "get-settings",
+            "output": ["ActionOutput_algolia_getsettings"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_getsettings", "ActionOutput_algolia_getsettings"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getsettings": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getsettings": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single synonym from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_getsynonym",
+            "name": "get-synonym",
+            "output": ["ActionOutput_algolia_getsynonym"],
+            "scopes": ["settings"],
+            "usedModels": ["ActionInput_algolia_getsynonym", "ActionOutput_algolia_getsynonym"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_getsynonym": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-get\""
+                            }
+                        },
+                        "required": ["indexName", "objectID"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_getsynonym": {
+                        "type": "object",
+                        "properties": {
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "synonym",
+                                    "onewaysynonym",
+                                    "altcorrection1",
+                                    "altcorrection2",
+                                    "placeholder",
+                                    "oneWaySynonym",
+                                    "altCorrection1",
+                                    "altCorrection2"
+                                ]
+                            },
+                            "synonyms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "input": {
+                                "type": "string"
+                            },
+                            "word": {
+                                "type": "string"
+                            },
+                            "corrections": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "placeholder": {
+                                "type": "string"
+                            },
+                            "replacements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["objectID", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List API keys from Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_listapikeys",
+            "name": "list-api-keys",
+            "output": ["ActionOutput_algolia_listapikeys"],
+            "scopes": ["admin"],
+            "usedModels": ["ActionInput_algolia_listapikeys", "ActionOutput_algolia_listapikeys"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_listapikeys": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_listapikeys": {
+                        "type": "object",
+                        "properties": {
+                            "keys": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "number"
+                                        },
+                                        "acl": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "indexes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "maxHitsPerQuery": {
+                                            "type": "number"
+                                        },
+                                        "maxQueriesPerIPPerHour": {
+                                            "type": "number"
+                                        },
+                                        "queryParameters": {
+                                            "type": "string"
+                                        },
+                                        "referers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "validity": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["value", "createdAt", "acl"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["keys"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List indices from Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_listindices",
+            "name": "list-indices",
+            "output": ["ActionOutput_algolia_listindices"],
+            "scopes": ["listIndexes"],
+            "usedModels": ["ActionInput_algolia_listindices", "ActionOutput_algolia_listindices"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_listindices": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "hitsPerPage": {
+                                "description": "Number of indices to return per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_listindices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "entries": {
+                                            "type": "number"
+                                        },
+                                        "dataSize": {
+                                            "type": "number"
+                                        },
+                                        "fileSize": {
+                                            "type": "number"
+                                        },
+                                        "lastBuildTimeS": {
+                                            "type": "number"
+                                        },
+                                        "numberOfPendingTasks": {
+                                            "type": "number"
+                                        },
+                                        "pendingTask": {
+                                            "type": "boolean"
+                                        },
+                                        "primary": {
+                                            "type": "string"
+                                        },
+                                        "replicas": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "virtual": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "entries",
+                                        "dataSize",
+                                        "fileSize",
+                                        "lastBuildTimeS",
+                                        "numberOfPendingTasks",
+                                        "pendingTask"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List objects from an Algolia index using the browse endpoint.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_listobjects",
+            "name": "list-objects",
+            "output": ["ActionOutput_algolia_listobjects"],
+            "scopes": ["browse"],
+            "usedModels": ["ActionInput_algolia_listobjects", "ActionOutput_algolia_listobjects"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_listobjects": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index to browse. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Search query string. Example: \"star wars\"",
+                                "type": "string"
+                            },
+                            "filters": {
+                                "description": "Browse filters. Example: \"genre:Action\"",
+                                "type": "string"
+                            },
+                            "hitsPerPage": {
+                                "description": "Number of objects to retrieve per page. Default: 1000. Maximum: 1000.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_listobjects": {
+                        "type": "object",
+                        "properties": {
+                            "hits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nbHits": {
+                                "type": "number"
+                            },
+                            "page": {
+                                "type": "number"
+                            },
+                            "nbPages": {
+                                "type": "number"
+                            },
+                            "hitsPerPage": {
+                                "type": "number"
+                            },
+                            "processingTimeMS": {
+                                "type": "number"
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "params": {
+                                "type": "string"
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["hits"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List query rules from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_listrules",
+            "name": "list-rules",
+            "output": ["ActionOutput_algolia_listrules"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_listrules", "ActionOutput_algolia_listrules"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_listrules": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "query": {
+                                "description": "Optional text query to filter rules.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "hitsPerPage": {
+                                "description": "Number of rules per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_listrules": {
+                        "type": "object",
+                        "properties": {
+                            "hits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "objectID": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["objectID"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nbHits": {
+                                "type": "number"
+                            },
+                            "page": {
+                                "type": "number"
+                            },
+                            "nbPages": {
+                                "type": "number"
+                            },
+                            "hitsPerPage": {
+                                "type": "number"
+                            },
+                            "nextPage": {
+                                "description": "Cursor for the next page. Omit if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["hits"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List synonyms from an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_listsynonyms",
+            "name": "list-synonyms",
+            "output": ["ActionOutput_algolia_listsynonyms"],
+            "scopes": [],
+            "usedModels": ["ActionInput_algolia_listsynonyms", "ActionOutput_algolia_listsynonyms"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_listsynonyms": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "query": {
+                                "description": "Optional search query for filtering synonyms.",
+                                "type": "string"
+                            },
+                            "hitsPerPage": {
+                                "description": "Number of synonyms to return per page. Default: 20",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_listsynonyms": {
+                        "type": "object",
+                        "properties": {
+                            "synonyms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "objectID": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "synonyms": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "input": {
+                                            "type": "string"
+                                        },
+                                        "word": {
+                                            "type": "string"
+                                        },
+                                        "corrections": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "placeholder": {
+                                            "type": "string"
+                                        },
+                                        "replacements": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["objectID", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nbHits": {
+                                "type": "number"
+                            },
+                            "nextPage": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["synonyms", "nbHits"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Rename an Algolia index by moving it to a new name (destructive — overwrites destination).",
+            "endpoint": null,
+            "input": "ActionInput_algolia_moveindex",
+            "name": "move-index",
+            "output": ["ActionOutput_algolia_moveindex"],
+            "scopes": ["addObject"],
+            "usedModels": ["ActionInput_algolia_moveindex", "ActionOutput_algolia_moveindex"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_moveindex": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the source index to move. Example: \"my-source-index\""
+                            },
+                            "destinationIndexName": {
+                                "type": "string",
+                                "description": "Name of the destination index. The source index is renamed to this name, overwriting any existing index with the same name. Example: \"my-destination-index\""
+                            }
+                        },
+                        "required": ["indexName", "destinationIndexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_moveindex": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number",
+                                "description": "Algolia task ID for tracking the asynchronous operation."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp of when the move operation was submitted."
+                            }
+                        },
+                        "required": ["taskID", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update specific attributes of an existing Algolia object without replacing the whole record.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_partialupdateobject",
+            "name": "partial-update-object",
+            "output": ["ActionOutput_algolia_partialupdateobject"],
+            "scopes": ["addObject"],
+            "usedModels": ["ActionInput_algolia_partialupdateobject", "ActionOutput_algolia_partialupdateobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_partialupdateobject": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index containing the object. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "objectID": {
+                                "type": "string",
+                                "description": "ID of the object to partially update. Example: \"nango-test-obj-get\""
+                            },
+                            "attributes": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Attributes to update on the object. Only first-level attributes are supported."
+                            }
+                        },
+                        "required": ["indexName", "objectID", "attributes"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_partialupdateobject": {
+                        "type": "object",
+                        "properties": {
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "taskID": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["objectID"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run an Algolia search query against an index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_searchindex",
+            "name": "search-index",
+            "output": ["ActionOutput_algolia_searchindex"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_searchindex", "ActionOutput_algolia_searchindex"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_searchindex": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the index to search. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "query": {
+                                "description": "Search query string. Example: \"star wars\"",
+                                "type": "string"
+                            },
+                            "page": {
+                                "description": "Page number to retrieve. Example: 0",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "hitsPerPage": {
+                                "description": "Number of hits per page. Example: 20",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "filters": {
+                                "description": "Filter expression. Example: \"genre:Action\"",
+                                "type": "string"
+                            },
+                            "attributesToRetrieve": {
+                                "description": "Attributes to include in the response. Example: [\"title\",\"year\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "facets": {
+                                "description": "Facets for which to retrieve counts. Example: [\"genre\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "attributesToHighlight": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "attributesToSnippet": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "highlightPreTag": {
+                                "type": "string"
+                            },
+                            "highlightPostTag": {
+                                "type": "string"
+                            },
+                            "analytics": {
+                                "type": "boolean"
+                            },
+                            "clickAnalytics": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_searchindex": {
+                        "type": "object",
+                        "properties": {
+                            "hits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "page": {
+                                "type": "number"
+                            },
+                            "nbHits": {
+                                "type": "number"
+                            },
+                            "nbPages": {
+                                "type": "number"
+                            },
+                            "hitsPerPage": {
+                                "type": "number"
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "params": {
+                                "type": "string"
+                            },
+                            "processingTimeMS": {
+                                "type": "number"
+                            },
+                            "facets": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "facets_stats": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "avg": {
+                                            "type": "number"
+                                        },
+                                        "max": {
+                                            "type": "number"
+                                        },
+                                        "min": {
+                                            "type": "number"
+                                        },
+                                        "sum": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["avg", "max", "min", "sum"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["hits"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run search queries across multiple Algolia indices in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_searchmultipleindices",
+            "name": "search-multiple-indices",
+            "output": ["ActionOutput_algolia_searchmultipleindices"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_searchmultipleindices", "ActionOutput_algolia_searchmultipleindices"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_searchmultipleindices": {
+                        "type": "object",
+                        "properties": {
+                            "requests": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "indexName": {
+                                            "type": "string",
+                                            "description": "Name of the index to search. Example: \"algolia_movie_sample_dataset\""
+                                        },
+                                        "params": {
+                                            "description": "URL-encoded search parameters string. Example: \"query=star&hitsPerPage=3\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["indexName"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of search requests, one per index or query. Maximum 50 requests."
+                            },
+                            "strategy": {
+                                "description": "Multi-query search strategy. Example: \"stopIfEnoughMatches\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["requests"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_searchmultipleindices": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "hits": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "objectID": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["objectID"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "page": {
+                                            "type": "number"
+                                        },
+                                        "nbHits": {
+                                            "type": "number"
+                                        },
+                                        "nbPages": {
+                                            "type": "number"
+                                        },
+                                        "hitsPerPage": {
+                                            "type": "number"
+                                        },
+                                        "query": {
+                                            "type": "string"
+                                        },
+                                        "params": {
+                                            "type": "string"
+                                        },
+                                        "processingTimeMS": {
+                                            "type": "number"
+                                        },
+                                        "index": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["hits"],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Search results in the same order as the requests."
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update Algolia index settings.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_setsettings",
+            "name": "set-settings",
+            "output": ["ActionOutput_algolia_setsettings"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_setsettings", "ActionOutput_algolia_setsettings"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_setsettings": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Index settings to apply. See https://www.algolia.com/doc/api-reference/settings-api-parameters/"
+                            }
+                        },
+                        "required": ["indexName", "settings"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_setsettings": {
+                        "type": "object",
+                        "properties": {
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "taskID": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an API key in Algolia.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_updateapikey",
+            "name": "update-api-key",
+            "output": ["ActionOutput_algolia_updateapikey"],
+            "scopes": ["admin"],
+            "usedModels": ["ActionInput_algolia_updateapikey", "ActionOutput_algolia_updateapikey"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_updateapikey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "API key to update. Example: \"13ad45b4d0a2f6ea65ecbddf6aa260f2\""
+                            },
+                            "acl": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Permissions that determine the type of API requests this key can make."
+                            },
+                            "description": {
+                                "description": "Description of an API key.",
+                                "type": "string"
+                            },
+                            "indexes": {
+                                "description": "Index names or patterns that this API key can access.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "maxHitsPerQuery": {
+                                "description": "Maximum number of results this API key can retrieve in one query.",
+                                "type": "number"
+                            },
+                            "maxQueriesPerIPPerHour": {
+                                "description": "Maximum number of API requests allowed per IP address per hour.",
+                                "type": "number"
+                            },
+                            "queryParameters": {
+                                "description": "Query parameters to add when making API requests with this API key.",
+                                "type": "string"
+                            },
+                            "referers": {
+                                "description": "Allowed HTTP referrers for this API key.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "validity": {
+                                "description": "Duration (in seconds) after which the API key expires.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["key", "acl"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_updateapikey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["key", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace an Algolia object entirely (full overwrite by objectID).",
+            "endpoint": null,
+            "input": "ActionInput_algolia_updateobject",
+            "name": "update-object",
+            "output": ["ActionOutput_algolia_updateobject"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_algolia_updateobject", "ActionOutput_algolia_updateobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_updateobject": {
+                        "type": "object",
+                        "properties": {
+                            "index_name": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                            },
+                            "object_id": {
+                                "type": "string",
+                                "description": "ID of the object to update. Example: \"nango-test-obj-update-1\""
+                            },
+                            "object": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Full object payload to replace the existing record."
+                            }
+                        },
+                        "required": ["index_name", "object_id", "object"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_updateobject": {
+                        "type": "object",
+                        "properties": {
+                            "object_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "task_id": {
+                                "type": ["number", "string"]
+                            }
+                        },
+                        "required": ["object_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a query rule in an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_updaterule",
+            "name": "update-rule",
+            "output": ["ActionOutput_algolia_updaterule"],
+            "scopes": ["editSettings"],
+            "usedModels": ["ActionInput_algolia_updaterule", "ActionOutput_algolia_updaterule"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_updaterule": {
+                        "type": "object",
+                        "properties": {
+                            "index_name": {
+                                "type": "string",
+                                "description": "Name of the Algolia index. Example: algolia_movie_sample_dataset"
+                            },
+                            "object_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the rule. Example: nango-test-rule-update-1"
+                            },
+                            "conditions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string"
+                                        },
+                                        "anchoring": {
+                                            "type": "string"
+                                        },
+                                        "alternatives": {
+                                            "type": "boolean"
+                                        },
+                                        "context": {
+                                            "type": "string"
+                                        },
+                                        "filters": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "consequence": {
+                                "type": "object",
+                                "properties": {
+                                    "params": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    "promote": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "hide": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "filterPromotes": {
+                                        "type": "boolean"
+                                    },
+                                    "redirect": {
+                                        "type": "object",
+                                        "properties": {
+                                            "indexName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["indexName"],
+                                        "additionalProperties": false
+                                    },
+                                    "userData": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "validity": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "until": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "scope": {
+                                "type": "string"
+                            },
+                            "forward_to_replicas": {
+                                "description": "Whether changes are applied to replica indices.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["index_name", "object_id", "consequence"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_algolia_updaterule": {
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "number",
+                                "description": "Unique identifier of the asynchronous task."
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "Date and time when the rule was updated, in RFC 3339 format."
+                            }
+                        },
+                        "required": ["task_id", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a synonym in an Algolia index.",
+            "endpoint": null,
+            "input": "ActionInput_algolia_updatesynonym",
+            "name": "update-synonym",
+            "output": ["ActionOutput_algolia_updatesynonym"],
+            "scopes": ["editSettings"],
+            "usedModels": ["ActionInput_algolia_updatesynonym", "ActionOutput_algolia_updatesynonym"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_algolia_updatesynonym": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-update-1\""
+                                    },
+                                    "forwardToReplicas": {
+                                        "description": "Replicate the updated synonym to all replica indices",
+                                        "type": "boolean"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "synonym"
+                                    },
+                                    "synonyms": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Words or phrases considered equivalent. Example: [\"tv\", \"television\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "synonyms"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-update-1\""
+                                    },
+                                    "forwardToReplicas": {
+                                        "description": "Replicate the updated synonym to all replica indices",
+                                        "type": "boolean"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "oneWaySynonym"
+                                    },
+                                    "input": {
+                                        "type": "string",
+                                        "description": "Word or phrase to appear in query strings. Example: \"iphone\""
+                                    },
+                                    "synonyms": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "One-way synonym targets. Example: [\"apple phone\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "input", "synonyms"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-update-1\""
+                                    },
+                                    "forwardToReplicas": {
+                                        "description": "Replicate the updated synonym to all replica indices",
+                                        "type": "boolean"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "altCorrection1"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "description": "Word or phrase to appear in query strings. Example: \"abdomen\""
+                                    },
+                                    "corrections": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Words to be matched in records. Example: [\"stomach\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-update-1\""
+                                    },
+                                    "forwardToReplicas": {
+                                        "description": "Replicate the updated synonym to all replica indices",
+                                        "type": "boolean"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "altCorrection2"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "description": "Word or phrase to appear in query strings. Example: \"abdomen\""
+                                    },
+                                    "corrections": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Words to be matched in records. Example: [\"stomach\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "indexName": {
+                                        "type": "string",
+                                        "description": "Name of the Algolia index. Example: \"algolia_movie_sample_dataset\""
+                                    },
+                                    "objectID": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-update-1\""
+                                    },
+                                    "forwardToReplicas": {
+                                        "description": "Replicate the updated synonym to all replica indices",
+                                        "type": "boolean"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "placeholder"
+                                    },
+                                    "placeholder": {
+                                        "type": "string",
+                                        "description": "Placeholder token. Example: \"<BRAND>\""
+                                    },
+                                    "replacements": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Query words matching the placeholder. Example: [\"Apple\"]"
+                                    }
+                                },
+                                "required": ["indexName", "objectID", "type", "placeholder", "replacements"],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "ActionOutput_algolia_updatesynonym": {
+                        "type": "object",
+                        "properties": {
+                            "taskID": {
+                                "type": "number"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskID", "updatedAt", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync API keys from Algolia.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/api-keys",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "api-keys",
+            "output": ["ApiKey"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ApiKey"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ApiKey": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "number"
+                            },
+                            "acl": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "indexes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "maxHitsPerQuery": {
+                                "type": "number"
+                            },
+                            "maxQueriesPerIPPerHour": {
+                                "type": "number"
+                            },
+                            "queryParameters": {
+                                "type": "string"
+                            },
+                            "referers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "validity": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "value", "createdAt", "acl"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync indices from Algolia.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/indices"
+                }
+            ],
+            "input": null,
+            "name": "indices",
+            "output": ["Index"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Index"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Index": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "entries": {
+                                "type": "number"
+                            },
+                            "dataSize": {
+                                "type": "number"
+                            },
+                            "fileSize": {
+                                "type": "number"
+                            },
+                            "lastBuildTimeS": {
+                                "type": "number"
+                            },
+                            "numberOfPendingTasks": {
+                                "type": "number"
+                            },
+                            "pendingTask": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync objects from an Algolia index",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/objects"
+                }
+            ],
+            "input": "SyncMetadata_algolia_objects",
+            "name": "objects",
+            "output": ["Object"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Object", "SyncMetadata_algolia_objects"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Object": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    },
+                    "SyncMetadata_algolia_objects": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync query rules from an Algolia index",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/rules"
+                }
+            ],
+            "input": "SyncMetadata_algolia_rules",
+            "name": "rules",
+            "output": ["Rule"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Rule", "SyncMetadata_algolia_rules"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Rule": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "conditions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "consequence": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "validity": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["id", "objectID"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_algolia_rules": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync synonyms from an Algolia index.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/synonyms"
+                }
+            ],
+            "input": "SyncMetadata_algolia_synonyms",
+            "name": "synonyms",
+            "output": ["Synonym"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Synonym", "SyncMetadata_algolia_synonyms"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Synonym": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "objectID": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "corrections": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "input": {
+                                "type": "string"
+                            },
+                            "placeholder": {
+                                "type": "string"
+                            },
+                            "replacements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "synonyms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "word": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "objectID", "type"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_algolia_synonyms": {
+                        "type": "object",
+                        "properties": {
+                            "indexName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

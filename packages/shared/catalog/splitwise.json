@@ -1,0 +1,3596 @@
+{
+    "providerConfigKey": "splitwise",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a comment in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_createcomment",
+            "name": "create-comment",
+            "output": ["ActionOutput_splitwise_createcomment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_createcomment", "ActionOutput_splitwise_createcomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "expense_id": {
+                                "type": "number",
+                                "description": "Expense ID to comment on. Example: 5123"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Comment content. Example: \"Does this include the delivery fee?\""
+                            }
+                        },
+                        "required": ["expense_id", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "comment_type": {
+                                "type": "string"
+                            },
+                            "relation_type": {
+                                "type": "string"
+                            },
+                            "relation_id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "picture": {
+                                        "type": "object",
+                                        "properties": {
+                                            "medium": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "content", "comment_type", "relation_type", "relation_id", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a expense in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_createexpense",
+            "name": "create-expense",
+            "output": ["ActionOutput_splitwise_createexpense"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_createexpense", "ActionOutput_splitwise_createexpense"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_createexpense": {
+                        "type": "object",
+                        "properties": {
+                            "cost": {
+                                "type": "string",
+                                "description": "Cost of the expense as a string with 2 decimal places. Example: \"10.00\""
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Short description of the expense"
+                            },
+                            "group_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Group ID, or 0 for non-group expenses"
+                            },
+                            "currency_code": {
+                                "description": "Currency code, e.g. \"USD\"",
+                                "type": "string"
+                            },
+                            "category_id": {
+                                "description": "Category ID from get_categories",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "date": {
+                                "description": "Date of the expense in ISO 8601 format. Example: \"2026-06-05T13:00:00Z\"",
+                                "type": "string"
+                            },
+                            "details": {
+                                "description": "Notes for the expense",
+                                "type": ["string", "null"]
+                            },
+                            "split_equally": {
+                                "description": "If true, split equally among group members (requires group_id)",
+                                "type": "boolean"
+                            },
+                            "users": {
+                                "description": "List of users with shares (required unless split_equally is true)",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "User ID"
+                                        },
+                                        "paid_share": {
+                                            "type": "string",
+                                            "description": "Amount paid by this user, e.g. \"10.00\""
+                                        },
+                                        "owed_share": {
+                                            "type": "string",
+                                            "description": "Amount owed by this user, e.g. \"5.00\""
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["user_id", "paid_share", "owed_share"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["cost", "description", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_createexpense": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "group_id": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "friendship_id": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "expense_bundle_id": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "repeats": {
+                                "type": "boolean"
+                            },
+                            "repeat_interval": {
+                                "type": ["string", "null"]
+                            },
+                            "email_reminder": {
+                                "type": "boolean"
+                            },
+                            "email_reminder_in_advance": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "next_repeat": {
+                                "type": ["string", "null"]
+                            },
+                            "details": {
+                                "type": ["string", "null"]
+                            },
+                            "comments_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "payment": {
+                                "type": "boolean"
+                            },
+                            "transaction_confirmed": {
+                                "type": "boolean"
+                            },
+                            "cost": {
+                                "type": "string"
+                            },
+                            "currency_code": {
+                                "type": "string"
+                            },
+                            "repayments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "to": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "first_name": {
+                                                "type": "string"
+                                            },
+                                            "last_name": {
+                                                "type": "string"
+                                            },
+                                            "picture": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "updated_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "first_name": {
+                                                "type": "string"
+                                            },
+                                            "last_name": {
+                                                "type": "string"
+                                            },
+                                            "picture": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            },
+                            "deleted_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "first_name": {
+                                                "type": "string"
+                                            },
+                                            "last_name": {
+                                                "type": "string"
+                                            },
+                                            "picture": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "category": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "receipt": {
+                                "type": "object",
+                                "properties": {
+                                    "large": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "original": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "paid_share": {
+                                            "type": "string"
+                                        },
+                                        "owed_share": {
+                                            "type": "string"
+                                        },
+                                        "net_balance": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "medium": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["user_id", "paid_share", "owed_share"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "description", "cost", "currency_code"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a friend in Splitwise",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_createfriend",
+            "name": "create-friend",
+            "output": ["ActionOutput_splitwise_createfriend"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_createfriend", "ActionOutput_splitwise_createfriend"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_createfriend": {
+                        "type": "object",
+                        "properties": {
+                            "user_email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address of the friend to add. Example: \"ada@example.com\""
+                            },
+                            "user_first_name": {
+                                "type": "string",
+                                "description": "First name of the friend. Example: \"Ada\""
+                            },
+                            "user_last_name": {
+                                "description": "Last name of the friend. Example: \"Lovelace\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_email", "user_first_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_createfriend": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "registration_status": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "object",
+                                "properties": {
+                                    "small": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_picture": {
+                                "type": "boolean"
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "group_id": {
+                                            "type": "number"
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["group_id", "balance"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "balance": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currency_code": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a group in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_creategroup",
+            "name": "create-group",
+            "output": ["ActionOutput_splitwise_creategroup"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_creategroup", "ActionOutput_splitwise_creategroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Group name. Example: \"The Brain Trust\""
+                            },
+                            "group_type": {
+                                "description": "What is the group used for?",
+                                "type": "string",
+                                "enum": ["home", "trip", "couple", "other", "apartment", "house"]
+                            },
+                            "simplify_by_default": {
+                                "description": "Turn on simplify debts?",
+                                "type": "boolean"
+                            },
+                            "users": {
+                                "description": "Users to add to the group. The current user is added by default.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "description": "User ID of an existing user to add. Example: 5823",
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "group_type": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "simplify_by_default": {
+                                "type": "boolean"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "registration_status": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "picture": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "small": {
+                                                            "type": "string"
+                                                        },
+                                                        "medium": {
+                                                            "type": "string"
+                                                        },
+                                                        "large": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "custom_picture": {
+                                            "type": ["boolean", "null"]
+                                        },
+                                        "balance": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "currency_code": {
+                                                                "type": "string"
+                                                            },
+                                                            "amount": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["currency_code", "amount"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "original_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "simplified_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "avatar": {
+                                "type": "object",
+                                "properties": {
+                                    "original": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "small": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "custom_avatar": {
+                                "type": "boolean"
+                            },
+                            "cover_photo": {
+                                "type": "object",
+                                "properties": {
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "invite_link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a comment in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_deletecomment",
+            "name": "delete-comment",
+            "output": ["ActionOutput_splitwise_deletecomment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_deletecomment", "ActionOutput_splitwise_deletecomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Comment ID to delete. Example: 79800950"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "comment_type": {
+                                "type": "string"
+                            },
+                            "relation_type": {
+                                "type": "string"
+                            },
+                            "relation_id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "picture": {
+                                        "type": "object",
+                                        "properties": {
+                                            "medium": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive an expense in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_deleteexpense",
+            "name": "delete-expense",
+            "output": ["ActionOutput_splitwise_deleteexpense"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_deleteexpense", "ActionOutput_splitwise_deleteexpense"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_deleteexpense": {
+                        "type": "object",
+                        "properties": {
+                            "expense_id": {
+                                "type": "number",
+                                "description": "ID of the expense to delete. Example: 51023"
+                            }
+                        },
+                        "required": ["expense_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_deleteexpense": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "expense_id": {
+                                "type": "number"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success", "expense_id", "archived"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a friend in Splitwise",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_deletefriend",
+            "name": "delete-friend",
+            "output": ["ActionOutput_splitwise_deletefriend"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_deletefriend", "ActionOutput_splitwise_deletefriend"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_deletefriend": {
+                        "type": "object",
+                        "properties": {
+                            "friend_id": {
+                                "type": "number",
+                                "description": "User ID of the friend to delete. Example: 12345"
+                            }
+                        },
+                        "required": ["friend_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_deletefriend": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a group in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_deletegroup",
+            "name": "delete-group",
+            "output": ["ActionOutput_splitwise_deletegroup"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_deletegroup", "ActionOutput_splitwise_deletegroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Group ID to delete. Example: 321"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the current Splitwise user.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_getcurrentuser",
+            "name": "get-current-user",
+            "output": ["ActionOutput_splitwise_getcurrentuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_getcurrentuser", "ActionOutput_splitwise_getcurrentuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "registration_status": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "object",
+                                "properties": {
+                                    "small": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_picture": {
+                                "type": "boolean"
+                            },
+                            "notifications_read": {
+                                "type": "string"
+                            },
+                            "notifications_count": {
+                                "type": "number"
+                            },
+                            "notifications": {
+                                "type": "object",
+                                "properties": {
+                                    "added_as_friend": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "default_currency": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "first_name", "last_name", "email", "registration_status", "custom_picture"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single expense from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_getexpense",
+            "name": "get-expense",
+            "output": ["ActionOutput_splitwise_getexpense"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_getexpense", "ActionOutput_splitwise_getexpense"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_getexpense": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Expense ID. Example: 51023"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_getexpense": {
+                        "type": "object",
+                        "properties": {
+                            "cost": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": ["string", "null"]
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "repeat_interval": {
+                                "type": ["string", "null"]
+                            },
+                            "currency_code": {
+                                "type": "string"
+                            },
+                            "category_id": {
+                                "type": ["number", "null"]
+                            },
+                            "id": {
+                                "type": "number"
+                            },
+                            "group_id": {
+                                "type": ["number", "null"]
+                            },
+                            "friendship_id": {
+                                "type": ["number", "null"]
+                            },
+                            "expense_bundle_id": {
+                                "type": ["number", "null"]
+                            },
+                            "repeats": {
+                                "type": "boolean"
+                            },
+                            "email_reminder": {
+                                "type": "boolean"
+                            },
+                            "email_reminder_in_advance": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "next_repeat": {
+                                "type": ["string", "null"]
+                            },
+                            "comments_count": {
+                                "type": "number"
+                            },
+                            "payment": {
+                                "type": "boolean"
+                            },
+                            "transaction_confirmed": {
+                                "type": "boolean"
+                            },
+                            "repayments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "registration_status": {
+                                        "type": "string"
+                                    },
+                                    "picture": {
+                                        "type": "object",
+                                        "properties": {
+                                            "small": {
+                                                "type": "string"
+                                            },
+                                            "medium": {
+                                                "type": "string"
+                                            },
+                                            "large": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "custom_picture": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "updated_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "registration_status": {
+                                        "type": "string"
+                                    },
+                                    "picture": {
+                                        "type": "object",
+                                        "properties": {
+                                            "small": {
+                                                "type": "string"
+                                            },
+                                            "medium": {
+                                                "type": "string"
+                                            },
+                                            "large": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "custom_picture": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            },
+                            "deleted_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "number"
+                                            },
+                                            "first_name": {
+                                                "type": "string"
+                                            },
+                                            "last_name": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            },
+                                            "registration_status": {
+                                                "type": "string"
+                                            },
+                                            "picture": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "custom_picture": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "category": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "receipt": {
+                                "type": "object",
+                                "properties": {
+                                    "large": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "original": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["large", "original"],
+                                "additionalProperties": false
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "medium": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": {}
+                                        },
+                                        "user_id": {
+                                            "type": "number"
+                                        },
+                                        "paid_share": {
+                                            "type": "string"
+                                        },
+                                        "owed_share": {
+                                            "type": "string"
+                                        },
+                                        "net_balance": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["user_id", "paid_share", "owed_share", "net_balance"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "comment_type": {
+                                            "type": "string"
+                                        },
+                                        "relation_type": {
+                                            "type": "string"
+                                        },
+                                        "relation_id": {
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "deleted_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "medium": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["cost", "description", "date", "id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single friend from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_getfriend",
+            "name": "get-friend",
+            "output": ["ActionOutput_splitwise_getfriend"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_getfriend", "ActionOutput_splitwise_getfriend"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_getfriend": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "User ID of the friend. Example: 123"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_getfriend": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "registration_status": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "object",
+                                "properties": {
+                                    "small": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_picture": {
+                                "type": "boolean"
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "group_id": {
+                                            "type": "number"
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["currency_code", "amount"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["group_id", "balance"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "balance": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currency_code": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["currency_code", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single group from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_getgroup",
+            "name": "get-group",
+            "output": ["ActionOutput_splitwise_getgroup"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_getgroup", "ActionOutput_splitwise_getgroup"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Group ID. Example: 321"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "group_type": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "simplify_by_default": {
+                                "type": "boolean"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "registration_status": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "picture": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "small": {
+                                                            "type": ["string", "null"]
+                                                        },
+                                                        "medium": {
+                                                            "type": ["string", "null"]
+                                                        },
+                                                        "large": {
+                                                            "type": ["string", "null"]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "custom_picture": {
+                                            "type": ["boolean", "null"]
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["currency_code", "amount"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "original_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "simplified_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "avatar": {
+                                "type": "object",
+                                "properties": {
+                                    "original": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "small": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_avatar": {
+                                "type": "boolean"
+                            },
+                            "cover_photo": {
+                                "type": "object",
+                                "properties": {
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "invite_link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Splitwise expense categories.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listcategories",
+            "name": "list-categories",
+            "output": ["ActionOutput_splitwise_listcategories"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listcategories", "ActionOutput_splitwise_listcategories"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listcategories": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listcategories": {
+                        "type": "object",
+                        "properties": {
+                            "categories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "icon": {
+                                            "type": "string"
+                                        },
+                                        "icon_types": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "subcategories": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "icon": {
+                                                        "type": "string"
+                                                    },
+                                                    "icon_types": {
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {
+                                                            "type": "object",
+                                                            "propertyNames": {
+                                                                "type": "string"
+                                                            },
+                                                            "additionalProperties": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["id", "name"],
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["categories"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listcomments",
+            "name": "list-comments",
+            "output": ["ActionOutput_splitwise_listcomments"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listcomments", "ActionOutput_splitwise_listcomments"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "expense_id": {
+                                "type": "number",
+                                "description": "Expense ID. Example: 855870953"
+                            }
+                        },
+                        "required": ["expense_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "comment_type": {
+                                            "type": "string"
+                                        },
+                                        "relation_type": {
+                                            "type": "string"
+                                        },
+                                        "relation_id": {
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "deleted_at": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "medium": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "content"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["comments"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List currencies supported by Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listcurrencies",
+            "name": "list-currencies",
+            "output": ["ActionOutput_splitwise_listcurrencies"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listcurrencies", "ActionOutput_splitwise_listcurrencies"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listcurrencies": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listcurrencies": {
+                        "type": "object",
+                        "properties": {
+                            "currencies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currency_code": {
+                                            "type": "string"
+                                        },
+                                        "unit": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["currency_code"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["currencies"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List expenses from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listexpenses",
+            "name": "list-expenses",
+            "output": ["ActionOutput_splitwise_listexpenses"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listexpenses", "ActionOutput_splitwise_listexpenses"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listexpenses": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of expenses to return. Defaults to 20.",
+                                "type": "number"
+                            },
+                            "group_id": {
+                                "description": "If provided, only expenses in that group will be returned.",
+                                "type": "number"
+                            },
+                            "friend_id": {
+                                "description": "ID of another user. If provided, only expenses between the current and provided user will be returned.",
+                                "type": "number"
+                            },
+                            "dated_after": {
+                                "description": "ISO 8601 datetime. Return expenses later than this date.",
+                                "type": "string"
+                            },
+                            "dated_before": {
+                                "description": "ISO 8601 datetime. Return expenses earlier than this date.",
+                                "type": "string"
+                            },
+                            "updated_after": {
+                                "description": "Return expenses updated after this date.",
+                                "type": "string"
+                            },
+                            "updated_before": {
+                                "description": "Return expenses updated before this date.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listexpenses": {
+                        "type": "object",
+                        "properties": {
+                            "expenses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "group_id": {
+                                            "type": "number"
+                                        },
+                                        "friendship_id": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "repeats": {
+                                            "type": "boolean"
+                                        },
+                                        "repeat_interval": {
+                                            "type": "string"
+                                        },
+                                        "details": {
+                                            "type": "string"
+                                        },
+                                        "comments_count": {
+                                            "type": "number"
+                                        },
+                                        "payment": {
+                                            "type": "boolean"
+                                        },
+                                        "transaction_confirmed": {
+                                            "type": "boolean"
+                                        },
+                                        "cost": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        },
+                                        "repayments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "from": {
+                                                        "type": "number"
+                                                    },
+                                                    "to": {
+                                                        "type": "number"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "created_by": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "small": {
+                                                            "type": "string"
+                                                        },
+                                                        "medium": {
+                                                            "type": "string"
+                                                        },
+                                                        "large": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_by": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "small": {
+                                                            "type": "string"
+                                                        },
+                                                        "medium": {
+                                                            "type": "string"
+                                                        },
+                                                        "large": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "deleted_at": {
+                                            "type": "string"
+                                        },
+                                        "deleted_by": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "first_name": {
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "picture": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "small": {
+                                                            "type": "string"
+                                                        },
+                                                        "medium": {
+                                                            "type": "string"
+                                                        },
+                                                        "large": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "category": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "receipt": {
+                                            "type": "object",
+                                            "properties": {
+                                                "large": {
+                                                    "type": "string"
+                                                },
+                                                "original": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "number"
+                                                            },
+                                                            "first_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "last_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "picture": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "medium": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "user_id": {
+                                                        "type": "number"
+                                                    },
+                                                    "paid_share": {
+                                                        "type": "string"
+                                                    },
+                                                    "owed_share": {
+                                                        "type": "string"
+                                                    },
+                                                    "net_balance": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["expenses"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List friends from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listfriends",
+            "name": "list-friends",
+            "output": ["ActionOutput_splitwise_listfriends"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listfriends", "ActionOutput_splitwise_listfriends"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listfriends": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listfriends": {
+                        "type": "object",
+                        "properties": {
+                            "friends": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "registration_status": {
+                                            "type": "string"
+                                        },
+                                        "picture": {
+                                            "type": "object",
+                                            "properties": {
+                                                "small": {
+                                                    "type": "string"
+                                                },
+                                                "medium": {
+                                                    "type": "string"
+                                                },
+                                                "large": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "custom_picture": {
+                                            "type": "boolean"
+                                        },
+                                        "groups": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "group_id": {
+                                                        "type": "number"
+                                                    },
+                                                    "balance": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "currency_code": {
+                                                                    "type": "string"
+                                                                },
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["currency_code", "amount"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["group_id", "balance"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["currency_code", "amount"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["friends"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List groups from Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_listgroups",
+            "name": "list-groups",
+            "output": ["ActionOutput_splitwise_listgroups"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_listgroups", "ActionOutput_splitwise_listgroups"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_listgroups": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "group_type": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "simplify_by_default": {
+                                            "type": "boolean"
+                                        },
+                                        "members": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "first_name": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "last_name": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "email": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "registration_status": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "picture": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "small": {
+                                                                        "type": ["string", "null"]
+                                                                    },
+                                                                    "medium": {
+                                                                        "type": ["string", "null"]
+                                                                    },
+                                                                    "large": {
+                                                                        "type": ["string", "null"]
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "custom_picture": {
+                                                        "type": ["boolean", "null"]
+                                                    },
+                                                    "balance": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "currency_code": {
+                                                                    "type": "string"
+                                                                },
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "original_debts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "from": {
+                                                        "type": "number"
+                                                    },
+                                                    "to": {
+                                                        "type": "number"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    },
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "simplified_debts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "from": {
+                                                        "type": "number"
+                                                    },
+                                                    "to": {
+                                                        "type": "number"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    },
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "avatar": {
+                                            "type": "object",
+                                            "properties": {
+                                                "original": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "xxlarge": {
+                                                    "type": "string"
+                                                },
+                                                "xlarge": {
+                                                    "type": "string"
+                                                },
+                                                "large": {
+                                                    "type": "string"
+                                                },
+                                                "medium": {
+                                                    "type": "string"
+                                                },
+                                                "small": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "custom_avatar": {
+                                            "type": "boolean"
+                                        },
+                                        "cover_photo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "xxlarge": {
+                                                    "type": "string"
+                                                },
+                                                "xlarge": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "invite_link": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["groups"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a expense in Splitwise.",
+            "endpoint": null,
+            "input": "ActionInput_splitwise_updateexpense",
+            "name": "update-expense",
+            "output": ["ActionOutput_splitwise_updateexpense"],
+            "scopes": [],
+            "usedModels": ["ActionInput_splitwise_updateexpense", "ActionOutput_splitwise_updateexpense"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_splitwise_updateexpense": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "ID of the expense to update. Example: 51023"
+                            },
+                            "cost": {
+                                "description": "A string representation of a decimal value, limited to 2 decimal places. Example: \"25.00\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "A short description of the expense. Example: \"Grocery run\"",
+                                "type": "string"
+                            },
+                            "details": {
+                                "description": "Also known as \"notes.\"",
+                                "type": ["string", "null"]
+                            },
+                            "date": {
+                                "description": "The date and time the expense took place. Example: \"2012-05-02T13:00:00Z\"",
+                                "type": "string"
+                            },
+                            "repeat_interval": {
+                                "description": "How often the expense repeats.",
+                                "type": "string",
+                                "enum": ["never", "weekly", "fortnightly", "monthly", "yearly"]
+                            },
+                            "currency_code": {
+                                "description": "A currency code. Must be in the list from get_currencies. Example: \"USD\"",
+                                "type": "string"
+                            },
+                            "category_id": {
+                                "description": "A category id from get_categories. Example: 15",
+                                "type": "number"
+                            },
+                            "group_id": {
+                                "description": "The group to put this expense in, or 0 to create an expense outside of a group. Example: 391",
+                                "type": "number"
+                            },
+                            "users": {
+                                "description": "List of user shares. If any values are supplied, all shares for the expense will be overwritten.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "description": "User ID. Example: 54123",
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "description": "First name of the user. Example: \"Neu\"",
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "description": "Last name of the user. Example: \"Yewzer\"",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Email of the user. Example: \"neuyewxyz@example.com\"",
+                                            "type": "string"
+                                        },
+                                        "paid_share": {
+                                            "description": "Decimal amount as a string with 2 decimal places. Example: \"25.00\"",
+                                            "type": "string"
+                                        },
+                                        "owed_share": {
+                                            "description": "Decimal amount as a string with 2 decimal places. Example: \"13.55\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_splitwise_updateexpense": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "cost": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "repeat_interval": {
+                                "type": "string"
+                            },
+                            "currency_code": {
+                                "type": "string"
+                            },
+                            "category_id": {
+                                "type": "number"
+                            },
+                            "group_id": {
+                                "type": "number"
+                            },
+                            "friendship_id": {
+                                "type": "number"
+                            },
+                            "expense_bundle_id": {
+                                "type": "number"
+                            },
+                            "repeats": {
+                                "type": "boolean"
+                            },
+                            "email_reminder": {
+                                "type": "boolean"
+                            },
+                            "email_reminder_in_advance": {
+                                "type": ["string", "number"]
+                            },
+                            "next_repeat": {
+                                "type": "string"
+                            },
+                            "comments_count": {
+                                "type": "number"
+                            },
+                            "payment": {
+                                "type": "boolean"
+                            },
+                            "transaction_confirmed": {
+                                "type": "boolean"
+                            },
+                            "repayments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "last_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "registration_status": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "picture": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "custom_picture": {
+                                        "type": ["boolean", "null"]
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "updated_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "last_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "registration_status": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "picture": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "custom_picture": {
+                                        "type": ["boolean", "null"]
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "deleted_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "last_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "registration_status": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "picture": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "small": {
+                                                        "type": "string"
+                                                    },
+                                                    "medium": {
+                                                        "type": "string"
+                                                    },
+                                                    "large": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "custom_picture": {
+                                        "type": ["boolean", "null"]
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "cost", "description", "date"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync comments from Splitwise",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/comments",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "comments",
+            "output": ["Comment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Comment"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Comment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "comment_type": {
+                                "type": "string"
+                            },
+                            "relation_type": {
+                                "type": "string"
+                            },
+                            "relation_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "user_first_name": {
+                                "type": "string"
+                            },
+                            "user_last_name": {
+                                "type": "string"
+                            },
+                            "user_picture_medium": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync expenses from Splitwise.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/expenses"
+                }
+            ],
+            "input": null,
+            "name": "expenses",
+            "output": ["Expense"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Expense"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Expense": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "cost": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "repeat_interval": {
+                                "type": "string"
+                            },
+                            "currency_code": {
+                                "type": "string"
+                            },
+                            "category_id": {
+                                "type": "number"
+                            },
+                            "group_id": {
+                                "type": "number"
+                            },
+                            "friendship_id": {
+                                "type": "number"
+                            },
+                            "expense_bundle_id": {
+                                "type": "number"
+                            },
+                            "repeats": {
+                                "type": "boolean"
+                            },
+                            "email_reminder": {
+                                "type": "boolean"
+                            },
+                            "email_reminder_in_advance": {
+                                "type": "string"
+                            },
+                            "next_repeat": {
+                                "type": "string"
+                            },
+                            "comments_count": {
+                                "type": "number"
+                            },
+                            "payment": {
+                                "type": "boolean"
+                            },
+                            "transaction_confirmed": {
+                                "type": "boolean"
+                            },
+                            "repayments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "updated_by": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "deleted_by": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "category": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "receipt": {
+                                "type": "object",
+                                "properties": {
+                                    "large": {
+                                        "type": "string"
+                                    },
+                                    "original": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync friends from Splitwise",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/friends",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "friends",
+            "output": ["Friend"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Friend"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Friend": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "registration_status": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "object",
+                                "properties": {
+                                    "small": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_picture": {
+                                "type": "boolean"
+                            },
+                            "balance": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currency_code": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["currency_code", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "group_id": {
+                                            "type": "number"
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["currency_code", "amount"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["group_id", "balance"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync groups from Splitwise.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/groups"
+                }
+            ],
+            "input": null,
+            "name": "groups",
+            "output": ["Group"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Group"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "group_type": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "simplify_by_default": {
+                                "type": "boolean"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "registration_status": {
+                                            "type": "string"
+                                        },
+                                        "picture": {
+                                            "type": "object",
+                                            "properties": {
+                                                "small": {
+                                                    "type": "string"
+                                                },
+                                                "medium": {
+                                                    "type": "string"
+                                                },
+                                                "large": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "custom_picture": {
+                                            "type": "boolean"
+                                        },
+                                        "balance": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "currency_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "amount": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["currency_code", "amount"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "original_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "simplified_debts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "number"
+                                        },
+                                        "to": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        },
+                                        "currency_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "avatar": {
+                                "type": "object",
+                                "properties": {
+                                    "original": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    },
+                                    "large": {
+                                        "type": "string"
+                                    },
+                                    "medium": {
+                                        "type": "string"
+                                    },
+                                    "small": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "custom_avatar": {
+                                "type": "boolean"
+                            },
+                            "cover_photo": {
+                                "type": "object",
+                                "properties": {
+                                    "xxlarge": {
+                                        "type": "string"
+                                    },
+                                    "xlarge": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "invite_link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

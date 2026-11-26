@@ -1,0 +1,2452 @@
+{
+    "providerConfigKey": "supabase",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy a storage object within or between buckets in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_copystorageobject",
+            "name": "copy-storage-object",
+            "output": ["ActionOutput_supabase_copystorageobject"],
+            "scopes": ["storage"],
+            "usedModels": ["ActionInput_supabase_copystorageobject", "ActionOutput_supabase_copystorageobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_copystorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "bucketId": {
+                                "type": "string",
+                                "description": "Source bucket ID. Example: \"nango-test-public\""
+                            },
+                            "sourceKey": {
+                                "type": "string",
+                                "description": "Path of the source object within the bucket. Example: \"docs/readme.txt\""
+                            },
+                            "destinationBucket": {
+                                "type": "string",
+                                "description": "Destination bucket ID. Example: \"nango-test-public\""
+                            },
+                            "destinationKey": {
+                                "type": "string",
+                                "description": "Path for the copied object in the destination bucket. Example: \"docs/readme-copy.txt\""
+                            }
+                        },
+                        "required": ["bucketId", "sourceKey", "destinationBucket", "destinationKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_copystorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "bucket_id": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "cacheControl": {
+                                        "type": "string"
+                                    },
+                                    "contentLength": {
+                                        "type": "number"
+                                    },
+                                    "httpStatusCode": {
+                                        "type": "number"
+                                    },
+                                    "eTag": {
+                                        "type": "string"
+                                    },
+                                    "lastModified": {
+                                        "type": "string"
+                                    },
+                                    "mimetype": {
+                                        "type": "string"
+                                    },
+                                    "size": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "last_accessed_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "bucket_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an auth user in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_createauthuser",
+            "name": "create-auth-user",
+            "output": ["ActionOutput_supabase_createauthuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_createauthuser", "ActionOutput_supabase_createauthuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_createauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email_confirm": {
+                                "type": "boolean"
+                            },
+                            "phone_confirm": {
+                                "type": "boolean"
+                            },
+                            "user_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "app_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_createauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email_confirmed_at": {
+                                "type": "string"
+                            },
+                            "phone_confirmed_at": {
+                                "type": "string"
+                            },
+                            "last_sign_in_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "identities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "identity_data": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "provider": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "user_id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "user_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "app_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "created_at", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a signed URL that allows a client to upload a file directly to Supabase Storage without exposing the service role key.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_createsigneduploadurl",
+            "name": "create-signed-upload-url",
+            "output": ["ActionOutput_supabase_createsigneduploadurl"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_createsigneduploadurl", "ActionOutput_supabase_createsigneduploadurl"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_createsigneduploadurl": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-public\""
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "Object path within the bucket. Example: \"uploads/file.txt\""
+                            }
+                        },
+                        "required": ["bucket_id", "path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_createsigneduploadurl": {
+                        "type": "object",
+                        "properties": {
+                            "signed_url": {
+                                "type": "string",
+                                "description": "Absolute signed URL the client can PUT to."
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "Token included in the signed URL."
+                            }
+                        },
+                        "required": ["signed_url", "token"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a time-limited signed URL for accessing a private storage object.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_createsignedurl",
+            "name": "create-signed-url",
+            "output": ["ActionOutput_supabase_createsignedurl"],
+            "scopes": ["storage.objects.read"],
+            "usedModels": ["ActionInput_supabase_createsignedurl", "ActionOutput_supabase_createsignedurl"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_createsignedurl": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-private\""
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "Object path within the bucket. Example: \"data/sample.txt\""
+                            },
+                            "expires_in": {
+                                "description": "Expiry time in seconds. Defaults to 3600.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["bucket_id", "path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_createsignedurl": {
+                        "type": "object",
+                        "properties": {
+                            "signed_url": {
+                                "type": "string",
+                                "description": "Absolute URL for accessing the object."
+                            }
+                        },
+                        "required": ["signed_url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a storage bucket in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_createstoragebucket",
+            "name": "create-storage-bucket",
+            "output": ["ActionOutput_supabase_createstoragebucket"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_createstoragebucket", "ActionOutput_supabase_createstoragebucket"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_createstoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the bucket. Example: \"my-bucket\""
+                            },
+                            "name": {
+                                "description": "Display name for the bucket. Defaults to id if omitted.",
+                                "type": "string"
+                            },
+                            "public": {
+                                "description": "Whether the bucket is publicly accessible. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "file_size_limit": {
+                                "description": "Maximum file size in bytes. Example: 10485760",
+                                "type": "number"
+                            },
+                            "allowed_mime_types": {
+                                "description": "Allowed MIME types. Example: [\"image/png\", \"image/jpeg\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": {
+                                "description": "Bucket type. Defaults to STANDARD.",
+                                "type": "string",
+                                "enum": ["STANDARD", "ANALYTICS"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_createstoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "public": {
+                                "type": "boolean"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "owner_id": {
+                                "type": "string"
+                            },
+                            "file_size_limit": {
+                                "type": "number"
+                            },
+                            "allowed_mime_types": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["STANDARD", "ANALYTICS"]
+                            }
+                        },
+                        "required": ["id", "name", "public"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a storage object to Supabase Storage.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_createstorageobject",
+            "name": "create-storage-object",
+            "output": ["ActionOutput_supabase_createstorageobject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_createstorageobject", "ActionOutput_supabase_createstorageobject"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_createstorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "The bucket ID. Example: \"nango-test-public\""
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "The object path within the bucket. Example: \"docs/readme.txt\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The file content as a string. For binary files, base64-encode and decode before sending."
+                            },
+                            "content_type": {
+                                "type": "string",
+                                "description": "The MIME type of the file. Example: \"text/plain\""
+                            },
+                            "upsert": {
+                                "description": "If true, overwrite an existing object with the same path.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["bucket_id", "path", "content", "content_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_createstorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["key", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an MFA factor for a user in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_deleteauthfactor",
+            "name": "delete-auth-factor",
+            "output": ["ActionOutput_supabase_deleteauthfactor"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_deleteauthfactor", "ActionOutput_supabase_deleteauthfactor"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_deleteauthfactor": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "User UUID. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
+                            },
+                            "factor_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "MFA factor UUID to delete. Example: \"b1c2d3e4-f5a6-7890-1234-567890abcdef\""
+                            }
+                        },
+                        "required": ["user_id", "factor_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_deleteauthfactor": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "factor_id": {
+                                "type": "string"
+                            },
+                            "factor_type": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "friendly_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "user_id", "factor_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a auth user in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_deleteauthuser",
+            "name": "delete-auth-user",
+            "output": ["ActionOutput_supabase_deleteauthuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_deleteauthuser", "ActionOutput_supabase_deleteauthuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_deleteauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "The UUID of the auth user to delete. Example: \"afece930-4935-43c3-9484-46bc38da98f7\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_deleteauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "user_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a storage bucket in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_deletestoragebucket",
+            "name": "delete-storage-bucket",
+            "output": ["ActionOutput_supabase_deletestoragebucket"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_deletestoragebucket", "ActionOutput_supabase_deletestoragebucket"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_deletestoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "Storage bucket ID to delete. Example: \"nango-del-bucket-1\""
+                            }
+                        },
+                        "required": ["bucket_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_deletestoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "bucket_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "bucket_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a storage object in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_deletestorageobject",
+            "name": "delete-storage-object",
+            "output": ["ActionOutput_supabase_deletestorageobject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_deletestorageobject", "ActionOutput_supabase_deletestorageobject"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_deletestorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "bucketId": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-public\""
+                            },
+                            "prefixes": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Object paths to delete. Example: [\"delete-me-1.txt\"]"
+                            }
+                        },
+                        "required": ["bucketId", "prefixes"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_deletestorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "bucket_id": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "last_accessed_at": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "path_tokens": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["deleted"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete rows from a Supabase table.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_deletetablerows",
+            "name": "delete-table-rows",
+            "output": ["ActionOutput_supabase_deletetablerows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_deletetablerows", "ActionOutput_supabase_deletetablerows"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_deletetablerows": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Name of the table to delete rows from. Example: \"nango_test\""
+                            },
+                            "filters": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "PostgREST filters as query parameters. Example: {\"name\": \"eq.del-row-1\"}"
+                            },
+                            "returnRepresentation": {
+                                "description": "If true, adds Prefer: return=representation to return deleted rows",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["table", "filters"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_deletetablerows": {
+                        "type": "object",
+                        "properties": {
+                            "deletedCount": {
+                                "type": "number"
+                            },
+                            "deletedRows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a magic link, OTP, invite, signup, or recovery link for a user.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_generateauthlink",
+            "name": "generate-auth-link",
+            "output": ["ActionOutput_supabase_generateauthlink"],
+            "scopes": ["service_role"],
+            "usedModels": ["ActionInput_supabase_generateauthlink", "ActionOutput_supabase_generateauthlink"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_generateauthlink": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "magiclink"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "recovery"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "invite"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "signup"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "email_change_current"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "email_change_new"
+                                    }
+                                ],
+                                "description": "Type of link to generate."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the user."
+                            },
+                            "new_email": {
+                                "description": "New email address for email_change_current and email_change_new link types.",
+                                "type": "string"
+                            },
+                            "redirect_to": {
+                                "description": "Optional redirect URL after verification.",
+                                "type": "string"
+                            },
+                            "data": {
+                                "description": "Optional extra metadata to attach to the user.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["type", "email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_generateauthlink": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "action_link": {
+                                "type": "string"
+                            },
+                            "email_otp": {
+                                "type": "string"
+                            },
+                            "hashed_token": {
+                                "type": "string"
+                            },
+                            "verification_type": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single auth user from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_getauthuser",
+            "name": "get-auth-user",
+            "output": ["ActionOutput_supabase_getauthuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_getauthuser", "ActionOutput_supabase_getauthuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_getauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "The UUID of the user to retrieve. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_getauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "aud": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": ["string", "null"]
+                            },
+                            "email_confirmed_at": {
+                                "type": ["string", "null"]
+                            },
+                            "phone_confirmed_at": {
+                                "type": ["string", "null"]
+                            },
+                            "confirmed_at": {
+                                "type": ["string", "null"]
+                            },
+                            "last_sign_in_at": {
+                                "type": ["string", "null"]
+                            },
+                            "app_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "user_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "identities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "identity_data": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "provider": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "last_sign_in_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "user_id", "provider"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "factors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "friendly_name": {
+                                            "type": "string"
+                                        },
+                                        "factor_type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "is_anonymous": {
+                                "type": "boolean"
+                            },
+                            "banned_until": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single storage bucket from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_getstoragebucket",
+            "name": "get-storage-bucket",
+            "output": ["ActionOutput_supabase_getstoragebucket"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_getstoragebucket", "ActionOutput_supabase_getstoragebucket"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_getstoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "bucketId": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-public\""
+                            }
+                        },
+                        "required": ["bucketId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_getstoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "owner_id": {
+                                "type": "string"
+                            },
+                            "public": {
+                                "type": "boolean"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["STANDARD", "ANALYTICS"]
+                            },
+                            "file_size_limit": {
+                                "type": ["number", "null"]
+                            },
+                            "allowed_mime_types": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "public"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve metadata for a single storage object from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_getstorageobject",
+            "name": "get-storage-object",
+            "output": ["ActionOutput_supabase_getstorageobject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_getstorageobject", "ActionOutput_supabase_getstorageobject"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_getstorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "bucketId": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-public\""
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "Object path within the bucket. Example: \"docs/readme.txt\""
+                            }
+                        },
+                        "required": ["bucketId", "path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_getstorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "id", "size", "contentType", "created_at", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Insert a row into a Supabase table.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_inserttablerow",
+            "name": "insert-table-row",
+            "output": ["ActionOutput_supabase_inserttablerow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_inserttablerow", "ActionOutput_supabase_inserttablerow"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_inserttablerow": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "The table name to insert into. Example: \"nango_test\""
+                            },
+                            "row": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "The row object to insert. Example: {\"name\": \"new-record\", \"value\": \"delta\"}"
+                            }
+                        },
+                        "required": ["table", "row"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_inserttablerow": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "propertyNames": {
+                                "type": "string"
+                            },
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Call a Supabase Postgres function via PostgREST.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_invokerpc",
+            "name": "invoke-rpc",
+            "output": ["ActionOutput_supabase_invokerpc"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_invokerpc", "ActionOutput_supabase_invokerpc"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_invokerpc": {
+                        "type": "object",
+                        "properties": {
+                            "function_name": {
+                                "type": "string",
+                                "description": "Name of the Postgres function in the public schema. Example: \"nango_hello\""
+                            },
+                            "args": {
+                                "description": "Function arguments as a JSON object. Example: {\"name\": \"world\"}",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "read_only": {
+                                "description": "Set to true for read-only functions to use GET (enables caching). Defaults to false (POST).",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["function_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_invokerpc": {}
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List MFA factors enrolled for a specific user in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_listauthfactors",
+            "name": "list-auth-factors",
+            "output": ["ActionOutput_supabase_listauthfactors"],
+            "scopes": ["service_role"],
+            "usedModels": ["ActionInput_supabase_listauthfactors", "ActionOutput_supabase_listauthfactors"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_listauthfactors": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "The UUID of the Supabase Auth user whose MFA factors to list. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_listauthfactors": {
+                        "type": "object",
+                        "properties": {
+                            "factors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "friendly_name": {
+                                            "type": "string"
+                                        },
+                                        "factor_type": {
+                                            "type": "string",
+                                            "enum": ["totp", "phone"]
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["verified", "unverified"]
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "user_id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["factors"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List auth users from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_listauthusers",
+            "name": "list-auth-users",
+            "output": ["ActionOutput_supabase_listauthusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_listauthusers", "ActionOutput_supabase_listauthusers"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_listauthusers": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Page number (1-indexed). Defaults to 1.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_listauthusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "aud": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email_confirmed_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "phone": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "phone_confirmed_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "confirmed_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email_change": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email_change_sent_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email_change_confirm_status": {
+                                            "type": "number"
+                                        },
+                                        "phone_change": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "phone_change_sent_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "phone_change_token": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "recovery_sent_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "recovery_token": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "new_email": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "new_phone": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "invited_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "confirmation_sent_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "confirmation_token": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "reauthentication_sent_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "reauthentication_token": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "is_super_admin": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "updated_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_sign_in_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "app_metadata": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "user_metadata": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "factors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "identities": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {},
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "total": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "next_page": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List storage buckets from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_liststoragebuckets",
+            "name": "list-storage-buckets",
+            "output": ["ActionOutput_supabase_liststoragebuckets"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_liststoragebuckets", "ActionOutput_supabase_liststoragebuckets"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_liststoragebuckets": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of buckets to return. Example: 10",
+                                "type": "number",
+                                "minimum": 1
+                            },
+                            "offset": {
+                                "description": "Number of buckets to skip. Example: 0",
+                                "type": "number",
+                                "minimum": 0
+                            },
+                            "sort_column": {
+                                "description": "Column to sort by. Example: \"created_at\"",
+                                "type": "string",
+                                "enum": ["id", "name", "created_at", "updated_at"]
+                            },
+                            "sort_order": {
+                                "description": "Sort direction. Example: \"desc\"",
+                                "type": "string",
+                                "enum": ["asc", "desc"]
+                            },
+                            "search": {
+                                "description": "Search term to filter bucket names. Example: \"prod\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_liststoragebuckets": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "public": {
+                                            "type": "boolean"
+                                        },
+                                        "owner": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "created_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "updated_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "file_size_limit": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "allowed_mime_types": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "type": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id", "name", "public"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_offset": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List storage objects from Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_liststorageobjects",
+            "name": "list-storage-objects",
+            "output": ["ActionOutput_supabase_liststorageobjects"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_liststorageobjects", "ActionOutput_supabase_liststorageobjects"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_liststorageobjects": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "Storage bucket ID. Example: \"nango-test-public\""
+                            },
+                            "prefix": {
+                                "description": "Folder path prefix to filter objects. Example: \"docs/\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of objects to return. Default: 100",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "offset": {
+                                "description": "Offset for pagination. Default: 0",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["bucket_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_liststorageobjects": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "bucket_id": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "last_accessed_at": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "eTag": {
+                                                    "type": "string"
+                                                },
+                                                "size": {
+                                                    "type": "number"
+                                                },
+                                                "mimetype": {
+                                                    "type": "string"
+                                                },
+                                                "cacheControl": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_offset": {
+                                "description": "Offset to use for the next page of results.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query rows from a Supabase table through PostgREST.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_querytablerows",
+            "name": "query-table-rows",
+            "output": ["ActionOutput_supabase_querytablerows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_querytablerows", "ActionOutput_supabase_querytablerows"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_querytablerows": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Table name to query. Example: \"nango_test\""
+                            },
+                            "select": {
+                                "description": "Columns to select. Example: \"id,name,value\"",
+                                "type": "string"
+                            },
+                            "filters": {
+                                "description": "PostgREST filters",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "column": {
+                                            "type": "string",
+                                            "description": "Column name to filter on. Example: \"name\""
+                                        },
+                                        "operator": {
+                                            "type": "string",
+                                            "description": "PostgREST operator. Example: \"eq\", \"gte\", \"like\""
+                                        },
+                                        "value": {
+                                            "description": "Filter value. Example: \"alpha\"",
+                                            "type": ["string", "number", "boolean"]
+                                        }
+                                    },
+                                    "required": ["column", "operator", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "order": {
+                                "description": "Order by clause. Example: \"name.desc\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum rows to return. Example: 100",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "description": "Number of rows to skip. Example: 0",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "count": {
+                                "description": "Return total row count",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["table"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_querytablerows": {
+                        "type": "object",
+                        "properties": {
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Matching table rows"
+                            },
+                            "count": {
+                                "description": "Total row count when count was requested",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["rows"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an auth user in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_updateauthuser",
+            "name": "update-auth-user",
+            "output": ["ActionOutput_supabase_updateauthuser"],
+            "scopes": ["service_role"],
+            "usedModels": ["ActionInput_supabase_updateauthuser", "ActionOutput_supabase_updateauthuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_updateauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The unique ID of the user to update. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
+                            },
+                            "email": {
+                                "description": "New email address for the user.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "phone": {
+                                "description": "New phone number for the user.",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "New password for the user.",
+                                "type": "string"
+                            },
+                            "email_confirm": {
+                                "description": "Confirm the user's email address.",
+                                "type": "boolean"
+                            },
+                            "phone_confirm": {
+                                "description": "Confirm the user's phone number.",
+                                "type": "boolean"
+                            },
+                            "user_metadata": {
+                                "description": "User-specific metadata.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "app_metadata": {
+                                "description": "Application-specific metadata.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "ban_duration": {
+                                "description": "Ban duration in hours. Example: \"876600h\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_updateauthuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "user_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "app_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "last_sign_in_at": {
+                                "type": "string"
+                            },
+                            "identities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "identity_data": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "provider": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "last_sign_in_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "user_id", "provider"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a storage bucket in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_updatestoragebucket",
+            "name": "update-storage-bucket",
+            "output": ["ActionOutput_supabase_updatestoragebucket"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_updatestoragebucket", "ActionOutput_supabase_updatestoragebucket"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_updatestoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Bucket ID. Example: \"nango-test-public\""
+                            },
+                            "public": {
+                                "description": "Whether the bucket is publicly accessible",
+                                "type": "boolean"
+                            },
+                            "fileSizeLimit": {
+                                "description": "Maximum file size in bytes or as a string like \"100MB\"",
+                                "type": ["number", "string", "null"]
+                            },
+                            "allowedMimeTypes": {
+                                "description": "Allowed MIME types. Example: [\"image/png\", \"image/jpg\"]",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_updatestoragebucket": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a storage object in Supabase.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_updatestorageobject",
+            "name": "update-storage-object",
+            "output": ["ActionOutput_supabase_updatestorageobject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_updatestorageobject", "ActionOutput_supabase_updatestorageobject"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_updatestorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "bucket_id": {
+                                "type": "string",
+                                "description": "The bucket ID containing the object. Example: \"nango-test-public\""
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "The current path of the object. Example: \"docs/readme.txt\""
+                            },
+                            "new_path": {
+                                "description": "The new path for the object (to move/rename). Mutually exclusive with content.",
+                                "type": "string"
+                            },
+                            "new_bucket_id": {
+                                "description": "The destination bucket ID for moving. Defaults to the source bucket if not provided.",
+                                "type": "string"
+                            },
+                            "content": {
+                                "description": "New file content to overwrite the object. Use this for text files. Mutually exclusive with new_path.",
+                                "type": "string"
+                            },
+                            "content_type": {
+                                "description": "MIME type for the new content. Defaults to text/plain if content is provided.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["bucket_id", "path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_updatestorageobject": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "full_path": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update rows in a Supabase table.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_updatetablerows",
+            "name": "update-table-rows",
+            "output": ["ActionOutput_supabase_updatetablerows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_updatetablerows", "ActionOutput_supabase_updatetablerows"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_updatetablerows": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Table name to update. Example: \"nango_test\""
+                            },
+                            "updates": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Object containing column updates."
+                            },
+                            "filters": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "PostgREST filters as query params. Example: {\"id\":\"eq.964cc467-144e-4215-b7d0-d124607a6d72\"}"
+                            }
+                        },
+                        "required": ["table", "updates", "filters"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_updatetablerows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "propertyNames": {
+                                "type": "string"
+                            },
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Insert or update a row in a Supabase table, merging on conflict.",
+            "endpoint": null,
+            "input": "ActionInput_supabase_upserttablerow",
+            "name": "upsert-table-row",
+            "output": ["ActionOutput_supabase_upserttablerow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_supabase_upserttablerow", "ActionOutput_supabase_upserttablerow"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_supabase_upserttablerow": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Table name. Example: \"nango_test\""
+                            },
+                            "row": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Row object to upsert. Must include the primary key column(s) for conflict detection."
+                            },
+                            "on_conflict": {
+                                "description": "Comma-separated conflict target column(s) if different from the primary key. Example: \"name\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["table", "row"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_supabase_upserttablerow": {
+                        "type": "object",
+                        "properties": {
+                            "row": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "The upserted row"
+                            }
+                        },
+                        "required": ["row"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync auth users from Supabase.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/auth-users",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "auth-users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "email_confirmed_at": {
+                                "type": "string"
+                            },
+                            "confirmed_at": {
+                                "type": "string"
+                            },
+                            "last_sign_in_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync storage buckets from Supabase",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/storage-buckets"
+                }
+            ],
+            "input": null,
+            "name": "storage-buckets",
+            "output": ["Bucket"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Bucket"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Bucket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "public": {
+                                "type": "boolean"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "file_size_limit": {
+                                "type": ["number", "null"]
+                            },
+                            "allowed_mime_types": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "name", "public", "owner", "created_at", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync storage objects from Supabase.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/storage-objects"
+                }
+            ],
+            "input": null,
+            "name": "storage-objects",
+            "output": ["StorageObject"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["StorageObject"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StorageObject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "bucket_id": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "last_accessed_at": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "mimetype": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "bucket_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync rows from a configured Supabase table.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/table-rows"
+                }
+            ],
+            "input": "SyncMetadata_supabase_tablerows",
+            "name": "table-rows",
+            "output": ["TableRow"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["TableRow", "SyncMetadata_supabase_tablerows"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TableRow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    },
+                    "SyncMetadata_supabase_tablerows": {
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "PostgREST table name to sync"
+                            },
+                            "select": {
+                                "description": "Columns to select",
+                                "type": "string"
+                            },
+                            "order": {
+                                "description": "Order clause, e.g. id.asc",
+                                "type": "string"
+                            },
+                            "filter": {
+                                "description": "Additional PostgREST filters",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "checkpoint_column": {
+                                "description": "Column to checkpoint on",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Page size",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "required": ["table"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3799 @@
+{
+    "providerConfigKey": "timetastic",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Approve, decline, cancel, or delete a leave request.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_actionholiday",
+            "name": "action-holiday",
+            "output": ["ActionOutput_timetastic_actionholiday"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_actionholiday", "ActionOutput_timetastic_actionholiday"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_actionholiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the holiday to action. Example: \"39587669\""
+                            },
+                            "holidayUpdateAction": {
+                                "type": "string",
+                                "enum": ["Approve", "Decline", "Delete", "DeleteGroup"],
+                                "description": "The action to perform on the holiday."
+                            },
+                            "reason": {
+                                "description": "An optional reason shown when declining a leave request.",
+                                "type": "string"
+                            },
+                            "suppressEmails": {
+                                "description": "Set to true to suppress notification emails when actioning the request.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "holidayUpdateAction"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_actionholiday": {
+                        "type": "object",
+                        "properties": {
+                            "approvalResult": {
+                                "type": "string",
+                                "enum": ["Success", "AlreadyActioned", "DoesntExist", "UnknownError", "NotAllowed"]
+                            },
+                            "message": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new department.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_adddepartment",
+            "name": "add-department",
+            "output": ["ActionOutput_timetastic_adddepartment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_adddepartment", "ActionOutput_timetastic_adddepartment"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_adddepartment": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the department."
+                            },
+                            "managerId": {
+                                "type": "number",
+                                "description": "User ID of the department manager."
+                            },
+                            "maxOff": {
+                                "description": "Maximum simultaneous absences allowed. 0 means unlimited.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["name", "managerId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_adddepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a locked date period that blocks leave requests.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_addlockeddate",
+            "name": "add-locked-date",
+            "output": ["ActionOutput_timetastic_addlockeddate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_addlockeddate", "ActionOutput_timetastic_addlockeddate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_addlockeddate": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "Start date of the locked period. Example: \"2026-12-24\""
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "End date of the locked period. Example: \"2026-12-27\""
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Reason for the locked date. Example: \"Office closed for holidays\""
+                            },
+                            "recordId": {
+                                "type": "number",
+                                "description": "The organisation id for Organisation scope, or the specific department/user id otherwise. Example: 100741"
+                            },
+                            "recordType": {
+                                "type": "string",
+                                "enum": ["Organisation", "Department", "User"],
+                                "description": "Scope of the lock: 'Organisation', 'Department', or 'User'."
+                            }
+                        },
+                        "required": ["from", "to", "reason", "recordId", "recordType"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_addlockeddate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "createdOverExistingBookings": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "createdOverExistingBookings"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a Time Off In Lieu entry for a user for a year.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_addusertoil",
+            "name": "add-user-toil",
+            "output": ["ActionOutput_timetastic_addusertoil"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_addusertoil", "ActionOutput_timetastic_addusertoil"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_addusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "User ID. Example: 1522999"
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Year. Example: 2026"
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "TOIL amount in days or hours. Example: 1.5"
+                            },
+                            "description": {
+                                "description": "Optional description for the TOIL entry. Example: \"Overtime hours\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["userId", "year", "amount"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_addusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The new TOIL entry ID."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new user, optionally sending a welcome email.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_adduser",
+            "name": "add-user",
+            "output": ["ActionOutput_timetastic_adduser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_adduser", "ActionOutput_timetastic_adduser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_adduser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string",
+                                "description": "First name of the new user. Example: \"Jane\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Last name of the new user. Example: \"Doe\""
+                            },
+                            "allowance": {
+                                "type": "number",
+                                "description": "Annual leave allowance in days. Example: 25"
+                            },
+                            "departmentId": {
+                                "type": "number",
+                                "description": "Department ID to assign the user to. Example: 248819"
+                            },
+                            "emailAddress": {
+                                "description": "Email address; must match a verified organisation domain. Example: \"jane.doe@nango.dev\"",
+                                "type": "string"
+                            },
+                            "leaveYearStart": {
+                                "description": "Month the leave year starts (1-12). Example: 1",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 12
+                            },
+                            "startDate": {
+                                "description": "Employment start date in ISO 8601 format. Example: \"2026-08-01\"",
+                                "type": "string"
+                            },
+                            "sendWelcomeEmail": {
+                                "description": "Whether to send a welcome email to the new user. Example: true",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "allowance", "departmentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_adduser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "ID of the newly created user. Example: 1523001"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Archive a user, immediately logging them out and blocking further login.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_archiveuser",
+            "name": "archive-user",
+            "output": ["ActionOutput_timetastic_archiveuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_archiveuser", "ActionOutput_timetastic_archiveuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_archiveuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "User ID. Example: 1523008"
+                            },
+                            "archiveDate": {
+                                "type": "string",
+                                "description": "Archive date in the past, UTC. Example: '2026-01-01T00:00:00Z'"
+                            }
+                        },
+                        "required": ["id", "archiveDate"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_archiveuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Turn on and assign a public holiday set (country/region) to a user",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_assignuserpublicholidays",
+            "name": "assign-user-public-holidays",
+            "output": ["ActionOutput_timetastic_assignuserpublicholidays"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_assignuserpublicholidays", "ActionOutput_timetastic_assignuserpublicholidays"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_assignuserpublicholidays": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The user ID in Timetastic. Example: 1523000"
+                            },
+                            "countryCode": {
+                                "description": "ISO 3166-1 alpha-2 country code. Example: \"GB\"",
+                                "type": "string"
+                            },
+                            "regionCode": {
+                                "description": "ISO 3166-2 region code. Takes precedence over countryCode. Example: \"ES-AN\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_assignuserpublicholidays": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new leave type. Admin only.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_createleavetype",
+            "name": "create-leave-type",
+            "output": ["ActionOutput_timetastic_createleavetype"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_createleavetype", "ActionOutput_timetastic_createleavetype"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_createleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the leave type. Example: \"Conference\""
+                            },
+                            "deducted": {
+                                "description": "Whether this leave type counts against allowance.",
+                                "type": "boolean"
+                            },
+                            "requiresApproval": {
+                                "description": "Whether bookings require approval.",
+                                "type": "boolean"
+                            },
+                            "includeMaxOff": {
+                                "description": "Whether this type is included in max-off calculations.",
+                                "type": "boolean"
+                            },
+                            "isPrivate": {
+                                "description": "Whether this type is private.",
+                                "type": "boolean"
+                            },
+                            "color": {
+                                "description": "Hex color code. Valid values available from list-leave-type-colors. Example: \"#FF5733\"",
+                                "type": "string"
+                            },
+                            "icon": {
+                                "description": "Icon name. Valid values available from list-leave-type-icons. Example: \"plane\"",
+                                "type": "string"
+                            },
+                            "calendarVisibility": {
+                                "description": "Calendar visibility setting.",
+                                "type": "string",
+                                "enum": ["Busy", "Available", "OutOfOffice"]
+                            },
+                            "limitHours": {
+                                "description": "Hourly booking limit.",
+                                "type": "number"
+                            },
+                            "limitDays": {
+                                "description": "Daily booking limit.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_createleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The newly created leave type ID."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a department.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_deletedepartment",
+            "name": "delete-department",
+            "output": ["ActionOutput_timetastic_deletedepartment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_deletedepartment", "ActionOutput_timetastic_deletedepartment"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_deletedepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Department ID to delete. Example: 248822"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_deletedepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a leave type. Admin only.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_deleteleavetype",
+            "name": "delete-leave-type",
+            "output": ["ActionOutput_timetastic_deleteleavetype"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_deleteleavetype", "ActionOutput_timetastic_deleteleavetype"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_deleteleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Leave type ID. Example: 586883"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_deleteleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a locked date period. Admin/manager only.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_deletelockeddate",
+            "name": "delete-locked-date",
+            "output": ["ActionOutput_timetastic_deletelockeddate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_deletelockeddate", "ActionOutput_timetastic_deletelockeddate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_deletelockeddate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the locked date to delete. Example: 142802"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_deletelockeddate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a TOIL entry for a user.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_deleteusertoil",
+            "name": "delete-user-toil",
+            "output": ["ActionOutput_timetastic_deleteusertoil"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_deleteusertoil", "ActionOutput_timetastic_deleteusertoil"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_deleteusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "User ID. Example: 1522999"
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Year for the allowance. Example: 2026"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "TOIL entry ID. Example: 51015844"
+                            }
+                        },
+                        "required": ["userId", "year", "id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_deleteusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a department's settings.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_editdepartment",
+            "name": "edit-department",
+            "output": ["ActionOutput_timetastic_editdepartment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_editdepartment", "ActionOutput_timetastic_editdepartment"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_editdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Department ID. Example: 248822"
+                            },
+                            "name": {
+                                "description": "Department name",
+                                "type": "string"
+                            },
+                            "managerId": {
+                                "description": "User ID of the department manager",
+                                "type": "number"
+                            },
+                            "maxOff": {
+                                "description": "Maximum simultaneous absences allowed. 0 means unlimited.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_editdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update fields on an existing user.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_edituser",
+            "name": "edit-user",
+            "output": ["ActionOutput_timetastic_edituser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_edituser", "ActionOutput_timetastic_edituser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_edituser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "User ID. Example: 1522999"
+                            },
+                            "emailAddress": {
+                                "description": "Email address. Pass an empty string to explicitly clear.",
+                                "type": "string"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "lastname": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "description": "Start date in ISO 8601 format. Example: 2024-01-01",
+                                "type": "string"
+                            },
+                            "birthday": {
+                                "description": "Birthday in ISO 8601 format. Example: 1990-06-15",
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "description": "Department ID to assign the user to.",
+                                "type": "number"
+                            },
+                            "admin": {
+                                "description": "Whether the user is an admin. Requires the user to have an email address.",
+                                "type": "boolean"
+                            },
+                            "director": {
+                                "description": "Whether the user is a director.",
+                                "type": "boolean"
+                            },
+                            "approverId": {
+                                "description": "Approver user ID. Pass 0 to default to department boss.",
+                                "type": "number"
+                            },
+                            "publicHolidaySetId": {
+                                "description": "Public holiday set ID. Requires hasPublicHolidays to be true.",
+                                "type": "number"
+                            },
+                            "hasPublicHolidays": {
+                                "description": "Whether public holidays are enabled for this user.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_edituser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single department.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getdepartment",
+            "name": "get-department",
+            "output": ["ActionOutput_timetastic_getdepartment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getdepartment", "ActionOutput_timetastic_getdepartment"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The ID of the department. Example: 248819"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "organisationId": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "managerId": {
+                                "type": "number"
+                            },
+                            "bossId": {
+                                "type": "number"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "userCount": {
+                                "type": "number"
+                            },
+                            "maxOff": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single leave request.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getholiday",
+            "name": "get-holiday",
+            "output": ["ActionOutput_timetastic_getholiday"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getholiday", "ActionOutput_timetastic_getholiday"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getholiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the holiday to retrieve. Example: 39587653"
+                            },
+                            "filter": {
+                                "description": "Optional filter string.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getholiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "dateRangeString": {
+                                "type": "string"
+                            },
+                            "startDateString": {
+                                "type": "string"
+                            },
+                            "endDateString": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "adjustedStartDateUtc": {
+                                "type": "string"
+                            },
+                            "startType": {
+                                "type": "string",
+                                "enum": ["Morning", "Afternoon", "Hours"]
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "adjustedEndDateUtc": {
+                                "type": "string"
+                            },
+                            "endType": {
+                                "type": "string",
+                                "enum": ["Morning", "Afternoon", "Hours"]
+                            },
+                            "userId": {
+                                "type": "number"
+                            },
+                            "userName": {
+                                "type": "string"
+                            },
+                            "requestedById": {
+                                "type": "number"
+                            },
+                            "leaveTypeId": {
+                                "type": "number"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "deduction": {
+                                "type": "number"
+                            },
+                            "actionerId": {
+                                "type": "number"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "declineReason": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["Pending", "Approved", "Cancelled", "Declined"]
+                            },
+                            "autoApproved": {
+                                "type": "boolean"
+                            },
+                            "bookingUnit": {
+                                "type": "string",
+                                "enum": ["Days", "Hours"]
+                            },
+                            "leaveType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single leave type.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getleavetype",
+            "name": "get-leave-type",
+            "output": ["ActionOutput_timetastic_getleavetype"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getleavetype", "ActionOutput_timetastic_getleavetype"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The ID of the leave type. Example: 586853"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "organisationId": {
+                                "type": "number"
+                            },
+                            "deducted": {
+                                "type": "boolean"
+                            },
+                            "requiresApproval": {
+                                "type": "boolean"
+                            },
+                            "includeMaxOff": {
+                                "type": "boolean"
+                            },
+                            "isPrivate": {
+                                "type": "boolean"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "isInUse": {
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "string"
+                            },
+                            "calendarVisibility": {
+                                "type": "string",
+                                "enum": ["Busy", "Available", "OutOfOffice"]
+                            },
+                            "limitHours": {
+                                "type": "number"
+                            },
+                            "limitDays": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "organisationId",
+                            "deducted",
+                            "requiresApproval",
+                            "includeMaxOff",
+                            "isPrivate",
+                            "active",
+                            "isInUse",
+                            "createdAt",
+                            "updatedAt",
+                            "calendarVisibility"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single public holiday.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getpublicholiday",
+            "name": "get-public-holiday",
+            "output": ["ActionOutput_timetastic_getpublicholiday"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getpublicholiday", "ActionOutput_timetastic_getpublicholiday"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getpublicholiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the public holiday. Example: 11420260"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getpublicholiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "formattedDate": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "countryCode": {
+                                "type": "string"
+                            },
+                            "bankHolidaySetId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "bankHolidaySetName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "date", "createdAt", "updatedAt", "bankHolidaySetId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the allowance, TOIL, and carry-forward for one user for one year.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getuserallowanceforyear",
+            "name": "get-user-allowance-for-year",
+            "output": ["ActionOutput_timetastic_getuserallowanceforyear"],
+            "scopes": ["allowances.get"],
+            "usedModels": ["ActionInput_timetastic_getuserallowanceforyear", "ActionOutput_timetastic_getuserallowanceforyear"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getuserallowanceforyear": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The id of the user to query. Example: 1522999"
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The year to query. Example: 2026"
+                            }
+                        },
+                        "required": ["userId", "year"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getuserallowanceforyear": {
+                        "type": "object",
+                        "properties": {
+                            "year": {
+                                "type": "number"
+                            },
+                            "allowance": {
+                                "type": "number"
+                            },
+                            "toils": {
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "toil": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": ["number", "null"]
+                                                        },
+                                                        "amount": {
+                                                            "type": ["number", "null"]
+                                                        },
+                                                        "description": {
+                                                            "type": ["string", "null"]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "carryForward": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get allowance, TOIL, and carry-forward records for one user across all years.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getuserallowances",
+            "name": "get-user-allowances",
+            "output": ["ActionOutput_timetastic_getuserallowances"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getuserallowances", "ActionOutput_timetastic_getuserallowances"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getuserallowances": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "User ID. Example: 1522999"
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getuserallowances": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "allowances": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "year": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "allowance": {
+                                            "type": "number"
+                                        },
+                                        "toils": {
+                                            "type": "object",
+                                            "properties": {
+                                                "total": {
+                                                    "type": "number"
+                                                },
+                                                "toil": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991
+                                                            },
+                                                            "amount": {
+                                                                "type": "number"
+                                                            },
+                                                            "description": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "carryForward": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["year"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["userId", "allowances"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user, including their work schedule and per-year allowances.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_timetastic_getuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_getuser", "ActionOutput_timetastic_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "User ID. Example: 1522999"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "admin": {
+                                "type": "boolean"
+                            },
+                            "director": {
+                                "type": "boolean"
+                            },
+                            "accountOwner": {
+                                "type": "boolean"
+                            },
+                            "organisationId": {
+                                "type": "number"
+                            },
+                            "departmentId": {
+                                "type": "number"
+                            },
+                            "allowanceUnit": {
+                                "type": "string",
+                                "enum": ["Days", "Hours"]
+                            },
+                            "managerOfDepartments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "bossOfDepartments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "departmentName": {
+                                "type": "string"
+                            },
+                            "gravatar": {
+                                "type": "string"
+                            },
+                            "allowanceRemaining": {
+                                "type": "number"
+                            },
+                            "hasLoggedOn": {
+                                "type": "boolean"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "approverId": {
+                                "type": "number"
+                            },
+                            "isApprover": {
+                                "type": "boolean"
+                            },
+                            "deptManagerId": {
+                                "type": "number"
+                            },
+                            "deptBossId": {
+                                "type": "number"
+                            },
+                            "birthday": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "hasPublicHolidays": {
+                                "type": "boolean"
+                            },
+                            "userInitials": {
+                                "type": "string"
+                            },
+                            "countryCode": {
+                                "type": "string"
+                            },
+                            "currentYearAllowance": {
+                                "type": "number"
+                            },
+                            "nextYearAllowance": {
+                                "type": "number"
+                            },
+                            "userLinkedWithGoogle": {
+                                "type": "boolean"
+                            },
+                            "userManagedExternally": {
+                                "type": "boolean"
+                            },
+                            "mfaEnabled": {
+                                "type": "boolean"
+                            },
+                            "inviteSentTimeUtc": {
+                                "type": "string"
+                            },
+                            "inviteSentTimeHumanised": {
+                                "type": "string"
+                            },
+                            "yearStart": {
+                                "type": "number"
+                            },
+                            "accrualSystem": {
+                                "type": "boolean"
+                            },
+                            "isEmailConfirmed": {
+                                "type": "boolean"
+                            },
+                            "workingDays": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dayOfWeek": {
+                                            "type": "string",
+                                            "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+                                        },
+                                        "fromTimeAm": {
+                                            "type": "number"
+                                        },
+                                        "toTimeAm": {
+                                            "type": "number"
+                                        },
+                                        "fromTimePm": {
+                                            "type": "number"
+                                        },
+                                        "toTimePm": {
+                                            "type": "number"
+                                        },
+                                        "workingAm": {
+                                            "type": "boolean"
+                                        },
+                                        "workingPm": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["dayOfWeek", "fromTimeAm", "toTimeAm", "fromTimePm", "toTimePm", "workingAm", "workingPm"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "workSchedules": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "start": {
+                                            "type": "string"
+                                        },
+                                        "days": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "dayOfWeek": {
+                                                                "type": "string",
+                                                                "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+                                                            },
+                                                            "fromTimeAm": {
+                                                                "type": "number"
+                                                            },
+                                                            "toTimeAm": {
+                                                                "type": "number"
+                                                            },
+                                                            "fromTimePm": {
+                                                                "type": "number"
+                                                            },
+                                                            "toTimePm": {
+                                                                "type": "number"
+                                                            },
+                                                            "workingAm": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "workingPm": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["dayOfWeek", "fromTimeAm", "toTimeAm", "fromTimePm", "toTimePm", "workingAm", "workingPm"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["start"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "allowances": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "year": {
+                                            "type": "number"
+                                        },
+                                        "allowance": {
+                                            "type": "number"
+                                        },
+                                        "remaining": {
+                                            "type": "number"
+                                        },
+                                        "used": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["year", "allowance", "remaining", "used"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a chronological, day-by-day list of who is off within a date range.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listabsences",
+            "name": "list-absences",
+            "output": ["ActionOutput_timetastic_listabsences"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listabsences", "ActionOutput_timetastic_listabsences"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listabsences": {
+                        "type": "object",
+                        "properties": {
+                            "start": {
+                                "description": "Start date in ISO 8601 format. Example: \"2026-07-21\"",
+                                "type": "string"
+                            },
+                            "end": {
+                                "description": "End date in ISO 8601 format. Example: \"2026-07-28\"",
+                                "type": "string"
+                            },
+                            "absenceQueryType": {
+                                "description": "Filter for the type of absences to return.",
+                                "type": "string",
+                                "enum": ["AllEvents", "AllAbsences", "Bookings", "PublicHolidays"]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listabsences": {
+                        "type": "object",
+                        "properties": {
+                            "days": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "absences": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "absenceType": {
+                                                        "type": "string",
+                                                        "enum": ["Booking", "PublicHoliday", "NonWorkingDay", "LockedDate", "Birthday", "WorkAnniversary"]
+                                                    },
+                                                    "start": {
+                                                        "type": "string"
+                                                    },
+                                                    "end": {
+                                                        "type": "string"
+                                                    },
+                                                    "detail": {
+                                                        "type": "string"
+                                                    },
+                                                    "entityId": {
+                                                        "type": "number"
+                                                    },
+                                                    "userId": {
+                                                        "type": "number"
+                                                    },
+                                                    "userName": {
+                                                        "type": "string"
+                                                    },
+                                                    "startUtc": {
+                                                        "type": "string"
+                                                    },
+                                                    "endUtc": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["absenceType", "start", "end"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["date", "absences"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["days"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all departments for the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listdepartments",
+            "name": "list-departments",
+            "output": ["ActionOutput_timetastic_listdepartments"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listdepartments", "ActionOutput_timetastic_listdepartments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listdepartments": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "departments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "The unique Id for this department. Example: 248819"
+                                        },
+                                        "organisationId": {
+                                            "type": "number",
+                                            "description": "The organisation Id of this department. Example: 100741"
+                                        },
+                                        "name": {
+                                            "description": "The department's name",
+                                            "type": ["string", "null"]
+                                        },
+                                        "managerId": {
+                                            "description": "The department manager user id",
+                                            "type": "number"
+                                        },
+                                        "bossId": {
+                                            "description": "The department boss user id (deprecated)",
+                                            "type": "number"
+                                        },
+                                        "createdAt": {
+                                            "description": "When the department was created",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "When the department was last updated",
+                                            "type": "string"
+                                        },
+                                        "archived": {
+                                            "description": "Whether the department is archived (deleted)",
+                                            "type": "boolean"
+                                        },
+                                        "userCount": {
+                                            "description": "Number of users in the department",
+                                            "type": "number"
+                                        },
+                                        "maxOff": {
+                                            "description": "The maximum number of staff allowed off at any one time. 0 means unlimited",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "organisationId"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["departments"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query leave requests for the organisation with rich filters.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listholidays",
+            "name": "list-holidays",
+            "output": ["ActionOutput_timetastic_listholidays"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listholidays", "ActionOutput_timetastic_listholidays"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listholidays": {
+                        "type": "object",
+                        "properties": {
+                            "departmentId": {
+                                "description": "Filter holidays by a department ID. Example: 248819",
+                                "type": "number"
+                            },
+                            "leaveTypeId": {
+                                "description": "Filter holidays by a leave type ID. Example: 586853",
+                                "type": "number"
+                            },
+                            "departmentManagersOnly": {
+                                "description": "Only include holidays for department managers",
+                                "type": "boolean"
+                            },
+                            "myTeamOnly": {
+                                "description": "Filter holidays for a specific team user ID",
+                                "type": "number"
+                            },
+                            "myFavouritesOnly": {
+                                "description": "Filter holidays for favourite users of the given user ID",
+                                "type": "number"
+                            },
+                            "userIds": {
+                                "description": "Comma-separated user IDs to include. Example: \"1522999,1523000\"",
+                                "type": "string"
+                            },
+                            "exclusionUserIds": {
+                                "description": "Comma-separated user IDs to exclude. Example: \"1523000\"",
+                                "type": "string"
+                            },
+                            "nonArchivedUsersOnly": {
+                                "description": "Only return holidays for non-archived users",
+                                "type": "boolean"
+                            },
+                            "start": {
+                                "description": "Filter holidays on or after this date. Example: \"2026-01-01\"",
+                                "type": "string"
+                            },
+                            "end": {
+                                "description": "Filter holidays before and including this date. Example: \"2026-12-31\"",
+                                "type": "string"
+                            },
+                            "transactionYear": {
+                                "description": "Filter holidays by transaction year. Example: 2026",
+                                "type": "number"
+                            },
+                            "status": {
+                                "description": "Filter by holiday status",
+                                "type": "string",
+                                "enum": ["PendingOrApproved", "Pending", "Approved", "Cancelled", "Declined", "Any"]
+                            },
+                            "approverId": {
+                                "description": "Filter holidays by approver user ID. Example: 1522999",
+                                "type": "number"
+                            },
+                            "pageNumber": {
+                                "description": "Page number for pagination. Example: 1",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listholidays": {
+                        "type": "object",
+                        "properties": {
+                            "holidays": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "dateRangeString": {
+                                            "type": "string"
+                                        },
+                                        "startDateString": {
+                                            "type": "string"
+                                        },
+                                        "endDateString": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "adjustedStartDateUtc": {
+                                            "type": "string"
+                                        },
+                                        "startType": {
+                                            "type": "string",
+                                            "enum": ["Morning", "Afternoon", "Hours"]
+                                        },
+                                        "endDate": {
+                                            "type": "string"
+                                        },
+                                        "adjustedEndDateUtc": {
+                                            "type": "string"
+                                        },
+                                        "endType": {
+                                            "type": "string",
+                                            "enum": ["Morning", "Afternoon", "Hours"]
+                                        },
+                                        "userId": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        },
+                                        "requestedById": {
+                                            "type": "number"
+                                        },
+                                        "leaveTypeId": {
+                                            "type": "number"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "deduction": {
+                                            "type": "number"
+                                        },
+                                        "actionerId": {
+                                            "type": "number"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        },
+                                        "declineReason": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["Pending", "Approved", "Cancelled", "Declined"]
+                                        },
+                                        "autoApproved": {
+                                            "type": "boolean"
+                                        },
+                                        "bookingUnit": {
+                                            "type": "string",
+                                            "enum": ["Days", "Hours"]
+                                        },
+                                        "leaveType": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totalRecords": {
+                                "type": "number"
+                            },
+                            "pageNumber": {
+                                "type": "number"
+                            },
+                            "nextPageLink": {
+                                "type": "string"
+                            },
+                            "previousPageLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["holidays", "totalRecords", "pageNumber", "nextPageLink", "previousPageLink"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List valid color hex codes for leave types.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listleavetypecolors",
+            "name": "list-leave-type-colors",
+            "output": ["ActionOutput_timetastic_listleavetypecolors"],
+            "scopes": ["leavetypes"],
+            "usedModels": ["ActionInput_timetastic_listleavetypecolors", "ActionOutput_timetastic_listleavetypecolors"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listleavetypecolors": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listleavetypecolors": {
+                        "type": "object",
+                        "properties": {
+                            "colors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "isDark": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["isDark"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["colors"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List valid icon names for leave types.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listleavetypeicons",
+            "name": "list-leave-type-icons",
+            "output": ["ActionOutput_timetastic_listleavetypeicons"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listleavetypeicons", "ActionOutput_timetastic_listleavetypeicons"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listleavetypeicons": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listleavetypeicons": {
+                        "type": "object",
+                        "properties": {
+                            "icons": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["icons"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List leave types for the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listleavetypes",
+            "name": "list-leave-types",
+            "output": ["ActionOutput_timetastic_listleavetypes"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listleavetypes", "ActionOutput_timetastic_listleavetypes"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listleavetypes": {
+                        "type": "object",
+                        "properties": {
+                            "includeInactive": {
+                                "description": "Set to true to also return inactive (deleted) leave types. Defaults to false (active only).",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listleavetypes": {
+                        "type": "object",
+                        "properties": {
+                            "leaveTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "organisationId": {
+                                            "type": "number"
+                                        },
+                                        "deducted": {
+                                            "type": "boolean"
+                                        },
+                                        "requiresApproval": {
+                                            "type": "boolean"
+                                        },
+                                        "includeMaxOff": {
+                                            "type": "boolean"
+                                        },
+                                        "isPrivate": {
+                                            "type": "boolean"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "isInUse": {
+                                            "type": "boolean"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "icon": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "calendarVisibility": {
+                                            "description": "Calendar visibility for this leave type. The API may return a string (\"Busy\", \"Available\", \"OutOfOffice\") or a numeric enum value (0, 1, 2).",
+                                            "type": ["string", "number"]
+                                        },
+                                        "limitHours": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "limitDays": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "required": ["id", "name", "organisationId"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["leaveTypes"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all locked date periods for the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listlockeddates",
+            "name": "list-locked-dates",
+            "output": ["ActionOutput_timetastic_listlockeddates"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listlockeddates", "ActionOutput_timetastic_listlockeddates"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listlockeddates": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listlockeddates": {
+                        "type": "object",
+                        "properties": {
+                            "lockedDates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "createdById": {
+                                            "type": "number"
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        },
+                                        "startTime": {
+                                            "type": "string"
+                                        },
+                                        "endTime": {
+                                            "type": "string"
+                                        },
+                                        "organisationId": {
+                                            "type": "number"
+                                        },
+                                        "recordId": {
+                                            "type": "number"
+                                        },
+                                        "recordType": {
+                                            "type": "string",
+                                            "enum": ["Organisation", "Department", "User"]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["lockedDates"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all countries with public holiday sets available.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listpublicholidaycountries",
+            "name": "list-public-holiday-countries",
+            "output": ["ActionOutput_timetastic_listpublicholidaycountries"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listpublicholidaycountries", "ActionOutput_timetastic_listpublicholidaycountries"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listpublicholidaycountries": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listpublicholidaycountries": {
+                        "type": "object",
+                        "properties": {
+                            "countries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "hasRegions": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["code", "name", "hasRegions"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["countries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List public holidays for the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listpublicholidays",
+            "name": "list-public-holidays",
+            "output": ["ActionOutput_timetastic_listpublicholidays"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listpublicholidays", "ActionOutput_timetastic_listpublicholidays"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listpublicholidays": {
+                        "type": "object",
+                        "properties": {
+                            "countryCode": {
+                                "description": "Optional country code to filter public holidays. Example: \"GB\"",
+                                "type": "string"
+                            },
+                            "year": {
+                                "description": "Optional year to filter public holidays. Example: 2026",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "userId": {
+                                "description": "Optional user id to filter public holidays. Example: 1522999",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "bankHolidaySetId": {
+                                "description": "Optional bank holiday set id to filter public holidays.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "useOrgLeaveYear": {
+                                "description": "Optional flag to return public holidays for the organisation leave year.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listpublicholidays": {
+                        "type": "object",
+                        "properties": {
+                            "publicHolidays": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "formattedDate": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "countryCode": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "bankHolidaySetId": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "bankHolidaySetName": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["publicHolidays"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List allowances, TOIL, and carry-forwards for every user for a single year",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listuserallowancesforyear",
+            "name": "list-user-allowances-for-year",
+            "output": ["ActionOutput_timetastic_listuserallowancesforyear"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listuserallowancesforyear", "ActionOutput_timetastic_listuserallowancesforyear"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listuserallowancesforyear": {
+                        "type": "object",
+                        "properties": {
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The year to query. Example: 2026"
+                            }
+                        },
+                        "required": ["year"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listuserallowancesforyear": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "userAllowances": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "year": {
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991
+                                                            },
+                                                            "allowance": {
+                                                                "type": "number"
+                                                            },
+                                                            "toils": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "total": {
+                                                                        "type": "number"
+                                                                    },
+                                                                    "toil": {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "array",
+                                                                                "items": {
+                                                                                    "type": "object",
+                                                                                    "properties": {
+                                                                                        "id": {
+                                                                                            "anyOf": [
+                                                                                                {
+                                                                                                    "type": "integer",
+                                                                                                    "minimum": -9007199254740991,
+                                                                                                    "maximum": 9007199254740991
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "null"
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        "amount": {
+                                                                                            "type": ["number", "null"]
+                                                                                        },
+                                                                                        "description": {
+                                                                                            "type": ["string", "null"]
+                                                                                        }
+                                                                                    },
+                                                                                    "additionalProperties": false
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false
+                                                            },
+                                                            "carryForward": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List allowances, TOIL, and carry-forwards for every user across all years.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listuserallowances",
+            "name": "list-user-allowances",
+            "output": ["ActionOutput_timetastic_listuserallowances"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listuserallowances", "ActionOutput_timetastic_listuserallowances"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listuserallowances": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listuserallowances": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "type": "number"
+                                },
+                                "userAllowances": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "year": {
+                                                "type": "number"
+                                            },
+                                            "allowance": {
+                                                "type": "number"
+                                            },
+                                            "toils": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "total": {
+                                                        "type": "number"
+                                                    },
+                                                    "toil": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "number"
+                                                                },
+                                                                "amount": {
+                                                                    "type": "number"
+                                                                },
+                                                                "description": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "carryForward": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users for the organisation.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_timetastic_listusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listusers", "ActionOutput_timetastic_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "departmentId": {
+                                "description": "An optional department id to filter the users. Example: 248819",
+                                "type": "number"
+                            },
+                            "includeArchivedUsers": {
+                                "description": "Whether to include archived users in the search results.",
+                                "type": "boolean"
+                            },
+                            "onlyShowArchivedUsers": {
+                                "description": "If archived users are included, should we ONLY show those.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "firstname": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "admin": {
+                                            "type": "boolean"
+                                        },
+                                        "director": {
+                                            "type": "boolean"
+                                        },
+                                        "accountOwner": {
+                                            "type": "boolean"
+                                        },
+                                        "organisationId": {
+                                            "type": "number"
+                                        },
+                                        "departmentId": {
+                                            "type": "number"
+                                        },
+                                        "allowanceUnit": {
+                                            "type": "string"
+                                        },
+                                        "managerOfDepartments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "bossOfDepartments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "endDate": {
+                                            "type": "string"
+                                        },
+                                        "departmentName": {
+                                            "type": "string"
+                                        },
+                                        "gravatar": {
+                                            "type": "string"
+                                        },
+                                        "allowanceRemaining": {
+                                            "type": "number"
+                                        },
+                                        "hasLoggedOn": {
+                                            "type": "boolean"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "approverId": {
+                                            "type": "number"
+                                        },
+                                        "isApprover": {
+                                            "type": "boolean"
+                                        },
+                                        "deptManagerId": {
+                                            "type": "number"
+                                        },
+                                        "deptBossId": {
+                                            "type": "number"
+                                        },
+                                        "birthday": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "hasPublicHolidays": {
+                                            "type": "boolean"
+                                        },
+                                        "userInitials": {
+                                            "type": "string"
+                                        },
+                                        "countryCode": {
+                                            "type": "string"
+                                        },
+                                        "currentYearAllowance": {
+                                            "type": "number"
+                                        },
+                                        "nextYearAllowance": {
+                                            "type": "number"
+                                        },
+                                        "userLinkedWithGoogle": {
+                                            "type": "boolean"
+                                        },
+                                        "userManagedExternally": {
+                                            "type": "boolean"
+                                        },
+                                        "mfaEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "inviteSentTimeUtc": {
+                                            "type": "string"
+                                        },
+                                        "inviteSentTimeHumanised": {
+                                            "type": "string"
+                                        },
+                                        "yearStart": {
+                                            "type": "number"
+                                        },
+                                        "accrualSystem": {
+                                            "type": "boolean"
+                                        },
+                                        "isEmailConfirmed": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List recent webhook delivery events.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_listwebhookevents",
+            "name": "list-webhook-events",
+            "output": ["ActionOutput_timetastic_listwebhookevents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_listwebhookevents", "ActionOutput_timetastic_listwebhookevents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_listwebhookevents": {
+                        "type": "object",
+                        "properties": {
+                            "daysHistory": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 30,
+                                "description": "Number of days of webhook history to retrieve. Timetastic retains 30 days. Example: 7"
+                            }
+                        },
+                        "required": ["daysHistory"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_listwebhookevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "organisationId": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "recordId": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "userId": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "retryCount": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "eventType": {
+                                            "type": "string",
+                                            "enum": [
+                                                "TestEvent",
+                                                "AbsenceRequested",
+                                                "AbsenceApproved",
+                                                "AbsenceDeclined",
+                                                "AbsenceCancelled",
+                                                "AbsenceBooked",
+                                                "AbsenceUpdated"
+                                            ]
+                                        },
+                                        "expiresAt": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "isProcessed": {
+                                            "type": "boolean"
+                                        },
+                                        "lastProcessedAt": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "lastResponseCode": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "lastResponseDetail": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "nextAttempt": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "organisationId",
+                                        "recordId",
+                                        "userId",
+                                        "retryCount",
+                                        "eventType",
+                                        "expiresAt",
+                                        "timestamp",
+                                        "isProcessed",
+                                        "lastResponseCode",
+                                        "nextAttempt",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a leave request for a user, department, or the whole organisation",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_requestholiday",
+            "name": "request-holiday",
+            "output": ["ActionOutput_timetastic_requestholiday"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_requestholiday", "ActionOutput_timetastic_requestholiday"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_requestholiday": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "The start date of the request. Date only, e.g. 2026-09-01"
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "The end date of the request. Date only, e.g. 2026-09-01"
+                            },
+                            "leaveTypeId": {
+                                "type": "number",
+                                "description": "The leave type ID for the request. Example: 586853"
+                            },
+                            "fromTime": {
+                                "description": "The part of day the leave starts. 'AM' (morning), 'PM' (lunchtime), or minutes since midnight for hourly bookings. Use 'AM' for a full day.",
+                                "type": "string"
+                            },
+                            "toTime": {
+                                "description": "The part of day the leave ends. 'AM' (lunchtime), 'PM' (end of day), or minutes since midnight for hourly bookings. Use 'PM' for a full day.",
+                                "type": "string"
+                            },
+                            "userOrDepartmentId": {
+                                "description": "The target user or department ID. Always pass the user's own ID, even for admin self-bookings.",
+                                "type": "number"
+                            },
+                            "reason": {
+                                "description": "An optional reason for the request",
+                                "type": "string"
+                            },
+                            "bookFor": {
+                                "description": "Scope of the booking. Combine with userOrDepartmentId set to a department or org ID for group bookings.",
+                                "type": "string",
+                                "enum": ["User", "Department", "Everyone"]
+                            },
+                            "suppressEmails": {
+                                "description": "Admin-only: suppress leave request emails",
+                                "type": "boolean"
+                            },
+                            "override": {
+                                "description": "Admin-only: bypass the max-off department limit",
+                                "type": "boolean"
+                            },
+                            "bookAsRequestee": {
+                                "description": "Admin-only: submit as a pending request from the target user instead of auto-approving",
+                                "type": "boolean"
+                            },
+                            "overrideLockedDays": {
+                                "description": "Admin-only: allow booking over locked dates",
+                                "type": "boolean"
+                            },
+                            "overrideAccruedAllowance": {
+                                "description": "Admin-only: bypass accrued allowance requirement",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["from", "to", "leaveTypeId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_requestholiday": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "response": {
+                                "type": "string"
+                            },
+                            "rejections": {
+                                "type": "boolean"
+                            },
+                            "autoApproved": {
+                                "type": "boolean"
+                            },
+                            "holidayId": {
+                                "type": "number"
+                            },
+                            "overrideRequired": {
+                                "type": "boolean"
+                            },
+                            "overrideLockedDateRequired": {
+                                "type": "boolean"
+                            },
+                            "overrideAccruedAllowanceRequired": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Restore an archived user so they can log in again.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_restoreuser",
+            "name": "restore-user",
+            "output": ["ActionOutput_timetastic_restoreuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_restoreuser", "ActionOutput_timetastic_restoreuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_restoreuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "User ID to restore. Example: 1523008"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_restoreuser": {
+                        "type": "object",
+                        "properties": {
+                            "wasEmailInUse": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["wasEmailInUse"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing leave type. Admin only.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_updateleavetype",
+            "name": "update-leave-type",
+            "output": ["ActionOutput_timetastic_updateleavetype"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_updateleavetype", "ActionOutput_timetastic_updateleavetype"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_updateleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Leave type ID. Example: 586883"
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the leave type. Required by the provider on every update. Example: \"Updated Leave Type\""
+                            },
+                            "deducted": {
+                                "description": "Whether this leave type deducts from allowance.",
+                                "type": "boolean"
+                            },
+                            "requiresApproval": {
+                                "description": "Whether leave requests of this type require approval.",
+                                "type": "boolean"
+                            },
+                            "includeMaxOff": {
+                                "description": "Whether this leave type counts towards the maximum off limit.",
+                                "type": "boolean"
+                            },
+                            "isPrivate": {
+                                "description": "Whether this leave type is private.",
+                                "type": "boolean"
+                            },
+                            "color": {
+                                "description": "Color for the leave type in the calendar.",
+                                "type": "string"
+                            },
+                            "icon": {
+                                "description": "Icon for the leave type.",
+                                "type": "string"
+                            },
+                            "calendarVisibility": {
+                                "description": "Calendar visibility setting.",
+                                "type": "string",
+                                "enum": ["Busy", "Available", "OutOfOffice"]
+                            },
+                            "limitHours": {
+                                "description": "Hourly limit for this leave type.",
+                                "type": "number"
+                            },
+                            "limitDays": {
+                                "description": "Daily limit for this leave type.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_updateleavetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The updated leave type ID."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user's annual leave allowance for a year.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_updateuserallowance",
+            "name": "update-user-allowance",
+            "output": ["ActionOutput_timetastic_updateuserallowance"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_updateuserallowance", "ActionOutput_timetastic_updateuserallowance"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_updateuserallowance": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The id of the user to update. Example: 1522999"
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The year to update the allowance for. Example: 2026"
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "The new allowance amount. Example: 25"
+                            }
+                        },
+                        "required": ["userId", "year", "amount"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_updateuserallowance": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "amount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["userId", "year", "amount"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user's carried-forward allowance for a year.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_updateusercarryforward",
+            "name": "update-user-carryforward",
+            "output": ["ActionOutput_timetastic_updateusercarryforward"],
+            "scopes": ["allowances:write"],
+            "usedModels": ["ActionInput_timetastic_updateusercarryforward", "ActionOutput_timetastic_updateusercarryforward"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_updateusercarryforward": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "number",
+                                "description": "The id of the user to update. Example: 1523007"
+                            },
+                            "year": {
+                                "type": "number",
+                                "description": "The year to update the carry forward for. Example: 2026"
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "The carry forward amount. Example: 3"
+                            }
+                        },
+                        "required": ["userId", "year", "amount"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_updateusercarryforward": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing TOIL entry for a user for a year.",
+            "endpoint": null,
+            "input": "ActionInput_timetastic_updateusertoil",
+            "name": "update-user-toil",
+            "output": ["ActionOutput_timetastic_updateusertoil"],
+            "scopes": [],
+            "usedModels": ["ActionInput_timetastic_updateusertoil", "ActionOutput_timetastic_updateusertoil"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_timetastic_updateusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "User ID. Example: 1522999"
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Year. Example: 2026"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "TOIL entry ID. Example: 51015765"
+                            },
+                            "amount": {
+                                "type": "number",
+                                "description": "TOIL amount in days. Example: 2.0"
+                            },
+                            "description": {
+                                "description": "Optional description for the TOIL entry.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["userId", "year", "id", "amount"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_timetastic_updateusertoil": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The updated TOIL entry ID."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync departments.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "departments",
+            "output": ["Department"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Department"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Department": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "organisationId": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "managerId": {
+                                "type": "number"
+                            },
+                            "bossId": {
+                                "type": "number"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "userCount": {
+                                "type": "number"
+                            },
+                            "maxOff": {
+                                "type": "number"
+                            },
+                            "showPublicHolidays": {
+                                "type": "boolean"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync leave requests.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "holidays",
+            "output": ["Holiday"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Holiday"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Holiday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "leaveTypeId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "deduction": {
+                                "type": "number"
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "declineReason": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "autoApproved": {
+                                "type": "boolean"
+                            },
+                            "bookingUnit": {
+                                "type": "string"
+                            },
+                            "leaveType": {
+                                "type": "string"
+                            },
+                            "startType": {
+                                "type": "string"
+                            },
+                            "endType": {
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string"
+                            },
+                            "requestedById": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "actionerId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "dateRangeString": {
+                                "type": "string"
+                            },
+                            "startDateString": {
+                                "type": "string"
+                            },
+                            "endDateString": {
+                                "type": "string"
+                            },
+                            "adjustedStartDateUtc": {
+                                "type": "string"
+                            },
+                            "adjustedEndDateUtc": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "startDate", "endDate", "userId", "status", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync leave types.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "leave-types",
+            "output": ["LeaveType"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LeaveType"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LeaveType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "organisationId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "deducted": {
+                                "type": "boolean"
+                            },
+                            "requiresApproval": {
+                                "type": "boolean"
+                            },
+                            "includeMaxOff": {
+                                "type": "boolean"
+                            },
+                            "isPrivate": {
+                                "type": "boolean"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "isInUse": {
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "string"
+                            },
+                            "calendarVisibility": {
+                                "type": "string",
+                                "enum": ["Busy", "Available", "OutOfOffice"]
+                            },
+                            "limitHours": {
+                                "type": "number"
+                            },
+                            "limitDays": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "organisationId",
+                            "deducted",
+                            "requiresApproval",
+                            "includeMaxOff",
+                            "isPrivate",
+                            "active",
+                            "isInUse",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync locked date periods.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "locked-dates",
+            "output": ["LockedDate"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LockedDate"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LockedDate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "createdById": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "startTime": {
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "organisationId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "recordId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "recordType": {
+                                "type": "string",
+                                "enum": ["Organisation", "Department", "User"]
+                            }
+                        },
+                        "required": ["id", "createdAt", "createdById", "startTime", "endTime", "organisationId", "recordId", "recordType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync public holidays.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "public-holidays",
+            "output": ["PublicHoliday"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["PublicHoliday"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PublicHoliday": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "formattedDate": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "countryCode": {
+                                "type": "string"
+                            },
+                            "bankHolidaySetId": {
+                                "type": "number"
+                            },
+                            "bankHolidaySetName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "date", "createdAt", "updatedAt", "bankHolidaySetId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync user allowances, TOIL, and carry-forwards.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "user-allowances",
+            "output": ["UserAllowance"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["UserAllowance"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UserAllowance": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "year": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "allowance": {
+                                "type": "number"
+                            },
+                            "carryForward": {
+                                "type": "number"
+                            },
+                            "toilsTotal": {
+                                "type": "number"
+                            },
+                            "toils": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "userId", "year"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync users.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "admin": {
+                                "type": "boolean"
+                            },
+                            "director": {
+                                "type": "boolean"
+                            },
+                            "accountOwner": {
+                                "type": "boolean"
+                            },
+                            "organisationId": {
+                                "type": "number"
+                            },
+                            "departmentId": {
+                                "type": "number"
+                            },
+                            "allowanceUnit": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "Days"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "Hours"
+                                    }
+                                ]
+                            },
+                            "managerOfDepartments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "bossOfDepartments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "departmentName": {
+                                "type": "string"
+                            },
+                            "gravatar": {
+                                "type": "string"
+                            },
+                            "allowanceRemaining": {
+                                "type": "number"
+                            },
+                            "hasLoggedOn": {
+                                "type": "boolean"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "approverId": {
+                                "type": "number"
+                            },
+                            "isApprover": {
+                                "type": "boolean"
+                            },
+                            "deptManagerId": {
+                                "type": "number"
+                            },
+                            "deptBossId": {
+                                "type": "number"
+                            },
+                            "birthday": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "hasPublicHolidays": {
+                                "type": "boolean"
+                            },
+                            "userInitials": {
+                                "type": "string"
+                            },
+                            "countryCode": {
+                                "type": "string"
+                            },
+                            "currentYearAllowance": {
+                                "type": "number"
+                            },
+                            "nextYearAllowance": {
+                                "type": "number"
+                            },
+                            "userLinkedWithGoogle": {
+                                "type": "boolean"
+                            },
+                            "userManagedExternally": {
+                                "type": "boolean"
+                            },
+                            "mfaEnabled": {
+                                "type": "boolean"
+                            },
+                            "inviteSentTimeUtc": {
+                                "type": "string"
+                            },
+                            "inviteSentTimeHumanised": {
+                                "type": "string"
+                            },
+                            "yearStart": {
+                                "type": "number"
+                            },
+                            "accrualSystem": {
+                                "type": "boolean"
+                            },
+                            "isEmailConfirmed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "admin",
+                            "director",
+                            "accountOwner",
+                            "organisationId",
+                            "departmentId",
+                            "allowanceRemaining",
+                            "hasLoggedOn",
+                            "isArchived",
+                            "approverId",
+                            "isApprover",
+                            "deptManagerId",
+                            "hasPublicHolidays",
+                            "currentYearAllowance",
+                            "nextYearAllowance",
+                            "userLinkedWithGoogle",
+                            "userManagedExternally",
+                            "mfaEnabled",
+                            "yearStart",
+                            "accrualSystem",
+                            "isEmailConfirmed"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

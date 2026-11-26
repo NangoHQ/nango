@@ -1,0 +1,248 @@
+{
+    "providerConfigKey": "google",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync all workspace org units",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/google/workspace-org-unit"
+                }
+            ],
+            "input": "SyncMetadata_google_workspaceorgunits",
+            "name": "workspace-org-units",
+            "output": ["OrganizationalUnit"],
+            "runs": "every 6 hours",
+            "scopes": ["https://www.googleapis.com/auth/admin.directory.orgunit.readonly"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["OrganizationalUnit", "SyncMetadata_google_workspaceorgunits"],
+            "version": "2.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "OrganizationalUnit": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": ["string", "null"]
+                            },
+                            "deletedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "path": {
+                                "type": ["string", "null"]
+                            },
+                            "parentPath": {
+                                "type": ["string", "null"]
+                            },
+                            "parentId": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "name", "createdAt", "deletedAt", "description", "path", "parentPath", "parentId"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_workspaceorgunits": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all workspace users access tokens",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/google/workspace-user-access-tokens"
+                }
+            ],
+            "input": "SyncMetadata_google_workspaceuseraccesstokens",
+            "name": "workspace-user-access-tokens",
+            "output": ["GoogleWorkspaceUserToken"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/admin.directory.user.readonly", "https://www.googleapis.com/auth/admin.directory.user.security"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["GoogleWorkspaceUserToken", "SyncMetadata_google_workspaceuseraccesstokens"],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GoogleWorkspaceUserToken": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "app_name": {
+                                "type": "string"
+                            },
+                            "anonymous_app": {
+                                "type": "boolean"
+                            },
+                            "scopes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "user_id", "app_name", "anonymous_app", "scopes"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_workspaceuseraccesstokens": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all workspace users",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/google/workspace-users"
+                }
+            ],
+            "input": "SyncMetadata_google_workspaceusers",
+            "name": "workspace-users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/admin.directory.user.readonly"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_google_workspaceusers"],
+            "version": "2.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": ["string", "null"]
+                            },
+                            "givenName": {
+                                "type": ["string", "null"]
+                            },
+                            "familyName": {
+                                "type": ["string", "null"]
+                            },
+                            "picture": {
+                                "type": ["string", "null"]
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": ["string", "null"]
+                            },
+                            "deletedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "phone": {
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "type": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "organizationId": {
+                                "type": ["string", "null"]
+                            },
+                            "organizationPath": {
+                                "type": ["string", "null"]
+                            },
+                            "isAdmin": {
+                                "type": ["boolean", "null"]
+                            },
+                            "department": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "displayName",
+                            "givenName",
+                            "familyName",
+                            "type",
+                            "createdAt",
+                            "deletedAt",
+                            "phone",
+                            "organizationPath",
+                            "isAdmin",
+                            "department"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_workspaceusers": {
+                        "type": "object",
+                        "properties": {
+                            "orgsToSync": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "path"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["orgsToSync"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

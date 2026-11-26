@@ -1,0 +1,146 @@
+{
+    "providerConfigKey": "checkr-partner-staging",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches account details for the authenticated account.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/checkr-partner-staging/account"
+                }
+            ],
+            "input": "SyncMetadata_checkr_partner_staging_account",
+            "name": "account",
+            "output": ["CheckrPartnerStagingAccount"],
+            "runs": "every hour",
+            "scopes": ["read_write"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CheckrPartnerStagingAccount", "SyncMetadata_checkr_partner_staging_account"],
+            "version": "2.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CheckrPartnerStagingAccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "account_deauthorization": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "adverse_action_email": {
+                                "type": "string"
+                            },
+                            "api_authorized": {
+                                "type": "boolean"
+                            },
+                            "authorized": {
+                                "type": "boolean"
+                            },
+                            "available_screenings": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "billing_email": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "compliance_contact_email": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "default_compliance_city": {
+                                "type": ["string", "null"]
+                            },
+                            "default_compliance_state": {
+                                "type": ["string", "null"]
+                            },
+                            "geos_required": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "purpose": {
+                                "type": "string"
+                            },
+                            "segmentation_enabled": {
+                                "type": "boolean"
+                            },
+                            "support_email": {
+                                "type": ["string", "null"]
+                            },
+                            "support_phone": {
+                                "type": ["string", "null"]
+                            },
+                            "technical_contact_email": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "uri_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "object",
+                            "account_deauthorization",
+                            "adverse_action_email",
+                            "api_authorized",
+                            "authorized",
+                            "available_screenings",
+                            "billing_email",
+                            "company",
+                            "compliance_contact_email",
+                            "created_at",
+                            "default_compliance_city",
+                            "default_compliance_state",
+                            "geos_required",
+                            "name",
+                            "purpose",
+                            "segmentation_enabled",
+                            "support_email",
+                            "support_phone",
+                            "technical_contact_email",
+                            "uri",
+                            "uri_name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_checkr_partner_staging_account": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,70 @@
+{
+    "providerConfigKey": "bitdefender",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Retrieves detailed information about the current company in Bitdefender GravityZone.",
+            "endpoint": null,
+            "input": "ActionInput_bitdefender_getcompanydetails",
+            "name": "get-company-details",
+            "output": ["ActionOutput_bitdefender_getcompanydetails"],
+            "scopes": [],
+            "usedModels": ["ActionInput_bitdefender_getcompanydetails", "ActionOutput_bitdefender_getcompanydetails"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_bitdefender_getcompanydetails": {
+                        "type": "null"
+                    },
+                    "ActionOutput_bitdefender_getcompanydetails": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "subscribedServices": {
+                                "type": "object",
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "boolean"
+                                    },
+                                    "exchange": {
+                                        "type": "boolean"
+                                    },
+                                    "network": {
+                                        "type": "boolean"
+                                    },
+                                    "sos": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["endpoint", "exchange", "network", "sos"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name", "type", "subscribedServices"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

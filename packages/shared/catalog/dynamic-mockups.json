@@ -1,0 +1,1474 @@
+{
+    "providerConfigKey": "dynamic-mockups",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new collection to group mockups for bulk/collection-based rendering.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_createcollection",
+            "name": "create-collection",
+            "output": ["ActionOutput_dynamic_mockups_createcollection"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_createcollection", "ActionOutput_dynamic_mockups_createcollection"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_createcollection": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Collection name. Example: \"Summer Campaign\""
+                            },
+                            "catalog_uuid": {
+                                "description": "Catalog UUID to associate the collection with. Omit to use the account's default catalog.",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_createcollection": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "type": "number"
+                            },
+                            "catalog_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "is_published": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "uuid", "workspace_id", "catalog_id", "name", "slug", "is_published", "created_at", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a previously-uploaded PSD file, optionally cascading to delete any mockup(s) that were created from it.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_deletepsd",
+            "name": "delete-psd",
+            "output": ["ActionOutput_dynamic_mockups_deletepsd"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_deletepsd", "ActionOutput_dynamic_mockups_deletepsd"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_deletepsd": {
+                        "type": "object",
+                        "properties": {
+                            "psd_uuid": {
+                                "type": "string",
+                                "description": "The UUID of the PSD file to delete. Example: \"fc2ed284-57f7-406e-b111-952e622beff3\""
+                            },
+                            "delete_related_mockups": {
+                                "description": "If true, also delete any mockups created from this PSD.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["psd_uuid"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_deletepsd": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get full details (including available decoration locations) for one POD product, for use with create-mock-anything's product.decorations.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_getmockanythingproduct",
+            "name": "get-mock-anything-product",
+            "output": ["ActionOutput_dynamic_mockups_getmockanythingproduct"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_getmockanythingproduct", "ActionOutput_dynamic_mockups_getmockanythingproduct"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_getmockanythingproduct": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "Product UUID. Example: \"17212ae2-39cf-4af2-abd8-3960dddd1a87\""
+                            }
+                        },
+                        "required": ["uuid"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_getmockanythingproduct": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "brand": {
+                                "type": "string"
+                            },
+                            "style_code": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "subcategory": {
+                                "type": "string"
+                            },
+                            "decorations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "position_id": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "surface": {
+                                            "type": "string"
+                                        },
+                                        "sources": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["position_id", "location", "name", "surface", "sources"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "colors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "hex": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "supported_sizes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["uuid", "name", "brand", "style_code", "category", "subcategory", "decorations", "colors", "supported_sizes"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Poll the status of an async MockAnything AI mockup-creation task.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_getmockanythingstatus",
+            "name": "get-mock-anything-status",
+            "output": ["ActionOutput_dynamic_mockups_getmockanythingstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_getmockanythingstatus", "ActionOutput_dynamic_mockups_getmockanythingstatus"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_getmockanythingstatus": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string",
+                                "description": "The task ID returned by create-mock-anything. Example: \"444e0bee-a1a8-4bfa-a312-5f0eae1602d3\""
+                            }
+                        },
+                        "required": ["taskId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_getmockanythingstatus": {
+                        "type": "object",
+                        "properties": {
+                            "state": {
+                                "type": "string",
+                                "enum": ["PENDING", "PROGRESS", "SUCCESS", "FAILURE"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "mockup": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "uuid": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "thumbnail": {
+                                        "type": "string"
+                                    },
+                                    "smart_objects": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uuid": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "size": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "width": {
+                                                            "type": "number"
+                                                        },
+                                                        "height": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["width", "height"],
+                                                    "additionalProperties": false
+                                                },
+                                                "position": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "top": {
+                                                            "type": "number"
+                                                        },
+                                                        "left": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["top", "left"],
+                                                    "additionalProperties": false
+                                                },
+                                                "print_area_presets": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "decoration": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "location": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["location", "name"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["uuid", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "text_layers": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "collections": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "thumbnails": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "products": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "unrendered_decorations": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "location": {
+                                                    "type": "string"
+                                                },
+                                                "reason": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["location", "reason"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": ["uuid", "name"],
+                                "additionalProperties": {}
+                            },
+                            "selected_size": {
+                                "type": "string"
+                            },
+                            "aspect_ratio": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["state"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single mockup template by uuid.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_getmockup",
+            "name": "get-mockup",
+            "output": ["ActionOutput_dynamic_mockups_getmockup"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_getmockup", "ActionOutput_dynamic_mockups_getmockup"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_getmockup": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "Mockup UUID. Example: \"fa4ffaad-cef5-4205-99c7-cb03f73f0118\""
+                            }
+                        },
+                        "required": ["uuid"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_getmockup": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "thumbnail": {
+                                "type": "string"
+                            },
+                            "smart_objects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "object",
+                                            "properties": {
+                                                "width": {
+                                                    "type": "number"
+                                                },
+                                                "height": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["width", "height"],
+                                            "additionalProperties": false
+                                        },
+                                        "position": {
+                                            "type": "object",
+                                            "properties": {
+                                                "top": {
+                                                    "type": "number"
+                                                },
+                                                "left": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["top", "left"],
+                                            "additionalProperties": false
+                                        },
+                                        "print_area_presets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "thumbnails": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "width": {
+                                                                    "type": "number"
+                                                                },
+                                                                "url": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["width", "url"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["uuid", "name", "thumbnails"],
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "text_layers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "collections": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "thumbnails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["width", "url"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["uuid", "name", "thumbnail"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Poll the status of an async MotionMockups video-generation request.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_getmotionmockupstatus",
+            "name": "get-motion-mockup-status",
+            "output": ["ActionOutput_dynamic_mockups_getmotionmockupstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_getmotionmockupstatus", "ActionOutput_dynamic_mockups_getmotionmockupstatus"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_getmotionmockupstatus": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The MotionMockups request ID to poll. Example: \"019fd22e-d00d-7771-b9a6-a4bbb3102ee1\""
+                            }
+                        },
+                        "required": ["requestId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_getmotionmockupstatus": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": ["IN_QUEUE", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED", "ERROR"]
+                            },
+                            "video": {
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string"
+                                    },
+                                    "content_type": {
+                                        "type": "string"
+                                    },
+                                    "file_name": {
+                                        "type": "string"
+                                    },
+                                    "file_size": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["url", "content_type", "file_name", "file_size"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List catalogs (top-level containers that scope mockups/collections; every workspace has at least a Default catalog).",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_listcatalogs",
+            "name": "list-catalogs",
+            "output": ["ActionOutput_dynamic_mockups_listcatalogs"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_listcatalogs", "ActionOutput_dynamic_mockups_listcatalogs"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_listcatalogs": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_listcatalogs": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "uuid": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "created_at": {
+                                    "type": "string"
+                                },
+                                "created_at_timestamp": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["uuid", "name", "type"],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List collections (named groupings of mockups, e.g. for bulk/collection rendering) in this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_listcollections",
+            "name": "list-collections",
+            "output": ["ActionOutput_dynamic_mockups_listcollections"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_listcollections", "ActionOutput_dynamic_mockups_listcollections"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_listcollections": {
+                        "type": "object",
+                        "properties": {
+                            "catalog_uuid": {
+                                "description": "Catalog UUID to filter collections. Example: \"6e228160-a9cc-4407-bfa9-464972545fdd\"",
+                                "type": "string"
+                            },
+                            "include_all_catalogs": {
+                                "description": "Whether to include collections from all catalogs.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_listcollections": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "mockup_count": {
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "created_at_timestamp": {
+                                            "type": "number"
+                                        },
+                                        "updated_at_timestamp": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["uuid", "name", "mockup_count", "created_at", "updated_at", "created_at_timestamp", "updated_at_timestamp"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["data"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available AI generation styles for MockAnything, optionally filtered by model.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_listmockanythingstyles",
+            "name": "list-mock-anything-styles",
+            "output": ["ActionOutput_dynamic_mockups_listmockanythingstyles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_listmockanythingstyles", "ActionOutput_dynamic_mockups_listmockanythingstyles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_listmockanythingstyles": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "description": "AI model to filter styles by. Example: \"nano_banana_pro\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_listmockanythingstyles": {
+                        "type": "object",
+                        "properties": {
+                            "styles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "available_with": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "description", "available_with"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["styles"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List mockup templates (both classic PSD-based and MockAnything AI-generated) in this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_listmockups",
+            "name": "list-mockups",
+            "output": ["ActionOutput_dynamic_mockups_listmockups"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_listmockups", "ActionOutput_dynamic_mockups_listmockups"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_listmockups": {
+                        "type": "object",
+                        "properties": {
+                            "catalog_uuid": {
+                                "description": "Catalog UUID to filter mockups. Example: \"6e228160-a9cc-4407-bfa9-464972545fdd\"",
+                                "type": "string"
+                            },
+                            "collection_uuid": {
+                                "description": "Collection UUID to filter mockups. Example: \"f035baed-db43-40d5-b260-cdc02458db93\"",
+                                "type": "string"
+                            },
+                            "include_all_catalogs": {
+                                "description": "Include mockups from all catalogs",
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "description": "Filter mockups by name",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_listmockups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "thumbnail": {
+                                            "type": "string"
+                                        },
+                                        "smart_objects": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "size": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "width": {
+                                                                "type": "number"
+                                                            },
+                                                            "height": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["width", "height"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "position": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "top": {
+                                                                "type": "number"
+                                                            },
+                                                            "left": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["top", "left"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "print_area_presets": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "propertyNames": {
+                                                                "type": "string"
+                                                            },
+                                                            "additionalProperties": {}
+                                                        }
+                                                    },
+                                                    "decoration": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "location": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["location", "name"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["uuid", "name", "size", "position"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "text_layers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["uuid", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "collections": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["uuid", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "thumbnails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "width": {
+                                                        "type": "number"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["width", "url"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "products": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "psd": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uuid": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["uuid", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "catalog_uuid": {
+                                            "type": "string"
+                                        },
+                                        "catalog_id": {
+                                            "type": "number"
+                                        },
+                                        "id": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available image-to-video AI models with their supported durations, aspect ratios, and credit costs.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_listmotionmockupmodels",
+            "name": "list-motion-mockup-models",
+            "output": ["ActionOutput_dynamic_mockups_listmotionmockupmodels"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_listmotionmockupmodels", "ActionOutput_dynamic_mockups_listmotionmockupmodels"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_listmotionmockupmodels": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_listmotionmockupmodels": {
+                        "type": "object",
+                        "properties": {
+                            "models": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        },
+                                        "default_duration": {
+                                            "type": "string"
+                                        },
+                                        "durations": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "seconds": {
+                                                        "type": "number"
+                                                    },
+                                                    "credits": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "audio_off": {
+                                                                "type": "number"
+                                                            },
+                                                            "audio_on": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["audio_off", "audio_on"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "estimated_time_minutes": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["seconds", "credits", "estimated_time_minutes"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "aspect_ratios": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "default_aspect_ratio": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "supports_aspect_ratio": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "display_name",
+                                        "default_duration",
+                                        "durations",
+                                        "aspect_ratios",
+                                        "default_aspect_ratio",
+                                        "supports_aspect_ratio"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "default_model": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["models", "default_model"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search the built-in print-on-demand (POD) product catalog usable with MockAnything AI generation.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_searchmockanythingproducts",
+            "name": "search-mock-anything-products",
+            "output": ["ActionOutput_dynamic_mockups_searchmockanythingproducts"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_searchmockanythingproducts", "ActionOutput_dynamic_mockups_searchmockanythingproducts"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_searchmockanythingproducts": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "Search term for the built-in print-on-demand product catalog. Example: \"shirt\""
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_searchmockanythingproducts": {
+                        "type": "object",
+                        "properties": {
+                            "products": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "sizes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "width_in": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "height_in": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "is_reference_size": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["label", "width_in", "height_in", "is_reference_size"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["products"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a Photoshop (.psd) file by URL, optionally creating a usable mockup template from it in the same call.",
+            "endpoint": null,
+            "input": "ActionInput_dynamic_mockups_uploadpsd",
+            "name": "upload-psd",
+            "output": ["ActionOutput_dynamic_mockups_uploadpsd"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dynamic_mockups_uploadpsd", "ActionOutput_dynamic_mockups_uploadpsd"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynamic_mockups_uploadpsd": {
+                        "type": "object",
+                        "properties": {
+                            "psd_file_url": {
+                                "type": "string",
+                                "description": "Publicly reachable direct URL to the PSD file. Example: \"https://example.com/design.psd\""
+                            },
+                            "psd_name": {
+                                "description": "Optional display name for the uploaded PSD. Example: \"Summer Campaign PSD\"",
+                                "type": "string"
+                            },
+                            "psd_category_id": {
+                                "description": "Optional category ID. Defaults to 6 (\"Other\"). Example: 6",
+                                "type": "number"
+                            },
+                            "mockup_template": {
+                                "type": "object",
+                                "properties": {
+                                    "create_after_upload": {
+                                        "description": "If true, creates a usable mockup template immediately after upload. Defaults to false.",
+                                        "type": "boolean"
+                                    },
+                                    "collections": {
+                                        "description": "Collection UUIDs to assign the new mockup to. Example: [\"f035baed-db43-40d5-b260-cdc02458db93\"]",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "catalog_uuid": {
+                                        "description": "Catalog UUID to place the mockup in. Example: \"6e228160-a9cc-4407-bfa9-464972545fdd\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["psd_file_url"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynamic_mockups_uploadpsd": {
+                        "type": "object",
+                        "properties": {
+                            "psd_uuid": {
+                                "type": "string"
+                            },
+                            "psd_name": {
+                                "type": "string"
+                            },
+                            "mockup_uuid": {
+                                "type": "string"
+                            },
+                            "mockup_name": {
+                                "type": "string"
+                            },
+                            "thumbnail": {
+                                "type": "string"
+                            },
+                            "smart_objects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "position": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "print_area_presets": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "text_layers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "collections": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["uuid", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "thumbnails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["width", "url"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["psd_uuid", "psd_name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync catalogs (top-level containers scoping mockups/collections) in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "catalogs",
+            "output": ["Catalog"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Catalog"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Catalog": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "created_at_timestamp": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync collections (named groupings of mockups) in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "collections",
+            "output": ["Collection"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Collection"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Collection": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "mockup_count": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync mockup templates (both classic PSD-based and MockAnything AI-generated) in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "mockups",
+            "output": ["Mockup"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Mockup"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Mockup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "smart_objects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["uuid"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "psd": {
+                                "type": "object",
+                                "properties": {
+                                    "uuid": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["uuid"],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "uuid"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

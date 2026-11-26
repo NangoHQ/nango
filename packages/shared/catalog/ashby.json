@@ -1,0 +1,3794 @@
+{
+    "providerConfigKey": "ashby",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Update an application source.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_changeapplicationsource",
+            "name": "change-application-source",
+            "output": ["ActionOutput_ashby_changeapplicationsource"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_changeapplicationsource", "ActionOutput_ashby_changeapplicationsource"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_changeapplicationsource": {
+                        "type": "object",
+                        "properties": {
+                            "applicationId": {
+                                "type": "string",
+                                "description": "The id of the application to update the source of. Example: \"3ae2b801-19f6-41ef-ad28-214bd731948f\""
+                            },
+                            "sourceId": {
+                                "description": "The source to set on the application. Pass null to unset an application's source. Example: \"2c6991c5-c9e2-4af8-879e-29c5a9d26509\"",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["applicationId", "sourceId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_changeapplicationsource": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "currentInterviewStage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "job": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "source": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "status", "candidate", "job"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move an application to another interview stage.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_changeapplicationstage",
+            "name": "change-application-stage",
+            "output": ["ActionOutput_ashby_changeapplicationstage"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_changeapplicationstage", "ActionOutput_ashby_changeapplicationstage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_changeapplicationstage": {
+                        "type": "object",
+                        "properties": {
+                            "applicationId": {
+                                "type": "string",
+                                "description": "The id of the application to update the stage of. Example: \"3ae2b801-19f6-41ef-ad28-214bd731948f\""
+                            },
+                            "interviewStageId": {
+                                "type": "string",
+                                "description": "The interview stage to move the application to. Example: \"2c6991c5-c9e2-4af8-879e-29c5a9d26509\""
+                            },
+                            "archiveReasonId": {
+                                "description": "Archive reason to set when moving to an Interview Stage with type: Archived. Required when moving to an Archived stage.",
+                                "type": "string"
+                            },
+                            "archiveEmail": {
+                                "description": "Email to send to the candidate when moving to an Interview Stage with type: Archived.",
+                                "type": "object",
+                                "properties": {
+                                    "communicationTemplateId": {
+                                        "type": "string",
+                                        "description": "The id of the communication template to use for the email."
+                                    },
+                                    "sendAt": {
+                                        "description": "ISO 8601 date-time to send the email. If omitted, scheduled for the following morning at 9:32am in the default timezone.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["communicationTemplateId"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["applicationId", "interviewStageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_changeapplicationstage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "primaryEmailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "isPrimary": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["value", "type", "isPrimary"],
+                                        "additionalProperties": false
+                                    },
+                                    "primaryPhoneNumber": {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "isPrimary": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["value", "type", "isPrimary"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "currentInterviewStage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "interviewPlanId": {
+                                        "type": "string"
+                                    },
+                                    "orderInInterviewPlan": {
+                                        "type": "number"
+                                    },
+                                    "interviewStageGroupId": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["id", "title", "type"],
+                                "additionalProperties": false
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "isArchived": {
+                                        "type": "boolean"
+                                    },
+                                    "sourceType": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "isArchived": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["id", "title"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["id", "title"],
+                                "additionalProperties": false
+                            },
+                            "creditedToUser": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "archiveReason": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "text": {
+                                                "type": "string"
+                                            },
+                                            "reasonType": {
+                                                "type": "string"
+                                            },
+                                            "isArchived": {
+                                                "type": "boolean"
+                                            },
+                                            "customFields": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {},
+                                                    "additionalProperties": {}
+                                                }
+                                            }
+                                        },
+                                        "required": ["id", "text"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "job": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "locationId": {
+                                        "type": "string"
+                                    },
+                                    "departmentId": {
+                                        "type": "string"
+                                    },
+                                    "brandId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "title"],
+                                "additionalProperties": false
+                            },
+                            "hiringTeam": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "appliedViaJobPostingId": {
+                                "type": ["string", "null"]
+                            },
+                            "submitterClientIp": {
+                                "type": ["string", "null"]
+                            },
+                            "submitterUserAgent": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "createdAt", "updatedAt", "status", "candidate", "currentInterviewStage", "job"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an application in Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_createapplication",
+            "name": "create-application",
+            "output": ["ActionOutput_ashby_createapplication"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_createapplication", "ActionOutput_ashby_createapplication"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_createapplication": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "The id of the candidate to consider for a job. Example: \"3ae2b801-19f6-41ef-ad28-214bd731948f\""
+                            },
+                            "jobId": {
+                                "type": "string",
+                                "description": "The id of the job to consider the candidate for. Example: \"2c6991c5-c9e2-4af8-879e-29c5a9d26509\""
+                            },
+                            "interviewPlanId": {
+                                "description": "The id of the interview plan to place the application in.",
+                                "type": "string"
+                            },
+                            "interviewStageId": {
+                                "description": "The interview stage to place the application in.",
+                                "type": "string"
+                            },
+                            "sourceId": {
+                                "description": "The source to set on the application being created.",
+                                "type": "string"
+                            },
+                            "creditedToUserId": {
+                                "description": "The id of the user the application will be credited to.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "An ISO date string to set the application createdAt timestamp.",
+                                "type": "string"
+                            },
+                            "applicationHistory": {
+                                "description": "An array of objects representing the application history.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "stageId": {
+                                            "type": "string"
+                                        },
+                                        "stageNumber": {
+                                            "type": "number"
+                                        },
+                                        "enteredStageAt": {
+                                            "type": "string"
+                                        },
+                                        "archiveReasonId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["stageId", "stageNumber", "enteredStageAt"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["candidateId", "jobId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_createapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "job": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "currentInterviewStage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "archiveReason": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "archivedAt": {
+                                "type": "string"
+                            },
+                            "creditedToUser": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "appliedViaJobPostingId": {
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "hiringTeam": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id", "createdAt", "updatedAt", "status", "candidate", "job", "currentInterviewStage", "hiringTeam"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a candidate in Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_createcandidate",
+            "name": "create-candidate",
+            "output": ["ActionOutput_ashby_createcandidate"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_createcandidate", "ActionOutput_ashby_createcandidate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The first and last name of the candidate to be created."
+                            },
+                            "email": {
+                                "description": "Primary, personal email of the candidate to be created.",
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "description": "Primary, personal phone number of the candidate to be created.",
+                                "type": "string"
+                            },
+                            "linkedInUrl": {
+                                "description": "Url to the candidate's LinkedIn profile.",
+                                "type": "string"
+                            },
+                            "githubUrl": {
+                                "description": "Url to the candidate's Github profile.",
+                                "type": "string"
+                            },
+                            "website": {
+                                "description": "Url of the candidate's website.",
+                                "type": "string"
+                            },
+                            "alternateEmailAddresses": {
+                                "description": "Array of alternate email addresses to add to the candidate profile.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sourceId": {
+                                "description": "The source to set on the candidate being created.",
+                                "type": "string"
+                            },
+                            "creditedToUserId": {
+                                "description": "The id of the user the candidate will be credited to.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "The location of the candidate.",
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "region": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdAt": {
+                                "description": "An ISO date string to set the candidate's createdAt timestamp.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "type": "string"
+                            },
+                            "linkedInUrl": {
+                                "type": "string"
+                            },
+                            "githubUrl": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "profileUrl": {
+                                "type": "string"
+                            },
+                            "sourceId": {
+                                "type": "string"
+                            },
+                            "creditedToUserId": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a candidate note in Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_createnote",
+            "name": "create-note",
+            "output": ["ActionOutput_ashby_createnote"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_createnote", "ActionOutput_ashby_createnote"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_createnote": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "Candidate ID. Example: \"e9ed20fd-d45f-4aad-8a00-a19bfba0083e\""
+                            },
+                            "note": {
+                                "type": "string",
+                                "description": "The note content to add."
+                            },
+                            "noteType": {
+                                "description": "Content type of the note. Defaults to text/plain.",
+                                "type": "string",
+                                "enum": ["text/plain", "text/html"]
+                            },
+                            "sendNotifications": {
+                                "description": "Whether subscribed users should be notified. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "isPrivate": {
+                                "description": "Whether the note should be marked as private. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "description": "Optional ISO 8601 timestamp for when the note was created.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["candidateId", "note"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_createnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "candidateId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "isPrivate": {
+                                "type": "boolean"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "firstName", "lastName", "email"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "candidateId", "createdAt", "isPrivate", "content", "author"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single application from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getapplication",
+            "name": "get-application",
+            "output": ["ActionOutput_ashby_getapplication"],
+            "scopes": ["candidatesRead"],
+            "usedModels": ["ActionInput_ashby_getapplication", "ActionOutput_ashby_getapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getapplication": {
+                        "type": "object",
+                        "properties": {
+                            "applicationId": {
+                                "type": "string",
+                                "description": "The id of the application to fetch. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\""
+                            }
+                        },
+                        "required": ["applicationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getapplication": {
+                        "type": "object",
+                        "properties": {
+                            "application": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "createdAt": {
+                                        "type": "string"
+                                    },
+                                    "updatedAt": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "candidate": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "primaryEmailAddress": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "isPrimary": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["value", "type", "isPrimary"],
+                                                "additionalProperties": false
+                                            },
+                                            "primaryPhoneNumber": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "isPrimary": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["value", "type", "isPrimary"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id", "name"],
+                                        "additionalProperties": false
+                                    },
+                                    "currentInterviewStage": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "title"],
+                                        "additionalProperties": {}
+                                    },
+                                    "job": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "locationId": {
+                                                "type": "string"
+                                            },
+                                            "departmentId": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "title"],
+                                        "additionalProperties": false
+                                    },
+                                    "hiringTeam": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "userId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["userId"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "source": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "title"],
+                                        "additionalProperties": {}
+                                    },
+                                    "archiveReason": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": {}
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "archivedAt": {
+                                        "type": "string"
+                                    },
+                                    "creditedToUser": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": {}
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "appliedViaJobPostingId": {
+                                        "type": "string"
+                                    },
+                                    "submitterClientIp": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "submitterUserAgent": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "customFields": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "resumeFileHandle": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "openings": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "applicationHistory": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "applicationFormSubmissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "referrals": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "required": ["id", "createdAt", "updatedAt", "status", "candidate", "currentInterviewStage", "job", "hiringTeam"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["application"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single candidate from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getcandidate",
+            "name": "get-candidate",
+            "output": ["ActionOutput_ashby_getcandidate"],
+            "scopes": ["candidatesRead"],
+            "usedModels": ["ActionInput_ashby_getcandidate", "ActionOutput_ashby_getcandidate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique id of the candidate to retrieve. Example: \"f9e52a51-a075-4116-a7b8-484deba69004\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "primaryEmailAddress": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "isPrimary": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["value", "type", "isPrimary"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "emailAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "isPrimary": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["value", "type", "isPrimary"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "primaryPhoneNumber": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "isPrimary": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["value", "type", "isPrimary"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "isPrimary": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["value", "type", "isPrimary"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "socialLinks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "url"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "position": {
+                                "type": ["string", "null"]
+                            },
+                            "company": {
+                                "type": ["string", "null"]
+                            },
+                            "school": {
+                                "type": ["string", "null"]
+                            },
+                            "applicationIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "resumeFileHandle": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "handle": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "name", "handle"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "fileHandles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "handle": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "handle"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "profileUrl": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "creditedToUser": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "timezone": {
+                                "type": ["string", "null"]
+                            },
+                            "location": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "locationSummary": {
+                                                "type": "string"
+                                            },
+                                            "locationComponents": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["Country", "Region", "City"]
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["type", "name"],
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "required": ["id", "locationSummary", "locationComponents"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "fraudStatus": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": ["Fraudulent", "NotFraudulent", "Unsure", "Unreviewed", "PassedFraudCheck"]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "emailAddresses",
+                            "phoneNumbers",
+                            "socialLinks",
+                            "tags",
+                            "applicationIds",
+                            "fileHandles",
+                            "customFields",
+                            "profileUrl"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single department from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getdepartment",
+            "name": "get-department",
+            "output": ["ActionOutput_ashby_getdepartment"],
+            "scopes": ["organizationRead"],
+            "usedModels": ["ActionInput_ashby_getdepartment", "ActionOutput_ashby_getdepartment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "departmentId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "The unique id of the department whose details will be fetched. Example: \"148bea15-9b05-4aae-97a0-7886df2d549f\""
+                            }
+                        },
+                        "required": ["departmentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getdepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "externalName": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "parentId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "extraData": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "name", "isArchived", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single interview from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getinterview",
+            "name": "get-interview",
+            "output": ["ActionOutput_ashby_getinterview"],
+            "scopes": ["interviewsRead"],
+            "usedModels": ["ActionInput_ashby_getinterview", "ActionOutput_ashby_getinterview"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getinterview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique id of the interview whose details will be fetched. Example: \"3ae2b801-19f6-41ef-ad28-214bd731948f\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getinterview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "externalTitle": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "isDebrief": {
+                                "type": "boolean"
+                            },
+                            "isFeedbackRequired": {
+                                "type": "boolean"
+                            },
+                            "isFeedbackRequested": {
+                                "type": "boolean"
+                            },
+                            "instructionsHtml": {
+                                "type": "string"
+                            },
+                            "instructionsPlain": {
+                                "type": "string"
+                            },
+                            "jobId": {
+                                "type": "string"
+                            },
+                            "feedbackFormDefinitionId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title", "isArchived", "isFeedbackRequired", "isFeedbackRequested"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single job posting from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getjobposting",
+            "name": "get-job-posting",
+            "output": ["ActionOutput_ashby_getjobposting"],
+            "scopes": ["jobs:read"],
+            "usedModels": ["ActionInput_ashby_getjobposting", "ActionOutput_ashby_getjobposting"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getjobposting": {
+                        "type": "object",
+                        "properties": {
+                            "jobPostingId": {
+                                "type": "string",
+                                "description": "The id of the job posting to return. Example: \"4be0e8c0-9323-43a0-ab48-506789ab9c16\""
+                            },
+                            "jobBoardId": {
+                                "description": "If provided, returns the job posting data for the specified job board.",
+                                "type": "string"
+                            },
+                            "expand": {
+                                "description": "Choose to expand the result and include additional data for related objects. Example: [\"job\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["jobPostingId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getjobposting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "descriptionPlain": {
+                                "type": "string"
+                            },
+                            "descriptionHtml": {
+                                "type": "string"
+                            },
+                            "descriptionSocial": {
+                                "type": "string"
+                            },
+                            "descriptionParts": {
+                                "type": "object",
+                                "properties": {
+                                    "descriptionOpening": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "html": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "plain": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "descriptionBody": {
+                                        "type": "object",
+                                        "properties": {
+                                            "html": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "plain": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "descriptionClosing": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "html": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "plain": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": ["descriptionBody"],
+                                "additionalProperties": {}
+                            },
+                            "departmentName": {
+                                "type": "string"
+                            },
+                            "teamName": {
+                                "type": "string"
+                            },
+                            "teamNameHierarchy": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "jobId": {
+                                "type": "string"
+                            },
+                            "locationName": {
+                                "type": "string"
+                            },
+                            "locationIds": {},
+                            "linkedData": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "publishedDate": {
+                                "type": "string"
+                            },
+                            "applicationDeadline": {
+                                "type": ["string", "null"]
+                            },
+                            "address": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "isRemote": {
+                                "type": "boolean"
+                            },
+                            "workplaceType": {
+                                "type": "string"
+                            },
+                            "employmentType": {
+                                "type": "string"
+                            },
+                            "applicationFormDefinition": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "surveyFormDefinitions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "isListed": {
+                                "type": "boolean"
+                            },
+                            "suppressDescriptionOpening": {
+                                "type": "boolean"
+                            },
+                            "suppressDescriptionClosing": {
+                                "type": "boolean"
+                            },
+                            "externalLink": {
+                                "type": ["string", "null"]
+                            },
+                            "applyLink": {
+                                "type": "string"
+                            },
+                            "compensation": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "applicationLimitCalloutHtml": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "descriptionPlain",
+                            "descriptionHtml",
+                            "descriptionParts",
+                            "departmentName",
+                            "teamName",
+                            "jobId",
+                            "locationName",
+                            "locationIds",
+                            "linkedData",
+                            "publishedDate",
+                            "employmentType",
+                            "applicationFormDefinition",
+                            "surveyFormDefinitions",
+                            "isListed",
+                            "applyLink",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single job from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getjob",
+            "name": "get-job",
+            "output": ["ActionOutput_ashby_getjob"],
+            "scopes": ["jobsRead"],
+            "usedModels": ["ActionInput_ashby_getjob", "ActionOutput_ashby_getjob"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getjob": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The id of the job to fetch. Example: \"abc123\""
+                            },
+                            "includeUnpublishedJobPostingsIds": {
+                                "type": "boolean"
+                            },
+                            "expand": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["location", "openings"]
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getjob": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "confidential": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Job status. Example: \"Open\""
+                            },
+                            "employmentType": {
+                                "type": "string",
+                                "description": "Employment type. Example: \"FullTime\""
+                            },
+                            "locationId": {
+                                "type": ["string", "null"]
+                            },
+                            "departmentId": {
+                                "type": ["string", "null"]
+                            },
+                            "defaultInterviewPlanId": {
+                                "type": ["string", "null"]
+                            },
+                            "interviewPlanIds": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "customFields": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "jobPostingIds": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "customRequisitionId": {
+                                "type": ["string", "null"]
+                            },
+                            "brandId": {
+                                "type": ["string", "null"]
+                            },
+                            "hiringTeam": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "author": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": ["string", "null"]
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "openedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "closedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "location": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "openings": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "compensation": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "title", "confidential", "status", "employmentType", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single source from Ashby",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getsource",
+            "name": "get-source",
+            "output": ["ActionOutput_ashby_getsource"],
+            "scopes": ["hiringProcessMetadataRead"],
+            "usedModels": ["ActionInput_ashby_getsource", "ActionOutput_ashby_getsource"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getsource": {
+                        "type": "object",
+                        "properties": {
+                            "sourceId": {
+                                "type": "string",
+                                "description": "Source ID. Example: \"747a6dfa-389e-4d47-a840-308a12e4fd1c\""
+                            }
+                        },
+                        "required": ["sourceId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getsource": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "sourceType": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "isArchived": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["id", "title", "isArchived"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "title", "isArchived"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_ashby_getuser"],
+            "scopes": ["organizationRead"],
+            "usedModels": ["ActionInput_ashby_getuser", "ActionOutput_ashby_getuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The id to lookup the user. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "globalRole": {
+                                "type": "string"
+                            },
+                            "isEnabled": {
+                                "type": "boolean"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "managerId": {
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "globalRole", "isEnabled", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List applications from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listapplications",
+            "name": "list-applications",
+            "output": ["ActionOutput_ashby_listapplications"],
+            "scopes": ["candidatesRead"],
+            "usedModels": ["ActionInput_ashby_listapplications", "ActionOutput_ashby_listapplications"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listapplications": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return. The maximum and default value is 100.",
+                                "type": "number"
+                            },
+                            "status": {
+                                "description": "Filter by application status.",
+                                "type": "string",
+                                "enum": ["Hired", "Archived", "Active", "Lead"]
+                            },
+                            "jobId": {
+                                "description": "Filter by job ID.",
+                                "type": "string"
+                            },
+                            "syncToken": {
+                                "description": "Opaque token for incremental synchronization.",
+                                "type": "string"
+                            },
+                            "createdAfter": {
+                                "description": "Unix epoch timestamp in milliseconds. Return data created after this date.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listapplications": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "moreDataAvailable": {
+                                "type": "boolean"
+                            },
+                            "syncToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items", "moreDataAvailable"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List candidates from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listcandidates",
+            "name": "list-candidates",
+            "output": ["ActionOutput_ashby_listcandidates"],
+            "scopes": ["candidatesRead"],
+            "usedModels": ["ActionInput_ashby_listcandidates", "ActionOutput_ashby_listcandidates"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listcandidates": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return. The maximum and default value is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "createdAfter": {
+                                "description": "The API will return data after this date, which is the time since the unix epoch in milliseconds.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "syncToken": {
+                                "description": "An opaque token representing the last time the data was successfully synced from the API.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listcandidates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "primaryEmailAddress": {
+                                            "type": "string"
+                                        },
+                                        "emailAddresses": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "phoneNumbers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "socialLinks": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "applicationIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "profileUrl": {
+                                            "type": "string"
+                                        },
+                                        "source": {},
+                                        "creditedToUser": {},
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "syncToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List departments from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listdepartments",
+            "name": "list-departments",
+            "output": ["ActionOutput_ashby_listdepartments"],
+            "scopes": ["organizationRead"],
+            "usedModels": ["ActionInput_ashby_listdepartments", "ActionOutput_ashby_listdepartments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return. The maximum and default value is 100.",
+                                "type": "number"
+                            },
+                            "includeArchived": {
+                                "description": "When true, includes archived items.",
+                                "type": "boolean"
+                            },
+                            "syncToken": {
+                                "description": "An opaque token representing the last time the data was successfully synced from the API.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "externalName": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "parentId": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "extraData": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id", "name", "isArchived", "createdAt", "updatedAt"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "moreDataAvailable": {
+                                "type": "boolean"
+                            },
+                            "syncToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items", "moreDataAvailable"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List interviews from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listinterviews",
+            "name": "list-interviews",
+            "output": ["ActionOutput_ashby_listinterviews"],
+            "scopes": ["interviewsRead"],
+            "usedModels": ["ActionInput_ashby_listinterviews", "ActionOutput_ashby_listinterviews"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listinterviews": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return. The maximum and default value is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "includeArchived": {
+                                "description": "When true, includes archived items.",
+                                "type": "boolean"
+                            },
+                            "includeNonSharedInterviews": {
+                                "description": "If true, interviews associated with specific jobs will be included in the response.",
+                                "type": "boolean"
+                            },
+                            "excludeArchivedScheduleTemplateInterviews": {
+                                "description": "If true, interviews local to archived schedule templates are omitted from the response.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listinterviews": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "externalTitle": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "isDebrief": {
+                                            "type": "boolean"
+                                        },
+                                        "isFeedbackRequired": {
+                                            "type": "boolean"
+                                        },
+                                        "isFeedbackRequested": {
+                                            "type": "boolean"
+                                        },
+                                        "instructionsHtml": {
+                                            "type": "string"
+                                        },
+                                        "instructionsPlain": {
+                                            "type": "string"
+                                        },
+                                        "feedbackFormDefinitionId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title", "externalTitle", "isArchived", "isDebrief", "isFeedbackRequired", "isFeedbackRequested"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List job postings from Ashby",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listjobpostings",
+            "name": "list-job-postings",
+            "output": ["ActionOutput_ashby_listjobpostings"],
+            "scopes": ["jobsRead"],
+            "usedModels": ["ActionInput_ashby_listjobpostings", "ActionOutput_ashby_listjobpostings"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listjobpostings": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Filter by location name (case sensitive)",
+                                "type": "string"
+                            },
+                            "department": {
+                                "description": "Filter by department name (case sensitive)",
+                                "type": "string"
+                            },
+                            "listedOnly": {
+                                "description": "If true, filter out unlisted job postings",
+                                "type": "boolean"
+                            },
+                            "jobBoardId": {
+                                "description": "If provided, only returns job postings on the specified job board",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listjobpostings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "jobId": {
+                                            "type": "string"
+                                        },
+                                        "departmentName": {
+                                            "type": "string"
+                                        },
+                                        "teamName": {
+                                            "type": "string"
+                                        },
+                                        "locationName": {
+                                            "type": "string"
+                                        },
+                                        "locationIds": {
+                                            "type": "object",
+                                            "properties": {
+                                                "primaryLocationId": {
+                                                    "type": "string"
+                                                },
+                                                "secondaryLocationIds": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "required": ["primaryLocationId", "secondaryLocationIds"],
+                                            "additionalProperties": false
+                                        },
+                                        "workplaceType": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "employmentType": {
+                                            "type": "string"
+                                        },
+                                        "isListed": {
+                                            "type": "boolean"
+                                        },
+                                        "publishedDate": {
+                                            "type": "string"
+                                        },
+                                        "applicationDeadline": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "externalLink": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "applyLink": {
+                                            "type": "string"
+                                        },
+                                        "compensationTierSummary": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "shouldDisplayCompensationOnJobBoard": {
+                                            "type": "boolean"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "jobId",
+                                        "departmentName",
+                                        "teamName",
+                                        "locationName",
+                                        "locationIds",
+                                        "employmentType",
+                                        "isListed",
+                                        "publishedDate",
+                                        "applyLink",
+                                        "shouldDisplayCompensationOnJobBoard",
+                                        "updatedAt"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List jobs from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listjobs",
+            "name": "list-jobs",
+            "output": ["ActionOutput_ashby_listjobs"],
+            "scopes": ["jobsRead"],
+            "usedModels": ["ActionInput_ashby_listjobs", "ActionOutput_ashby_listjobs"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listjobs": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of items to return. The maximum and default value is 100.",
+                                "type": "number"
+                            },
+                            "status": {
+                                "description": "Filter by job statuses such as Draft, Open, Closed, or Archived.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "openedAfter": {
+                                "description": "Return jobs opened after this unix epoch timestamp in milliseconds.",
+                                "type": "number"
+                            },
+                            "openedBefore": {
+                                "description": "Return jobs opened before this unix epoch timestamp in milliseconds.",
+                                "type": "number"
+                            },
+                            "closedAfter": {
+                                "description": "Return jobs closed after this unix epoch timestamp in milliseconds.",
+                                "type": "number"
+                            },
+                            "closedBefore": {
+                                "description": "Return jobs closed before this unix epoch timestamp in milliseconds.",
+                                "type": "number"
+                            },
+                            "includeUnpublishedJobPostingsIds": {
+                                "description": "Include unpublished job posting ids in the response.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listjobs": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "confidential": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "employmentType": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        },
+                                        "departmentId": {
+                                            "type": "string"
+                                        },
+                                        "defaultInterviewPlanId": {
+                                            "type": "string"
+                                        },
+                                        "interviewPlanIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "customFields": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "jobPostingIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "customRequisitionId": {
+                                            "type": "string"
+                                        },
+                                        "brandId": {
+                                            "type": "string"
+                                        },
+                                        "hiringTeam": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "author": {},
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "openedAt": {
+                                            "type": "string"
+                                        },
+                                        "closedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title", "confidential", "status", "updatedAt"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sources from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listsources",
+            "name": "list-sources",
+            "output": ["ActionOutput_ashby_listsources"],
+            "scopes": ["hiringProcessMetadataRead"],
+            "usedModels": ["ActionInput_ashby_listsources", "ActionOutput_ashby_listsources"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listsources": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of results per page. Defaults to the API limit.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "includeArchived": {
+                                "description": "When true, includes archived items. Defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listsources": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "sourceType": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "isArchived": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["id", "title"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "title"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "sync_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_ashby_listusers"],
+            "scopes": ["organizationRead"],
+            "usedModels": ["ActionInput_ashby_listusers", "ActionOutput_ashby_listusers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque cursor indicating which page of results to fetch.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return. The maximum and default value is 100.",
+                                "type": "number"
+                            },
+                            "includeDeactivated": {
+                                "description": "If set to true, deactivated users are included in the response.",
+                                "type": "boolean"
+                            },
+                            "syncToken": {
+                                "description": "An opaque token representing the last time the data was successfully synced from the API.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "globalRole": {
+                                            "type": "string"
+                                        },
+                                        "isEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "syncToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an application in Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_updateapplication",
+            "name": "update-application",
+            "output": ["ActionOutput_ashby_updateapplication"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_updateapplication", "ActionOutput_ashby_updateapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "applicationId": {
+                                "type": "string",
+                                "description": "The id of the application to update. Example: \"3ae2b801-19f6-41ef-ad28-214bd731948f\""
+                            },
+                            "sourceId": {
+                                "description": "The source to set on the application.",
+                                "type": "string"
+                            },
+                            "creditedToUserId": {
+                                "description": "The id of the user the application will be credited to.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "An ISO date string to set the application's createdAt timestamp.",
+                                "type": "string"
+                            },
+                            "sendNotifications": {
+                                "description": "Whether users subscribed to the application should be notified. Default is true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["applicationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "currentInterviewStage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "job": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a candidate in Ashby.",
+            "endpoint": null,
+            "input": "ActionInput_ashby_updatecandidate",
+            "name": "update-candidate",
+            "output": ["ActionOutput_ashby_updatecandidate"],
+            "scopes": ["candidatesWrite"],
+            "usedModels": ["ActionInput_ashby_updatecandidate", "ActionOutput_ashby_updatecandidate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ashby_updatecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "The unique id of the candidate to update. Example: \"f9e52a51-a075-4116-a7b8-484deba69004\""
+                            },
+                            "name": {
+                                "description": "The first and last name of the candidate to update.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Primary, personal email of the candidate to update.",
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "description": "Primary, personal phone number of the candidate to update.",
+                                "type": "string"
+                            },
+                            "linkedInUrl": {
+                                "description": "Url to the candidate's LinkedIn profile.",
+                                "type": "string"
+                            },
+                            "githubUrl": {
+                                "description": "Url to the candidate's Github profile.",
+                                "type": "string"
+                            },
+                            "websiteUrl": {
+                                "description": "Url of the candidate's website.",
+                                "type": "string"
+                            },
+                            "alternateEmail": {
+                                "description": "An alternate email address to add to the candidate's profile.",
+                                "type": "string"
+                            },
+                            "socialLinks": {
+                                "description": "An array of social links to set on the candidate.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["LinkedIn", "GitHub", "Twitter", "Medium", "StackOverflow", "YouTube", "CodePen", "Website"]
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "url"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "sourceId": {
+                                "description": "The id of source for this candidate.",
+                                "type": "string"
+                            },
+                            "creditedToUserId": {
+                                "description": "The id of the user the candidate will be credited to.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "The location of the candidate.",
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "region": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdAt": {
+                                "description": "An ISO date string to set the candidate's createdAt timestamp.",
+                                "type": "string"
+                            },
+                            "sendNotifications": {
+                                "description": "Whether or not users who are subscribed to the candidate should be notified that candidate was updated.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["candidateId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ashby_updatecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "primaryEmailAddress": {
+                                "type": "string"
+                            },
+                            "primaryPhoneNumber": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "school": {
+                                "type": "string"
+                            },
+                            "profileUrl": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "creditedToUser": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync applications from Ashby.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/applications"
+                }
+            ],
+            "input": "SyncMetadata_ashby_applications",
+            "name": "applications",
+            "output": ["Application"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Application", "SyncMetadata_ashby_applications"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Application": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "job_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "source_id": {
+                                "type": "string"
+                            },
+                            "current_stage_id": {
+                                "type": "string"
+                            },
+                            "applied_date": {
+                                "type": "string"
+                            },
+                            "archived_at": {
+                                "type": "string"
+                            },
+                            "custom_fields": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_ashby_applications": {
+                        "type": "object",
+                        "properties": {
+                            "created_after": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync candidates from Ashby",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/candidates"
+                }
+            ],
+            "input": "SyncMetadata_ashby_candidates",
+            "name": "candidates",
+            "output": ["Candidate"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Candidate", "SyncMetadata_ashby_candidates"],
+            "version": "1.3.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Candidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "primaryEmailAddress": {
+                                "type": "string"
+                            },
+                            "emailAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "primaryPhoneNumber": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "position": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "school": {
+                                "type": "string"
+                            },
+                            "applicationIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "profileUrl": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "fraudStatus": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "locationSummary": {
+                                        "type": "string"
+                                    },
+                                    "locationComponents": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "creditedToUser": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id", "createdAt", "updatedAt", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_ashby_candidates": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "number"
+                            },
+                            "max_pages": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync departments from Ashby",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/departments"
+                }
+            ],
+            "input": null,
+            "name": "departments",
+            "output": ["Department"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Department"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Department": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "externalName": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync interviews from Ashby.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/interviews"
+                }
+            ],
+            "input": null,
+            "name": "interviews",
+            "output": ["Interview"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Interview"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Interview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "externalTitle": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "isDebrief": {
+                                "type": "boolean"
+                            },
+                            "isFeedbackRequired": {
+                                "type": "boolean"
+                            },
+                            "isFeedbackRequested": {
+                                "type": "boolean"
+                            },
+                            "instructionsHtml": {
+                                "type": "string"
+                            },
+                            "instructionsPlain": {
+                                "type": "string"
+                            },
+                            "jobId": {
+                                "type": "string"
+                            },
+                            "feedbackFormDefinitionId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title", "isArchived", "isFeedbackRequired", "isFeedbackRequested", "feedbackFormDefinitionId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync job postings from Ashby.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/job-postings"
+                }
+            ],
+            "input": null,
+            "name": "job-postings",
+            "output": ["JobPosting"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["JobPosting"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JobPosting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "jobId": {
+                                "type": "string"
+                            },
+                            "departmentName": {
+                                "type": "string"
+                            },
+                            "teamName": {
+                                "type": "string"
+                            },
+                            "locationName": {
+                                "type": "string"
+                            },
+                            "locationIds": {
+                                "type": "object",
+                                "properties": {
+                                    "primaryLocationId": {
+                                        "type": "string"
+                                    },
+                                    "secondaryLocationIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["primaryLocationId", "secondaryLocationIds"],
+                                "additionalProperties": false
+                            },
+                            "workplaceType": {
+                                "type": "string"
+                            },
+                            "employmentType": {
+                                "type": "string"
+                            },
+                            "isListed": {
+                                "type": "boolean"
+                            },
+                            "publishedDate": {
+                                "type": "string"
+                            },
+                            "applicationDeadline": {
+                                "type": "string"
+                            },
+                            "externalLink": {
+                                "type": "string"
+                            },
+                            "applyLink": {
+                                "type": "string"
+                            },
+                            "compensationTierSummary": {
+                                "type": "string"
+                            },
+                            "shouldDisplayCompensationOnJobBoard": {
+                                "type": "boolean"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "jobId",
+                            "departmentName",
+                            "teamName",
+                            "locationName",
+                            "locationIds",
+                            "employmentType",
+                            "isListed",
+                            "publishedDate",
+                            "applyLink",
+                            "shouldDisplayCompensationOnJobBoard",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync jobs from Ashby",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/jobs",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "jobs",
+            "output": ["Job"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Job"],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Job": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "confidential": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "employmentType": {
+                                "type": "string"
+                            },
+                            "locationId": {
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "defaultInterviewPlanId": {
+                                "type": "string"
+                            },
+                            "interviewPlanIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "jobPostingIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "customFields": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "hiringTeam": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "customRequisitionId": {
+                                "type": ["string", "null"]
+                            },
+                            "brandId": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "openedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "closedAt": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync sources from Ashby.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/sources"
+                }
+            ],
+            "input": null,
+            "name": "sources",
+            "output": ["Source"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Source"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Source": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "sourceType": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "isArchived": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["id", "title", "isArchived"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "title", "isArchived"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from Ashby",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "globalRole": {
+                                "type": "string"
+                            },
+                            "isEnabled": {
+                                "type": "boolean"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

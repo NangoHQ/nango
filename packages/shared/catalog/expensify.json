@@ -1,0 +1,288 @@
+{
+    "providerConfigKey": "expensify",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a user in the account",
+            "endpoint": null,
+            "input": "ActionInput_expensify_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_expensify_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_expensify_createuser", "ActionOutput_expensify_createuser"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_expensify_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_expensify_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": ["string", "null"]
+                            },
+                            "lastName": {
+                                "type": ["string", "null"]
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Disables a user in Expensify",
+            "endpoint": null,
+            "input": "ActionInput_expensify_disableuser",
+            "name": "disable-user",
+            "output": ["ActionOutput_expensify_disableuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_expensify_disableuser", "ActionOutput_expensify_disableuser"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_expensify_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_expensify_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Action to fetch a list of policies with some relevant information about them",
+            "endpoint": null,
+            "input": "ActionInput_expensify_listpolicies",
+            "name": "list-policies",
+            "output": ["ActionOutput_expensify_listpolicies"],
+            "scopes": [],
+            "usedModels": ["ActionInput_expensify_listpolicies", "ActionOutput_expensify_listpolicies"],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_expensify_listpolicies": {
+                        "type": "null"
+                    },
+                    "ActionOutput_expensify_listpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "policies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "shouldShowAutoApprovalOptions": {
+                                            "type": "boolean"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "areCompanyCardsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "shouldShowCustomReportTitleOption": {
+                                            "type": "boolean"
+                                        },
+                                        "areExpensifyCardsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "areRulesEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "areConnectionsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "approvalMode": {
+                                            "type": "string"
+                                        },
+                                        "areCategoriesEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "areReportFieldsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "areWorkflowsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "outputCurrency": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "areInvoicesEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "eReceipts": {
+                                            "type": "boolean"
+                                        },
+                                        "shouldShowAutoReimbursementLimitOption": {
+                                            "type": "boolean"
+                                        },
+                                        "areDistanceRatesEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "isPolicyExpenseChatEnabled": {
+                                            "type": "string"
+                                        },
+                                        "ownerAccountID": {
+                                            "type": "number"
+                                        },
+                                        "areTagsEnabled": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name",
+                                        "shouldShowAutoApprovalOptions",
+                                        "role",
+                                        "areCompanyCardsEnabled",
+                                        "shouldShowCustomReportTitleOption",
+                                        "areExpensifyCardsEnabled",
+                                        "areRulesEnabled",
+                                        "areConnectionsEnabled",
+                                        "approvalMode",
+                                        "areCategoriesEnabled",
+                                        "areReportFieldsEnabled",
+                                        "areWorkflowsEnabled",
+                                        "outputCurrency",
+                                        "owner",
+                                        "areInvoicesEnabled",
+                                        "createdAt",
+                                        "eReceipts",
+                                        "shouldShowAutoReimbursementLimitOption",
+                                        "areDistanceRatesEnabled",
+                                        "isPolicyExpenseChatEnabled",
+                                        "ownerAccountID",
+                                        "areTagsEnabled"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["policies"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Expensify.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_expensify_users",
+            "name": "users",
+            "output": ["ExpsensifyNullableUser"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ExpsensifyNullableUser", "SyncMetadata_expensify_users"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ExpsensifyNullableUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": ["string", "null"]
+                            },
+                            "lastName": {
+                                "type": ["string", "null"]
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_expensify_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

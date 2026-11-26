@@ -1,0 +1,2798 @@
+{
+    "providerConfigKey": "youcanbook-me",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Directly create a confirmed booking against a profile",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_createbooking",
+            "name": "create-booking",
+            "output": ["ActionOutput_youcanbook_me_createbooking"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_createbooking", "ActionOutput_youcanbook_me_createbooking"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_createbooking": {
+                        "type": "object",
+                        "properties": {
+                            "profileId": {
+                                "type": "string",
+                                "description": "Profile ID of the booking page. Example: \"f4f38519-6e5c-45f2-9897-555960aae524\""
+                            },
+                            "startsAt": {
+                                "type": "string",
+                                "description": "Booking start time in ISO 8601 format. Example: \"2024-01-15T10:00:00Z\""
+                            },
+                            "endsAt": {
+                                "description": "Booking end time in ISO 8601 format. Example: \"2024-01-15T11:00:00Z\". The API may calculate this automatically based on profile settings.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Booking title",
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "description": "Time zone for the booking. Example: \"America/Los_Angeles\"",
+                                "type": "string"
+                            },
+                            "locale": {
+                                "description": "Locale for the booking. Example: \"en_US\"",
+                                "type": "string"
+                            },
+                            "teamMemberId": {
+                                "description": "Team member ID (deprecated but supported)",
+                                "type": "string"
+                            },
+                            "appointmentTypesIds": {
+                                "description": "Appointment type IDs (deprecated but supported)",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "teamMember": {
+                                "description": "Team member object",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "pic": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "calendarId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "description": "Appointment types array",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "pic": {
+                                            "type": "string"
+                                        },
+                                        "slotLength": {
+                                            "type": "string"
+                                        },
+                                        "numberOfSlots": {
+                                            "type": "number"
+                                        },
+                                        "price": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "answers": {
+                                "description": "Answers matching the profile questions codes",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "string": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["code", "string"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "units": {
+                                "description": "Number of units",
+                                "type": "number"
+                            },
+                            "price": {
+                                "description": "Price of the booking",
+                                "type": "number"
+                            },
+                            "noShow": {
+                                "description": "Whether the booking is marked as no-show",
+                                "type": "boolean"
+                            },
+                            "cancelled": {
+                                "description": "Whether the booking is cancelled",
+                                "type": "boolean"
+                            },
+                            "linkFields": {
+                                "description": "Link fields",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["profileId", "startsAt"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_createbooking": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "startsAt": {
+                                "type": "string"
+                            },
+                            "endsAt": {
+                                "type": "string"
+                            },
+                            "noShow": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "rescheduledAt": {
+                                "type": "string"
+                            },
+                            "cancelledAt": {
+                                "type": "string"
+                            },
+                            "cancelled": {
+                                "type": "boolean"
+                            },
+                            "acceptedAt": {
+                                "type": "string"
+                            },
+                            "rejectedAt": {
+                                "type": "string"
+                            },
+                            "noShowAt": {
+                                "type": "string"
+                            },
+                            "cancelledBy": {
+                                "type": "string"
+                            },
+                            "rescheduledBy": {
+                                "type": "string"
+                            },
+                            "cancellationReason": {
+                                "type": "string"
+                            },
+                            "cancellationCode": {
+                                "type": "string"
+                            },
+                            "reviewAt": {
+                                "type": "string"
+                            },
+                            "ref": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "teamMember": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "description": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "pic": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "calendarId": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "pic": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "slotLength": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "numberOfSlots": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "price": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "string": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "intentId": {
+                                "type": "string"
+                            },
+                            "promotionCode": {
+                                "type": "string"
+                            },
+                            "discount": {
+                                "type": "number"
+                            },
+                            "linkFields": {
+                                "type": "string"
+                            },
+                            "currencyFactor": {
+                                "type": "number"
+                            },
+                            "teamMemberId": {
+                                "type": "string"
+                            },
+                            "appointmentTypesIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "cancellable": {
+                                "type": "boolean"
+                            },
+                            "cancelReasonRequired": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "startsAt", "endsAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new booking-page profile.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_createprofile",
+            "name": "create-profile",
+            "output": ["ActionOutput_youcanbook_me_createprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_createprofile", "ActionOutput_youcanbook_me_createprofile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_createprofile": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Display title for the booking page. Example: \"My Booking Page\""
+                            },
+                            "subdomain": {
+                                "type": "string",
+                                "description": "Unique URL slug for the profile. Example: \"my-page\""
+                            },
+                            "description": {
+                                "description": "Description shown on the booking page.",
+                                "type": "string"
+                            },
+                            "locale": {
+                                "description": "Language locale for the profile. Example: \"en-US\"",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Profile status. Example: \"ONLINE\" or \"OFFLINE\"",
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "description": "Timezone for the profile. Example: \"America/New_York\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["title", "subdomain"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_createprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "subdomain": {
+                                "type": "string"
+                            },
+                            "logo": {
+                                "type": "string"
+                            },
+                            "timeZoneOverride": {
+                                "type": "boolean"
+                            },
+                            "captchaActive": {
+                                "type": "boolean"
+                            },
+                            "accessCode": {
+                                "type": "string"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "before": {
+                                            "type": "string"
+                                        },
+                                        "after": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "options": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "validation": {
+                                            "type": "string"
+                                        },
+                                        "validationMessage": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "afterwards": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    },
+                                    "isUrl": {
+                                        "type": "boolean"
+                                    },
+                                    "updateWholeBrowserWindow": {
+                                        "type": "boolean"
+                                    },
+                                    "eventShouldAppendLinks": {
+                                        "type": "boolean"
+                                    },
+                                    "ownerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookingDescription": {
+                                        "type": "string"
+                                    },
+                                    "bookingTitle": {
+                                        "type": "string"
+                                    },
+                                    "bookingLocation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "calendars": {
+                                "type": "object",
+                                "properties": {
+                                    "calendarIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "targetCalendarId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "cancelOrReschedule": {
+                                "type": "object",
+                                "properties": {
+                                    "allowed": {
+                                        "type": "boolean"
+                                    },
+                                    "cancellationInstructions": {
+                                        "type": "string"
+                                    },
+                                    "limitMinutes": {
+                                        "type": "number"
+                                    },
+                                    "limitMessage": {
+                                        "type": "string"
+                                    },
+                                    "reasonRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "showReasonTextBox": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "display": {
+                                "type": "object",
+                                "properties": {
+                                    "showTimeZone": {
+                                        "type": "boolean"
+                                    },
+                                    "customThemeColor": {
+                                        "type": "string"
+                                    },
+                                    "header": {
+                                        "type": "string"
+                                    },
+                                    "footer": {
+                                        "type": "string"
+                                    },
+                                    "initialAvailabilityLayout": {
+                                        "type": "string"
+                                    },
+                                    "dayAvailabilityLayout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "payments": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "priceType": {
+                                        "type": "string"
+                                    },
+                                    "partner": {
+                                        "type": "string"
+                                    },
+                                    "partnerDescription": {
+                                        "type": "string"
+                                    },
+                                    "promotionCodeAllowed": {
+                                        "type": "boolean"
+                                    },
+                                    "bookerReceiptRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "currencyFactor": {
+                                        "type": "number"
+                                    },
+                                    "pricePerSlot": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "combinable": {
+                                        "type": "boolean"
+                                    },
+                                    "randomizable": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsCollapse": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsActive": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsDivider": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "slotLength": {
+                                                    "type": "string"
+                                                },
+                                                "numberOfSlots": {
+                                                    "type": "number"
+                                                },
+                                                "price": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "teamMembers": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "includeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "assumeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "allocationStrategy": {
+                                        "type": "string"
+                                    },
+                                    "allocationStrategyOnReschedule": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "calendarId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tentative": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workingTimes": {
+                                "type": "object",
+                                "properties": {
+                                    "fixedStart": {
+                                        "type": "string"
+                                    },
+                                    "fixedEnd": {
+                                        "type": "string"
+                                    },
+                                    "bookingPadding": {
+                                        "type": "string"
+                                    },
+                                    "maxNoticeDays": {
+                                        "type": "number"
+                                    },
+                                    "minNotice": {
+                                        "type": "string"
+                                    },
+                                    "unitsPerSlot": {
+                                        "type": "number"
+                                    },
+                                    "customAvailabilityToken": {
+                                        "type": "string"
+                                    },
+                                    "workingDays": {
+                                        "type": "string"
+                                    },
+                                    "slotIncrement": {
+                                        "type": "string"
+                                    },
+                                    "defaultDuration": {
+                                        "type": "string"
+                                    },
+                                    "durations": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "type": "string"
+                                        },
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "profileId": {
+                                            "type": "string"
+                                        },
+                                        "bookingId": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "anchor": {
+                                            "type": "string"
+                                        },
+                                        "offsetMinutes": {
+                                            "type": "number"
+                                        },
+                                        "firedAt": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "to": {
+                                            "type": "string"
+                                        },
+                                        "fromName": {
+                                            "type": "string"
+                                        },
+                                        "fromAddress": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "creditsUsed": {
+                                            "type": "number"
+                                        },
+                                        "attachIcs": {
+                                            "type": "boolean"
+                                        },
+                                        "headers": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "failureCode": {
+                                            "type": "string"
+                                        },
+                                        "displayTimeZone": {
+                                            "type": "string"
+                                        },
+                                        "withinQuota": {
+                                            "type": "boolean"
+                                        },
+                                        "timeZone": {
+                                            "type": "string"
+                                        },
+                                        "ycbmBranded": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "brandingType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Cancel/remove a booking.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_deletebooking",
+            "name": "delete-booking",
+            "output": ["ActionOutput_youcanbook_me_deletebooking"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_deletebooking", "ActionOutput_youcanbook_me_deletebooking"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_deletebooking": {
+                        "type": "object",
+                        "properties": {
+                            "bookingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the booking to delete. Example: \"abc123\""
+                            }
+                        },
+                        "required": ["bookingId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_deletebooking": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "deleted"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single booking by id.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_getbooking",
+            "name": "get-booking",
+            "output": ["ActionOutput_youcanbook_me_getbooking"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_getbooking", "ActionOutput_youcanbook_me_getbooking"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_getbooking": {
+                        "type": "object",
+                        "properties": {
+                            "bookingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the booking to retrieve. Example: \"123\""
+                            }
+                        },
+                        "required": ["bookingId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_getbooking": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "startsAt": {
+                                "type": "string"
+                            },
+                            "endsAt": {
+                                "type": "string"
+                            },
+                            "noShow": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "rescheduledAt": {
+                                "type": "string"
+                            },
+                            "cancelledAt": {
+                                "type": "string"
+                            },
+                            "cancelled": {
+                                "type": "boolean"
+                            },
+                            "acceptedAt": {
+                                "type": "string"
+                            },
+                            "rejectedAt": {
+                                "type": "string"
+                            },
+                            "noShowAt": {
+                                "type": "string"
+                            },
+                            "cancelledBy": {
+                                "type": "string"
+                            },
+                            "rescheduledBy": {
+                                "type": "string"
+                            },
+                            "cancellationReason": {
+                                "type": "string"
+                            },
+                            "cancellationCode": {
+                                "type": "string"
+                            },
+                            "reviewAt": {
+                                "type": "string"
+                            },
+                            "ref": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "teamMember": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "description": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "pic": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "calendarId": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "pic": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "slotLength": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "numberOfSlots": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "price": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "string": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "intentId": {
+                                "type": "string"
+                            },
+                            "promotionCode": {
+                                "type": "string"
+                            },
+                            "discount": {
+                                "type": "number"
+                            },
+                            "linkFields": {
+                                "type": "string"
+                            },
+                            "currencyFactor": {
+                                "type": "number"
+                            },
+                            "teamMemberId": {
+                                "type": "string"
+                            },
+                            "cancellable": {
+                                "type": "boolean"
+                            },
+                            "cancelReasonRequired": {
+                                "type": "boolean"
+                            },
+                            "appointmentTypesIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get full configuration for a single booking-page profile — intake form questions, team members, appointment types, working hours, payments, cancellation policy, and automated actions.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_getprofile",
+            "name": "get-profile",
+            "output": ["ActionOutput_youcanbook_me_getprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_getprofile", "ActionOutput_youcanbook_me_getprofile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_getprofile": {
+                        "type": "object",
+                        "properties": {
+                            "profileId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the booking-page profile. Example: \"f4f38519-6e5c-45f2-9897-555960aae524\""
+                            }
+                        },
+                        "required": ["profileId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_getprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Profile ID. Example: \"f4f38519-6e5c-45f2-9897-555960aae524\""
+                            },
+                            "title": {
+                                "description": "Profile display name.",
+                                "type": "string"
+                            },
+                            "subdomain": {
+                                "description": "Unique URL slug for the profile.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "online or offline.",
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "questions": {
+                                "description": "Intake form field definitions.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Field identifier referenced by booking answers. Example: \"FNAME\""
+                                        },
+                                        "before": {
+                                            "description": "Label shown before the field.",
+                                            "type": "string"
+                                        },
+                                        "after": {
+                                            "description": "Label shown after the field.",
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "description": "Whether the field is mandatory.",
+                                            "type": "boolean"
+                                        },
+                                        "options": {
+                                            "description": "Selectable options for choice-based fields.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "validation": {
+                                            "description": "Validation rules for the field (e.g. \"EMAILS\").",
+                                            "type": "string"
+                                        },
+                                        "validationMessage": {
+                                            "description": "Message shown when validation fails.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "teamMembers": {
+                                "type": "object",
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Team member ID. Example: \"tm-123\""
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Display name."
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "description": "Profile picture URL.",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "calendarId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "appointmentTypes": {
+                                "type": "object",
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Appointment type ID. Example: \"at-123\""
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Display name of the appointment type."
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "slotLength": {
+                                                    "description": "Minutes per slot.",
+                                                    "type": "string"
+                                                },
+                                                "numberOfSlots": {
+                                                    "description": "How many contiguous slots are booked.",
+                                                    "type": "number"
+                                                },
+                                                "price": {
+                                                    "description": "Price in the profile currency.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "workingTimes": {
+                                "type": "object",
+                                "properties": {
+                                    "fixedStart": {
+                                        "description": "Fixed daily start time.",
+                                        "type": "string"
+                                    },
+                                    "fixedEnd": {
+                                        "description": "Fixed daily end time.",
+                                        "type": "string"
+                                    },
+                                    "workingDays": {
+                                        "description": "Per-day availability rules.",
+                                        "type": "string"
+                                    },
+                                    "slotIncrement": {
+                                        "description": "Minutes between bookable slots.",
+                                        "type": "string"
+                                    },
+                                    "durations": {
+                                        "description": "Allowed appointment durations in minutes.",
+                                        "type": "string"
+                                    },
+                                    "maxNoticeDays": {
+                                        "description": "Maximum days ahead a booking can be made.",
+                                        "type": "number"
+                                    },
+                                    "minNotice": {
+                                        "description": "Minimum notice required before a booking.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "payments": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "description": "Whether payments are enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "priceType": {
+                                        "type": "string"
+                                    },
+                                    "partner": {
+                                        "description": "Payment partner, e.g. \"STRIPE\".",
+                                        "type": "string"
+                                    },
+                                    "pricePerSlot": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "cancelOrReschedule": {
+                                "type": "object",
+                                "properties": {
+                                    "allowed": {
+                                        "description": "Whether the booker can cancel or reschedule.",
+                                        "type": "boolean"
+                                    },
+                                    "limitMinutes": {
+                                        "description": "How many minutes before the appointment changes are allowed.",
+                                        "type": "number"
+                                    },
+                                    "reasonRequired": {
+                                        "description": "Whether a reason must be supplied.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "display": {
+                                "type": "object",
+                                "properties": {
+                                    "theme": {
+                                        "type": "string"
+                                    },
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "actions": {
+                                "description": "Automated reminder/notification rules.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Action rule ID. Example: \"ar-123\""
+                                        },
+                                        "type": {
+                                            "description": "Action type, e.g. \"ZAP\" for Zapier/webhook.",
+                                            "type": "string"
+                                        },
+                                        "anchor": {
+                                            "description": "Trigger point, e.g. \"BOOKING_CREATED\".",
+                                            "type": "string"
+                                        },
+                                        "offsetMinutes": {
+                                            "description": "Delay relative to the anchor in minutes.",
+                                            "type": "number"
+                                        },
+                                        "status": {
+                                            "description": "Execution status.",
+                                            "type": "string"
+                                        },
+                                        "firedAt": {
+                                            "description": "ISO timestamp of last fire.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List booking-page profiles on this account.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_listprofiles",
+            "name": "list-profiles",
+            "output": ["ActionOutput_youcanbook_me_listprofiles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_listprofiles", "ActionOutput_youcanbook_me_listprofiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_listprofiles": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_listprofiles": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "accountId": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "subdomain": {
+                                    "type": "string"
+                                },
+                                "logo": {
+                                    "type": "string"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "updatedAt": {
+                                    "type": "string"
+                                },
+                                "locale": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["id", "accountId", "status", "title", "subdomain", "createdAt", "updatedAt", "locale"],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update or reschedule a booking.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_updatebooking",
+            "name": "update-booking",
+            "output": ["ActionOutput_youcanbook_me_updatebooking"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_updatebooking", "ActionOutput_youcanbook_me_updatebooking"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_updatebooking": {
+                        "type": "object",
+                        "properties": {
+                            "bookingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Booking ID. Example: \"abc123\""
+                            },
+                            "title": {
+                                "description": "Updated booking title",
+                                "type": "string"
+                            },
+                            "startsAt": {
+                                "description": "Updated start time in ISO 8601 format. Example: \"2026-07-30T09:00:00Z\"",
+                                "type": "string"
+                            },
+                            "endsAt": {
+                                "description": "Updated end time in ISO 8601 format. Example: \"2026-07-30T10:00:00Z\"",
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "description": "Updated IANA time zone. Example: \"America/Los_Angeles\"",
+                                "type": "string"
+                            },
+                            "teamMemberId": {
+                                "description": "Updated team member ID",
+                                "type": "string"
+                            },
+                            "appointmentTypesIds": {
+                                "description": "Updated appointment type IDs",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "answers": {
+                                "description": "Updated answers to profile questions",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "string": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "locale": {
+                                "description": "Updated locale. Example: \"en_US\"",
+                                "type": "string"
+                            },
+                            "promotionCode": {
+                                "description": "Updated promotion code",
+                                "type": "string"
+                            },
+                            "discount": {
+                                "description": "Updated discount amount",
+                                "type": "number"
+                            },
+                            "cancellationReason": {
+                                "description": "Reason for cancellation if cancelling",
+                                "type": "string"
+                            },
+                            "noShow": {
+                                "description": "Mark as no-show",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["bookingId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_updatebooking": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "startsAt": {
+                                "type": "string"
+                            },
+                            "endsAt": {
+                                "type": "string"
+                            },
+                            "noShow": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "rescheduledAt": {
+                                "type": "string"
+                            },
+                            "cancelledAt": {
+                                "type": "string"
+                            },
+                            "cancelled": {
+                                "type": "boolean"
+                            },
+                            "acceptedAt": {
+                                "type": "string"
+                            },
+                            "rejectedAt": {
+                                "type": "string"
+                            },
+                            "noShowAt": {
+                                "type": "string"
+                            },
+                            "cancelledBy": {
+                                "type": "string"
+                            },
+                            "rescheduledBy": {
+                                "type": "string"
+                            },
+                            "cancellationReason": {
+                                "type": "string"
+                            },
+                            "cancellationCode": {
+                                "type": "string"
+                            },
+                            "reviewAt": {
+                                "type": "string"
+                            },
+                            "ref": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "teamMember": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "description": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "pic": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "calendarId": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "pic": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "slotLength": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "numberOfSlots": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "price": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "string": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "intentId": {
+                                "type": "string"
+                            },
+                            "promotionCode": {
+                                "type": "string"
+                            },
+                            "discount": {
+                                "type": "number"
+                            },
+                            "linkFields": {
+                                "type": "string"
+                            },
+                            "currencyFactor": {
+                                "type": "number"
+                            },
+                            "teamMemberId": {
+                                "type": "string"
+                            },
+                            "cancellable": {
+                                "type": "boolean"
+                            },
+                            "cancelReasonRequired": {
+                                "type": "boolean"
+                            },
+                            "appointmentTypesIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a booking-page profile's configuration.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_updateprofile",
+            "name": "update-profile",
+            "output": ["ActionOutput_youcanbook_me_updateprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_updateprofile", "ActionOutput_youcanbook_me_updateprofile"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_updateprofile": {
+                        "type": "object",
+                        "properties": {
+                            "profileId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Profile ID. Example: \"string\""
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "subdomain": {
+                                "type": "string"
+                            },
+                            "logo": {
+                                "type": "string"
+                            },
+                            "timeZoneOverride": {
+                                "type": "boolean"
+                            },
+                            "captchaActive": {
+                                "type": "boolean"
+                            },
+                            "accessCode": {
+                                "type": "string"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "before": {
+                                            "type": "string"
+                                        },
+                                        "after": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "options": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "validation": {
+                                            "type": "string"
+                                        },
+                                        "validationMessage": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "afterwards": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    },
+                                    "isUrl": {
+                                        "type": "boolean"
+                                    },
+                                    "updateWholeBrowserWindow": {
+                                        "type": "boolean"
+                                    },
+                                    "eventShouldAppendLinks": {
+                                        "type": "boolean"
+                                    },
+                                    "ownerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookingDescription": {
+                                        "type": "string"
+                                    },
+                                    "bookingTitle": {
+                                        "type": "string"
+                                    },
+                                    "bookingLocation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "calendars": {
+                                "type": "object",
+                                "properties": {
+                                    "calendarIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "targetCalendarId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "cancelOrReschedule": {
+                                "type": "object",
+                                "properties": {
+                                    "allowed": {
+                                        "type": "boolean"
+                                    },
+                                    "cancellationInstructions": {
+                                        "type": "string"
+                                    },
+                                    "limitMinutes": {
+                                        "type": "number"
+                                    },
+                                    "limitMessage": {
+                                        "type": "string"
+                                    },
+                                    "reasonRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "showReasonTextBox": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "display": {
+                                "type": "object",
+                                "properties": {
+                                    "showTimeZone": {
+                                        "type": "boolean"
+                                    },
+                                    "customThemeColor": {
+                                        "type": "string"
+                                    },
+                                    "header": {
+                                        "type": "string"
+                                    },
+                                    "footer": {
+                                        "type": "string"
+                                    },
+                                    "initialAvailabilityLayout": {
+                                        "type": "string"
+                                    },
+                                    "dayAvailabilityLayout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "payments": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "priceType": {
+                                        "type": "string"
+                                    },
+                                    "partner": {
+                                        "type": "string"
+                                    },
+                                    "partnerDescription": {
+                                        "type": "string"
+                                    },
+                                    "promotionCodeAllowed": {
+                                        "type": "boolean"
+                                    },
+                                    "bookerReceiptRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "currencyFactor": {
+                                        "type": "number"
+                                    },
+                                    "pricePerSlot": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "combinable": {
+                                        "type": "boolean"
+                                    },
+                                    "randomizable": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsCollapse": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsActive": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsDivider": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "slotLength": {
+                                                    "type": "string"
+                                                },
+                                                "numberOfSlots": {
+                                                    "type": "number"
+                                                },
+                                                "price": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "teamMembers": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "includeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "assumeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "allocationStrategy": {
+                                        "type": "string"
+                                    },
+                                    "allocationStrategyOnReschedule": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "calendarId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tentative": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workingTimes": {
+                                "type": "object",
+                                "properties": {
+                                    "fixedStart": {
+                                        "type": "string"
+                                    },
+                                    "fixedEnd": {
+                                        "type": "string"
+                                    },
+                                    "bookingPadding": {
+                                        "type": "string"
+                                    },
+                                    "maxNoticeDays": {
+                                        "type": "number"
+                                    },
+                                    "minNotice": {
+                                        "type": "string"
+                                    },
+                                    "unitsPerSlot": {
+                                        "type": "number"
+                                    },
+                                    "customAvailabilityToken": {
+                                        "type": "string"
+                                    },
+                                    "workingDays": {
+                                        "type": "string"
+                                    },
+                                    "slotIncrement": {
+                                        "type": "string"
+                                    },
+                                    "defaultDuration": {
+                                        "type": "string"
+                                    },
+                                    "durations": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "brandingType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["profileId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_updateprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "subdomain": {
+                                "type": "string"
+                            },
+                            "logo": {
+                                "type": "string"
+                            },
+                            "timeZoneOverride": {
+                                "type": "boolean"
+                            },
+                            "captchaActive": {
+                                "type": "boolean"
+                            },
+                            "accessCode": {
+                                "type": "string"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "before": {
+                                            "type": "string"
+                                        },
+                                        "after": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "options": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "validation": {
+                                            "type": "string"
+                                        },
+                                        "validationMessage": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "afterwards": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    },
+                                    "isUrl": {
+                                        "type": "boolean"
+                                    },
+                                    "updateWholeBrowserWindow": {
+                                        "type": "boolean"
+                                    },
+                                    "eventShouldAppendLinks": {
+                                        "type": "boolean"
+                                    },
+                                    "ownerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookerEvent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "location": {
+                                                "type": "string"
+                                            },
+                                            "participants": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "usingInviteParticipants": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "bookingDescription": {
+                                        "type": "string"
+                                    },
+                                    "bookingTitle": {
+                                        "type": "string"
+                                    },
+                                    "bookingLocation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "calendars": {
+                                "type": "object",
+                                "properties": {
+                                    "calendarIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "targetCalendarId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "cancelOrReschedule": {
+                                "type": "object",
+                                "properties": {
+                                    "allowed": {
+                                        "type": "boolean"
+                                    },
+                                    "cancellationInstructions": {
+                                        "type": "string"
+                                    },
+                                    "limitMinutes": {
+                                        "type": "number"
+                                    },
+                                    "limitMessage": {
+                                        "type": "string"
+                                    },
+                                    "reasonRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "showReasonTextBox": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "display": {
+                                "type": "object",
+                                "properties": {
+                                    "showTimeZone": {
+                                        "type": "boolean"
+                                    },
+                                    "customThemeColor": {
+                                        "type": "string"
+                                    },
+                                    "header": {
+                                        "type": "string"
+                                    },
+                                    "footer": {
+                                        "type": "string"
+                                    },
+                                    "initialAvailabilityLayout": {
+                                        "type": "string"
+                                    },
+                                    "dayAvailabilityLayout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "payments": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "priceType": {
+                                        "type": "string"
+                                    },
+                                    "partner": {
+                                        "type": "string"
+                                    },
+                                    "partnerDescription": {
+                                        "type": "string"
+                                    },
+                                    "promotionCodeAllowed": {
+                                        "type": "boolean"
+                                    },
+                                    "bookerReceiptRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "currencyFactor": {
+                                        "type": "number"
+                                    },
+                                    "pricePerSlot": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "appointmentTypes": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "combinable": {
+                                        "type": "boolean"
+                                    },
+                                    "randomizable": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsCollapse": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsActive": {
+                                        "type": "boolean"
+                                    },
+                                    "groupsDivider": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "slotLength": {
+                                                    "type": "string"
+                                                },
+                                                "numberOfSlots": {
+                                                    "type": "number"
+                                                },
+                                                "price": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "teamMembers": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "includeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "assumeNoPreferenceOption": {
+                                        "type": "boolean"
+                                    },
+                                    "allocationStrategy": {
+                                        "type": "string"
+                                    },
+                                    "allocationStrategyOnReschedule": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "pic": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "calendarId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tentative": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workingTimes": {
+                                "type": "object",
+                                "properties": {
+                                    "fixedStart": {
+                                        "type": "string"
+                                    },
+                                    "fixedEnd": {
+                                        "type": "string"
+                                    },
+                                    "bookingPadding": {
+                                        "type": "string"
+                                    },
+                                    "maxNoticeDays": {
+                                        "type": "number"
+                                    },
+                                    "minNotice": {
+                                        "type": "string"
+                                    },
+                                    "unitsPerSlot": {
+                                        "type": "number"
+                                    },
+                                    "customAvailabilityToken": {
+                                        "type": "string"
+                                    },
+                                    "workingDays": {
+                                        "type": "string"
+                                    },
+                                    "slotIncrement": {
+                                        "type": "string"
+                                    },
+                                    "defaultDuration": {
+                                        "type": "string"
+                                    },
+                                    "durations": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "type": "string"
+                                        },
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "profileId": {
+                                            "type": "string"
+                                        },
+                                        "bookingId": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "anchor": {
+                                            "type": "string"
+                                        },
+                                        "offsetMinutes": {
+                                            "type": "number"
+                                        },
+                                        "firedAt": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "to": {
+                                            "type": "string"
+                                        },
+                                        "fromName": {
+                                            "type": "string"
+                                        },
+                                        "fromAddress": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "creditsUsed": {
+                                            "type": "number"
+                                        },
+                                        "attachIcs": {
+                                            "type": "boolean"
+                                        },
+                                        "headers": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "failureCode": {
+                                            "type": "string"
+                                        },
+                                        "displayTimeZone": {
+                                            "type": "string"
+                                        },
+                                        "withinQuota": {
+                                            "type": "boolean"
+                                        },
+                                        "timeZone": {
+                                            "type": "string"
+                                        },
+                                        "ycbmBranded": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "brandingType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync booking-page profiles on this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "profiles",
+            "output": ["Profile"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Profile"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Profile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "subdomain": {
+                                "type": "string"
+                            },
+                            "logo": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3714 @@
+{
+    "providerConfigKey": "clerk",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Assign a permission to a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_assignorganizationrolepermission",
+            "name": "assign-organization-role-permission",
+            "output": ["ActionOutput_clerk_assignorganizationrolepermission"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_assignorganizationrolepermission", "ActionOutput_clerk_assignorganizationrolepermission"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_assignorganizationrolepermission": {
+                        "type": "object",
+                        "properties": {
+                            "organization_role_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "permission_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_role_id", "permission_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_assignorganizationrolepermission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "key"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a Clerk email address.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createemailaddress",
+            "name": "create-email-address",
+            "output": ["ActionOutput_clerk_createemailaddress"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createemailaddress", "ActionOutput_clerk_createemailaddress"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "email_address": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "primary": {
+                                "type": "boolean"
+                            },
+                            "notify_primary_email_address_changed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["user_id", "email_address"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a verified domain for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createorganizationdomain",
+            "name": "create-organization-domain",
+            "output": ["ActionOutput_clerk_createorganizationdomain"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createorganizationdomain", "ActionOutput_clerk_createorganizationdomain"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["organization_id", "name", "enrollment_mode"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            },
+                            "affiliation_verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an invitation for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createorganizationinvitation",
+            "name": "create-organization-invitation",
+            "output": ["ActionOutput_clerk_createorganizationinvitation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createorganizationinvitation", "ActionOutput_clerk_createorganizationinvitation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "email_address": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "inviter_user_id": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "expires_in_days": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "notify": {
+                                "type": "boolean"
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["organization_id", "email_address", "role"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "accepted", "revoked", "expired"]
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a membership in a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createorganizationmembership",
+            "name": "create-organization-membership",
+            "output": ["ActionOutput_clerk_createorganizationmembership"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createorganizationmembership", "ActionOutput_clerk_createorganizationmembership"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["organization_id", "user_id", "role"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "public_user_data": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["user_id"],
+                                "additionalProperties": {}
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createorganizationrole",
+            "name": "create-organization-role",
+            "output": ["ActionOutput_clerk_createorganizationrole"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createorganizationrole", "ActionOutput_clerk_createorganizationrole"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "include_in_initial_role_set": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["name", "key"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "key"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an organization in Clerk.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createorganization",
+            "name": "create-organization",
+            "output": ["ActionOutput_clerk_createorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createorganization", "ActionOutput_clerk_createorganization"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createorganization": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "max_allowed_memberships": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "has_image": {
+                                "type": "boolean"
+                            },
+                            "members_count": {
+                                "type": "number"
+                            },
+                            "max_allowed_memberships": {
+                                "type": "number"
+                            },
+                            "admin_delete_enabled": {
+                                "type": "boolean"
+                            },
+                            "public_metadata": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "slug"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a Clerk phone number.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createphonenumber",
+            "name": "create-phone-number",
+            "output": ["ActionOutput_clerk_createphonenumber"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createphonenumber", "ActionOutput_clerk_createphonenumber"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "phone_number": {
+                                "type": "string"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "primary": {
+                                "type": "boolean"
+                            },
+                            "reserved_for_second_factor": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["user_id", "phone_number"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "phone_number": {
+                                "type": "string"
+                            },
+                            "reserved_for_second_factor": {
+                                "type": "boolean"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "phone_number"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a user in Clerk.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_clerk_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_createuser", "ActionOutput_clerk_createuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                }
+                            },
+                            "phone_number": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string",
+                                "minLength": 8
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "description": "BCP-47 locale. Example: \"en-US\"",
+                                "type": "string"
+                            },
+                            "skip_password_checks": {
+                                "type": "boolean"
+                            },
+                            "skip_password_requirement": {
+                                "type": "boolean"
+                            },
+                            "banned": {
+                                "type": "boolean"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "unsafe_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": ["string", "null"]
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": ["string", "null"]
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "primary_email_address_id": {
+                                "type": ["string", "null"]
+                            },
+                            "primary_phone_number_id": {
+                                "type": ["string", "null"]
+                            },
+                            "external_id": {
+                                "type": ["string", "null"]
+                            },
+                            "banned": {
+                                "type": "boolean"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "locale": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Clerk email address.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteemailaddress",
+            "name": "delete-email-address",
+            "output": ["ActionOutput_clerk_deleteemailaddress"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteemailaddress", "ActionOutput_clerk_deleteemailaddress"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "email_address_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["email_address_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a verified domain from a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteorganizationdomain",
+            "name": "delete-organization-domain",
+            "output": ["ActionOutput_clerk_deleteorganizationdomain"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteorganizationdomain", "ActionOutput_clerk_deleteorganizationdomain"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "domain_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_id", "domain_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a membership from a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteorganizationmembership",
+            "name": "delete-organization-membership",
+            "output": ["ActionOutput_clerk_deleteorganizationmembership"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteorganizationmembership", "ActionOutput_clerk_deleteorganizationmembership"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_id", "user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteorganizationrole",
+            "name": "delete-organization-role",
+            "output": ["ActionOutput_clerk_deleteorganizationrole"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteorganizationrole", "ActionOutput_clerk_deleteorganizationrole"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "organization_role_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_role_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteorganization",
+            "name": "delete-organization",
+            "output": ["ActionOutput_clerk_deleteorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteorganization", "ActionOutput_clerk_deleteorganization"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteorganization": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Clerk phone number.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deletephonenumber",
+            "name": "delete-phone-number",
+            "output": ["ActionOutput_clerk_deletephonenumber"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deletephonenumber", "ActionOutput_clerk_deletephonenumber"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deletephonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["phone_number_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deletephonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Clerk user.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_clerk_deleteuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_deleteuser", "ActionOutput_clerk_deleteuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a Clerk email address.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getemailaddress",
+            "name": "get-email-address",
+            "output": ["ActionOutput_clerk_getemailaddress"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getemailaddress", "ActionOutput_clerk_getemailaddress"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "email_address_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["email_address_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a Clerk organization invitation.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getorganizationinvitation",
+            "name": "get-organization-invitation",
+            "output": ["ActionOutput_clerk_getorganizationinvitation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getorganizationinvitation", "ActionOutput_clerk_getorganizationinvitation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "invitation_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_id", "invitation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "accepted", "revoked", "expired"]
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getorganizationrole",
+            "name": "get-organization-role",
+            "output": ["ActionOutput_clerk_getorganizationrole"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getorganizationrole", "ActionOutput_clerk_getorganizationrole"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "organization_role_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_role_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "key"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Clerk organization by ID.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getorganization",
+            "name": "get-organization",
+            "output": ["ActionOutput_clerk_getorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getorganization", "ActionOutput_clerk_getorganization"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "include_members_count": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "has_image": {
+                                "type": "boolean"
+                            },
+                            "members_count": {
+                                "type": "number"
+                            },
+                            "max_allowed_memberships": {
+                                "type": "number"
+                            },
+                            "admin_delete_enabled": {
+                                "type": "boolean"
+                            },
+                            "public_metadata": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "slug"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a Clerk phone number.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getphonenumber",
+            "name": "get-phone-number",
+            "output": ["ActionOutput_clerk_getphonenumber"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getphonenumber", "ActionOutput_clerk_getphonenumber"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["phone_number_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "phone_number": {
+                                "type": "string"
+                            },
+                            "reserved_for_second_factor": {
+                                "type": "boolean"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "phone_number"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a Clerk session.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getsession",
+            "name": "get-session",
+            "output": ["ActionOutput_clerk_getsession"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getsession", "ActionOutput_clerk_getsession"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getsession": {
+                        "type": "object",
+                        "properties": {
+                            "session_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["session_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getsession": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "client_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                            },
+                            "last_active_at": {
+                                "type": "number"
+                            },
+                            "expire_at": {
+                                "type": "number"
+                            },
+                            "abandon_at": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "user_id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Clerk user by ID.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_clerk_getuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_getuser", "ActionOutput_clerk_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Clerk user ID. Example: \"user_2abc123\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": ["string", "null"]
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": ["string", "null"]
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "primary_email_address_id": {
+                                "type": ["string", "null"]
+                            },
+                            "primary_phone_number_id": {
+                                "type": ["string", "null"]
+                            },
+                            "external_id": {
+                                "type": ["string", "null"]
+                            },
+                            "banned": {
+                                "type": "boolean"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "locale": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List verified domains for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listorganizationdomains",
+            "name": "list-organization-domains",
+            "output": ["ActionOutput_clerk_listorganizationdomains"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listorganizationdomains", "ActionOutput_clerk_listorganizationdomains"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listorganizationdomains": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listorganizationdomains": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "organization_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "enrollment_mode": {
+                                            "type": "string",
+                                            "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                        },
+                                        "affiliation_verification": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "attempts": {
+                                                            "type": "number"
+                                                        },
+                                                        "status": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "verification": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "attempts": {
+                                                            "type": "number"
+                                                        },
+                                                        "status": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "verified": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List invitations for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listorganizationinvitations",
+            "name": "list-organization-invitations",
+            "output": ["ActionOutput_clerk_listorganizationinvitations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listorganizationinvitations", "ActionOutput_clerk_listorganizationinvitations"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listorganizationinvitations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "accepted", "revoked", "expired"]
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listorganizationinvitations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "email_address": {
+                                            "type": "string"
+                                        },
+                                        "organization_id": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["pending", "accepted", "revoked", "expired"]
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "email_address"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List memberships for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listorganizationmemberships",
+            "name": "list-organization-memberships",
+            "output": ["ActionOutput_clerk_listorganizationmemberships"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listorganizationmemberships", "ActionOutput_clerk_listorganizationmemberships"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listorganizationmemberships": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "email_address": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone_number": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "username": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "web3_wallet": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "role": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "email_address_query": {
+                                "type": "string"
+                            },
+                            "phone_number_query": {
+                                "type": "string"
+                            },
+                            "username_query": {
+                                "type": "string"
+                            },
+                            "name_query": {
+                                "type": "string"
+                            },
+                            "last_active_at_before": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "last_active_at_after": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_at_before": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_at_after": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "order_by": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listorganizationmemberships": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "organization": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": {}
+                                        },
+                                        "public_user_data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user_id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["user_id"],
+                                            "additionalProperties": {}
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Clerk organization roles.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listorganizationroles",
+            "name": "list-organization-roles",
+            "output": ["ActionOutput_clerk_listorganizationroles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listorganizationroles", "ActionOutput_clerk_listorganizationroles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listorganizationroles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listorganizationroles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "key": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name", "key"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations from Clerk.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listorganizations",
+            "name": "list-organizations",
+            "output": ["ActionOutput_clerk_listorganizations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listorganizations", "ActionOutput_clerk_listorganizations"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "description": "Sort by name, created_at, or members_count, prefixed with + or -.",
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "include_members_count": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "image_url": {
+                                            "type": "string"
+                                        },
+                                        "has_image": {
+                                            "type": "boolean"
+                                        },
+                                        "members_count": {
+                                            "type": "number"
+                                        },
+                                        "max_allowed_memberships": {
+                                            "type": "number"
+                                        },
+                                        "admin_delete_enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "public_metadata": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "private_metadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "created_by": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name", "slug"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Clerk sessions.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listsessions",
+            "name": "list-sessions",
+            "output": ["ActionOutput_clerk_listsessions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listsessions", "ActionOutput_clerk_listsessions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listsessions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "client_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listsessions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                                        },
+                                        "last_active_at": {
+                                            "type": "number"
+                                        },
+                                        "expire_at": {
+                                            "type": "number"
+                                        },
+                                        "abandon_at": {
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "user_id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Clerk.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_clerk_listusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_listusers", "ActionOutput_clerk_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor returned by a previous request. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of users to return. Maximum 500.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "query": {
+                                "description": "Search across names, identifiers, email addresses, phone numbers, and usernames.",
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "description": "Filter by email addresses.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone_number": {
+                                "description": "Filter by phone numbers.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "username": {
+                                "description": "Filter by usernames.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "user_id": {
+                                "description": "Filter by Clerk user IDs.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "external_id": {
+                                "description": "Filter by external user IDs.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "organization_id": {
+                                "description": "Filter by organization IDs.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "last_active_at_before": {
+                                "description": "Filter users last active before this Unix timestamp in milliseconds.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "last_active_at_after": {
+                                "description": "Filter users last active after this Unix timestamp in milliseconds.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_at_before": {
+                                "description": "Filter users created before this Unix timestamp in milliseconds.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_at_after": {
+                                "description": "Filter users created after this Unix timestamp in milliseconds.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "order_by": {
+                                "description": "Sort field prefixed with + for ascending or - for descending. Example: \"-created_at\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "first_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "image_url": {
+                                            "type": "string"
+                                        },
+                                        "primary_email_address_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "primary_phone_number_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "external_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "banned": {
+                                            "type": "boolean"
+                                        },
+                                        "locked": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        },
+                                        "locale": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a permission from a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_removeorganizationrolepermission",
+            "name": "remove-organization-role-permission",
+            "output": ["ActionOutput_clerk_removeorganizationrolepermission"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_removeorganizationrolepermission", "ActionOutput_clerk_removeorganizationrolepermission"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_removeorganizationrolepermission": {
+                        "type": "object",
+                        "properties": {
+                            "organization_role_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "permission_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_role_id", "permission_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_removeorganizationrolepermission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Revoke a Clerk organization invitation.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_revokeorganizationinvitation",
+            "name": "revoke-organization-invitation",
+            "output": ["ActionOutput_clerk_revokeorganizationinvitation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_revokeorganizationinvitation", "ActionOutput_clerk_revokeorganizationinvitation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_revokeorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "invitation_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "requesting_user_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["organization_id", "invitation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_revokeorganizationinvitation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["pending", "accepted", "revoked", "expired"]
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Revoke a Clerk session.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_revokesession",
+            "name": "revoke-session",
+            "output": ["ActionOutput_clerk_revokesession"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_revokesession", "ActionOutput_clerk_revokesession"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_revokesession": {
+                        "type": "object",
+                        "properties": {
+                            "session_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["session_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_revokesession": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "client_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                            },
+                            "last_active_at": {
+                                "type": "number"
+                            },
+                            "expire_at": {
+                                "type": "number"
+                            },
+                            "abandon_at": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "user_id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk email address.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateemailaddress",
+            "name": "update-email-address",
+            "output": ["ActionOutput_clerk_updateemailaddress"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateemailaddress", "ActionOutput_clerk_updateemailaddress"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "email_address_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "primary": {
+                                "type": "boolean"
+                            },
+                            "notify_primary_email_address_changed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["email_address_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "email_address": {
+                                "type": "string"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email_address"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a verified domain for a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateorganizationdomain",
+            "name": "update-organization-domain",
+            "output": ["ActionOutput_clerk_updateorganizationdomain"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateorganizationdomain", "ActionOutput_clerk_updateorganizationdomain"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "domain_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["organization_id", "domain_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            },
+                            "affiliation_verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update metadata for a Clerk organization membership.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateorganizationmembershipmetadata",
+            "name": "update-organization-membership-metadata",
+            "output": ["ActionOutput_clerk_updateorganizationmembershipmetadata"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateorganizationmembershipmetadata", "ActionOutput_clerk_updateorganizationmembershipmetadata"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateorganizationmembershipmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["organization_id", "user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateorganizationmembershipmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "public_user_data": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["user_id"],
+                                "additionalProperties": {}
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk organization membership role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateorganizationmembership",
+            "name": "update-organization-membership",
+            "output": ["ActionOutput_clerk_updateorganizationmembership"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateorganizationmembership", "ActionOutput_clerk_updateorganizationmembership"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "role": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["organization_id", "user_id", "role"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            },
+                            "public_user_data": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["user_id"],
+                                "additionalProperties": {}
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk organization role.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateorganizationrole",
+            "name": "update-organization-role",
+            "output": ["ActionOutput_clerk_updateorganizationrole"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateorganizationrole", "ActionOutput_clerk_updateorganizationrole"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "organization_role_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["organization_role_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateorganizationrole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "key"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk organization.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateorganization",
+            "name": "update-organization",
+            "output": ["ActionOutput_clerk_updateorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateorganization", "ActionOutput_clerk_updateorganization"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "admin_delete_enabled": {
+                                "type": "boolean"
+                            },
+                            "max_allowed_memberships": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "public_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["organization_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "has_image": {
+                                "type": "boolean"
+                            },
+                            "members_count": {
+                                "type": "number"
+                            },
+                            "max_allowed_memberships": {
+                                "type": "number"
+                            },
+                            "admin_delete_enabled": {
+                                "type": "boolean"
+                            },
+                            "public_metadata": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "private_metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "slug"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk phone number.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updatephonenumber",
+            "name": "update-phone-number",
+            "output": ["ActionOutput_clerk_updatephonenumber"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updatephonenumber", "ActionOutput_clerk_updatephonenumber"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updatephonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "primary": {
+                                "type": "boolean"
+                            },
+                            "reserved_for_second_factor": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["phone_number_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updatephonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "phone_number": {
+                                "type": "string"
+                            },
+                            "reserved_for_second_factor": {
+                                "type": "boolean"
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "strategy": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_to": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "phone_number"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Clerk user.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_updateuser",
+            "name": "update-user",
+            "output": ["ActionOutput_clerk_updateuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_updateuser", "ActionOutput_clerk_updateuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "first_name": {
+                                "description": "Pass null to clear the first name.",
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "description": "Pass null to clear the last name.",
+                                "type": ["string", "null"]
+                            },
+                            "username": {
+                                "description": "Pass null to clear the username.",
+                                "type": ["string", "null"]
+                            },
+                            "password": {
+                                "type": "string",
+                                "minLength": 8
+                            },
+                            "skip_password_checks": {
+                                "type": "boolean"
+                            },
+                            "sign_out_of_other_sessions": {
+                                "type": "boolean"
+                            },
+                            "external_id": {
+                                "description": "Pass null to clear the external ID.",
+                                "type": ["string", "null"]
+                            },
+                            "locale": {
+                                "description": "Pass null to clear the locale.",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": ["string", "null"]
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": ["string", "null"]
+                            },
+                            "image_url": {
+                                "type": "string"
+                            },
+                            "primary_email_address_id": {
+                                "type": ["string", "null"]
+                            },
+                            "primary_phone_number_id": {
+                                "type": ["string", "null"]
+                            },
+                            "external_id": {
+                                "type": ["string", "null"]
+                            },
+                            "banned": {
+                                "type": "boolean"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "locale": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify ownership of a Clerk organization domain.",
+            "endpoint": null,
+            "input": "ActionInput_clerk_verifyorganizationdomain",
+            "name": "verify-organization-domain",
+            "output": ["ActionOutput_clerk_verifyorganizationdomain"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clerk_verifyorganizationdomain", "ActionOutput_clerk_verifyorganizationdomain"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clerk_verifyorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "domain_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["organization_id", "domain_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clerk_verifyorganizationdomain": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "enrollment_mode": {
+                                "type": "string",
+                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                            },
+                            "affiliation_verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "attempts": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

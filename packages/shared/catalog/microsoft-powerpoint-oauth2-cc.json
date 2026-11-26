@@ -1,0 +1,1625 @@
+{
+    "providerConfigKey": "microsoft-powerpoint-oauth2-cc",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy a presentation to a (possibly different) folder, optionally renaming it.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation",
+            "name": "copy-presentation",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the presentation to copy. Example: \"b!...\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the presentation to copy. Example: \"01RFYLAY...\""
+                            },
+                            "name": {
+                                "description": "Optional new name for the copy. Example: \"copy.pptx\"",
+                                "type": "string"
+                            },
+                            "destinationDriveId": {
+                                "description": "Optional ID of the destination drive. Defaults to the source drive if omitted. Requires destinationFolderId to also be set.",
+                                "type": "string"
+                            },
+                            "destinationFolderId": {
+                                "description": "Optional ID of the destination folder. Defaults to the source folder if omitted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "The ID of the copied presentation. Only present when the API returns it synchronously.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "The name of the copied presentation. Only present when the API returns it synchronously.",
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "description": "The web URL of the copied presentation. Only present when the API returns it synchronously.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "The copy status: \"completed\" for synchronous copies, \"pending\" for asynchronous copies."
+                            },
+                            "monitorUrl": {
+                                "description": "URL to poll for asynchronous copy progress. Only present when status is \"pending\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a new .pptx presentation to a drive folder.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation",
+            "name": "create-presentation",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!abc123\""
+                            },
+                            "parentId": {
+                                "description": "Parent folder item ID. Omit to upload to the drive root.",
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string",
+                                "description": "File name without the .pptx extension. Example: \"my-presentation\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Base64-encoded raw .pptx file bytes."
+                            }
+                        },
+                        "required": ["driveId", "filename", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a sharing link for a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink",
+            "name": "create-sharing-link",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink", "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["view", "edit"],
+                                "description": "The type of sharing link to create."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "enum": ["organization", "anonymous"],
+                                "description": "The scope of the sharing link."
+                            }
+                        },
+                        "required": ["driveId", "itemId", "type", "scope"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "link": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "scope": {
+                                        "type": "string"
+                                    },
+                                    "webUrl": {
+                                        "type": "string"
+                                    },
+                                    "application": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation",
+            "name": "delete-presentation",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the presentation. Example: \"01RFYLAY...\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download a presentation converted to PDF",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf",
+            "name": "get-presentation-as-pdf",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the presentation. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "Base64-encoded PDF content"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["content"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download the raw .pptx content of a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationcontent",
+            "name": "get-presentation-content",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationcontent",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationcontent": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "Base64-encoded .pptx content"
+                            }
+                        },
+                        "required": ["content"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve driveItem metadata for a presentation",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation",
+            "name": "get-presentation",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the presentation. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the driveItem representing the presentation. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": ["number", "null"]
+                            },
+                            "webUrl": {
+                                "type": ["string", "null"]
+                            },
+                            "createdDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "lastModifiedDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "file": {
+                                "type": "object",
+                                "properties": {
+                                    "mimeType": {
+                                        "type": "string"
+                                    },
+                                    "hashes": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdBy": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "object",
+                                        "properties": {
+                                            "displayName": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "lastModifiedBy": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "object",
+                                        "properties": {
+                                            "displayName": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the default document library (drive) for a SharePoint site.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive",
+            "name": "get-site-drive",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"],
+            "scopes": ["Sites.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive", "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "siteId": {
+                                "type": "string",
+                                "description": "SharePoint site ID. Example: \"nangodevelopers.sharepoint.com,4c97403e-1663-4673-90fa-d2f8690b4510,29d15734-3d19-43f6-976b-43ece3ff81a8\""
+                            }
+                        },
+                        "required": ["siteId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "driveType", "webUrl"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a user's personal OneDrive (drive).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive",
+            "name": "get-user-drive",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive", "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID or user principal name. Example: \"test_api@nango.dev\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            },
+                            "quotaTotal": {
+                                "type": "number"
+                            },
+                            "quotaUsed": {
+                                "type": "number"
+                            },
+                            "quotaRemaining": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sharing permissions on a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions",
+            "name": "list-presentation-permissions",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the presentation. Example: b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0"
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the presentation item. Example: 01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ"
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "grantedTo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "grantedToIdentities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "grantedToV2": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "application": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "device": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "siteUser": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "siteGroup": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "group": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "grantedToIdentitiesV2": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "application": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "device": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "siteUser": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "siteGroup": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "group": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "link": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "scope": {
+                                                    "type": "string"
+                                                },
+                                                "webUrl": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "hasPassword": {
+                                            "type": "boolean"
+                                        },
+                                        "expirationDateTime": {
+                                            "type": "string"
+                                        },
+                                        "inheritedFrom": {
+                                            "type": "object",
+                                            "properties": {
+                                                "driveId": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["permissions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get thumbnail image URLs for a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails",
+            "name": "list-presentation-thumbnails",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the presentation. Example: \"01RFYLAY...\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails": {
+                        "type": "object",
+                        "properties": {
+                            "thumbnails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "smallUrl": {
+                                            "type": "string"
+                                        },
+                                        "mediumUrl": {
+                                            "type": "string"
+                                        },
+                                        "largeUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["thumbnails"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the version history of a presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationversions",
+            "name": "list-presentation-versions",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationversions",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationversions": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the presentation. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the presentation item. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions": {
+                        "type": "object",
+                        "properties": {
+                            "versions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "description": "Pagination cursor to retrieve the next page of versions.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["versions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List/search .pptx files within a drive",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations",
+            "name": "list-presentations",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations", "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations": {
+                        "type": "object",
+                        "properties": {
+                            "drive_id": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "query": {
+                                "description": "Search query string. Omit to list presentations in the root folder of the drive.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["drive_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "web_url": {
+                                            "type": "string"
+                                        },
+                                        "created_date_time": {
+                                            "type": "string"
+                                        },
+                                        "last_modified_date_time": {
+                                            "type": "string"
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        },
+                                        "drive_id": {
+                                            "type": "string"
+                                        },
+                                        "parent_id": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search/list SharePoint sites accessible to the app.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listsites",
+            "name": "list-sites",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"],
+            "scopes": ["Sites.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listsites", "ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search query to filter SharePoint sites. Example: \"nango\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (the @odata.nextLink URL). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "sites": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "siteCollection": {
+                                            "type": "object",
+                                            "properties": {
+                                                "hostname": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "URL to fetch the next page of results. Pass this value back as the cursor input.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["sites"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List/search tenant users, to resolve a user id for personal OneDrive access.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"],
+            "scopes": ["User.Read.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listusers", "ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "search": {
+                                "description": "Search string to filter users by display name or email.",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Number of users to return per page. Maximum 999.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 999
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (odata.nextLink) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "givenName": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a presentation to a different folder.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation",
+            "name": "move-presentation",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the presentation to move. Example: \"01RFYLAY...\""
+                            },
+                            "destinationFolderId": {
+                                "type": "string",
+                                "description": "Item ID of the destination folder. Example: \"01RFYLAY...\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "destinationFolderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "file": {
+                                "type": "object",
+                                "properties": {
+                                    "mimeType": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace the content of an existing presentation.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent",
+            "name": "update-presentation-content",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the presentation. Example: \"b!PkCXTGMW...\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the presentation item to update. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The binary content of the presentation as a base64-encoded string."
+                            },
+                            "contentType": {
+                                "description": "The MIME type of the content. Defaults to \"application/vnd.openxmlformats-officedocument.presentationml.presentation\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Rename a presentation or update its description, without touching content",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata",
+            "name": "update-presentation-metadata",
+            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
+                            },
+                            "name": {
+                                "description": "New name for the presentation. Omit to keep unchanged.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "New description for the presentation. Pass null to clear.",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync .pptx files within a drive",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations",
+            "name": "presentations",
+            "output": ["Presentation"],
+            "runs": "every hour",
+            "scopes": ["Files.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Presentation", "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Presentation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "createdByUserDisplayName": {
+                                "type": "string"
+                            },
+                            "lastModifiedByUserDisplayName": {
+                                "type": "string"
+                            },
+                            "parentDriveId": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "parentPath": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations": {
+                        "type": "object",
+                        "properties": {
+                            "drive_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["drive_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

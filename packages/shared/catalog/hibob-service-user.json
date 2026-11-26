@@ -1,0 +1,540 @@
+{
+    "providerConfigKey": "hibob-service-user",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of all active employees",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees",
+                    "group": "Employees"
+                }
+            ],
+            "input": "SyncMetadata_hibob_service_user_employees",
+            "name": "employees",
+            "output": ["HibobEmployee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["HibobEmployee", "SyncMetadata_hibob_service_user_employees"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "HibobEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "work": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "name"],
+                                        "additionalProperties": false
+                                    },
+                                    "employmentType": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "startDate": {
+                                        "type": "string"
+                                    },
+                                    "terminationDate": {
+                                        "type": "string"
+                                    },
+                                    "reportsTo": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "firstName": {
+                                                "type": "string"
+                                            },
+                                            "surname": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "firstName", "surname", "email"],
+                                        "additionalProperties": false
+                                    },
+                                    "site": {
+                                        "type": "string"
+                                    },
+                                    "siteType": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["street", "city", "state", "country", "postalCode"],
+                                        "additionalProperties": false
+                                    },
+                                    "customFields": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "personal": {
+                                "type": "object",
+                                "properties": {
+                                    "addresses": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "street": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "state": {
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "workPhone": {
+                                        "type": "string"
+                                    },
+                                    "homePhone": {
+                                        "type": "string"
+                                    },
+                                    "mobilePhone": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "about": {
+                                "type": "object",
+                                "properties": {
+                                    "createdAt": {
+                                        "type": "string"
+                                    },
+                                    "updatedAt": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "firstName", "surname", "email", "displayName"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hibob_service_user_employees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of all employees and maps them to the standardized HRIS model",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees/unified",
+                    "group": "Unified HRIS API"
+                }
+            ],
+            "input": "SyncMetadata_hibob_service_user_unifiedemployees",
+            "name": "unified-employees",
+            "output": ["StandardEmployee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["StandardEmployee", "SyncMetadata_hibob_service_user_unifiedemployees"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StandardEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "employeeNumber": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "employmentType": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "FULL_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PART_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CONTRACTOR"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "INTERN"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TEMPORARY"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "OTHER"
+                                    }
+                                ]
+                            },
+                            "employmentStatus": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "ACTIVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TERMINATED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "ON_LEAVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUSPENDED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PENDING"
+                                    }
+                                ]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "type": "string"
+                            },
+                            "manager": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "firstName", "lastName", "email"],
+                                "additionalProperties": false
+                            },
+                            "workLocation": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "OFFICE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "REMOTE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "HYBRID"
+                                            }
+                                        ]
+                                    },
+                                    "primaryAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "WORK"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "HOME"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["name", "type"],
+                                "additionalProperties": false
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "street": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "MOBILE"
+                                                }
+                                            ]
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "number"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "PERSONAL"
+                                                }
+                                            ]
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "address"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "providerSpecific": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "displayName",
+                            "department",
+                            "employmentType",
+                            "employmentStatus",
+                            "startDate",
+                            "workLocation",
+                            "addresses",
+                            "phones",
+                            "emails",
+                            "providerSpecific",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hibob_service_user_unifiedemployees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,2007 @@
+{
+    "providerConfigKey": "gem",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new candidate in Gem",
+            "endpoint": null,
+            "input": "ActionInput_gem_createcandidate",
+            "name": "create-candidate",
+            "output": ["ActionOutput_gem_createcandidate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_gem_createcandidate", "ActionOutput_gem_createcandidate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gem_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": ["string", "null"]
+                            },
+                            "nickname": {
+                                "type": ["string", "null"]
+                            },
+                            "emails": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email_address": {
+                                                    "type": "string"
+                                                },
+                                                "is_primary": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["email_address", "is_primary"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "linked_in_handle": {
+                                "type": ["string", "null"]
+                            },
+                            "title": {
+                                "type": ["string", "null"]
+                            },
+                            "company": {
+                                "type": ["string", "null"]
+                            },
+                            "location": {
+                                "type": ["string", "null"]
+                            },
+                            "school": {
+                                "type": ["string", "null"]
+                            },
+                            "education_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "school": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "parsed_university": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "parsed_school": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "start_date": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "end_date": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "field_of_study": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "parsed_major_1": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "parsed_major_2": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "degree": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": [
+                                                "parsed_university",
+                                                "parsed_school",
+                                                "start_date",
+                                                "end_date",
+                                                "field_of_study",
+                                                "parsed_major_1",
+                                                "parsed_major_2",
+                                                "degree"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "work_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "company": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "title": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "work_start_date": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "work_end_date": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "is_current": {
+                                                    "type": ["boolean", "null"]
+                                                }
+                                            },
+                                            "required": ["company", "title", "work_start_date", "work_end_date", "is_current"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "profile_urls": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "custom_fields": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "custom_field_id": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["custom_field_id", "value"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "phone_number": {
+                                "type": ["string", "null"]
+                            },
+                            "project_ids": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "sourced_from": {
+                                "type": ["string", "null"]
+                            },
+                            "autofill": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "created_by",
+                            "first_name",
+                            "last_name",
+                            "nickname",
+                            "emails",
+                            "linked_in_handle",
+                            "title",
+                            "company",
+                            "location",
+                            "school",
+                            "education_info",
+                            "work_info",
+                            "profile_urls",
+                            "custom_fields",
+                            "phone_number",
+                            "project_ids",
+                            "sourced_from",
+                            "autofill"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gem_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "last_updated_at": {
+                                "type": ["number", "null"]
+                            },
+                            "candidate_greenhouse_id": {
+                                "type": ["string", "null"]
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": ["string", "null"]
+                            },
+                            "nickname": {
+                                "type": ["string", "null"]
+                            },
+                            "weblink": {
+                                "type": "string"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email_address": {
+                                            "type": "string"
+                                        },
+                                        "is_primary": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["email_address", "is_primary"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phone_number": {
+                                "type": ["string", "null"]
+                            },
+                            "location": {
+                                "type": ["string", "null"]
+                            },
+                            "linked_in_handle": {
+                                "type": ["string", "null"]
+                            },
+                            "profiles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "network": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["network", "url", "username"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "company": {
+                                "type": ["string", "null"]
+                            },
+                            "title": {
+                                "type": ["string", "null"]
+                            },
+                            "school": {
+                                "type": ["string", "null"]
+                            },
+                            "education_info": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "school": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "parsed_university": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "parsed_school": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "start_date": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "end_date": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "field_of_study": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "parsed_major_1": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "parsed_major_2": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "degree": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": [
+                                        "parsed_university",
+                                        "parsed_school",
+                                        "start_date",
+                                        "end_date",
+                                        "field_of_study",
+                                        "parsed_major_1",
+                                        "parsed_major_2",
+                                        "degree"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "work_info": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "company": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "title": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "work_start_date": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "work_end_date": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "is_current": {
+                                            "type": ["boolean", "null"]
+                                        }
+                                    },
+                                    "required": ["company", "title", "work_start_date", "work_end_date", "is_current"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "custom_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "string"
+                                        },
+                                        "project_id": {
+                                            "type": "string"
+                                        },
+                                        "value": {},
+                                        "value_type": {
+                                            "type": "string"
+                                        },
+                                        "value_option_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "custom_field_category": {
+                                            "type": "string"
+                                        },
+                                        "custom_field_value": {}
+                                    },
+                                    "required": ["id", "name", "scope", "value", "value_type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "due_date": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "date": {
+                                                "type": "string"
+                                            },
+                                            "user_id": {
+                                                "type": "string"
+                                            },
+                                            "note": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "required": ["date", "user_id", "note"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "project_ids": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "sourced_from": {
+                                "type": ["string", "null"]
+                            },
+                            "gem_source": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "created_at",
+                            "created_by",
+                            "last_updated_at",
+                            "candidate_greenhouse_id",
+                            "first_name",
+                            "last_name",
+                            "nickname",
+                            "weblink",
+                            "emails",
+                            "phone_number",
+                            "location",
+                            "linked_in_handle",
+                            "profiles",
+                            "company",
+                            "title",
+                            "school",
+                            "education_info",
+                            "work_info",
+                            "custom_fields",
+                            "due_date",
+                            "project_ids",
+                            "sourced_from",
+                            "gem_source"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a note for a candidate",
+            "endpoint": null,
+            "input": "ActionInput_gem_createnote",
+            "name": "create-note",
+            "output": ["ActionOutput_gem_createnote"],
+            "scopes": [],
+            "usedModels": ["ActionInput_gem_createnote", "ActionOutput_gem_createnote"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gem_createnote": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "private"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "public"
+                                    }
+                                ]
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id", "body", "visibility", "candidate_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gem_createnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "employee_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                "additionalProperties": false
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "visibility": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "public"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "private"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "created_at", "body", "user", "private", "visibility"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an application's source",
+            "endpoint": null,
+            "input": "ActionInput_gem_updateapplication",
+            "name": "update-application",
+            "output": ["ActionOutput_gem_updateapplication"],
+            "scopes": [],
+            "usedModels": ["ActionInput_gem_updateapplication", "ActionOutput_gem_updateapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gem_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "source_id": {
+                                "type": "string"
+                            },
+                            "application_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["source_id", "application_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gem_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "applied_at": {
+                                "type": "string"
+                            },
+                            "rejected_at": {
+                                "type": ["string", "null"]
+                            },
+                            "last_activity_at": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "public_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "public_name"],
+                                "additionalProperties": false
+                            },
+                            "credited_to": {
+                                "type": "string"
+                            },
+                            "rejection_reason": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id", "name", "type"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "job_post_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "current_stage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "candidate_id",
+                            "applied_at",
+                            "rejected_at",
+                            "last_activity_at",
+                            "source",
+                            "credited_to",
+                            "rejection_reason",
+                            "jobs",
+                            "job_post_id",
+                            "status",
+                            "current_stage",
+                            "deleted_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a resume for a candidate. Allowed formats are .pdf, .doc, or .docx. The file size must not exceed 2MB.",
+            "endpoint": null,
+            "input": "ActionInput_gem_uploadresume",
+            "name": "upload-resume",
+            "output": ["ActionOutput_gem_uploadresume"],
+            "scopes": [],
+            "usedModels": ["ActionInput_gem_uploadresume", "ActionOutput_gem_uploadresume"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gem_uploadresume": {
+                        "type": "object",
+                        "properties": {
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "resume_file": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["candidate_id", "user_id", "resume_file"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gem_uploadresume": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            },
+                            "download_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "candidate_id", "created_at", "user_id", "filename", "download_url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Get a list of all applications from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/applications",
+                    "group": "Applications"
+                }
+            ],
+            "input": "SyncMetadata_gem_applications",
+            "name": "applications",
+            "output": ["Application"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Application", "SyncMetadata_gem_applications"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Application": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "applied_at": {
+                                "type": "string"
+                            },
+                            "rejected_at": {
+                                "type": ["string", "null"]
+                            },
+                            "last_activity_at": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "public_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "public_name"],
+                                "additionalProperties": false
+                            },
+                            "credited_to": {
+                                "type": "string"
+                            },
+                            "rejection_reason": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id", "name", "type"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "job_post_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "current_stage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "candidate_id",
+                            "applied_at",
+                            "rejected_at",
+                            "last_activity_at",
+                            "source",
+                            "credited_to",
+                            "rejection_reason",
+                            "jobs",
+                            "job_post_id",
+                            "status",
+                            "current_stage",
+                            "deleted_at"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_applications": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Get all candidates from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/candidates",
+                    "group": "Candidates"
+                }
+            ],
+            "input": "SyncMetadata_gem_candidates",
+            "name": "candidates",
+            "output": ["Candidate"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Candidate", "SyncMetadata_gem_candidates"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Candidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": ["string", "null"]
+                            },
+                            "title": {
+                                "type": ["string", "null"]
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["filename", "url", "type", "created_at"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "email_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "is_primary": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["type", "value", "is_primary"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "social_media_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "educations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "school_name": {
+                                            "type": "string"
+                                        },
+                                        "degree": {
+                                            "type": "string"
+                                        },
+                                        "discipline": {
+                                            "type": "string"
+                                        },
+                                        "start_date": {
+                                            "type": "string"
+                                        },
+                                        "end_date": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "school_name", "degree", "discipline", "start_date", "end_date"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "employments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "company_name": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "start_date": {
+                                            "type": "string"
+                                        },
+                                        "end_date": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "company_name", "title", "start_date", "end_date"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "linked_user_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": ["string", "null"]
+                            },
+                            "last_activity": {
+                                "type": ["string", "null"]
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            },
+                            "applications": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "candidate_id": {
+                                            "type": "string"
+                                        },
+                                        "applied_at": {
+                                            "type": "string"
+                                        },
+                                        "rejected_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_activity_at": {
+                                            "type": "string"
+                                        },
+                                        "source": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "public_name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "public_name"],
+                                            "additionalProperties": false
+                                        },
+                                        "credited_to": {
+                                            "type": "string"
+                                        },
+                                        "rejection_reason": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["id", "name"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "required": ["id", "name", "type"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "jobs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "job_post_id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "current_stage": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "deleted_at": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "candidate_id",
+                                        "applied_at",
+                                        "rejected_at",
+                                        "last_activity_at",
+                                        "source",
+                                        "credited_to",
+                                        "rejection_reason",
+                                        "jobs",
+                                        "job_post_id",
+                                        "status",
+                                        "current_stage",
+                                        "deleted_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "application_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "first_name",
+                            "last_name",
+                            "company",
+                            "title",
+                            "attachments",
+                            "phone_numbers",
+                            "email_addresses",
+                            "social_media_addresses",
+                            "tags",
+                            "educations",
+                            "employments",
+                            "linked_user_ids",
+                            "created_at",
+                            "updated_at",
+                            "last_activity",
+                            "deleted_at",
+                            "is_private",
+                            "applications",
+                            "application_ids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_candidates": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Get a list of all job posts from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-posts",
+                    "group": "Job Posts"
+                }
+            ],
+            "input": "SyncMetadata_gem_jobposts",
+            "name": "job-posts",
+            "output": ["JobPost"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["JobPost", "SyncMetadata_gem_jobposts"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JobPost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "live": {
+                                "type": "boolean"
+                            },
+                            "first_published_at": {
+                                "type": ["string", "null"]
+                            },
+                            "job_id": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "title", "active", "live", "first_published_at", "job_id", "content", "created_at", "updated_at", "deleted_at"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_jobposts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Get a list of all job stages from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-stages",
+                    "group": "Job Stages"
+                }
+            ],
+            "input": "SyncMetadata_gem_jobstages",
+            "name": "job-stages",
+            "output": ["JobStage"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["JobStage", "SyncMetadata_gem_jobstages"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JobStage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "job_id": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "number"
+                            },
+                            "interviews": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "schedulable": {
+                                            "type": "boolean"
+                                        },
+                                        "estimated_minutes": {
+                                            "type": "number"
+                                        },
+                                        "default_interviewer_users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "first_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "last_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "employee_id": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "interview_kit": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "content": {
+                                                    "type": "string"
+                                                },
+                                                "questions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["id", "name"],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": ["id", "content", "questions"],
+                                            "additionalProperties": false
+                                        },
+                                        "deleted_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "job_stage_interview_item_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "schedulable",
+                                        "estimated_minutes",
+                                        "default_interviewer_users",
+                                        "interview_kit",
+                                        "deleted_at",
+                                        "job_stage_interview_item_id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "created_at", "updated_at", "deleted_at", "active", "job_id", "priority", "interviews"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_jobstages": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Get a list of all jobs from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/jobs",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_gem_jobs",
+            "name": "jobs",
+            "output": ["Job"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Job", "SyncMetadata_gem_jobs"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Job": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "requisition_id": {
+                                "type": "string"
+                            },
+                            "confidential": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "opened_at": {
+                                "type": "string"
+                            },
+                            "closed_at": {
+                                "type": ["string", "null"]
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "is_template": {
+                                "type": "boolean"
+                            },
+                            "departments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "parent_id": {
+                                            "type": "string"
+                                        },
+                                        "child_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "parent_department_external_id": {
+                                            "type": "string"
+                                        },
+                                        "child_department_external_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "deleted_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "parent_id",
+                                        "child_ids",
+                                        "parent_department_external_id",
+                                        "child_department_external_ids",
+                                        "deleted_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "offices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["name"],
+                                            "additionalProperties": false
+                                        },
+                                        "parent_id": {
+                                            "type": "string"
+                                        },
+                                        "child_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "parent_office_external_id": {
+                                            "type": "string"
+                                        },
+                                        "child_office_external_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "deleted_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "location",
+                                        "parent_id",
+                                        "child_ids",
+                                        "parent_office_external_id",
+                                        "child_office_external_ids",
+                                        "deleted_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "hiring_team": {
+                                "type": "object",
+                                "properties": {
+                                    "hiring_managers": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "employee_id": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "recruiters": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "employee_id": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "coordinators": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "employee_id": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "sourcers": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "employee_id": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": ["hiring_managers", "recruiters", "coordinators", "sourcers"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "requisition_id",
+                            "confidential",
+                            "status",
+                            "created_at",
+                            "opened_at",
+                            "closed_at",
+                            "deleted_at",
+                            "updated_at",
+                            "is_template",
+                            "departments",
+                            "offices",
+                            "hiring_team"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_jobs": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Get a list of all locations from Gem ATS",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/locations",
+                    "group": "Locations"
+                }
+            ],
+            "input": "SyncMetadata_gem_locations",
+            "name": "locations",
+            "output": ["Location"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Location", "SyncMetadata_gem_locations"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Location": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "parent_id": {
+                                "type": "string"
+                            },
+                            "child_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "parent_office_external_id": {
+                                "type": "string"
+                            },
+                            "child_office_external_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "location",
+                            "parent_id",
+                            "child_ids",
+                            "parent_office_external_id",
+                            "child_office_external_ids",
+                            "deleted_at"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_locations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Get a list of all users from Gem",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_gem_users",
+            "name": "users",
+            "output": ["TeamMemberUser"],
+            "runs": "every 1h",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["TeamMemberUser", "SyncMetadata_gem_users"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TeamMemberUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "email"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gem_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

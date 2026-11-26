@@ -1,0 +1,390 @@
+{
+    "providerConfigKey": "youcanbook-me-public",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Start a new booking session (intent) against a YouCanBook.me booking page, scoped by subdomain.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_public_createbookingintent",
+            "name": "create-booking-intent",
+            "output": ["ActionOutput_youcanbook_me_public_createbookingintent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_public_createbookingintent", "ActionOutput_youcanbook_me_public_createbookingintent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_public_createbookingintent": {
+                        "type": "object",
+                        "properties": {
+                            "subdomain": {
+                                "description": "YouCanBook.me booking page subdomain. Defaults to the connection_config subdomain.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_public_createbookingintent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "intentStatus": {
+                                "type": "string"
+                            },
+                            "selections": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "intentStatus"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a short-lived key representing the searchable availability window for a booking intent, to be passed to get-available-slots.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_public_getavailabilitykey",
+            "name": "get-availability-key",
+            "output": ["ActionOutput_youcanbook_me_public_getavailabilitykey"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_public_getavailabilitykey", "ActionOutput_youcanbook_me_public_getavailabilitykey"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_public_getavailabilitykey": {
+                        "type": "object",
+                        "properties": {
+                            "intentId": {
+                                "type": "string",
+                                "description": "Booking intent ID. Example: \"itt_3a57aaf2-1f5f-41f6-9098-af57c907259a\""
+                            },
+                            "startSearchAt": {
+                                "description": "Start of the search window as a plain date string. Example: \"2026-08-01\"",
+                                "type": "string"
+                            },
+                            "endSearchAt": {
+                                "description": "End of the search window as a plain date string. Example: \"2026-08-31\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["intentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_public_getavailabilitykey": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Short-lived availability key. Example: \"avl_728b78bc1dec387d7c6c54071d5c0d7715594728af10b2ab1f346648ed059cecT_34\""
+                            }
+                        },
+                        "required": ["key"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the list of open time slots for a booking intent's search window.",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_public_getavailableslots",
+            "name": "get-available-slots",
+            "output": ["ActionOutput_youcanbook_me_public_getavailableslots"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_public_getavailableslots", "ActionOutput_youcanbook_me_public_getavailableslots"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_public_getavailableslots": {
+                        "type": "object",
+                        "properties": {
+                            "availabilityKey": {
+                                "type": "string",
+                                "description": "Availability key obtained from get-availability-key for the same intent. Example: \"avl_...\""
+                            }
+                        },
+                        "required": ["availabilityKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_public_getavailableslots": {
+                        "type": "object",
+                        "properties": {
+                            "slots": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "startsAt": {
+                                            "type": "string",
+                                            "description": "Slot start time in epoch milliseconds. Example: \"1785430800000\""
+                                        },
+                                        "freeUnits": {
+                                            "type": "number",
+                                            "description": "Number of free units available for this slot."
+                                        }
+                                    },
+                                    "required": ["startsAt", "freeUnits"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["slots"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the current state of a booking intent (selections made so far, status, resulting bookingId once confirmed).",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_public_getbookingintent",
+            "name": "get-booking-intent",
+            "output": ["ActionOutput_youcanbook_me_public_getbookingintent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_public_getbookingintent", "ActionOutput_youcanbook_me_public_getbookingintent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_public_getbookingintent": {
+                        "type": "object",
+                        "properties": {
+                            "intentId": {
+                                "type": "string",
+                                "description": "The ID of the booking intent to retrieve. Example: \"itt_abc123\""
+                            }
+                        },
+                        "required": ["intentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_public_getbookingintent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "bookingId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "number"
+                            },
+                            "intentStatus": {
+                                "type": "string"
+                            },
+                            "selections": {
+                                "type": "object",
+                                "properties": {
+                                    "appointmentTypeIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "duration": {
+                                        "type": "number"
+                                    },
+                                    "form": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "value"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "smsConsent": {
+                                        "type": "boolean"
+                                    },
+                                    "startsAt": {
+                                        "type": "number"
+                                    },
+                                    "teamMemberId": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    },
+                                    "units": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "createdAt", "intentStatus", "selections"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set the chosen time slot, contact/form details, timezone, and other booking options on an in-progress intent",
+            "endpoint": null,
+            "input": "ActionInput_youcanbook_me_public_updatebookingintentselections",
+            "name": "update-booking-intent-selections",
+            "output": ["ActionOutput_youcanbook_me_public_updatebookingintentselections"],
+            "scopes": [],
+            "usedModels": ["ActionInput_youcanbook_me_public_updatebookingintentselections", "ActionOutput_youcanbook_me_public_updatebookingintentselections"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youcanbook_me_public_updatebookingintentselections": {
+                        "type": "object",
+                        "properties": {
+                            "intentId": {
+                                "type": "string",
+                                "description": "Booking intent ID. Example: \"itt_xxx\""
+                            },
+                            "startsAt": {
+                                "description": "Chosen time slot as epoch milliseconds. Accepts either a number or the numeric string returned by get-available-slots.",
+                                "type": ["number", "string"]
+                            },
+                            "form": {
+                                "description": "Contact form fields (e.g. FNAME, LNAME, EMAIL)",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "timeZone": {
+                                "description": "IANA timezone or \"UTC\"",
+                                "type": "string"
+                            },
+                            "teamMemberId": {
+                                "type": "string"
+                            },
+                            "appointmentTypeIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "location": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["intentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youcanbook_me_public_updatebookingintentselections": {
+                        "type": "object",
+                        "properties": {
+                            "bookingId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "number"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "intentStatus": {
+                                "type": "string"
+                            },
+                            "selections": {
+                                "type": "object",
+                                "properties": {
+                                    "appointmentTypeIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "duration": {
+                                        "type": "number"
+                                    },
+                                    "form": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "value"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "smsConsent": {
+                                        "type": "boolean"
+                                    },
+                                    "startsAt": {
+                                        "type": "number"
+                                    },
+                                    "teamMemberId": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    },
+                                    "units": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["createdAt", "id", "intentStatus", "selections"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

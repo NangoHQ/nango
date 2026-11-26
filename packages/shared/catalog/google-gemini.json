@@ -1,0 +1,1111 @@
+{
+    "providerConfigKey": "google-gemini",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Generate embeddings for multiple text contents in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_batchembedcontents",
+            "name": "batch-embed-contents",
+            "output": ["ActionOutput_google_gemini_batchembedcontents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_batchembedcontents", "ActionOutput_google_gemini_batchembedcontents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_batchembedcontents": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "description": "The embedding model to use. Defaults to \"gemini-embedding-001\".",
+                                "type": "string"
+                            },
+                            "requests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "model": {
+                                            "description": "Model name. Must match the outer model. Defaults to the outer model.",
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "description": "Text content to embed."
+                                        },
+                                        "taskType": {
+                                            "description": "Optional task type for the embedding.",
+                                            "type": "string",
+                                            "enum": [
+                                                "RETRIEVAL_DOCUMENT",
+                                                "RETRIEVAL_QUERY",
+                                                "SEMANTIC_SIMILARITY",
+                                                "CLASSIFICATION",
+                                                "CLUSTERING",
+                                                "CODE_RETRIEVAL_QUERY"
+                                            ]
+                                        }
+                                    },
+                                    "required": ["content"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of embed requests."
+                            }
+                        },
+                        "required": ["requests"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_batchembedcontents": {
+                        "type": "object",
+                        "properties": {
+                            "embeddings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "description": "The embeddings for each request, in the same order as provided in the batch request."
+                            }
+                        },
+                        "required": ["embeddings"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Count tokens for a given request without generating a response.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_counttokens",
+            "name": "count-tokens",
+            "output": ["ActionOutput_google_gemini_counttokens"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_counttokens", "ActionOutput_google_gemini_counttokens"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_counttokens": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "description": "Model name. Example: \"gemini-2.5-flash\"",
+                                "type": "string"
+                            },
+                            "contents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "parts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "text": {
+                                                        "type": "string"
+                                                    },
+                                                    "inlineData": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "mimeType": {
+                                                                "type": "string"
+                                                            },
+                                                            "data": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["mimeType", "data"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "fileData": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "mimeType": {
+                                                                "type": "string"
+                                                            },
+                                                            "fileUri": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["mimeType", "fileUri"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["parts"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Input contents to tokenize."
+                            },
+                            "systemInstruction": {
+                                "description": "Optional system instruction content.",
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "parts": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string"
+                                                },
+                                                "inlineData": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "mimeType": {
+                                                            "type": "string"
+                                                        },
+                                                        "data": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["mimeType", "data"],
+                                                    "additionalProperties": false
+                                                },
+                                                "fileData": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "mimeType": {
+                                                            "type": "string"
+                                                        },
+                                                        "fileUri": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["mimeType", "fileUri"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "required": ["parts"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["contents"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_counttokens": {
+                        "type": "object",
+                        "properties": {
+                            "totalTokens": {
+                                "type": "number",
+                                "description": "Total number of tokens in the input."
+                            },
+                            "promptTokensDetails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "modality": {
+                                            "type": "string"
+                                        },
+                                        "tokenCount": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["totalTokens"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an uploaded file from the Gemini Files API.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_deletefile",
+            "name": "delete-file",
+            "output": ["ActionOutput_google_gemini_deletefile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_deletefile", "ActionOutput_google_gemini_deletefile"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "File name. Example: \"files/abc123\""
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_deletefile": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a single embedding vector for text content.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_embedcontent",
+            "name": "embed-content",
+            "output": ["ActionOutput_google_gemini_embedcontent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_embedcontent", "ActionOutput_google_gemini_embedcontent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_embedcontent": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The text content to embed."
+                            },
+                            "model": {
+                                "description": "The embedding model name. Defaults to gemini-embedding-001.",
+                                "type": "string"
+                            },
+                            "taskType": {
+                                "description": "The task type for which the embeddings will be used.",
+                                "type": "string",
+                                "enum": ["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "CODE_RETRIEVAL_QUERY"]
+                            },
+                            "title": {
+                                "description": "An optional title for the text. Only applicable when taskType is RETRIEVAL_DOCUMENT.",
+                                "type": "string"
+                            },
+                            "outputDimensionality": {
+                                "description": "Reduced dimension for the output embedding. If set, excessive values are truncated from the end.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 3072
+                            }
+                        },
+                        "required": ["content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_embedcontent": {
+                        "type": "object",
+                        "properties": {
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "description": "The embedding vector values."
+                            },
+                            "truncated": {
+                                "type": "boolean"
+                            },
+                            "promptTokenCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "totalTokenCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["values"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate content using a Gemini model with optional system instructions, tools, and generation config.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_generatecontent",
+            "name": "generate-content",
+            "output": ["ActionOutput_google_gemini_generatecontent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_generatecontent", "ActionOutput_google_gemini_generatecontent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_generatecontent": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string"
+                            },
+                            "contents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "parts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "text": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["parts"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "systemInstruction": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "parts": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "required": ["parts"],
+                                "additionalProperties": false
+                            },
+                            "generationConfig": {
+                                "type": "object",
+                                "properties": {
+                                    "maxOutputTokens": {
+                                        "type": "number"
+                                    },
+                                    "temperature": {
+                                        "type": "number"
+                                    },
+                                    "topP": {
+                                        "type": "number"
+                                    },
+                                    "topK": {
+                                        "type": "number"
+                                    },
+                                    "stopSequences": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "responseMimeType": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tools": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["contents"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_generatecontent": {
+                        "type": "object",
+                        "properties": {
+                            "candidates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "content": {
+                                            "type": "object",
+                                            "properties": {
+                                                "role": {
+                                                    "type": "string"
+                                                },
+                                                "parts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "text": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "finishReason": {
+                                            "type": "string"
+                                        },
+                                        "index": {
+                                            "type": "number"
+                                        },
+                                        "safetyRatings": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "citationMetadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "groundingMetadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "promptFeedback": {
+                                "type": "object",
+                                "properties": {
+                                    "blockReason": {
+                                        "type": "string"
+                                    },
+                                    "safetyRatings": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "usageMetadata": {
+                                "type": "object",
+                                "properties": {
+                                    "promptTokenCount": {
+                                        "type": "number"
+                                    },
+                                    "cachedContentTokenCount": {
+                                        "type": "number"
+                                    },
+                                    "candidatesTokenCount": {
+                                        "type": "number"
+                                    },
+                                    "totalTokenCount": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve metadata for a specific uploaded file.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_getfile",
+            "name": "get-file",
+            "output": ["ActionOutput_google_gemini_getfile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_getfile", "ActionOutput_google_gemini_getfile"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the file to retrieve. Example: \"files/abc123\""
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "sizeBytes": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "expirationTime": {
+                                "type": "string"
+                            },
+                            "sha256Hash": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "downloadUri": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "error": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "videoMetadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a specific Gemini model by name.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_getmodel",
+            "name": "get-model",
+            "output": ["ActionOutput_google_gemini_getmodel"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_getmodel", "ActionOutput_google_gemini_getmodel"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_getmodel": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Model name. Example: \"gemini-2.5-flash\" or \"models/gemini-2.5-flash\""
+                            }
+                        },
+                        "required": ["model"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_getmodel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "baseModelId": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "inputTokenLimit": {
+                                "type": "number"
+                            },
+                            "outputTokenLimit": {
+                                "type": "number"
+                            },
+                            "supportedGenerationMethods": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "temperature": {
+                                "type": "number"
+                            },
+                            "maxTemperature": {
+                                "type": "number"
+                            },
+                            "topP": {
+                                "type": "number"
+                            },
+                            "topK": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List cached content entries (context cache) with pagination.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_listcachedcontents",
+            "name": "list-cached-contents",
+            "output": ["ActionOutput_google_gemini_listcachedcontents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_listcachedcontents", "ActionOutput_google_gemini_listcachedcontents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_listcachedcontents": {
+                        "type": "object",
+                        "properties": {
+                            "pageSize": {
+                                "description": "The maximum number of cached contents to return. Maximum is 1000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "pageToken": {
+                                "description": "A page token from a previous cachedContents.list call to retrieve the subsequent page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_listcachedcontents": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "model": {
+                                            "type": "string"
+                                        },
+                                        "createTime": {
+                                            "type": "string"
+                                        },
+                                        "updateTime": {
+                                            "type": "string"
+                                        },
+                                        "expireTime": {
+                                            "type": "string"
+                                        },
+                                        "ttl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List files uploaded to the Gemini Files API.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_listfiles",
+            "name": "list-files",
+            "output": ["ActionOutput_google_gemini_listfiles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_listfiles", "ActionOutput_google_gemini_listfiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "pageSize": {
+                                "description": "Maximum number of files to return per page. Defaults to 10, maximum is 100.",
+                                "type": "number"
+                            },
+                            "pageToken": {
+                                "description": "Pagination token from a previous list-files call. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "mimeType": {
+                                            "type": "string"
+                                        },
+                                        "sizeBytes": {
+                                            "type": "string"
+                                        },
+                                        "createTime": {
+                                            "type": "string"
+                                        },
+                                        "updateTime": {
+                                            "type": "string"
+                                        },
+                                        "expirationTime": {
+                                            "type": "string"
+                                        },
+                                        "sha256Hash": {
+                                            "type": "string"
+                                        },
+                                        "uri": {
+                                            "type": "string"
+                                        },
+                                        "downloadUri": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "source": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "videoMetadata": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "description": "Token to retrieve the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available Gemini models with pagination.",
+            "endpoint": null,
+            "input": "ActionInput_google_gemini_listmodels",
+            "name": "list-models",
+            "output": ["ActionOutput_google_gemini_listmodels"],
+            "scopes": [],
+            "usedModels": ["ActionInput_google_gemini_listmodels", "ActionOutput_google_gemini_listmodels"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_gemini_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "pageSize": {
+                                "description": "Maximum number of models to return per page. Example: 10",
+                                "type": "number"
+                            },
+                            "pageToken": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_gemini_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "inputTokenLimit": {
+                                            "type": "number"
+                                        },
+                                        "outputTokenLimit": {
+                                            "type": "number"
+                                        },
+                                        "supportedGenerationMethods": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "temperature": {
+                                            "type": "number"
+                                        },
+                                        "topP": {
+                                            "type": "number"
+                                        },
+                                        "topK": {
+                                            "type": "number"
+                                        },
+                                        "maxTemperature": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync cached content entries (context cache)",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "cached-contents",
+            "output": ["CachedContent"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CachedContent"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CachedContent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "model": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "expireTime": {
+                                "type": "string"
+                            },
+                            "usageMetadata": {
+                                "type": "object",
+                                "properties": {
+                                    "totalTokenCount": {
+                                        "type": "number"
+                                    },
+                                    "textCount": {
+                                        "type": "number"
+                                    },
+                                    "imageCount": {
+                                        "type": "number"
+                                    },
+                                    "videoDurationSeconds": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync available Gemini models",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "models",
+            "output": ["Model"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Model"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Model": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "baseModelId": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "inputTokenLimit": {
+                                "type": "number"
+                            },
+                            "outputTokenLimit": {
+                                "type": "number"
+                            },
+                            "supportedGenerationMethods": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "temperature": {
+                                "type": "number"
+                            },
+                            "topP": {
+                                "type": "number"
+                            },
+                            "topK": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

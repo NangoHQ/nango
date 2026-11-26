@@ -1,0 +1,64 @@
+{
+    "providerConfigKey": "paylocity",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetch employees from Paylocity.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_paylocity_users",
+            "name": "users",
+            "output": ["User"],
+            "runs": "every day",
+            "scopes": ["address", "all", "email", "offline_access", "openid"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_paylocity_users"],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_paylocity_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

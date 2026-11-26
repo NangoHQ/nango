@@ -1,0 +1,640 @@
+{
+    "providerConfigKey": "sap-success-factors",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of current employees from sap success factors",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees",
+                    "group": "Employees"
+                }
+            ],
+            "input": "SyncMetadata_sap_success_factors_employees",
+            "name": "employees",
+            "output": ["Employee"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Employee", "SyncMetadata_sap_success_factors_employees"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "personIdExternal": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "preferredName": {
+                                "type": "string"
+                            },
+                            "gender": {
+                                "type": "string"
+                            },
+                            "nationality": {
+                                "type": "string"
+                            },
+                            "maritalStatus": {
+                                "type": ["string", "null"]
+                            },
+                            "dateOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "countryOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "personIdExternal",
+                            "firstName",
+                            "lastName",
+                            "preferredName",
+                            "gender",
+                            "nationality",
+                            "maritalStatus",
+                            "dateOfBirth",
+                            "countryOfBirth",
+                            "createdDateTime",
+                            "lastModifiedDateTime"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_sap_success_factors_employees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of organizational groups from sap success factors",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/groups",
+                    "group": "Groups"
+                }
+            ],
+            "input": "SyncMetadata_sap_success_factors_groups",
+            "name": "groups",
+            "output": ["Group"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Group", "SyncMetadata_sap_success_factors_groups"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "name_localized": {
+                                "type": "string"
+                            },
+                            "name_en_US": {
+                                "type": "string"
+                            },
+                            "name_defaultValue": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": ["string", "null"]
+                            },
+                            "costCenter": {
+                                "type": ["string", "null"]
+                            },
+                            "headOfUnit": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "entityUUID": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "name_localized",
+                            "name_en_US",
+                            "name_defaultValue",
+                            "description",
+                            "startDate",
+                            "endDate",
+                            "parent",
+                            "costCenter",
+                            "headOfUnit",
+                            "status",
+                            "createdDateTime",
+                            "lastModifiedDateTime",
+                            "entityUUID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_sap_success_factors_groups": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of locations from sap success factors",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/locations",
+                    "group": "Locations"
+                }
+            ],
+            "input": "SyncMetadata_sap_success_factors_locations",
+            "name": "locations",
+            "output": ["Location"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Location", "SyncMetadata_sap_success_factors_locations"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Location": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "externalCode": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": ["string", "null"]
+                            },
+                            "city": {
+                                "type": ["string", "null"]
+                            },
+                            "zipCode": {
+                                "type": ["string", "null"]
+                            },
+                            "addressLine1": {
+                                "type": ["string", "null"]
+                            },
+                            "addressLine2": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "externalCode",
+                            "name",
+                            "description",
+                            "status",
+                            "startDate",
+                            "endDate",
+                            "timezone",
+                            "createdDateTime",
+                            "lastModifiedDateTime",
+                            "country",
+                            "state",
+                            "city",
+                            "zipCode",
+                            "addressLine1",
+                            "addressLine2"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_sap_success_factors_locations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of current employees from  sap success factors and maps them to the standard HRIS model",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees/unified",
+                    "group": "Employees"
+                }
+            ],
+            "input": "SyncMetadata_sap_success_factors_unifiedemployees",
+            "name": "unified-employees",
+            "output": ["StandardEmployee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["StandardEmployee", "SyncMetadata_sap_success_factors_unifiedemployees"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StandardEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "employeeNumber": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "employmentType": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "FULL_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PART_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CONTRACTOR"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "INTERN"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TEMPORARY"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "OTHER"
+                                    }
+                                ]
+                            },
+                            "employmentStatus": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "ACTIVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TERMINATED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "ON_LEAVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUSPENDED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PENDING"
+                                    }
+                                ]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "type": "string"
+                            },
+                            "terminationType": {
+                                "type": "string"
+                            },
+                            "manager": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "firstName", "lastName", "email"],
+                                "additionalProperties": false
+                            },
+                            "workLocation": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "OFFICE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "REMOTE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "HYBRID"
+                                            }
+                                        ]
+                                    },
+                                    "primaryAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "HOME"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "WORK"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["name", "type", "primaryAddress"],
+                                "additionalProperties": false
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "street": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "MOBILE"
+                                                }
+                                            ]
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "number"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "PERSONAL"
+                                                }
+                                            ]
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "address"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "providerSpecific": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "displayName",
+                            "employeeNumber",
+                            "title",
+                            "department",
+                            "employmentType",
+                            "employmentStatus",
+                            "startDate",
+                            "manager",
+                            "workLocation",
+                            "addresses",
+                            "phones",
+                            "emails",
+                            "providerSpecific",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_sap_success_factors_unifiedemployees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

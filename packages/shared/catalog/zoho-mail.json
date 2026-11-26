@@ -1,0 +1,3379 @@
+{
+    "providerConfigKey": "zoho-mail",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Archive a Zoho Mail message.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_archivemessage",
+            "name": "archive-message",
+            "output": ["ActionOutput_zoho_mail_archivemessage"],
+            "scopes": ["ZohoMail.messages.UPDATE"],
+            "usedModels": ["ActionInput_zoho_mail_archivemessage", "ActionOutput_zoho_mail_archivemessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_archivemessage": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to archive. Example: \"1781108289537154100\""
+                            }
+                        },
+                        "required": ["accountId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_archivemessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Save an email as a draft in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_createdraft",
+            "name": "create-draft",
+            "output": ["ActionOutput_zoho_mail_createdraft"],
+            "scopes": ["ZohoMail.messages.CREATE"],
+            "usedModels": ["ActionInput_zoho_mail_createdraft", "ActionOutput_zoho_mail_createdraft"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_createdraft": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "fromAddress": {
+                                "type": "string",
+                                "description": "Sender email address. Example: \"user@zohomail.com\""
+                            },
+                            "toAddress": {
+                                "type": "string",
+                                "description": "Recipient email address. Example: \"recipient@example.com\""
+                            },
+                            "subject": {
+                                "type": "string",
+                                "description": "Subject of the email. Example: \"Meeting notes\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Body content of the email. Example: \"Hello, please find the notes attached.\""
+                            },
+                            "mailFormat": {
+                                "type": "string",
+                                "enum": ["html", "plaintext"],
+                                "description": "Format of the email content. Example: \"html\""
+                            },
+                            "ccAddress": {
+                                "description": "Cc recipient email address.",
+                                "type": "string"
+                            },
+                            "bccAddress": {
+                                "description": "Bcc recipient email address.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "fromAddress", "toAddress", "subject", "content", "mailFormat"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_createdraft": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a folder in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_createfolder",
+            "name": "create-folder",
+            "output": ["ActionOutput_zoho_mail_createfolder"],
+            "scopes": ["ZohoMail.folders.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_createfolder", "ActionOutput_zoho_mail_createfolder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderName": {
+                                "type": "string",
+                                "description": "Name of the folder to create. Example: \"My Folder\""
+                            },
+                            "parentFolderId": {
+                                "description": "Optional parent folder ID. Example: \"4845214000000008008\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "folderName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "folderName": {
+                                "type": "string"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "folderType": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "number"
+                            },
+                            "imapAccess": {
+                                "type": "boolean"
+                            },
+                            "previousFolderId": {
+                                "type": "string"
+                            },
+                            "URI": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folderId", "folderName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a label in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_createlabel",
+            "name": "create-label",
+            "output": ["ActionOutput_zoho_mail_createlabel"],
+            "scopes": ["ZohoMail.tags.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_createlabel", "ActionOutput_zoho_mail_createlabel"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_createlabel": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "labelName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the label to create. Example: \"Important\""
+                            },
+                            "color": {
+                                "description": "Hex color code for the label. Example: \"#FF0000\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "labelName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_createlabel": {
+                        "type": "object",
+                        "properties": {
+                            "labelId": {
+                                "type": "string"
+                            },
+                            "labelName": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add an email signature in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_createsignature",
+            "name": "create-signature",
+            "output": ["ActionOutput_zoho_mail_createsignature"],
+            "scopes": ["ZohoMail.accounts.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_createsignature", "ActionOutput_zoho_mail_createsignature"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_createsignature": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the signature. Example: \"Work Signature\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Content of the signature. Example: \"Best regards, John.\""
+                            },
+                            "position": {
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 0
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 1
+                                    }
+                                ],
+                                "description": "Position of the signature. 0 = below quoted content, 1 = above quoted content."
+                            },
+                            "assignUsers": {
+                                "description": "Comma-separated email addresses to assign the signature to.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "content", "position"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_createsignature": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "signatureType": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "content": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "signatureType", "position", "content"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a personal task in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_createtask",
+            "name": "create-task",
+            "output": ["ActionOutput_zoho_mail_createtask"],
+            "scopes": ["ZohoMail.tasks.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_createtask", "ActionOutput_zoho_mail_createtask"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_createtask": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the task. Example: \"Blog Updates\""
+                            },
+                            "description": {
+                                "description": "Description of the task. Example: \"Announcement blog for recent revamp\"",
+                                "type": "string"
+                            },
+                            "priority": {
+                                "description": "Priority of the task. Example: \"low\"",
+                                "type": "string",
+                                "enum": ["high", "medium", "low"]
+                            },
+                            "status": {
+                                "description": "Status of the task. Example: \"inprogress\"",
+                                "type": "string",
+                                "enum": ["inprogress", "completed"]
+                            },
+                            "dueDate": {
+                                "description": "Due date in DD/MM/YYYY format. Example: \"23/01/2024\"",
+                                "type": "string"
+                            },
+                            "reminderDate": {
+                                "description": "Reminder date in ISO 8601 format. Example: \"2024-01-23T12:34:56+05:30\"",
+                                "type": "string"
+                            },
+                            "emailReminder": {
+                                "description": "Send reminder via email",
+                                "type": "boolean"
+                            },
+                            "popupReminder": {
+                                "description": "Send reminder notification",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["title"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_createtask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "assignee": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": ["string", "number"]
+                                            },
+                                            "name": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "owner": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": ["string", "number"]
+                                            },
+                                            "name": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "project": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "name": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "title"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a folder and all its contents in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_deletefolder",
+            "name": "delete-folder",
+            "output": ["ActionOutput_zoho_mail_deletefolder"],
+            "scopes": ["ZohoMail.folders.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_deletefolder", "ActionOutput_zoho_mail_deletefolder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_deletefolder": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "The Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "The ID of the folder to delete. Example: \"4845214000000010002\""
+                            }
+                        },
+                        "required": ["accountId", "folderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_deletefolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "code": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "code", "description"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a label in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_deletelabel",
+            "name": "delete-label",
+            "output": ["ActionOutput_zoho_mail_deletelabel"],
+            "scopes": ["ZohoMail.tags.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_deletelabel", "ActionOutput_zoho_mail_deletelabel"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_deletelabel": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Account ID. Example: \"4845214000000008002\""
+                            },
+                            "labelId": {
+                                "type": "string",
+                                "description": "Label ID. Example: \"1234567890123456789\""
+                            }
+                        },
+                        "required": ["accountId", "labelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_deletelabel": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a message in Zoho Mail. Pass expunge=true to permanently delete; otherwise moves to Trash.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_deletemessage",
+            "name": "delete-message",
+            "output": ["ActionOutput_zoho_mail_deletemessage"],
+            "scopes": ["ZohoMail.messages.DELETE"],
+            "usedModels": ["ActionInput_zoho_mail_deletemessage", "ActionOutput_zoho_mail_deletemessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_deletemessage": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID containing the message. Example: \"4845214000000008008\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to delete. Example: \"1781108289537154100\""
+                            },
+                            "expunge": {
+                                "description": "Pass true to permanently delete the message. Omit or pass false to move to Trash.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["accountId", "folderId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_deletemessage": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "cId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "description"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an email signature in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_deletesignature",
+            "name": "delete-signature",
+            "output": ["ActionOutput_zoho_mail_deletesignature"],
+            "scopes": ["ZohoMail.accounts.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_deletesignature", "ActionOutput_zoho_mail_deletesignature"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_deletesignature": {
+                        "type": "object",
+                        "properties": {
+                            "signatureId": {
+                                "type": "string",
+                                "description": "Signature ID to delete. Example: \"2442552000000167007\""
+                            }
+                        },
+                        "required": ["signatureId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_deletesignature": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "code": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a personal task in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_deletetask",
+            "name": "delete-task",
+            "output": ["ActionOutput_zoho_mail_deletetask"],
+            "scopes": ["ZohoMail.tasks.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_deletetask", "ActionOutput_zoho_mail_deletetask"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_deletetask": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string",
+                                "description": "The unique identifier of the task to delete. Example: \"1781108295426155000\""
+                            }
+                        },
+                        "required": ["taskId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_deletetask": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Flag or unflag a Zoho Mail message.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_flagmessage",
+            "name": "flag-message",
+            "output": ["ActionOutput_zoho_mail_flagmessage"],
+            "scopes": ["ZohoMail.messages.UPDATE"],
+            "usedModels": ["ActionInput_zoho_mail_flagmessage", "ActionOutput_zoho_mail_flagmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_flagmessage": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: 4845214000000008002"
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to flag or unflag. Example: 1781108289537154100"
+                            },
+                            "unflag": {
+                                "description": "Set to true to unflag the message instead of flagging it.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["accountId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_flagmessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "statusCode": {
+                                "type": "number"
+                            },
+                            "statusDescription": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Forward an email in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_forwardemail",
+            "name": "forward-email",
+            "output": ["ActionOutput_zoho_mail_forwardemail"],
+            "scopes": ["ZohoMail.messages.READ", "ZohoMail.messages.CREATE"],
+            "usedModels": ["ActionInput_zoho_mail_forwardemail", "ActionOutput_zoho_mail_forwardemail"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_forwardemail": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID containing the message. Example: \"4845214000000008008\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to forward. Example: \"1781108289537154100\""
+                            },
+                            "fromAddress": {
+                                "type": "string",
+                                "description": "Sender email address. Example: \"nangoapi@zohomail.com\""
+                            },
+                            "toAddress": {
+                                "type": "string",
+                                "description": "Recipient email address. Example: \"recipient@example.com\""
+                            },
+                            "content": {
+                                "description": "Optional custom body content for the forwarded message",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "folderId", "messageId", "fromAddress", "toAddress"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_forwardemail": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "code": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single account from Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getaccount",
+            "name": "get-account",
+            "output": ["ActionOutput_zoho_mail_getaccount"],
+            "scopes": ["ZohoMail.accounts.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getaccount", "ActionOutput_zoho_mail_getaccount"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getaccount": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "The unique ID of the account to retrieve. Example: \"4845214000000008002\""
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getaccount": {
+                        "type": "object",
+                        "properties": {
+                            "country": {
+                                "type": "string"
+                            },
+                            "lastLogin": {
+                                "type": "number"
+                            },
+                            "mxStatus": {
+                                "type": "boolean"
+                            },
+                            "activeSyncEnabled": {
+                                "type": "boolean"
+                            },
+                            "mobileNumber": {
+                                "type": "string"
+                            },
+                            "incomingBlocked": {
+                                "type": "boolean"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "extraStorage": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "incomingUserName": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "isAlias": {
+                                            "type": "boolean"
+                                        },
+                                        "isPrimary": {
+                                            "type": "boolean"
+                                        },
+                                        "mailId": {
+                                            "type": "string"
+                                        },
+                                        "isConfirmed": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["isAlias", "isPrimary", "mailId", "isConfirmed"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "mailboxStatus": {
+                                "type": "string"
+                            },
+                            "popBlocked": {
+                                "type": "boolean"
+                            },
+                            "usedStorage": {
+                                "type": "number"
+                            },
+                            "spamcheckEnabled": {
+                                "type": "boolean"
+                            },
+                            "imapAccessEnabled": {
+                                "type": "boolean"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "accountCreationTime": {
+                                "type": "number"
+                            },
+                            "zuid": {
+                                "type": "number"
+                            },
+                            "webBlocked": {
+                                "type": "boolean"
+                            },
+                            "planStorage": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "sequence": {
+                                "type": "number"
+                            },
+                            "mailboxAddress": {
+                                "type": "string"
+                            },
+                            "lastPasswordReset": {
+                                "type": "number"
+                            },
+                            "tfaEnabled": {
+                                "type": "boolean"
+                            },
+                            "phoneNumer": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "boolean"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "accountDisplayName": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "gender": {
+                                "type": "string"
+                            },
+                            "accountName": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "isLogoExist": {
+                                "type": "boolean"
+                            },
+                            "URI": {
+                                "type": "string"
+                            },
+                            "primaryEmailAddress": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "mailboxCreationTime": {
+                                "type": "number"
+                            },
+                            "basicStorage": {
+                                "type": "string"
+                            },
+                            "lastClient": {
+                                "type": "string"
+                            },
+                            "allowedStorage": {
+                                "type": "number"
+                            },
+                            "sendMailDetails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sendMailId": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "serverName": {
+                                            "type": "string"
+                                        },
+                                        "signatureId": {
+                                            "type": "string"
+                                        },
+                                        "serverPort": {
+                                            "type": "number"
+                                        },
+                                        "userName": {
+                                            "type": "string"
+                                        },
+                                        "connectionType": {
+                                            "type": "string"
+                                        },
+                                        "mode": {
+                                            "type": "string"
+                                        },
+                                        "validated": {
+                                            "type": "boolean"
+                                        },
+                                        "fromAddress": {
+                                            "type": "string"
+                                        },
+                                        "smtpConnection": {
+                                            "type": "number"
+                                        },
+                                        "validationRequired": {
+                                            "type": "boolean"
+                                        },
+                                        "validationState": {
+                                            "type": "number"
+                                        },
+                                        "status": {
+                                            "type": "boolean"
+                                        },
+                                        "verifyCode": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "sendMailId",
+                                        "displayName",
+                                        "serverName",
+                                        "signatureId",
+                                        "serverPort",
+                                        "userName",
+                                        "connectionType",
+                                        "mode",
+                                        "validated",
+                                        "fromAddress",
+                                        "smtpConnection",
+                                        "validationRequired",
+                                        "validationState",
+                                        "status"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "popFetchTime": {
+                                "type": "number"
+                            },
+                            "address": {
+                                "type": "object",
+                                "properties": {
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "streetAddr": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "postalCode": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "planType": {
+                                "type": "number"
+                            },
+                            "userExpiry": {
+                                "type": "number"
+                            },
+                            "popAccessEnabled": {
+                                "type": "boolean"
+                            },
+                            "imapBlocked": {
+                                "type": "boolean"
+                            },
+                            "iamUserRole": {
+                                "type": "string"
+                            },
+                            "outgoingBlocked": {
+                                "type": "boolean"
+                            },
+                            "policyId": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "smtpStatus": {
+                                "type": "boolean"
+                            },
+                            "extraEDiscoveryStorage": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single folder from Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getfolder",
+            "name": "get-folder",
+            "output": ["ActionOutput_zoho_mail_getfolder"],
+            "scopes": ["ZohoMail.folders.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getfolder", "ActionOutput_zoho_mail_getfolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getfolder": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID. Example: \"4845214000000008008\""
+                            }
+                        },
+                        "required": ["accountId", "folderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "folderName": {
+                                "type": "string"
+                            },
+                            "folderType": {
+                                "type": "string"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "previousFolderId": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "number"
+                            },
+                            "imapAccess": {
+                                "type": "boolean"
+                            },
+                            "URI": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single label from Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getlabel",
+            "name": "get-label",
+            "output": ["ActionOutput_zoho_mail_getlabel"],
+            "scopes": ["ZohoMail.tags.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getlabel", "ActionOutput_zoho_mail_getlabel"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "labelId": {
+                                "type": "string",
+                                "description": "Label ID to retrieve. Example: \"2674552000000009029\""
+                            }
+                        },
+                        "required": ["accountId", "labelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "sequence": {
+                                "type": "number"
+                            },
+                            "labelId": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "tagId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "URI": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["labelId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the full body content of a Zoho Mail message.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getmessagecontent",
+            "name": "get-message-content",
+            "output": ["ActionOutput_zoho_mail_getmessagecontent"],
+            "scopes": ["ZohoMail.messages.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getmessagecontent", "ActionOutput_zoho_mail_getmessagecontent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getmessagecontent": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID containing the message. Example: \"4845214000000008008\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to retrieve content for. Example: \"1781108289537154100\""
+                            }
+                        },
+                        "required": ["accountId", "folderId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getmessagecontent": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single message's details from Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getmessage",
+            "name": "get-message",
+            "output": ["ActionOutput_zoho_mail_getmessage"],
+            "scopes": ["ZohoMail.messages.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getmessage", "ActionOutput_zoho_mail_getmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getmessage": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID containing the message. Example: \"4845214000000008008\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to retrieve. Example: \"1781108289537154100\""
+                            }
+                        },
+                        "required": ["accountId", "folderId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getmessage": {
+                        "type": "object",
+                        "properties": {
+                            "summary": {
+                                "type": "string"
+                            },
+                            "sentDateInGMT": {
+                                "type": "string"
+                            },
+                            "calendarType": {
+                                "type": "number"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "threadCount": {
+                                "type": "string"
+                            },
+                            "flagid": {
+                                "type": "string"
+                            },
+                            "status2": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "hasInline": {
+                                "type": "string"
+                            },
+                            "toAddress": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "ccAddress": {
+                                "type": "string"
+                            },
+                            "threadId": {
+                                "type": "string"
+                            },
+                            "hasAttachment": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "string"
+                            },
+                            "sender": {
+                                "type": "string"
+                            },
+                            "receivedTime": {
+                                "type": "string"
+                            },
+                            "fromAddress": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve all email signatures for the authenticated Zoho Mail account.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_getsignature",
+            "name": "get-signature",
+            "output": ["ActionOutput_zoho_mail_getsignature"],
+            "scopes": ["ZohoMail.accounts.READ"],
+            "usedModels": ["ActionInput_zoho_mail_getsignature", "ActionOutput_zoho_mail_getsignature"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_getsignature": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_getsignature": {
+                        "type": "object",
+                        "properties": {
+                            "signatures": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "signatureType": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "number"
+                                        },
+                                        "contactId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["signatures"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single personal task from Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_gettask",
+            "name": "get-task",
+            "output": ["ActionOutput_zoho_mail_gettask"],
+            "scopes": ["ZohoMail.tasks.READ"],
+            "usedModels": ["ActionInput_zoho_mail_gettask", "ActionOutput_zoho_mail_gettask"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string",
+                                "description": "The unique identifier of the personal task. Example: \"1781108259800155000\""
+                            }
+                        },
+                        "required": ["taskId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "assignee": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "project": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "namespaceId": {
+                                "type": "string"
+                            },
+                            "numberOfSubtasks": {
+                                "type": "number"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "subtasks": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "reminder": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "dateTime": {
+                                                "type": "string"
+                                            },
+                                            "emailReminder": {
+                                                "type": "boolean"
+                                            },
+                                            "popupReminder": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "title"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all accounts for the authenticated user in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_listaccounts",
+            "name": "list-accounts",
+            "output": ["ActionOutput_zoho_mail_listaccounts"],
+            "scopes": ["ZohoMail.accounts.READ"],
+            "usedModels": ["ActionInput_zoho_mail_listaccounts", "ActionOutput_zoho_mail_listaccounts"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_listaccounts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_listaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "accounts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "accountDisplayName": {
+                                            "type": "string"
+                                        },
+                                        "accountName": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "emailAddress": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "isAlias": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "isPrimary": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "mailId": {
+                                                        "type": "string"
+                                                    },
+                                                    "isConfirmed": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "incomingUserName": {
+                                            "type": "string"
+                                        },
+                                        "lastLogin": {
+                                            "type": "number"
+                                        },
+                                        "mailboxAddress": {
+                                            "type": "string"
+                                        },
+                                        "primaryEmailAddress": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "sequence": {
+                                            "type": "number"
+                                        },
+                                        "status": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "zuid": {
+                                            "type": "number"
+                                        },
+                                        "uri": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "language": {
+                                            "type": "string"
+                                        },
+                                        "timeZone": {
+                                            "type": "string"
+                                        },
+                                        "mailboxStatus": {
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        },
+                                        "gender": {
+                                            "type": "string"
+                                        },
+                                        "allowedStorage": {
+                                            "type": "number"
+                                        },
+                                        "usedStorage": {
+                                            "type": "number"
+                                        },
+                                        "basicStorage": {
+                                            "type": "string"
+                                        },
+                                        "accountCreationTime": {
+                                            "type": "number"
+                                        },
+                                        "mailboxCreationTime": {
+                                            "type": "number"
+                                        },
+                                        "lastPasswordReset": {
+                                            "type": "number"
+                                        },
+                                        "tfaEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "activeSyncEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "imapAccessEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "popAccessEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "smtpStatus": {
+                                            "type": "boolean"
+                                        },
+                                        "webBlocked": {
+                                            "type": "boolean"
+                                        },
+                                        "incomingBlocked": {
+                                            "type": "boolean"
+                                        },
+                                        "outgoingBlocked": {
+                                            "type": "boolean"
+                                        },
+                                        "popBlocked": {
+                                            "type": "boolean"
+                                        },
+                                        "imapBlocked": {
+                                            "type": "boolean"
+                                        },
+                                        "spamcheckEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "deleteCopy": {
+                                            "type": "boolean"
+                                        },
+                                        "mobileNumber": {
+                                            "type": "string"
+                                        },
+                                        "phoneNumber": {
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "object",
+                                            "properties": {
+                                                "country": {
+                                                    "type": "string"
+                                                },
+                                                "streetAddr": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "type": "string"
+                                                },
+                                                "state": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lastClient": {
+                                            "type": "string"
+                                        },
+                                        "planType": {
+                                            "type": "number"
+                                        },
+                                        "planStorage": {
+                                            "type": "number"
+                                        },
+                                        "popFetchTime": {
+                                            "type": "number"
+                                        },
+                                        "userExpiry": {
+                                            "type": "number"
+                                        },
+                                        "isLogoExist": {
+                                            "type": "boolean"
+                                        },
+                                        "mxStatus": {
+                                            "type": "boolean"
+                                        },
+                                        "mailForward": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "mailForwardTo": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "vacationResponse": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "replyType": {
+                                                        "type": "number"
+                                                    },
+                                                    "sendTo": {
+                                                        "type": "number"
+                                                    },
+                                                    "infiniteDate": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "subject": {
+                                                        "type": "string"
+                                                    },
+                                                    "toDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "includeSignature": {
+                                                        "type": "number"
+                                                    },
+                                                    "content": {
+                                                        "type": "string"
+                                                    },
+                                                    "markBusy": {
+                                                        "type": "number"
+                                                    },
+                                                    "fromDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "accountId": {
+                                                        "type": "string"
+                                                    },
+                                                    "intervalType": {
+                                                        "type": "number"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "interval": {
+                                                        "type": "number"
+                                                    },
+                                                    "accType": {
+                                                        "type": "number"
+                                                    },
+                                                    "vacationId": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "sendMailDetails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "sendMailId": {
+                                                        "type": "string"
+                                                    },
+                                                    "displayName": {
+                                                        "type": "string"
+                                                    },
+                                                    "serverName": {
+                                                        "type": "string"
+                                                    },
+                                                    "signatureId": {
+                                                        "type": "string"
+                                                    },
+                                                    "serverPort": {
+                                                        "type": "number"
+                                                    },
+                                                    "userName": {
+                                                        "type": "string"
+                                                    },
+                                                    "connectionType": {
+                                                        "type": "string"
+                                                    },
+                                                    "mode": {
+                                                        "type": "string"
+                                                    },
+                                                    "validated": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "fromAddress": {
+                                                        "type": "string"
+                                                    },
+                                                    "smtpConnection": {
+                                                        "type": "number"
+                                                    },
+                                                    "validationRequired": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "validationState": {
+                                                        "type": "number"
+                                                    },
+                                                    "status": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["accountId"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["accounts"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all folders for an account in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_listfolders",
+            "name": "list-folders",
+            "output": ["ActionOutput_zoho_mail_listfolders"],
+            "scopes": ["ZohoMail.folders.READ"],
+            "usedModels": ["ActionInput_zoho_mail_listfolders", "ActionOutput_zoho_mail_listfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "folderId": {
+                                            "type": "string"
+                                        },
+                                        "folderName": {
+                                            "type": "string"
+                                        },
+                                        "folderType": {
+                                            "type": "string"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "previousFolderId": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "number"
+                                        },
+                                        "imapAccess": {
+                                            "type": "boolean"
+                                        },
+                                        "uri": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["folderId", "folderName", "folderType", "path", "isArchived", "imapAccess", "uri"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["folders"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all labels for an account in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_listlabels",
+            "name": "list-labels",
+            "output": ["ActionOutput_zoho_mail_listlabels"],
+            "scopes": ["ZohoMail.tags.READ"],
+            "usedModels": ["ActionInput_zoho_mail_listlabels", "ActionOutput_zoho_mail_listlabels"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_listlabels": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Account ID. Example: \"4845214000000008002\""
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_listlabels": {
+                        "type": "object",
+                        "properties": {
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "labelId": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "sequence": {
+                                            "type": "number"
+                                        },
+                                        "tagId": {
+                                            "type": "string"
+                                        },
+                                        "URI": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["labelId"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["labels"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List messages in a folder in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_listmessages",
+            "name": "list-messages",
+            "output": ["ActionOutput_zoho_mail_listmessages"],
+            "scopes": ["ZohoMail.messages.READ"],
+            "usedModels": ["ActionInput_zoho_mail_listmessages", "ActionOutput_zoho_mail_listmessages"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_listmessages": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID to list messages from. Example: \"4845214000000008008\""
+                            },
+                            "limit": {
+                                "description": "Number of messages to retrieve. Max 200. Default 10.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "start": {
+                                "description": "Starting sequence number. Default 1.",
+                                "type": "number",
+                                "minimum": 1
+                            },
+                            "sortorder": {
+                                "description": "Sort order: 0 for ascending, 1 for descending. Default 1.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["accountId", "folderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_listmessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "messageId": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "fromAddress": {
+                                            "type": "string"
+                                        },
+                                        "toAddress": {
+                                            "type": "string"
+                                        },
+                                        "ccAddress": {
+                                            "type": "string"
+                                        },
+                                        "sender": {
+                                            "type": "string"
+                                        },
+                                        "receivedTime": {
+                                            "type": "string"
+                                        },
+                                        "sentDateInGMT": {
+                                            "type": "string"
+                                        },
+                                        "folderId": {
+                                            "type": "string"
+                                        },
+                                        "threadId": {
+                                            "type": "string"
+                                        },
+                                        "threadCount": {
+                                            "type": "string"
+                                        },
+                                        "hasAttachment": {
+                                            "type": "string"
+                                        },
+                                        "hasInline": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "string"
+                                        },
+                                        "priority": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "status2": {
+                                            "type": "string"
+                                        },
+                                        "flagid": {
+                                            "type": "string"
+                                        },
+                                        "calendarType": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["messageId"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all personal tasks in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_listtasks",
+            "name": "list-tasks",
+            "output": ["ActionOutput_zoho_mail_listtasks"],
+            "scopes": ["ZohoMail.tasks.READ"],
+            "usedModels": ["ActionInput_zoho_mail_listtasks", "ActionOutput_zoho_mail_listtasks"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Number of tasks to retrieve. Default: 20, Max: 499.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 499
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "priority": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": ["string", "number"]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "assignee": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": ["string", "number"]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "project": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "numberOfSubtasks": {
+                                            "type": "number"
+                                        },
+                                        "namespaceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Mark a Zoho Mail message as read",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_markmessageread",
+            "name": "mark-message-read",
+            "output": ["ActionOutput_zoho_mail_markmessageread"],
+            "scopes": ["ZohoMail.messages.UPDATE"],
+            "usedModels": ["ActionInput_zoho_mail_markmessageread", "ActionOutput_zoho_mail_markmessageread"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_markmessageread": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to mark as read. Example: \"1781108289537154100\""
+                            }
+                        },
+                        "required": ["accountId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_markmessageread": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Mark a Zoho Mail message as unread.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_markmessageunread",
+            "name": "mark-message-unread",
+            "output": ["ActionOutput_zoho_mail_markmessageunread"],
+            "scopes": ["ZohoMail.messages.UPDATE"],
+            "usedModels": ["ActionInput_zoho_mail_markmessageunread", "ActionOutput_zoho_mail_markmessageunread"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_markmessageunread": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to mark as unread. Example: \"1781108289537154100\""
+                            }
+                        },
+                        "required": ["accountId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_markmessageunread": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a Zoho Mail message to another folder.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_movemessage",
+            "name": "move-message",
+            "output": ["ActionOutput_zoho_mail_movemessage"],
+            "scopes": ["ZohoMail.messages.UPDATE"],
+            "usedModels": ["ActionInput_zoho_mail_movemessage", "ActionOutput_zoho_mail_movemessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_movemessage": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to move. Example: \"1781108289537154100\""
+                            },
+                            "targetFolderId": {
+                                "type": "string",
+                                "description": "Target folder ID. Example: \"4845214000000010001\""
+                            }
+                        },
+                        "required": ["accountId", "messageId", "targetFolderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_movemessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "targetFolderId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reply or reply-all to an email in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_replytoemail",
+            "name": "reply-to-email",
+            "output": ["ActionOutput_zoho_mail_replytoemail"],
+            "scopes": ["ZohoMail.messages.CREATE"],
+            "usedModels": ["ActionInput_zoho_mail_replytoemail", "ActionOutput_zoho_mail_replytoemail"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_replytoemail": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to reply to. Example: \"1781108289537154100\""
+                            },
+                            "fromAddress": {
+                                "type": "string",
+                                "description": "Sender email address. Example: \"nangoapi@zohomail.com\""
+                            },
+                            "toAddress": {
+                                "type": "string",
+                                "description": "Recipient email address. Example: \"recipient@example.com\""
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": ["reply", "replyall"],
+                                "description": "Reply type: reply or replyall"
+                            },
+                            "content": {
+                                "description": "Email body content",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "messageId", "fromAddress", "toAddress", "action"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_replytoemail": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "ID of the sent reply message. Example: \"1726208416259127700\""
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "fromAddress": {
+                                "type": "string"
+                            },
+                            "toAddress": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "mailId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search emails in Zoho Mail by keyword.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_searchmessages",
+            "name": "search-messages",
+            "output": ["ActionOutput_zoho_mail_searchmessages"],
+            "scopes": ["ZohoMail.messages.READ"],
+            "usedModels": ["ActionInput_zoho_mail_searchmessages", "ActionOutput_zoho_mail_searchmessages"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_searchmessages": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "searchKey": {
+                                "type": "string",
+                                "description": "Zoho Mail search query string. Use syntax like \"entire:keyword\" or \"subject:Meeting\". Example: \"entire:Test\""
+                            },
+                            "start": {
+                                "description": "Starting index for pagination. Example: 1",
+                                "type": "number"
+                            },
+                            "limit": {
+                                "description": "Number of results to return (1-200). Example: 10",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "receivedTime": {
+                                "description": "Unix timestamp in milliseconds to filter emails received before this time. Example: 1609459200000",
+                                "type": "number"
+                            },
+                            "includeto": {
+                                "description": "Whether to include the To field in the response. Example: true",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["accountId", "searchKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_searchmessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "messageId": {
+                                            "type": "string"
+                                        },
+                                        "folderId": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "fromAddress": {
+                                            "type": "string"
+                                        },
+                                        "toAddress": {
+                                            "type": "string"
+                                        },
+                                        "sender": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "status2": {
+                                            "type": "string"
+                                        },
+                                        "receivedTime": {
+                                            "type": "string"
+                                        },
+                                        "sentDateInGMT": {
+                                            "type": "string"
+                                        },
+                                        "hasAttachment": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "threadId": {
+                                            "type": "string"
+                                        },
+                                        "threadCount": {
+                                            "type": "string"
+                                        },
+                                        "flagid": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "priority": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "string"
+                                        },
+                                        "uri": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send an email through Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_sendemail",
+            "name": "send-email",
+            "output": ["ActionOutput_zoho_mail_sendemail"],
+            "scopes": ["ZohoMail.messages.CREATE"],
+            "usedModels": ["ActionInput_zoho_mail_sendemail", "ActionOutput_zoho_mail_sendemail"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_sendemail": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Account ID from which to send the email. Example: \"4845214000000008002\""
+                            },
+                            "fromAddress": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Sender email address. Example: \"nangoapi@zohomail.com\""
+                            },
+                            "toAddress": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Recipient email address(es). Example: \"recipient@example.com\""
+                            },
+                            "ccAddress": {
+                                "description": "CC email address(es). Example: \"cc@example.com\"",
+                                "type": "string"
+                            },
+                            "bccAddress": {
+                                "description": "BCC email address(es). Example: \"bcc@example.com\"",
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Email subject. Example: \"Hello\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Email body content. Example: \"Hello, world!\""
+                            },
+                            "mailFormat": {
+                                "description": "Email format: \"html\" or \"plaintext\". Example: \"html\"",
+                                "type": "string",
+                                "enum": ["html", "plaintext"]
+                            }
+                        },
+                        "required": ["accountId", "fromAddress", "toAddress", "subject", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_sendemail": {
+                        "type": "object",
+                        "properties": {
+                            "statusCode": {
+                                "type": "number",
+                                "description": "HTTP status code from the API"
+                            },
+                            "statusDescription": {
+                                "type": "string",
+                                "description": "Status description from the API"
+                            },
+                            "data": {
+                                "description": "Additional response data from the API"
+                            }
+                        },
+                        "required": ["statusCode", "statusDescription"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update (rename or move) a folder in Zoho Mail",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_updatefolder",
+            "name": "update-folder",
+            "output": ["ActionOutput_zoho_mail_updatefolder"],
+            "scopes": ["ZohoMail.folders.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_updatefolder", "ActionOutput_zoho_mail_updatefolder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_updatefolder": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "Folder ID to update. Example: \"4845214000000010001\""
+                            },
+                            "mode": {
+                                "type": "string",
+                                "enum": ["rename", "move"],
+                                "description": "Update mode: rename or move"
+                            },
+                            "folderName": {
+                                "description": "New folder name (required when mode is rename)",
+                                "type": "string"
+                            },
+                            "parentFolderId": {
+                                "description": "Destination parent folder ID (used when mode is move)",
+                                "type": "string"
+                            },
+                            "previousFolderId": {
+                                "description": "Folder ID to position after in the destination parent (used when mode is move)",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId", "folderId", "mode"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_updatefolder": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "number"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["code", "description"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a label's name or color in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_updatelabel",
+            "name": "update-label",
+            "output": ["ActionOutput_zoho_mail_updatelabel"],
+            "scopes": ["ZohoMail.tags.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_updatelabel", "ActionOutput_zoho_mail_updatelabel"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_updatelabel": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Account ID. Example: 4845214000000008002"
+                            },
+                            "labelId": {
+                                "type": "string",
+                                "description": "Label ID. Example: 4845214000000011002"
+                            },
+                            "labelName": {
+                                "description": "New display name for the label",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "Hex color code for the label. Example: #FF0000",
+                                "type": "string",
+                                "pattern": "^#[0-9A-Fa-f]{6}$"
+                            }
+                        },
+                        "required": ["accountId", "labelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_updatelabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "labelName": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an email signature in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_updatesignature",
+            "name": "update-signature",
+            "output": ["ActionOutput_zoho_mail_updatesignature"],
+            "scopes": ["ZohoMail.accounts.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_updatesignature", "ActionOutput_zoho_mail_updatesignature"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_updatesignature": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique ID of the signature to update. Example: \"2442552000000433009\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The updated name of the signature."
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The updated content of the signature."
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The preferred position of the signature. 0 = below quoted content, 1 = above quoted content."
+                            },
+                            "assignUsers": {
+                                "description": "Comma-separated email addresses to assign this signature to.",
+                                "type": "string"
+                            },
+                            "unassignUsers": {
+                                "description": "Comma-separated email addresses to unassign this signature from.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "content", "position"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_updatesignature": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "signatureType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "content", "position", "signatureType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a personal task in Zoho Mail.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_updatetask",
+            "name": "update-task",
+            "output": ["ActionOutput_zoho_mail_updatetask"],
+            "scopes": ["ZohoMail.tasks.ALL"],
+            "usedModels": ["ActionInput_zoho_mail_updatetask", "ActionOutput_zoho_mail_updatetask"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string",
+                                "description": "The unique identifier of the task to update. Example: \"1781108259800155000\""
+                            },
+                            "title": {
+                                "description": "New title for the task.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "New description for the task.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "New status for the task.",
+                                "type": "string",
+                                "enum": ["inprogress", "completed"]
+                            },
+                            "dueDate": {
+                                "description": "New due date for the task. Format: DD/MM/YYYY.",
+                                "type": "string"
+                            },
+                            "priority": {
+                                "description": "New priority for the task.",
+                                "type": "string",
+                                "enum": ["high", "medium", "low"]
+                            },
+                            "reminderDate": {
+                                "description": "Reminder date and time in ISO 8601 format.",
+                                "type": "string"
+                            },
+                            "emailReminder": {
+                                "description": "Whether to enable email reminder.",
+                                "type": "boolean"
+                            },
+                            "popupReminder": {
+                                "description": "Whether to enable popup reminder.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["taskId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "data": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["taskId", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a file attachment to Zoho Mail for use in a subsequent send-email call.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_mail_uploadattachment",
+            "name": "upload-attachment",
+            "output": ["ActionOutput_zoho_mail_uploadattachment"],
+            "scopes": ["ZohoMail.messages.CREATE"],
+            "usedModels": ["ActionInput_zoho_mail_uploadattachment", "ActionOutput_zoho_mail_uploadattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_mail_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
+                            },
+                            "fileName": {
+                                "type": "string",
+                                "description": "Name of the file to upload. Example: \"test.txt\""
+                            },
+                            "fileContent": {
+                                "type": "string",
+                                "description": "Base64-encoded file content."
+                            },
+                            "isInline": {
+                                "description": "Whether to show the attachment inline in the email body.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["accountId", "fileName", "fileContent"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_mail_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "storeName": {
+                                "type": "string"
+                            },
+                            "attachmentPath": {
+                                "type": "string"
+                            },
+                            "attachmentName": {
+                                "type": "string"
+                            },
+                            "attachmentSize": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["storeName", "attachmentPath", "attachmentName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync all accounts for the authenticated user from Zoho Mail.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/accounts",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "accounts",
+            "output": ["Account"],
+            "runs": "every hour",
+            "scopes": ["ZohoMail.accounts.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Account"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Account": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "accountName": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all folders for each account from Zoho Mail",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/folders",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "folders",
+            "output": ["Folder"],
+            "runs": "every hour",
+            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.folders.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Folder"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "folderName": {
+                                "type": "string"
+                            },
+                            "folderType": {
+                                "type": "string"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "number"
+                            },
+                            "imapAccess": {
+                                "type": "boolean"
+                            },
+                            "previousFolderId": {
+                                "type": "string"
+                            },
+                            "URI": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "folderId", "accountId", "folderName", "folderType", "path"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all labels for each account from Zoho Mail",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/labels",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "labels",
+            "output": ["Label"],
+            "runs": "every hour",
+            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.tags.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Label"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Label": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "labelId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "sequence": {
+                                "type": "number"
+                            },
+                            "tagId": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "accountId", "labelId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync messages from Zoho Mail with incremental support by receivedTime",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/messages"
+                }
+            ],
+            "input": null,
+            "name": "messages",
+            "output": ["Message"],
+            "runs": "every hour",
+            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.folders.READ", "ZohoMail.messages.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Message"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Message": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "fromAddress": {
+                                "type": "string"
+                            },
+                            "toAddress": {
+                                "type": "string"
+                            },
+                            "receivedTime": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "threadId": {
+                                "type": "string"
+                            },
+                            "hasAttachment": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "sender": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "sentDateInGMT": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync personal tasks from Zoho Mail.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/tasks"
+                }
+            ],
+            "input": null,
+            "name": "tasks",
+            "output": ["Task"],
+            "runs": "every hour",
+            "scopes": ["ZohoMail.tasks.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Task"],
+            "version": "2.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Task": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "namespaceId": {
+                                "type": "string"
+                            },
+                            "projectId": {
+                                "type": "string"
+                            },
+                            "projectName": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": "number"
+                            },
+                            "assigneeName": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "number"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

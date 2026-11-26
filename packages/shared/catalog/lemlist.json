@@ -1,0 +1,2583 @@
+{
+    "providerConfigKey": "lemlist",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a lead (by email) to a campaign with optional profile fields and custom variables.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_addcampaignlead",
+            "name": "add-campaign-lead",
+            "output": ["ActionOutput_lemlist_addcampaignlead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_addcampaignlead", "ActionOutput_lemlist_addcampaignlead"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_addcampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "ID of the campaign to add the lead to. Example: \"cam_A1B2C3D4E5F6G7H8I9\"."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to add. It is sent URL-encoded in the request path, not in the request body. Example: \"jane.doe@example.com\"."
+                            },
+                            "firstName": {
+                                "description": "First name of the lead.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the lead.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Company name of the lead. Written to the shared company record linked to the lead.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Job title of the lead.",
+                                "type": "string"
+                            },
+                            "linkedinUrl": {
+                                "description": "LinkedIn profile URL of the lead. Example: \"https://www.linkedin.com/in/janedoe\".",
+                                "type": "string"
+                            },
+                            "picture": {
+                                "description": "Profile picture URL of the lead.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number of the lead.",
+                                "type": "string"
+                            },
+                            "companyDomain": {
+                                "description": "Company domain of the lead. Example: \"example.com\". Written to the shared company record linked to the lead.",
+                                "type": "string"
+                            },
+                            "icebreaker": {
+                                "description": "Personalized icebreaker message for the lead.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Timezone of the lead in IANA format. Example: \"Europe/Paris\".",
+                                "type": "string"
+                            },
+                            "contactOwner": {
+                                "description": "Contact owner, as a lemlist user ID or user login email. Example: \"owner@example.com\".",
+                                "type": "string"
+                            },
+                            "customVariables": {
+                                "description": "Additional key/value pairs stored as custom variables on the lead, usable in campaigns as {{variableName}}. Example: { \"companySize\": \"50-100\" }.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["campaignId", "email"],
+                        "additionalProperties": false,
+                        "description": "Input for adding a lead to a lemlist campaign."
+                    },
+                    "ActionOutput_lemlist_addcampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier of the lead. Example: \"lea_fiDpiGV585wy3Oii2\"."
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "description": "ID of the campaign the lead was added to."
+                            },
+                            "campaignName": {
+                                "description": "Name of the campaign the lead was added to.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead."
+                            },
+                            "firstName": {
+                                "description": "First name of the lead.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the lead.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Company name of the lead.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Job title of the lead.",
+                                "type": "string"
+                            },
+                            "companyDomain": {
+                                "description": "Company domain of the lead.",
+                                "type": "string"
+                            },
+                            "linkedinUrl": {
+                                "description": "LinkedIn profile URL of the lead.",
+                                "type": "string"
+                            },
+                            "picture": {
+                                "description": "Profile picture URL of the lead.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number of the lead.",
+                                "type": "string"
+                            },
+                            "icebreaker": {
+                                "description": "Personalized icebreaker message for the lead.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Timezone of the lead in IANA format.",
+                                "type": "string"
+                            },
+                            "contactOwner": {
+                                "description": "Contact owner of the lead.",
+                                "type": "string"
+                            },
+                            "isPaused": {
+                                "type": "boolean",
+                                "description": "Whether the lead is paused in the campaign."
+                            },
+                            "contactId": {
+                                "description": "ID of the contact record associated with the lead. Example: \"ctc_xW8Ou6C03Csv8vatp\".",
+                                "type": "string"
+                            },
+                            "warnings": {
+                                "description": "Non-blocking notices returned by lemlist, e.g. why the company part was skipped or which values were kept unchanged.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Machine-readable warning code, e.g. \"FIELDS_KEPT\" or \"invalid-company-domain\"."
+                                        },
+                                        "message": {
+                                            "description": "Human-readable warning message.",
+                                            "type": "string"
+                                        },
+                                        "params": {
+                                            "description": "Additional warning details, e.g. the list of fields that were kept unchanged.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "campaignId", "email", "isPaused"],
+                        "additionalProperties": false,
+                        "description": "The lead as stored in the campaign after it was added."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new, empty campaign (sequence and schedule are auto-generated; add leads and configure steps afterward).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_createcampaign",
+            "name": "create-campaign",
+            "output": ["ActionOutput_lemlist_createcampaign"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_createcampaign", "ActionOutput_lemlist_createcampaign"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_createcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the campaign to create. Example: \"Q1 outbound - founders\""
+                            },
+                            "timezone": {
+                                "description": "IANA timezone for the auto-generated campaign schedule. Defaults to \"Europe/Paris\" when omitted. Example: \"America/New_York\"",
+                                "type": "string"
+                            },
+                            "autoReview": {
+                                "description": "When true, leads added to the campaign are launched automatically instead of requiring manual review. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "autoReviewConditions": {
+                                "description": "Email verification statuses for which a lead is auto-launched when autoReview is enabled. Allowed values: \"deliverable\", \"risky\", \"undeliverable\", \"unverified\".",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                }
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false,
+                        "description": "Input for creating a new lemlist campaign. An empty sequence and default schedule are auto-generated; add leads and configure steps afterward."
+                    },
+                    "ActionOutput_lemlist_createcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the created campaign. Example: \"cam_kok3I33Sba7mcNIO7\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the created campaign."
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "Lifecycle state of the campaign right after creation (e.g. \"running\"). This value is authoritative for whether the creation took effect."
+                            },
+                            "sequenceId": {
+                                "type": "string",
+                                "description": "ID of the auto-generated empty sequence. Use it to add sequence steps. Example: \"seq_ScVmFnlKdP6aVmyZN\""
+                            },
+                            "scheduleIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "IDs of the auto-generated default schedules attached to the campaign. Example: [\"skd_IrCdCoQ0ZUAEeUDwR\"]"
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "description": "ID of the team that owns the campaign. Example: \"tea_edrkv2LgUK4Wf4ZzO\""
+                            },
+                            "createdBy": {
+                                "description": "ID of the user who created the campaign. Example: \"usr_Sy3xIhbEi7auHFv5A\"",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "ISO 8601 creation timestamp of the campaign. Example: \"2025-01-16T13:53:22.726Z\""
+                            },
+                            "emoji": {
+                                "description": "Emoji assigned to the campaign for display in the lemlist app. Example: \"🚀\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["_id", "name", "state", "sequenceId", "scheduleIds", "teamId", "createdAt"],
+                        "additionalProperties": false,
+                        "description": "The newly created lemlist campaign, including its auto-generated sequence and schedule IDs."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Enroll one lead (by email, with optional basic fields and custom variables) into a list of lemlist campaigns in a single call, returning a consolidated per-campaign success/failure result",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_enrollleadincampaigns",
+            "name": "enroll-lead-in-campaigns",
+            "output": ["ActionOutput_lemlist_enrollleadincampaigns"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_enrollleadincampaigns", "ActionOutput_lemlist_enrollleadincampaigns"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_enrollleadincampaigns": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to enroll. Example: \"john.doe@example.com\""
+                            },
+                            "campaignIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "lemlist campaign ID. Example: \"cam_vyzp8v33RBTfNQRvz\""
+                                },
+                                "description": "Campaign IDs to enroll the lead into. Each ID gets its own enrollment attempt and its own entry in the results array"
+                            },
+                            "firstName": {
+                                "description": "First name of the lead, sent to every campaign",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the lead, sent to every campaign",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Company name of the lead, sent to every campaign",
+                                "type": "string"
+                            },
+                            "customVariables": {
+                                "description": "Custom variables stored on the lead in every campaign, usable in campaign messages as {{variableName}}. Example: {\"companySize\": \"50-100\"}",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["email", "campaignIds"],
+                        "additionalProperties": false,
+                        "description": "Everything needed to enroll one lead into multiple lemlist campaigns at once: the lead email, the target campaign IDs, and optional lead fields applied to every campaign"
+                    },
+                    "ActionOutput_lemlist_enrollleadincampaigns": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead that was enrolled"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "campaignId": {
+                                            "type": "string",
+                                            "description": "Campaign ID this result entry refers to"
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "description": "True when the lead was enrolled in this campaign, false when the enrollment failed"
+                                        },
+                                        "lead": {
+                                            "description": "Lead record returned by lemlist; present only when success is true",
+                                            "type": "object",
+                                            "properties": {
+                                                "_id": {
+                                                    "description": "lemlist lead ID, scoped to this campaign. Example: \"lea_fiDpiGV585wy3Oii2\"",
+                                                    "type": "string"
+                                                },
+                                                "campaignId": {
+                                                    "description": "ID of the campaign the lead was enrolled in",
+                                                    "type": "string"
+                                                },
+                                                "campaignName": {
+                                                    "description": "Name of the campaign the lead was enrolled in",
+                                                    "type": "string"
+                                                },
+                                                "contactId": {
+                                                    "description": "Account-wide contact ID, shared by every enrollment of this email address. Example: \"ctc_xW8Ou6C03Csv8vatp\"",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "description": "Email address of the enrolled lead",
+                                                    "type": "string"
+                                                },
+                                                "firstName": {
+                                                    "description": "First name stored on the lead",
+                                                    "type": "string"
+                                                },
+                                                "lastName": {
+                                                    "description": "Last name stored on the lead",
+                                                    "type": "string"
+                                                },
+                                                "companyName": {
+                                                    "description": "Company name stored on the lead",
+                                                    "type": "string"
+                                                },
+                                                "isPaused": {
+                                                    "description": "Whether the lead is paused in this campaign",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "error": {
+                                            "description": "Reason the enrollment failed; present only when success is false",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["campaignId", "success"],
+                                    "additionalProperties": false
+                                },
+                                "description": "One entry per requested campaign ID, in request order, each with its own success flag and lead record or error"
+                            }
+                        },
+                        "required": ["email", "results"],
+                        "additionalProperties": false,
+                        "description": "Consolidated outcome of the multi-campaign enrollment: the lead email plus a per-campaign success/failure result for every requested campaign"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get aggregate send/open/click/reply/bounce counts for a campaign over a date range",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getcampaignstats",
+            "name": "get-campaign-stats",
+            "output": ["ActionOutput_lemlist_getcampaignstats"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getcampaignstats", "ActionOutput_lemlist_getcampaignstats"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getcampaignstats": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "Unique ID of the campaign to retrieve statistics for. Example: \"cam_vyzp8v33RBTfNQRvz\""
+                            },
+                            "startDate": {
+                                "type": "string",
+                                "description": "Start of the reporting window in ISO 8601 format (date or date-time). Example: \"2026-01-01\""
+                            },
+                            "endDate": {
+                                "type": "string",
+                                "description": "End of the reporting window in ISO 8601 format (date or date-time). Example: \"2026-10-01\""
+                            }
+                        },
+                        "required": ["campaignId", "startDate", "endDate"],
+                        "additionalProperties": false,
+                        "description": "Campaign and date range to retrieve aggregate statistics for"
+                    },
+                    "ActionOutput_lemlist_getcampaignstats": {
+                        "type": "object",
+                        "properties": {
+                            "leadTotal": {
+                                "type": "number",
+                                "description": "Total number of leads ever added to the campaign"
+                            },
+                            "leadToLaunch": {
+                                "type": "number",
+                                "description": "Number of leads that have not been launched into the sequence yet"
+                            },
+                            "leadReadyToSend": {
+                                "type": "number",
+                                "description": "Number of launched leads ready to receive the next step"
+                            },
+                            "leadInProgress": {
+                                "type": "number",
+                                "description": "Number of leads currently progressing through the sequence"
+                            },
+                            "leadCompleted": {
+                                "type": "number",
+                                "description": "Number of leads that finished the sequence"
+                            },
+                            "sentCount": {
+                                "type": "number",
+                                "description": "Number of messages sent within the date range"
+                            },
+                            "deliveredCount": {
+                                "type": "number",
+                                "description": "Number of messages delivered within the date range"
+                            },
+                            "openedCount": {
+                                "type": "number",
+                                "description": "Number of messages opened within the date range"
+                            },
+                            "clickedCount": {
+                                "type": "number",
+                                "description": "Number of messages with at least one link click within the date range"
+                            },
+                            "repliedCount": {
+                                "type": "number",
+                                "description": "Number of messages that received a reply within the date range"
+                            },
+                            "interestedCount": {
+                                "type": "number",
+                                "description": "Number of leads marked as interested within the date range"
+                            }
+                        },
+                        "required": [
+                            "leadTotal",
+                            "leadToLaunch",
+                            "leadReadyToSend",
+                            "leadInProgress",
+                            "leadCompleted",
+                            "sentCount",
+                            "deliveredCount",
+                            "openedCount",
+                            "clickedCount",
+                            "repliedCount",
+                            "interestedCount"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate lead-funnel and engagement counters for the campaign over the requested date range"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a consolidated 'where does this lead stand' view across every campaign it is enrolled in, combining lead state/status with per-campaign engagement activity (opens/clicks/replies/bounces) in one call",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getleadfullstatus",
+            "name": "get-lead-full-status",
+            "output": ["ActionOutput_lemlist_getleadfullstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getleadfullstatus", "ActionOutput_lemlist_getleadfullstatus"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getleadfullstatus": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to look up. Example: \"john.doe@domain.com\""
+                            }
+                        },
+                        "required": ["email"],
+                        "additionalProperties": false,
+                        "description": "Lookup criteria for the lead whose consolidated cross-campaign status is requested"
+                    },
+                    "ActionOutput_lemlist_getleadfullstatus": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address that was looked up"
+                            },
+                            "found": {
+                                "type": "boolean",
+                                "description": "Whether the lead currently has at least one campaign enrollment. false means the lead is unknown or has been removed from every campaign"
+                            },
+                            "enrollments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "campaignId": {
+                                            "type": "string",
+                                            "description": "ID of the campaign the lead is enrolled in. Example: \"cam_bSn8EORHQxbWPjHvu\""
+                                        },
+                                        "campaignName": {
+                                            "description": "Name of the campaign the lead is enrolled in",
+                                            "type": "string"
+                                        },
+                                        "campaignStatus": {
+                                            "description": "Status of the campaign (e.g. \"draft\", \"running\", \"paused\")",
+                                            "type": "string"
+                                        },
+                                        "leadState": {
+                                            "description": "Current state of the lead in this campaign (e.g. \"scanned\", \"contacted\")",
+                                            "type": "string"
+                                        },
+                                        "leadStatus": {
+                                            "description": "Current status of the lead in this campaign (e.g. \"review\", \"scanning\", \"running\", \"paused\", \"done\", \"interested\", \"notInterested\", \"unsubscribed\")",
+                                            "type": "string"
+                                        },
+                                        "isPaused": {
+                                            "description": "Whether the lead is paused in this campaign",
+                                            "type": "boolean"
+                                        },
+                                        "variables": {
+                                            "description": "Custom variables set on the lead for this campaign (e.g. firstName, lastName, companyName)",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "activities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "_id": {
+                                                        "type": "string",
+                                                        "description": "Unique activity identifier. Example: \"act_PbKqTGpQqSlPcoOZ5\""
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Activity type (e.g. \"emailsSent\", \"emailsOpened\", \"emailsClicked\", \"emailsReplied\", \"emailsBounced\"). Email types are plural, LinkedIn invite types are \"linkedinInvite*\""
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "description": "When the activity occurred (ISO 8601 datetime). Example: \"2025-10-28T08:07:38.375Z\""
+                                                    },
+                                                    "campaignId": {
+                                                        "description": "Campaign the activity belongs to. Example: \"cam_bSn8EORHQxbWPjHvu\"",
+                                                        "type": "string"
+                                                    },
+                                                    "leadId": {
+                                                        "description": "Campaign-scoped lead ID the activity relates to. Example: \"lea_fiDpiGV585wy3Oii2\"",
+                                                        "type": "string"
+                                                    },
+                                                    "sequenceStep": {
+                                                        "description": "0-based position of the sequence step that produced the activity",
+                                                        "type": "number"
+                                                    },
+                                                    "stepId": {
+                                                        "description": "Stable identifier of the sequence step that produced the activity; absent on activities recorded before this field existed",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["_id", "type", "createdAt"],
+                                                "additionalProperties": {}
+                                            },
+                                            "description": "Most recent engagement activities recorded for the lead in this campaign (sends, opens, clicks, replies, bounces, etc.); up to 50, empty when none have been recorded yet"
+                                        }
+                                    },
+                                    "required": ["campaignId", "activities"],
+                                    "additionalProperties": false
+                                },
+                                "description": "One entry per campaign the lead is currently enrolled in; empty when found is false"
+                            }
+                        },
+                        "required": ["email", "found", "enrollments"],
+                        "additionalProperties": false,
+                        "description": "Consolidated 'where does this lead stand' view across every campaign the lead is enrolled in"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single lead by email, account-wide (not campaign-scoped).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getlead",
+            "name": "get-lead",
+            "output": ["ActionOutput_lemlist_getlead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getlead", "ActionOutput_lemlist_getlead"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getlead": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to retrieve. The lookup is account-wide, so no campaign ID is required. Example: \"john.doe@example.com\""
+                            }
+                        },
+                        "required": ["email"],
+                        "additionalProperties": false,
+                        "description": "Parameters for retrieving a single lemlist lead by email address."
+                    },
+                    "ActionOutput_lemlist_getlead": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique lemlist identifier of the lead. Example: \"lea_fiDpiGV585wy3Oii2\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead. Example: \"john.doe@example.com\""
+                            },
+                            "firstName": {
+                                "description": "First name of the lead. Omitted when not set.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the lead. Omitted when not set.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Company name of the lead. Omitted when not set.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Job title of the lead. Omitted when not set.",
+                                "type": "string"
+                            },
+                            "companyDomain": {
+                                "description": "Company domain of the lead. Omitted when not set.",
+                                "type": "string"
+                            },
+                            "campaignId": {
+                                "description": "ID of the campaign the lead belongs to. Example: \"cam_bSn8EORHQxbWPjHvu\"",
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "description": "ID of the lemlist contact associated with the lead. Example: \"ctc_xW8Ou6C03Csv8vatp\"",
+                                "type": "string"
+                            },
+                            "emailStatus": {
+                                "description": "Email verification status of the lead, present once enrichment has run. Example: \"deliverable\"",
+                                "type": "string"
+                            },
+                            "isPaused": {
+                                "description": "Whether the lead is paused in its campaign.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "email"],
+                        "additionalProperties": false,
+                        "description": "A single lemlist lead with its profile fields, identifiers, and campaign association."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the team's remaining enrichment/email-finding credit balance.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getteamcredits",
+            "name": "get-team-credits",
+            "output": ["ActionOutput_lemlist_getteamcredits"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getteamcredits", "ActionOutput_lemlist_getteamcredits"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getteamcredits": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "This action takes no input."
+                    },
+                    "ActionOutput_lemlist_getteamcredits": {
+                        "type": "object",
+                        "properties": {
+                            "credits": {
+                                "type": "number",
+                                "description": "Total enrichment credits remaining on the team account."
+                            },
+                            "details": {
+                                "type": "object",
+                                "properties": {
+                                    "remaining": {
+                                        "type": "object",
+                                        "properties": {
+                                            "total": {
+                                                "type": "number",
+                                                "description": "Total credits remaining across all sources."
+                                            },
+                                            "freemium": {
+                                                "type": "number",
+                                                "description": "Remaining credits from the free allowance."
+                                            },
+                                            "subscription": {
+                                                "type": "number",
+                                                "description": "Remaining credits included with the team subscription."
+                                            },
+                                            "gifted": {
+                                                "type": "number",
+                                                "description": "Remaining credits that were gifted by lemlist."
+                                            },
+                                            "paid": {
+                                                "type": "number",
+                                                "description": "Remaining credits that were purchased separately."
+                                            }
+                                        },
+                                        "required": ["total", "freemium", "subscription", "gifted", "paid"],
+                                        "additionalProperties": false,
+                                        "description": "Breakdown of the remaining credit balance by source."
+                                    }
+                                },
+                                "required": ["remaining"],
+                                "additionalProperties": false,
+                                "description": "Detailed credit balance information."
+                            }
+                        },
+                        "required": ["credits", "details"],
+                        "additionalProperties": false,
+                        "description": "The team's remaining enrichment/email-finding credit balance."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the current team's info (name, member user IDs, beta flags, etc.).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getteam",
+            "name": "get-team",
+            "output": ["ActionOutput_lemlist_getteam"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getteam", "ActionOutput_lemlist_getteam"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getteam": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input required. The team is resolved from the API key of the connection."
+                    },
+                    "ActionOutput_lemlist_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "description": "Unique identifier of the team. Example: \"tea_b4rMsi2trBhahaha\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Name of the team. Example: \"lemlist\"",
+                                "type": "string"
+                            },
+                            "userIds": {
+                                "description": "IDs of the users who are members of the team. Example: [\"usr_4YGm9ez7gMdyhahaha\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdBy": {
+                                "description": "ID of the user who created the team. Example: \"usr_4YGm9ez7gMdyhahaha\"",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "ISO 8601 timestamp of when the team was created. Example: \"2018-02-22T08:52:30.926Z\"",
+                                "type": "string"
+                            },
+                            "beta": {
+                                "description": "Beta feature flags enabled for the team. Example: [\"outreachQueue\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "creatorDomain": {
+                                "description": "Email domain of the user who created the team. Example: \"lemlist.com\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Information about the lemlist team associated with the connection."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single team member/user's info by user ID.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_lemlist_getuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_getuser", "ActionOutput_lemlist_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The unique identifier of the user, e.g. a `usr_...` id from the team's `userIds` array or a campaign's `createdBy`. Example: \"usr_eSrHPSoL9QVPUOsho\"."
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false,
+                        "description": "Input for fetching a single lemlist team member by user ID."
+                    },
+                    "ActionOutput_lemlist_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique user identifier. Example: \"usr_eSrHPSoL9QVPUOsho\"."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "The user's email address."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "The user's role in the team (e.g. admin, member)."
+                            },
+                            "linkedIn": {
+                                "type": "object",
+                                "properties": {
+                                    "linkedinUrl": {
+                                        "description": "The LinkedIn profile URL of the user. Only present when LinkedIn is connected.",
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "description": "Whether LinkedIn is connected for this user.",
+                                        "type": "boolean"
+                                    },
+                                    "followLimit": {
+                                        "description": "Daily limit for LinkedIn follow requests.",
+                                        "type": "number"
+                                    },
+                                    "inviteLimit": {
+                                        "description": "Daily limit for LinkedIn connection invites.",
+                                        "type": "number"
+                                    },
+                                    "sendLimit": {
+                                        "description": "Daily limit for LinkedIn messages.",
+                                        "type": "number"
+                                    },
+                                    "visitLimit": {
+                                        "description": "Daily limit for LinkedIn profile visits.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "LinkedIn integration settings for the user."
+                            },
+                            "mailboxes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "description": "Unique mailbox identifier. Example: \"usm_2mkqJNUjnJQiyVBht\".",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Mailbox email address.",
+                                            "type": "string"
+                                        },
+                                        "provider": {
+                                            "description": "Email provider of the mailbox (e.g. google, microsoft).",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Connection status of the mailbox (CONNECTED, ERROR, or DISCONNECTED).",
+                                            "type": "string"
+                                        },
+                                        "lemlist": {
+                                            "description": "Lemlist sending settings for this mailbox.",
+                                            "type": "object",
+                                            "properties": {
+                                                "emailLimit": {
+                                                    "description": "Daily email send limit for this mailbox.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lemwarm": {
+                                            "description": "Lemwarm (deliverability warm-up) settings for this mailbox.",
+                                            "type": "object",
+                                            "properties": {
+                                                "active": {
+                                                    "description": "Whether lemwarm warm-up is active for this mailbox.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An email mailbox connected to the user for sending campaigns."
+                                },
+                                "description": "Email mailboxes connected to this user. Empty when the user has no connected mailboxes."
+                            }
+                        },
+                        "required": ["_id", "email", "role", "mailboxes"],
+                        "additionalProperties": false,
+                        "description": "A lemlist user (team member) with their connected sending channels."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List granular activity events (opens, clicks, replies, bounces, sends, etc.) for a campaign and/or a specific lead.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_listcampaignactivities",
+            "name": "list-campaign-activities",
+            "output": ["ActionOutput_lemlist_listcampaignactivities"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_listcampaignactivities", "ActionOutput_lemlist_listcampaignactivities"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_listcampaignactivities": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "description": "Filter activities to a single campaign. Omit to include activities from every campaign in the team. Example: \"cam_123\"",
+                                "type": "string"
+                            },
+                            "leadId": {
+                                "description": "Filter activities to a single lead. This is the campaign-scoped lead ID (lea_...) as returned when the lead was added to a campaign, not the account-wide contactId. Example: \"lea_123\"",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Filter by activity type. Exact spelling matters: email types are plural (emailsOpened), LinkedIn invite types are linkedinInvite*. The provider rejects unknown values with a 400.",
+                                "type": "string",
+                                "enum": [
+                                    "emailsSent",
+                                    "emailsOpened",
+                                    "emailsClicked",
+                                    "emailsReplied",
+                                    "emailsExternalSent",
+                                    "emailsExternalReceived",
+                                    "emailsDone",
+                                    "emailsIgnored",
+                                    "emailsBounced",
+                                    "emailsFailed",
+                                    "emailsUnsubscribed",
+                                    "emailsInterested",
+                                    "emailsNotInterested",
+                                    "snoozed",
+                                    "annotated",
+                                    "aircallDone",
+                                    "aircallIgnored",
+                                    "aircallCreated",
+                                    "aircallEnded",
+                                    "aircallInterested",
+                                    "aircallNotInterested",
+                                    "apiDone",
+                                    "apiIgnored",
+                                    "apiInterested",
+                                    "apiNotInterested",
+                                    "apiFailed",
+                                    "apiUnsubscribed",
+                                    "enrichmentDone",
+                                    "enrichmentFailed",
+                                    "enrichmentSkipped",
+                                    "linkedinVisitDone",
+                                    "linkedinVisitFailed",
+                                    "linkedinVisitSkipped",
+                                    "linkedinCommentLastPostDone",
+                                    "linkedinCommentLastPostFailed",
+                                    "linkedinCommentLastPostSkipped",
+                                    "linkedinFollowDone",
+                                    "linkedinFollowFailed",
+                                    "linkedinFollowSkipped",
+                                    "linkedinLikeLastPostDone",
+                                    "linkedinLikeLastPostNoPost",
+                                    "linkedinLikeLastPostFailed",
+                                    "linkedinLikeLastPostSkipped",
+                                    "linkedinInviteDone",
+                                    "linkedinEndorseDone",
+                                    "linkedinEndorseFailed",
+                                    "linkedinEndorseSkipped",
+                                    "linkedinSent",
+                                    "linkedinInMailSent",
+                                    "linkedinOpened",
+                                    "linkedinInviteAccepted",
+                                    "linkedinInviteFailed",
+                                    "linkedinSendFailed",
+                                    "linkedinInMailFailed",
+                                    "linkedinInMailSkipped",
+                                    "linkedinVoiceNoteDone",
+                                    "linkedinVoiceNoteFailed",
+                                    "linkedinWithdrawInvitationDone",
+                                    "linkedinWithdrawInvitationFailed",
+                                    "linkedinVoiceNoteReplied",
+                                    "whatsappMessageSent",
+                                    "whatsappMessageDelivered",
+                                    "whatsappMessageOpened",
+                                    "whatsappReplied",
+                                    "whatsappMessageFailed",
+                                    "whatsappDone",
+                                    "whatsappIgnored",
+                                    "whatsappVoiceNoteSent",
+                                    "whatsappVoiceNoteDelivered",
+                                    "whatsappVoiceNoteOpened",
+                                    "whatsappVoiceNoteReplied",
+                                    "whatsappVoiceNoteFailed",
+                                    "whatsappVoiceNoteIgnored",
+                                    "smsSent",
+                                    "smsDone",
+                                    "smsDelivered",
+                                    "smsReplied",
+                                    "smsIgnored",
+                                    "smsFailed",
+                                    "aiVariableDone",
+                                    "aiVariableFailed",
+                                    "linkedinReplied",
+                                    "linkedinInterested",
+                                    "linkedinNotInterested",
+                                    "linkedinDone",
+                                    "linkedinIgnored",
+                                    "manualDone",
+                                    "manualIgnored",
+                                    "manualInterested",
+                                    "manualNotInterested",
+                                    "manualUnsubscribed",
+                                    "scheduleCancelled",
+                                    "paused",
+                                    "stopped",
+                                    "resumed",
+                                    "skipped",
+                                    "meetingBooked",
+                                    "conditionChosen",
+                                    "conditionalFailed",
+                                    "sendToAnotherCampaign",
+                                    "manualEmailQueued",
+                                    "manualLinkedinSendQueued",
+                                    "manualLinkedinVoiceNoteQueued",
+                                    "manualLinkedinInviteQueued",
+                                    "manualLinkedinCommentLastPostQueued",
+                                    "manualWhatsappMessageQueued",
+                                    "manualWhatsappVoiceNoteQueued",
+                                    "outOfOffice",
+                                    "mailinblackDetected",
+                                    "entityUnsubscribed",
+                                    "variableUnsubscribed",
+                                    "entitySubscribed",
+                                    "variableSubscribed"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Number of activities to return per request, between 1 and 100. Defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "offset": {
+                                "description": "Number of activities to skip. To page through results, increment this by the limit on each request. Defaults to 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "minDate": {
+                                "description": "Return only activities with createdAt at or after this value. Accepts an ISO 8601 datetime (e.g. \"2026-05-01T00:00:00Z\") or a Unix timestamp in seconds (e.g. \"1715385600\").",
+                                "type": "string"
+                            },
+                            "maxDate": {
+                                "description": "Return only activities with createdAt at or before this value. Accepts an ISO 8601 datetime or a Unix timestamp in seconds. Must be strictly greater than minDate when both are set.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters for the lemlist activities feed. All fields are optional; with no filters the feed returns activities across all campaigns."
+                    },
+                    "ActionOutput_lemlist_listcampaignactivities": {
+                        "type": "object",
+                        "properties": {
+                            "activities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "type": "string",
+                                            "description": "Unique activity identifier. Example: \"act_PbKqTGpQqSlPcoOZ5\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Activity type, e.g. \"emailsSent\", \"emailsOpened\", \"emailsClicked\", \"emailsReplied\" or \"emailsBounced\". Matches the lemlist ActivityType enum used by the type filter."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp of when the activity occurred. Example: \"2025-10-28T08:07:38.375Z\""
+                                        },
+                                        "campaignId": {
+                                            "description": "ID of the campaign the activity belongs to. Absent on activities that are not tied to a campaign. Example: \"cam_bSn8EORHQxbWPjHvu\"",
+                                            "type": "string"
+                                        },
+                                        "campaignName": {
+                                            "description": "Name of the campaign the activity belongs to, when the activity is tied to a campaign.",
+                                            "type": "string"
+                                        },
+                                        "leadId": {
+                                            "description": "Campaign-scoped ID of the lead the activity relates to. Absent when the activity is not tied to a lead. Example: \"lea_fiDpiGV585wy3Oii2\"",
+                                            "type": "string"
+                                        },
+                                        "contactId": {
+                                            "description": "Account-wide contact ID the activity relates to. Example: \"ctc_xW8Ou6C03Csv8vatp\"",
+                                            "type": "string"
+                                        },
+                                        "leadEmail": {
+                                            "description": "Lead email address as it was when the activity happened. Present on campaign activities only.",
+                                            "type": "string"
+                                        },
+                                        "leadFirstName": {
+                                            "description": "Lead first name as it was when the activity happened. Campaign activities only, and only if the lead had this variable set at that moment.",
+                                            "type": "string"
+                                        },
+                                        "leadLastName": {
+                                            "description": "Lead last name as it was when the activity happened. Same scope as leadFirstName.",
+                                            "type": "string"
+                                        },
+                                        "leadCompanyName": {
+                                            "description": "Lead company name as it was when the activity happened. Same scope as leadFirstName.",
+                                            "type": "string"
+                                        },
+                                        "sequenceId": {
+                                            "description": "ID of the sequence that produced the activity. Example: \"seq_ODjsLXkxXiySRw6dK\"",
+                                            "type": "string"
+                                        },
+                                        "stepId": {
+                                            "description": "Stable identifier of the sequence step that produced the activity. Absent on older activities recorded before step-level tracking existed.",
+                                            "type": "string"
+                                        },
+                                        "sequenceStep": {
+                                            "description": "Zero-based position of the step within the sequence at the time of the activity. Shifts when sequence steps are reordered; prefer stepId for a stable reference.",
+                                            "type": "number"
+                                        },
+                                        "totalSequenceStep": {
+                                            "description": "Zero-based count of the sequence steps already delivered to this lead when the activity occurred.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["_id", "type", "createdAt"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Activity events matching the requested filters."
+                            },
+                            "nextOffset": {
+                                "description": "Offset to pass as offset to fetch the next page. Present only when this page is full (its size equals the requested limit), meaning more activities may exist. A follow-up request can still return an empty page when the total is an exact multiple of the limit.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["activities"],
+                        "additionalProperties": false,
+                        "description": "The matching activity events plus the offset to fetch the next page when more results may exist."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List campaigns in the lemlist team, to discover campaign IDs for lead actions.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_listcampaigns",
+            "name": "list-campaigns",
+            "output": ["ActionOutput_lemlist_listcampaigns"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_listcampaigns", "ActionOutput_lemlist_listcampaigns"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_listcampaigns": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Number of campaigns to retrieve per page. Defaults to 100 when omitted. Maximum: 100. Example: 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Page cursor returned as nextCursor by a previous call. Omit to fetch the first page. Example: \"2\".",
+                                "type": "string",
+                                "pattern": "^[1-9]\\d*$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination options for listing lemlist campaigns."
+                    },
+                    "ActionOutput_lemlist_listcampaigns": {
+                        "type": "object",
+                        "properties": {
+                            "campaigns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique campaign identifier. Pass this ID to campaign-scoped lead actions. Example: \"cam_4HrZbi8xsez4QlrnL\"."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Campaign name. Example: \"Product Launch Campaign\"."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Campaign status. One of: running, paused, draft, ended, archived, errors."
+                                        },
+                                        "emoji": {
+                                            "description": "Emoji shown next to the campaign name. Omitted when the campaign has none.",
+                                            "type": "string"
+                                        },
+                                        "labels": {
+                                            "description": "Categorization labels attached to the campaign.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation timestamp in ISO 8601 format. Example: \"2025-02-20T14:45:54.230Z\".",
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "description": "ID of the user who created the campaign. Example: \"usr_zdTCrNFyXblc4mrYK\".",
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "description": "IANA timezone the campaign schedule runs in. Example: \"Europe/Paris\".",
+                                            "type": "string"
+                                        },
+                                        "sequenceId": {
+                                            "description": "ID of the campaign main sequence. Example: \"seq_8Xp3uSRQrBAdTGffc\".",
+                                            "type": "string"
+                                        },
+                                        "scheduleIds": {
+                                            "description": "IDs of the schedules associated with the campaign.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "hasError": {
+                                            "description": "Whether the campaign currently has configuration errors.",
+                                            "type": "boolean"
+                                        },
+                                        "errors": {
+                                            "description": "Human-readable error messages when the campaign has configuration errors.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "status"],
+                                    "additionalProperties": false,
+                                    "description": "A lemlist campaign."
+                                },
+                                "description": "Campaigns of the lemlist team for the requested page."
+                            },
+                            "nextCursor": {
+                                "description": "Cursor to pass as cursor to fetch the next page. Omitted when there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["campaigns"],
+                        "additionalProperties": false,
+                        "description": "A page of lemlist campaigns."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List every account-wide unsubscribed/suppressed value (email, domain, phone, or LinkedIn URL).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_listunsubscribes",
+            "name": "list-unsubscribes",
+            "output": ["ActionOutput_lemlist_listunsubscribes"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_listunsubscribes", "ActionOutput_lemlist_listunsubscribes"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_listunsubscribes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input required. The full account-wide unsubscribe list is always returned."
+                    },
+                    "ActionOutput_lemlist_listunsubscribes": {
+                        "type": "object",
+                        "properties": {
+                            "unsubscribes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "type": "string",
+                                            "description": "Unique identifier of the unsubscribe record. Example: \"uns_ZmzP7K61EMIT9fBSj\"."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp of when the value was suppressed. Example: \"2023-06-12T10:45:21.367Z\"."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "The suppressed value: an email address, domain, phone number, or LinkedIn URL. Example: \"john.doe@example.com\"."
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "description": "How the suppression was created, e.g. \"api\" or \"user\"."
+                                        }
+                                    },
+                                    "required": ["_id", "createdAt", "value", "source"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Every account-wide unsubscribed/suppressed value on the lemlist account."
+                            }
+                        },
+                        "required": ["unsubscribes"],
+                        "additionalProperties": false,
+                        "description": "The full account-wide unsubscribe list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Pause a running campaign (stops sending/sequencing for all its leads).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_pausecampaign",
+            "name": "pause-campaign",
+            "output": ["ActionOutput_lemlist_pausecampaign"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_pausecampaign", "ActionOutput_lemlist_pausecampaign"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_pausecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "Unique identifier of the campaign to pause. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            }
+                        },
+                        "required": ["campaignId"],
+                        "additionalProperties": false,
+                        "description": "Input for pausing a lemlist campaign."
+                    },
+                    "ActionOutput_lemlist_pausecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the paused campaign. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "Campaign state after this call, as reported by lemlist. Expected to be \"paused\" when the campaign was running."
+                            }
+                        },
+                        "required": ["_id", "state"],
+                        "additionalProperties": false,
+                        "description": "Result of pausing a lemlist campaign."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a lead from a campaign (stops it in the campaign sequence).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_removecampaignlead",
+            "name": "remove-campaign-lead",
+            "output": ["ActionOutput_lemlist_removecampaignlead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_removecampaignlead", "ActionOutput_lemlist_removecampaignlead"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_removecampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "The unique identifier of the campaign to remove the lead from. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "The email address of the lead to remove from the campaign. Example: \"alex.doe@example.com\""
+                            }
+                        },
+                        "required": ["campaignId", "email"],
+                        "additionalProperties": false,
+                        "description": "Input for removing a lead from a lemlist campaign"
+                    },
+                    "ActionOutput_lemlist_removecampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "description": "The lemlist identifier of the removed lead. Example: \"lea_8RmJYElD9S5Jp2kyv\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "The email address of the removed lead. Example: \"alex.doe@example.com\"",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "The first name of the removed lead. Example: \"Alex\"",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "The last name of the removed lead. Example: \"Doe\"",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "The company name of the removed lead. Example: \"Acme Inc\"",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "The job title of the removed lead. Example: \"Head of Growth\"",
+                                "type": "string"
+                            },
+                            "isPaused": {
+                                "description": "Whether the lead was paused in the campaign at time of removal. Example: false",
+                                "type": "boolean"
+                            },
+                            "campaignId": {
+                                "description": "The unique identifier of the campaign the lead was removed from. Example: \"cam_8qJ1qAE5tekBYkJac\"",
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "description": "The lemlist contact identifier linked to the removed lead. Example: \"ctc_joap8q9YGlV45Ypc6\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "The lead object as it was at the time of removal"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a lead from every campaign it is currently enrolled in and unsubscribe it account-wide, for full-removal compliance requests.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_removeleadeverywhere",
+            "name": "remove-lead-everywhere",
+            "output": ["ActionOutput_lemlist_removeleadeverywhere"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_removeleadeverywhere", "ActionOutput_lemlist_removeleadeverywhere"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_removeleadeverywhere": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to remove from every campaign and suppress account-wide. Example: \"jane.doe@example.com\""
+                            }
+                        },
+                        "required": ["email"],
+                        "additionalProperties": false,
+                        "description": "Compliance request: remove a lead from all of its current campaign enrollments and unsubscribe it account-wide, e.g. a 'this person asked to be fully removed' request."
+                    },
+                    "ActionOutput_lemlist_removeleadeverywhere": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address that was processed. Example: \"jane.doe@example.com\""
+                            },
+                            "removedFromCampaigns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "campaignId": {
+                                            "type": "string",
+                                            "description": "ID of a campaign the lead was enrolled in when this action ran. Example: \"cam_bSn8EORHQxbWPjHvu\""
+                                        },
+                                        "campaignName": {
+                                            "description": "Name of that campaign, as reported by the enrollment lookup. Example: \"Q4 Outreach\"",
+                                            "type": "string"
+                                        },
+                                        "outcome": {
+                                            "type": "string",
+                                            "enum": ["unsubscribed", "already_suppressed"],
+                                            "description": "'unsubscribed' when this call performed the removal; 'already_suppressed' when lemlist reported the email as already unsubscribed (expected once the first removal succeeds, since the suppression is account-wide). Both mean the lead is fully removed."
+                                        }
+                                    },
+                                    "required": ["campaignId", "outcome"],
+                                    "additionalProperties": false
+                                },
+                                "description": "One entry per campaign enrollment discovered for the lead, with the outcome of its removal. Empty when the lead had no active enrollments."
+                            },
+                            "suppressedAccountWide": {
+                                "type": "boolean",
+                                "description": "True when the email is now on the account-wide unsubscribe list (any processed removal suppresses it account-wide), which also blocks re-adding it to any campaign."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Human-readable summary of the outcome."
+                            }
+                        },
+                        "required": ["email", "removedFromCampaigns", "suppressedAccountWide", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of removing the lead from every campaign it was enrolled in and suppressing it account-wide."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Removes an email address, domain, phone number, or LinkedIn URL from the account-wide unsubscribe list, undoing a prior unsubscribe.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_resubscribecontact",
+            "name": "resubscribe-contact",
+            "output": ["ActionOutput_lemlist_resubscribecontact"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_resubscribecontact", "ActionOutput_lemlist_resubscribecontact"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_resubscribecontact": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "string",
+                                "description": "The value to remove from the account-wide unsubscribe list: an email address, domain, phone number, or LinkedIn URL. Example: \"john.doe@example.com\""
+                            }
+                        },
+                        "required": ["value"],
+                        "additionalProperties": false,
+                        "description": "Input for resubscribing a value to the account."
+                    },
+                    "ActionOutput_lemlist_resubscribecontact": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the removed unsubscribe entry. Example: \"uns_QCXCLzEfEuEOlCVIu\""
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The value that was removed from the unsubscribe list. Example: \"john.doe@example.com\""
+                            }
+                        },
+                        "required": ["_id", "value"],
+                        "additionalProperties": false,
+                        "description": "The unsubscribe entry that was removed."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Resume or start a paused or draft campaign so it starts sequencing its leads again.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_resumecampaign",
+            "name": "resume-campaign",
+            "output": ["ActionOutput_lemlist_resumecampaign"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_resumecampaign", "ActionOutput_lemlist_resumecampaign"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_resumecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "The unique identifier of the campaign to resume. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            }
+                        },
+                        "required": ["campaignId"],
+                        "additionalProperties": false,
+                        "description": "Input for resuming a lemlist campaign"
+                    },
+                    "ActionOutput_lemlist_resumecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the resumed campaign. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "The campaign state after this call. Example: \"running\""
+                            }
+                        },
+                        "required": ["id", "state"],
+                        "additionalProperties": false,
+                        "description": "Result of resuming a lemlist campaign"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Adds an email, domain, phone number, or LinkedIn URL to the account-wide unsubscribe suppression list. Idempotent: returns the existing record if the value is already unsubscribed.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_unsubscribecontact",
+            "name": "unsubscribe-contact",
+            "output": ["ActionOutput_lemlist_unsubscribecontact"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_unsubscribecontact", "ActionOutput_lemlist_unsubscribecontact"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_unsubscribecontact": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Value to suppress account-wide: an email address, domain, phone number, or LinkedIn URL. Example: \"john.doe@example.com\""
+                            }
+                        },
+                        "required": ["value"],
+                        "additionalProperties": false,
+                        "description": "Input for unsubscribing a value from all outreach"
+                    },
+                    "ActionOutput_lemlist_unsubscribecontact": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the unsubscribe record. Example: \"uns_ZmzP7K61EMIT9fBSj\""
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The unsubscribed value (email, domain, phone number, or LinkedIn URL)"
+                            },
+                            "variable": {
+                                "type": "string",
+                                "description": "Alias of value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "description": "Origin of the unsubscription. Known values: \"api\", \"bounced\", \"lead\", \"user\", \"abuse\""
+                            }
+                        },
+                        "required": ["_id", "value", "variable", "source"],
+                        "additionalProperties": false,
+                        "description": "The created (or existing) account-wide unsubscribe record"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a lead's fields within a campaign (partial merge).",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_updatecampaignlead",
+            "name": "update-campaign-lead",
+            "output": ["ActionOutput_lemlist_updatecampaignlead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_updatecampaignlead", "ActionOutput_lemlist_updatecampaignlead"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_updatecampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "ID of the campaign the lead belongs to. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead to update. Example: \"john.doe@example.com\""
+                            },
+                            "firstName": {
+                                "description": "New first name of the lead.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "New last name of the lead.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "New company name. Written to the company record the lead is linked to, which is shared by every lead linked to that company.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "New job title of the lead.",
+                                "type": "string"
+                            },
+                            "preferredContactMethod": {
+                                "description": "Preferred contact method of the lead. Known values: \"email\", \"linkedIn\".",
+                                "type": "string"
+                            },
+                            "updateStrategy": {
+                                "description": "How sent values are applied to the lead, its contact and its company. \"overwrite\" (default) replaces stored values and an empty string clears a field; \"overwriteIgnoreEmpty\" ignores empty values; \"fillEmptyOnly\" only fills fields that are currently empty.",
+                                "type": "string",
+                                "enum": ["overwrite", "overwriteIgnoreEmpty", "fillEmptyOnly"]
+                            }
+                        },
+                        "required": ["campaignId", "email"],
+                        "additionalProperties": false,
+                        "description": "Input for updating a lead in a lemlist campaign."
+                    },
+                    "ActionOutput_lemlist_updatecampaignlead": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the lead. Example: \"lea_8xJSc7sV7ggpiVnXe\""
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "description": "ID of the campaign the lead belongs to."
+                            },
+                            "campaignName": {
+                                "type": "string",
+                                "description": "Name of the campaign the lead belongs to."
+                            },
+                            "leadUrl": {
+                                "type": "string",
+                                "description": "API URL of the lead. Example: \"https://api.lemlist.com/api/leads/john%40example.com\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the lead."
+                            },
+                            "isPaused": {
+                                "type": "boolean",
+                                "description": "Whether the lead is paused in the campaign."
+                            },
+                            "contactId": {
+                                "description": "ID of the contact the lead is linked to. Example: \"ctc_A1B2C3D4E5F6G7H8I9\"",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "First name of the lead.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the lead.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Name of the company the lead is linked to.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Job title of the lead.",
+                                "type": "string"
+                            },
+                            "companyDomain": {
+                                "description": "Domain of the company the lead is linked to.",
+                                "type": "string"
+                            },
+                            "preferredContactMethod": {
+                                "description": "Preferred contact method of the lead.",
+                                "type": "string"
+                            },
+                            "emailStatus": {
+                                "description": "Email verification status of the lead. Example: \"deliverable\"",
+                                "type": "string"
+                            },
+                            "warnings": {
+                                "description": "Non-blocking provider notices, e.g. company record writes or fields kept by the update strategy.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Machine-readable warning code. Example: \"FIELDS_KEPT\""
+                                        },
+                                        "message": {
+                                            "description": "Human-readable warning message.",
+                                            "type": "string"
+                                        },
+                                        "params": {
+                                            "description": "Warning details, e.g. the names of the fields the update strategy kept.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["code"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["_id", "campaignId", "campaignName", "leadUrl", "email", "isPaused"],
+                        "additionalProperties": false,
+                        "description": "The updated campaign lead."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a campaign's fields (e.g. rename it). Partial merge: only the fields you send are changed.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_updatecampaign",
+            "name": "update-campaign",
+            "output": ["ActionOutput_lemlist_updatecampaign"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_updatecampaign", "ActionOutput_lemlist_updatecampaign"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_updatecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "campaignId": {
+                                "type": "string",
+                                "description": "The unique identifier of the campaign to update. Example: \"cam_A1B2C3D4E5F6G7H8I9\"."
+                            },
+                            "name": {
+                                "description": "The campaign name.",
+                                "type": "string"
+                            },
+                            "stopOnEmailReplied": {
+                                "description": "Stop the campaign when a lead replies by email.",
+                                "type": "boolean"
+                            },
+                            "stopOnMeetingBooked": {
+                                "description": "Stop the campaign when a meeting is booked.",
+                                "type": "boolean"
+                            },
+                            "stopOnLinkClicked": {
+                                "description": "Stop the campaign when a link is clicked.",
+                                "type": "boolean"
+                            },
+                            "leadsPausedByInterest": {
+                                "description": "Pause leads based on interest.",
+                                "type": "boolean"
+                            },
+                            "opportunityReplied": {
+                                "description": "Create an opportunity when a lead replies.",
+                                "type": "boolean"
+                            },
+                            "opportunityClicked": {
+                                "description": "Create an opportunity when a lead clicks a link.",
+                                "type": "boolean"
+                            },
+                            "autoLeadInterest": {
+                                "description": "Automatically detect lead interest.",
+                                "type": "boolean"
+                            },
+                            "disableTrackOpen": {
+                                "description": "Disable tracking of email opens.",
+                                "type": "boolean"
+                            },
+                            "disableTrackClick": {
+                                "description": "Disable tracking of link clicks.",
+                                "type": "boolean"
+                            },
+                            "disableTrackReply": {
+                                "description": "Disable tracking of email replies.",
+                                "type": "boolean"
+                            },
+                            "disableOutOfOffice": {
+                                "description": "Disable out-of-office detection.",
+                                "type": "boolean"
+                            },
+                            "sequenceSharing": {
+                                "description": "Enable sequence sharing for the campaign.",
+                                "type": "boolean"
+                            },
+                            "stopOnLinkClickedFilter": {
+                                "description": "Filter for which link clicks should stop the campaign.",
+                                "type": "string"
+                            },
+                            "sendUserIds": {
+                                "description": "User IDs (usr_xxx format) to assign as campaign senders. Cannot be used on campaigns with a dynamic sender strategy, and every sending channel of the campaign must be covered by at least one capable sender.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "autoReview": {
+                                "description": "Automatically launch (review) leads as soon as they are added to the campaign, instead of requiring manual review.",
+                                "type": "boolean"
+                            },
+                            "autoReviewConditions": {
+                                "description": "Email deliverability statuses for which a lead is auto-launched when autoReview is enabled. Allowed values: deliverable, risky, undeliverable, unverified.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                }
+                            },
+                            "aiFeatures": {
+                                "description": "AI reply-handling settings. Provide only the flags to change; omitted flags keep their current value.",
+                                "type": "object",
+                                "properties": {
+                                    "scoreReplies": {
+                                        "description": "Enable AI reply scoring for this campaign.",
+                                        "type": "boolean"
+                                    },
+                                    "onInterestedReply": {
+                                        "description": "AI action when a reply is detected as interested.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enabled": {
+                                                "description": "Enable this AI reply action.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForLead": {
+                                                "description": "Pause all campaigns for this lead.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseCampaignForCompany": {
+                                                "description": "Pause this campaign for other leads in the same company.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForCompany": {
+                                                "description": "Pause all campaigns for leads in the same company.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "onNotInterestedReply": {
+                                        "description": "AI action when a reply is detected as not interested.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enabled": {
+                                                "description": "Enable this AI reply action.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForLead": {
+                                                "description": "Pause all campaigns for this lead.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseCampaignForCompany": {
+                                                "description": "Pause this campaign for other leads in the same company.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForCompany": {
+                                                "description": "Pause all campaigns for leads in the same company.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tracking": {
+                                "description": "Open, click, and reply tracking toggles. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "trackOpens": {
+                                        "description": "Whether email open tracking is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "trackClicks": {
+                                        "description": "Whether link click tracking is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "trackReplies": {
+                                        "description": "Whether reply tracking is enabled.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onReplied": {
+                                "description": "Behavior when a lead replies. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "createNewTask": {
+                                        "description": "Create a task when a lead replies.",
+                                        "type": "boolean"
+                                    },
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead on reply. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    },
+                                    "disableOutOfOffice": {
+                                        "description": "Whether out-of-office detection is disabled.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onLinkClicked": {
+                                "description": "Behavior when a lead clicks a tracked link. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "createNewTask": {
+                                        "description": "Create a task when a lead clicks a link.",
+                                        "type": "boolean"
+                                    },
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead on link click. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    },
+                                    "specificLinks": {
+                                        "description": "If non-empty, only these link URLs trigger the action. An empty list means all links.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onMeetingBooked": {
+                                "description": "Behavior when a meeting is booked. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead when a meeting is booked. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["campaignId"],
+                        "additionalProperties": false,
+                        "description": "Campaign fields to update. Partial merge: only the provided fields are changed. Provide at least one field besides 'campaignId'."
+                    },
+                    "ActionOutput_lemlist_updatecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "The campaign name.",
+                                "type": "string"
+                            },
+                            "stopOnEmailReplied": {
+                                "description": "Stop the campaign when a lead replies by email.",
+                                "type": "boolean"
+                            },
+                            "stopOnMeetingBooked": {
+                                "description": "Stop the campaign when a meeting is booked.",
+                                "type": "boolean"
+                            },
+                            "stopOnLinkClicked": {
+                                "description": "Stop the campaign when a link is clicked.",
+                                "type": "boolean"
+                            },
+                            "leadsPausedByInterest": {
+                                "description": "Pause leads based on interest.",
+                                "type": "boolean"
+                            },
+                            "opportunityReplied": {
+                                "description": "Create an opportunity when a lead replies.",
+                                "type": "boolean"
+                            },
+                            "opportunityClicked": {
+                                "description": "Create an opportunity when a lead clicks a link.",
+                                "type": "boolean"
+                            },
+                            "autoLeadInterest": {
+                                "description": "Automatically detect lead interest.",
+                                "type": "boolean"
+                            },
+                            "disableTrackOpen": {
+                                "description": "Disable tracking of email opens.",
+                                "type": "boolean"
+                            },
+                            "disableTrackClick": {
+                                "description": "Disable tracking of link clicks.",
+                                "type": "boolean"
+                            },
+                            "disableTrackReply": {
+                                "description": "Disable tracking of email replies.",
+                                "type": "boolean"
+                            },
+                            "disableOutOfOffice": {
+                                "description": "Disable out-of-office detection.",
+                                "type": "boolean"
+                            },
+                            "sequenceSharing": {
+                                "description": "Enable sequence sharing for the campaign.",
+                                "type": "boolean"
+                            },
+                            "stopOnLinkClickedFilter": {
+                                "description": "Filter for which link clicks should stop the campaign.",
+                                "type": "string"
+                            },
+                            "sendUserIds": {
+                                "description": "User IDs (usr_xxx format) to assign as campaign senders. Cannot be used on campaigns with a dynamic sender strategy, and every sending channel of the campaign must be covered by at least one capable sender.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "autoReview": {
+                                "description": "Automatically launch (review) leads as soon as they are added to the campaign, instead of requiring manual review.",
+                                "type": "boolean"
+                            },
+                            "autoReviewConditions": {
+                                "description": "Email deliverability statuses for which a lead is auto-launched when autoReview is enabled. Allowed values: deliverable, risky, undeliverable, unverified.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                }
+                            },
+                            "aiFeatures": {
+                                "description": "AI reply-handling settings. Provide only the flags to change; omitted flags keep their current value.",
+                                "type": "object",
+                                "properties": {
+                                    "scoreReplies": {
+                                        "description": "Enable AI reply scoring for this campaign.",
+                                        "type": "boolean"
+                                    },
+                                    "onInterestedReply": {
+                                        "description": "AI action when a reply is detected as interested.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enabled": {
+                                                "description": "Enable this AI reply action.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForLead": {
+                                                "description": "Pause all campaigns for this lead.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseCampaignForCompany": {
+                                                "description": "Pause this campaign for other leads in the same company.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForCompany": {
+                                                "description": "Pause all campaigns for leads in the same company.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "onNotInterestedReply": {
+                                        "description": "AI action when a reply is detected as not interested.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enabled": {
+                                                "description": "Enable this AI reply action.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForLead": {
+                                                "description": "Pause all campaigns for this lead.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseCampaignForCompany": {
+                                                "description": "Pause this campaign for other leads in the same company.",
+                                                "type": "boolean"
+                                            },
+                                            "pauseAllCampaignsForCompany": {
+                                                "description": "Pause all campaigns for leads in the same company.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tracking": {
+                                "description": "Open, click, and reply tracking toggles. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "trackOpens": {
+                                        "description": "Whether email open tracking is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "trackClicks": {
+                                        "description": "Whether link click tracking is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "trackReplies": {
+                                        "description": "Whether reply tracking is enabled.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onReplied": {
+                                "description": "Behavior when a lead replies. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "createNewTask": {
+                                        "description": "Create a task when a lead replies.",
+                                        "type": "boolean"
+                                    },
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead on reply. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    },
+                                    "disableOutOfOffice": {
+                                        "description": "Whether out-of-office detection is disabled.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onLinkClicked": {
+                                "description": "Behavior when a lead clicks a tracked link. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "createNewTask": {
+                                        "description": "Create a task when a lead clicks a link.",
+                                        "type": "boolean"
+                                    },
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead on link click. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    },
+                                    "specificLinks": {
+                                        "description": "If non-empty, only these link URLs trigger the action. An empty list means all links.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "onMeetingBooked": {
+                                "description": "Behavior when a meeting is booked. Provide only the flags to change.",
+                                "type": "object",
+                                "properties": {
+                                    "campaignProgress": {
+                                        "description": "What happens to the lead when a meeting is booked. One of: continue, pause, stop.",
+                                        "type": "string",
+                                        "enum": ["continue", "pause", "stop"]
+                                    },
+                                    "propagateProgressToCompany": {
+                                        "description": "Apply the same action to other leads in the same company.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sendUsers": {
+                                "description": "Configured senders for the campaign. Only present when sendUserIds was provided in the request.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "User ID of the sender.",
+                                            "type": "string"
+                                        },
+                                        "mailboxes": {
+                                            "description": "Connected email mailboxes of the sender.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "sendUserMailboxId": {
+                                                        "description": "ID of the connected sender mailbox.",
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "description": "Email address of the connected sender mailbox.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A connected email mailbox of the sender."
+                                            }
+                                        },
+                                        "phoneNumbers": {
+                                            "description": "Connected phone numbers of the sender.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "whatsappAccountIds": {
+                                            "description": "Connected WhatsApp account IDs of the sender.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A configured sender for the campaign."
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "The campaign fields that were updated. The response only echoes the fields that were sent, not the full campaign object."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Kick off asynchronous email-address verification (deliverability check) for a given email.",
+            "endpoint": null,
+            "input": "ActionInput_lemlist_verifyemail",
+            "name": "verify-email",
+            "output": ["ActionOutput_lemlist_verifyemail"],
+            "scopes": [],
+            "usedModels": ["ActionInput_lemlist_verifyemail", "ActionOutput_lemlist_verifyemail"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lemlist_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address to verify for deliverability. Sent to lemlist as a query parameter, not in a request body. Example: \"jane.doe@example.com\"."
+                            }
+                        },
+                        "required": ["email"],
+                        "additionalProperties": false,
+                        "description": "Input for starting an asynchronous email-address verification."
+                    },
+                    "ActionOutput_lemlist_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "ID of the asynchronous verification job, used to fetch the result once it completes. Example: \"enr_CzQDYYcS5vDG1ZvQi\". Present only when started is true.",
+                                "type": "string"
+                            },
+                            "started": {
+                                "type": "boolean",
+                                "description": "Whether lemlist accepted the request and queued the asynchronous verification job."
+                            },
+                            "error": {
+                                "description": "Provider error code when the job could not be started, e.g. \"linkedin-not-linked\". Present only when started is false.",
+                                "type": "string"
+                            },
+                            "message": {
+                                "description": "Human-readable provider error message when the job could not be started. Present only when started is false.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["started"],
+                        "additionalProperties": false,
+                        "description": "Outcome of requesting an asynchronous email-address verification. The verification result itself is retrieved separately with the returned job ID."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync every lead enrolled in every campaign",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "campaign-leads",
+            "output": ["CampaignLead"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CampaignLead"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CampaignLead": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable record id scoped to the parent campaign, formatted as `${campaignId}:${leadId}`. The lemlist lead id is only unique within its campaign, so the campaign id is prepended to avoid collisions across campaigns."
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "description": "Identifier of the campaign this lead enrollment belongs to. Example: cam_vyzp8v33RBTfNQRvz"
+                            },
+                            "leadId": {
+                                "type": "string",
+                                "description": "Campaign-scoped lemlist lead identifier (the `_id` field of the campaign leads list). Example: lea_K38DYz3t7pyzATMZF"
+                            },
+                            "contactId": {
+                                "type": "string",
+                                "description": "Account-wide contact identifier. Unlike leadId, this is stable across campaigns for the same person and can be used to join with other lemlist contacts. Example: ctc_jgZq5fmsGxkmSd7x4"
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "Last reported state of the lead within this campaign, e.g. scanned, contacted, interested. Note: lemlist does not update this value when a lead is later removed or unsubscribed, so it reflects the state at the last reported activity rather than live membership."
+                            }
+                        },
+                        "required": ["id", "campaignId", "leadId", "contactId", "state"],
+                        "additionalProperties": false,
+                        "description": "A lead enrolled in a lemlist campaign, as listed by the campaign leads endpoint."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Full refresh of every lemlist campaign in the team (name, status, sequence id, creator). Note: lemlist has no campaign-deletion API, so a record flagged as deleted only means the campaign no longer appears in GET /api/campaigns (e.g. excluded by a filter the endpoint does not expose), not that it was actually destroyed.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "campaigns",
+            "output": ["Campaign"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Campaign"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Campaign": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The campaign's unique lemlist identifier (the `_id` field). Example: 'cam_vyzp8v33RBTfNQRvz'"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The campaign's display name"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "The campaign's lifecycle status as reported by the list endpoint, e.g. 'draft', 'running' or 'paused'"
+                            },
+                            "sequenceId": {
+                                "type": "string",
+                                "description": "Identifier of the campaign's messaging sequence. Example: 'seq_8Xp3uSRQrBAdTGffc'"
+                            },
+                            "emoji": {
+                                "description": "The campaign's emoji icon, when one is set",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp of when the campaign was created"
+                            },
+                            "createdBy": {
+                                "type": "string",
+                                "description": "Lemlist user id of the campaign's creator. Example: 'usr_22HzEMYb8ZvdNstrC'"
+                            }
+                        },
+                        "required": ["id", "name", "status", "sequenceId", "createdAt", "createdBy"],
+                        "additionalProperties": false,
+                        "description": "A lemlist campaign with its core metadata as returned by GET /api/campaigns"
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

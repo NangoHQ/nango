@@ -1,0 +1,1830 @@
+{
+    "providerConfigKey": "workday-refresh-token",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Execute a Workday Query Language (WQL) query and return structured tabular results",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_executewqlquery",
+            "name": "execute-wql-query",
+            "output": ["ActionOutput_workday_refresh_token_executewqlquery"],
+            "scopes": ["r_wql"],
+            "usedModels": ["ActionInput_workday_refresh_token_executewqlquery", "ActionOutput_workday_refresh_token_executewqlquery"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_executewqlquery": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The WQL query string. Example: SELECT workdayID, fullName FROM allWorkers WHERE isActive = true"
+                            },
+                            "limit": {
+                                "description": "Maximum number of rows to return per page. Defaults vary by tenant; maximum is 10,000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10000
+                            },
+                            "offset": {
+                                "description": "Zero-based index of the first row to return. Use with limit for pagination.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false,
+                        "description": "Input for executing a Workday Query Language (WQL) query"
+                    },
+                    "ActionOutput_workday_refresh_token_executewqlquery": {
+                        "type": "object",
+                        "properties": {
+                            "total": {
+                                "type": "number",
+                                "description": "Total number of rows matching the query across all pages."
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Result rows from the WQL query. Each object contains key-value pairs corresponding to the selected fields."
+                            }
+                        },
+                        "required": ["total", "rows"],
+                        "additionalProperties": false,
+                        "description": "Output of a Workday Query Language (WQL) query execution"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single custom object definition by id.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getcustomobjectdefinition",
+            "name": "get-custom-object-definition",
+            "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getcustomobjectdefinition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier of the custom object definition to retrieve."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single custom object definition by its unique identifier."
+                    },
+                    "ActionOutput_workday_refresh_token_getcustomobjectdefinition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the custom object definition."
+                            },
+                            "descriptor": {
+                                "type": "string",
+                                "description": "Display name of the custom object type."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Whether the custom object definition is active."
+                            },
+                            "multiInstance": {
+                                "type": "boolean",
+                                "description": "Whether multiple instances of this custom object are allowed per parent object."
+                            },
+                            "customObjectName": {
+                                "type": "string",
+                                "description": "The API name of the custom object type."
+                            },
+                            "customObjectAlias": {
+                                "type": "string",
+                                "description": "The web service alias used to reference this custom object in API requests."
+                            },
+                            "businessObject": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the business object this custom object extends."
+                                    },
+                                    "descriptor": {
+                                        "type": "string",
+                                        "description": "Display name of the business object type."
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false,
+                                "description": "The standard Workday business object this custom object extends."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Output containing the details of a single custom object definition."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single job requisition by id.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getjobrequisition",
+            "name": "get-job-requisition",
+            "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
+            "scopes": ["r_recruiting"],
+            "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getjobrequisition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The Workday ID of the job posting. Example: \"2d76b324c36510012c2e765c9e0b0000\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single job posting"
+                    },
+                    "ActionOutput_workday_refresh_token_getjobrequisition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Workday ID of the job posting",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Job posting title",
+                                "type": "string"
+                            },
+                            "jobDescription": {
+                                "description": "Detailed job description",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "External career site URL for the posting",
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "description": "Date the posting became active",
+                                "type": "string"
+                            },
+                            "spotlightJob": {
+                                "description": "Whether the posting is featured/spotlighted",
+                                "type": "boolean"
+                            },
+                            "timeType": {
+                                "description": "Full-time or part-time designation",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Workday ID of the referenced resource. Example: \"11111111-2222-3333-4444-555555555555\"",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the referenced resource. Example: \"Senior Software Engineer\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "jobType": {
+                                "description": "Job type (e.g. Regular, Temporary)",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Workday ID of the referenced resource. Example: \"11111111-2222-3333-4444-555555555555\"",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the referenced resource. Example: \"Senior Software Engineer\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "primaryLocation": {
+                                "description": "Primary work location for the position",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Workday ID of the location",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the location",
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "description": "Country information",
+                                        "type": "object",
+                                        "properties": {
+                                            "descriptor": {
+                                                "description": "Country name",
+                                                "type": "string"
+                                            },
+                                            "alpha3Code": {
+                                                "description": "ISO 3166-1 alpha-3 country code",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    "region": {
+                                        "description": "Region or state information",
+                                        "type": "object",
+                                        "properties": {
+                                            "descriptor": {
+                                                "description": "Region or state name",
+                                                "type": "string"
+                                            },
+                                            "code": {
+                                                "description": "Region or state code",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "categories": {
+                                "description": "Categories or job families for the posting",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Workday ID of the referenced resource. Example: \"11111111-2222-3333-4444-555555555555\"",
+                                            "type": "string"
+                                        },
+                                        "descriptor": {
+                                            "description": "Display name of the referenced resource. Example: \"Senior Software Engineer\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "jobSite": {
+                                "description": "Career site where the posting is published",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Workday ID of the referenced resource. Example: \"11111111-2222-3333-4444-555555555555\"",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the referenced resource. Example: \"Senior Software Engineer\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "company": {
+                                "description": "Company or organization for the posting",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Workday ID of the referenced resource. Example: \"11111111-2222-3333-4444-555555555555\"",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the referenced resource. Example: \"Senior Software Engineer\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "A single job posting from Workday"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single organization by id",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getorganization",
+            "name": "get-organization",
+            "output": ["ActionOutput_workday_refresh_token_getorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Workday organization ID. Example: \"ORG-123\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Workday organization by ID"
+                    },
+                    "ActionOutput_workday_refresh_token_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the organization"
+                            },
+                            "descriptor": {
+                                "description": "Human-readable descriptor of the organization",
+                                "type": "string"
+                            },
+                            "href": {
+                                "description": "API URL for the organization resource",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "A single Workday organization record"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single supervisory organization by id.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getsupervisoryorganization",
+            "name": "get-supervisory-organization",
+            "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getsupervisoryorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single supervisory organization by id."
+                    },
+                    "ActionOutput_workday_refresh_token_getsupervisoryorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the supervisory organization."
+                            },
+                            "descriptor": {
+                                "description": "The display name of the organization. Omitted when empty.",
+                                "type": "string"
+                            },
+                            "href": {
+                                "description": "The canonical REST API URL for this organization.",
+                                "type": "string"
+                            },
+                            "code": {
+                                "description": "The organization code.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "The organization name, when available.",
+                                "type": "string"
+                            },
+                            "workersUrl": {
+                                "description": "URL to the workers sub-resource for this organization.",
+                                "type": "string"
+                            },
+                            "manager": {
+                                "description": "The manager of this organization, when available.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Identifier of the manager.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Display name of the manager.",
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "description": "REST API URL of the manager.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Output schema for a single Workday supervisory organization."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single time-off entry's details.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_gettimeoffdetail",
+            "name": "get-time-off-detail",
+            "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_gettimeoffdetail": {
+                        "type": "object",
+                        "properties": {
+                            "workerId": {
+                                "type": "string",
+                                "description": "The unique identifier of the worker whose time-off detail is being retrieved."
+                            },
+                            "timeOffDetailId": {
+                                "type": "string",
+                                "description": "The unique identifier of the specific time-off detail entry to retrieve."
+                            }
+                        },
+                        "required": ["workerId", "timeOffDetailId"],
+                        "additionalProperties": false,
+                        "description": "Input parameters for retrieving a single Workday time-off detail."
+                    },
+                    "ActionOutput_workday_refresh_token_gettimeoffdetail": {
+                        "type": "object",
+                        "properties": {
+                            "timeOffEntryId": {
+                                "type": "string",
+                                "description": "The unique identifier for this time-off detail entry."
+                            },
+                            "timeOffType": {
+                                "description": "The type of time off (e.g., Basic Time Off, Annual Leave).",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The unique identifier of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A human-readable name or description of the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "timeOffEventId": {
+                                "description": "The parent time-off event associated with this detail.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The unique identifier of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A human-readable name or description of the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "worker": {
+                                "description": "The worker associated with this time-off detail.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The unique identifier of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A human-readable name or description of the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "description": "The current status of the time-off request (e.g., Submitted, Approved).",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The unique identifier of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A human-readable name or description of the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "date": {
+                                "description": "The date of the time-off entry. Format: YYYY-MM-DD.",
+                                "type": "string"
+                            },
+                            "comment": {
+                                "description": "An optional comment associated with the time-off request.",
+                                "type": "string"
+                            },
+                            "unit": {
+                                "description": "The unit of measurement for the time-off quantity (e.g., Days, Hours).",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The unique identifier of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A human-readable name or description of the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "quantity": {
+                                "description": "The quantity of time off requested in the specified unit.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["timeOffEntryId"],
+                        "additionalProperties": {},
+                        "description": "Output shape for a single Workday time-off detail entry."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a worker's compensation details (base pay, compensation plans, etc.).",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getworkercompensation",
+            "name": "get-worker-compensation",
+            "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getworkercompensation": {
+                        "type": "object",
+                        "properties": {
+                            "workerId": {
+                                "type": "string",
+                                "description": "Workday worker ID. Example: \"fa1a4057915f1010adcb915e0b120000\""
+                            }
+                        },
+                        "required": ["workerId"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a worker's compensation details."
+                    },
+                    "ActionOutput_workday_refresh_token_getworkercompensation": {
+                        "type": "object",
+                        "properties": {
+                            "workerId": {
+                                "type": "string",
+                                "description": "Workday worker ID."
+                            },
+                            "descriptor": {
+                                "description": "Worker display name or number.",
+                                "type": "string"
+                            },
+                            "businessTitle": {
+                                "description": "Worker business title.",
+                                "type": "string"
+                            },
+                            "yearsOfService": {
+                                "description": "Years of service.",
+                                "type": "string"
+                            },
+                            "isManager": {
+                                "description": "Whether the worker is a manager.",
+                                "type": "boolean"
+                            },
+                            "primaryWorkPhone": {
+                                "description": "Primary work phone number.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Location ID.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Location display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Worker location."
+                            },
+                            "primarySupervisoryOrganization": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Organization ID.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "Organization display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Supervisory organization."
+                            },
+                            "basePay": {
+                                "description": "Base pay details for the worker.",
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "description": "Base pay amount.",
+                                        "type": "number"
+                                    },
+                                    "currency": {
+                                        "description": "Currency code for the base pay.",
+                                        "type": "string"
+                                    },
+                                    "frequency": {
+                                        "description": "Pay frequency descriptor, e.g., Annual or Monthly.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "compensationPlans": {
+                                "description": "List of compensation plans for the worker.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "planId": {
+                                            "description": "Compensation plan identifier.",
+                                            "type": "string"
+                                        },
+                                        "planName": {
+                                            "description": "Compensation plan name.",
+                                            "type": "string"
+                                        },
+                                        "planType": {
+                                            "description": "Type of compensation plan, e.g., base, bonus, or allowance.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An individual compensation plan assigned to the worker."
+                                }
+                            }
+                        },
+                        "required": ["workerId"],
+                        "additionalProperties": false,
+                        "description": "A worker's profile and compensation details."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single worker's record by id.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_getworker",
+            "name": "get-worker",
+            "output": ["ActionOutput_workday_refresh_token_getworker"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_getworker": {
+                        "type": "object",
+                        "properties": {
+                            "worker_id": {
+                                "type": "string",
+                                "description": "The Workday ID of the worker to retrieve. Example: \"fa1a4057915f1010adcb915e0b120000\""
+                            }
+                        },
+                        "required": ["worker_id"],
+                        "additionalProperties": false,
+                        "description": "Input parameters for retrieving a single Workday worker."
+                    },
+                    "ActionOutput_workday_refresh_token_getworker": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The Workday ID of the worker."
+                            },
+                            "descriptor": {
+                                "description": "A display descriptor for the worker (typically full name or worker ID).",
+                                "type": "string"
+                            },
+                            "href": {
+                                "description": "A link to the full worker resource.",
+                                "type": "string"
+                            },
+                            "businessTitle": {
+                                "description": "The business title for the worker.",
+                                "type": "string"
+                            },
+                            "primaryWorkEmail": {
+                                "description": "The primary work email address.",
+                                "type": "string"
+                            },
+                            "primaryWorkPhone": {
+                                "description": "The primary work phone number.",
+                                "type": "string"
+                            },
+                            "primaryWorkAddressText": {
+                                "description": "The primary work address as a text string.",
+                                "type": "string"
+                            },
+                            "yearsOfService": {
+                                "description": "The number of years of service.",
+                                "type": "string"
+                            },
+                            "isManager": {
+                                "description": "Whether the worker is a manager.",
+                                "type": "boolean"
+                            },
+                            "externalID": {
+                                "description": "The external ID for the worker.",
+                                "type": "string"
+                            },
+                            "workerID": {
+                                "description": "The employee or contingent worker ID.",
+                                "type": "string"
+                            },
+                            "hireDate": {
+                                "description": "The hire date for the worker.",
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "description": "The termination date, if applicable.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "The worker's primary work location.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The Workday ID of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A display descriptor for the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "description": "A link to the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "primarySupervisoryOrganization": {
+                                "description": "The primary supervisory organization for the worker.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The Workday ID of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A display descriptor for the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "description": "A link to the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workerType": {
+                                "description": "The worker type (e.g., Employee, Contingent Worker).",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The Workday ID of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A display descriptor for the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "description": "A link to the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "primaryJob": {
+                                "description": "The worker's primary job.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "The Workday ID of the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "descriptor": {
+                                        "description": "A display descriptor for the referenced resource.",
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "description": "A link to the referenced resource.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "supervisoryOrganizationsManaged": {
+                                "description": "URL to the worker's managed supervisory organizations.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "A single worker record from Workday."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List open/filled job requisitions.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listjobrequisitions",
+            "name": "list-job-requisitions",
+            "output": ["ActionOutput_workday_refresh_token_listjobrequisitions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listjobrequisitions", "ActionOutput_workday_refresh_token_listjobrequisitions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listjobrequisitions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return per page. Defaults to 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing job requisitions."
+                    },
+                    "ActionOutput_workday_refresh_token_listjobrequisitions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Workday ID of the job requisition."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Job title."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Public job posting URL."
+                                        },
+                                        "startDate": {
+                                            "type": "string",
+                                            "description": "Start date of the job posting (YYYY-MM-DD)."
+                                        },
+                                        "endDate": {
+                                            "description": "End date of the job posting (YYYY-MM-DD).",
+                                            "type": "string"
+                                        },
+                                        "primaryLocation": {
+                                            "description": "Primary work location.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Workday ID of the location."
+                                                },
+                                                "descriptor": {
+                                                    "type": "string",
+                                                    "description": "Human-readable name of the location."
+                                                },
+                                                "country": {
+                                                    "description": "Country information for the location.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "descriptor": {
+                                                            "type": "string",
+                                                            "description": "Country name."
+                                                        },
+                                                        "alpha3Code": {
+                                                            "type": "string",
+                                                            "description": "ISO 3166-1 alpha-3 country code."
+                                                        }
+                                                    },
+                                                    "required": ["descriptor", "alpha3Code"],
+                                                    "additionalProperties": false
+                                                },
+                                                "region": {
+                                                    "description": "Region information for the location.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "descriptor": {
+                                                            "type": "string",
+                                                            "description": "Region name."
+                                                        },
+                                                        "code": {
+                                                            "type": "string",
+                                                            "description": "Region code."
+                                                        }
+                                                    },
+                                                    "required": ["descriptor", "code"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id", "descriptor"],
+                                            "additionalProperties": false
+                                        },
+                                        "additionalLocations": {
+                                            "description": "Additional work locations.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Workday ID of the location."
+                                                    },
+                                                    "descriptor": {
+                                                        "type": "string",
+                                                        "description": "Human-readable name of the location."
+                                                    },
+                                                    "country": {
+                                                        "description": "Country information for the location.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "descriptor": {
+                                                                "type": "string",
+                                                                "description": "Country name."
+                                                            },
+                                                            "alpha3Code": {
+                                                                "type": "string",
+                                                                "description": "ISO 3166-1 alpha-3 country code."
+                                                            }
+                                                        },
+                                                        "required": ["descriptor", "alpha3Code"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "region": {
+                                                        "description": "Region information for the location.",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "descriptor": {
+                                                                "type": "string",
+                                                                "description": "Region name."
+                                                            },
+                                                            "code": {
+                                                                "type": "string",
+                                                                "description": "Region code."
+                                                            }
+                                                        },
+                                                        "required": ["descriptor", "code"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["id", "descriptor"],
+                                                "additionalProperties": false,
+                                                "description": "A geographic location associated with a job requisition."
+                                            }
+                                        },
+                                        "jobSite": {
+                                            "description": "Job site where the posting is published.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Workday ID of the referenced entity."
+                                                },
+                                                "descriptor": {
+                                                    "type": "string",
+                                                    "description": "Human-readable name of the referenced entity."
+                                                }
+                                            },
+                                            "required": ["id", "descriptor"],
+                                            "additionalProperties": false
+                                        },
+                                        "jobType": {
+                                            "description": "Job type classification.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Workday ID of the referenced entity."
+                                                },
+                                                "descriptor": {
+                                                    "type": "string",
+                                                    "description": "Human-readable name of the referenced entity."
+                                                }
+                                            },
+                                            "required": ["id", "descriptor"],
+                                            "additionalProperties": false
+                                        },
+                                        "timeType": {
+                                            "description": "Time type classification (e.g., Full time).",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Workday ID of the referenced entity."
+                                                },
+                                                "descriptor": {
+                                                    "type": "string",
+                                                    "description": "Human-readable name of the referenced entity."
+                                                }
+                                            },
+                                            "required": ["id", "descriptor"],
+                                            "additionalProperties": false
+                                        },
+                                        "company": {
+                                            "description": "Company or cost center associated with the requisition.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Workday ID of the referenced entity."
+                                                },
+                                                "descriptor": {
+                                                    "type": "string",
+                                                    "description": "Human-readable name of the referenced entity."
+                                                }
+                                            },
+                                            "required": ["id", "descriptor"],
+                                            "additionalProperties": false
+                                        },
+                                        "spotlightJob": {
+                                            "description": "Whether the job is spotlighted.",
+                                            "type": "boolean"
+                                        },
+                                        "jobDescription": {
+                                            "description": "HTML job description.",
+                                            "type": "string"
+                                        },
+                                        "categories": {
+                                            "description": "Job categories or departments.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Workday ID of the referenced entity."
+                                                    },
+                                                    "descriptor": {
+                                                        "type": "string",
+                                                        "description": "Human-readable name of the referenced entity."
+                                                    }
+                                                },
+                                                "required": ["id", "descriptor"],
+                                                "additionalProperties": false,
+                                                "description": "A Workday reference object."
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "title", "url", "startDate"],
+                                    "additionalProperties": false,
+                                    "description": "A single job requisition record."
+                                },
+                                "description": "List of job requisitions."
+                            },
+                            "nextCursor": {
+                                "description": "Cursor to fetch the next page. Omit when there are no more results.",
+                                "type": "string"
+                            },
+                            "total": {
+                                "description": "Total number of job requisitions available.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "Output for listing job requisitions."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations (cost centers, companies, regions, etc.).",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listorganizations",
+            "name": "list-organizations",
+            "output": ["ActionOutput_workday_refresh_token_listorganizations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of organizations to return.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "offset": {
+                                "description": "Zero-based index of the first organization to return.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing Workday organizations."
+                    },
+                    "ActionOutput_workday_refresh_token_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "organizations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "List of organization objects returned by Workday."
+                            },
+                            "next_offset": {
+                                "description": "Offset for the next page if more results are available.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["organizations"],
+                        "additionalProperties": false,
+                        "description": "Output for listing Workday organizations."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List supervisory organizations (Workday management-hierarchy org units)",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listsupervisoryorganizations",
+            "name": "list-supervisory-organizations",
+            "output": ["ActionOutput_workday_refresh_token_listsupervisoryorganizations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listsupervisoryorganizations", "ActionOutput_workday_refresh_token_listsupervisoryorganizations"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listsupervisoryorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                            },
+                            "limit": {
+                                "description": "Maximum number of supervisory organizations to return per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing supervisory organizations"
+                    },
+                    "ActionOutput_workday_refresh_token_listsupervisoryorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique identifier of the supervisory organization."
+                                        },
+                                        "name": {
+                                            "description": "Display name of the supervisory organization.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of supervisory organizations."
+                            },
+                            "nextCursor": {
+                                "description": "Cursor to fetch the next page of results. Omitted when there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "Output containing a paginated list of supervisory organizations"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a worker's current absence/PTO plan balances",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listworkerabsencebalances",
+            "name": "list-worker-absence-balances",
+            "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listworkerabsencebalances": {
+                        "type": "object",
+                        "properties": {
+                            "workerId": {
+                                "type": "string",
+                                "description": "Workday ID of the worker whose absence balances to list. Example: \"123456789\""
+                            }
+                        },
+                        "required": ["workerId"],
+                        "additionalProperties": false,
+                        "description": "Input for listing a worker's absence/PTO plan balances."
+                    },
+                    "ActionOutput_workday_refresh_token_listworkerabsencebalances": {
+                        "type": "object",
+                        "properties": {
+                            "balances": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Workday ID of the absence balance record."
+                                        },
+                                        "planId": {
+                                            "description": "Workday ID of the absence plan.",
+                                            "type": "string"
+                                        },
+                                        "planName": {
+                                            "description": "Name of the absence plan, e.g. \"PTO\" or \"Sick Leave\".",
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "description": "Category of the absence plan, e.g. \"Time Off Plan\" or \"Leave of Absence Type\".",
+                                            "type": "string"
+                                        },
+                                        "balance": {
+                                            "description": "Current available balance.",
+                                            "type": "number"
+                                        },
+                                        "unit": {
+                                            "description": "Unit of measure, e.g. \"Hours\" or \"Days\".",
+                                            "type": "string"
+                                        },
+                                        "effectiveDate": {
+                                            "description": "Date the balance was calculated, in yyyy-mm-dd format.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of current absence/PTO plan balances for the worker."
+                            }
+                        },
+                        "required": ["balances"],
+                        "additionalProperties": false,
+                        "description": "Output containing a list of a worker's current absence/PTO plan balances."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a worker's time-off/absence entries.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listworkertimeoff",
+            "name": "list-worker-time-off",
+            "output": ["ActionOutput_workday_refresh_token_listworkertimeoff"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listworkertimeoff", "ActionOutput_workday_refresh_token_listworkertimeoff"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listworkertimeoff": {
+                        "type": "object",
+                        "properties": {
+                            "workerId": {
+                                "type": "string",
+                                "description": "The Workday worker ID to query time-off entries for. Example: \"baf00a57d25f10098e0ac975d7070000\""
+                            },
+                            "offset": {
+                                "description": "Pagination offset for skipping results. Omit for the first page.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["workerId"],
+                        "additionalProperties": false,
+                        "description": "Input for listing a worker's time-off entries."
+                    },
+                    "ActionOutput_workday_refresh_token_listworkertimeoff": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique identifier for the time-off entry. Example: \"827db9d515f610015100b890428f0000\""
+                                        },
+                                        "workerId": {
+                                            "type": "string",
+                                            "description": "The Workday worker ID associated with this entry. Example: \"baf00a57d25f10098e0ac975d7070000\""
+                                        },
+                                        "date": {
+                                            "description": "The date of the time-off entry in ISO 8601 format. Example: \"2024-09-16\"",
+                                            "type": "string"
+                                        },
+                                        "timeOffType": {
+                                            "description": "The type of time off, such as \"Basic Time Off\" or \"Sick Leave\".",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "The approval status of the time-off request, such as \"Submitted\", \"Approved\", or \"Cancelled\".",
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "description": "The quantity of time-off units requested. Example: \"8\"",
+                                            "type": "string"
+                                        },
+                                        "unit": {
+                                            "description": "The unit of measurement for the time-off quantity, such as \"Days\" or \"Hours\".",
+                                            "type": "string"
+                                        },
+                                        "timeOffEventId": {
+                                            "description": "The Workday time-off event ID associated with this entry. Example: \"827db9d515f610015100b62943010000\"",
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "description": "Optional comment or note attached to the time-off request.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "workerId"],
+                                    "additionalProperties": false
+                                },
+                                "description": "The list of time-off entries for the worker."
+                            },
+                            "nextOffset": {
+                                "description": "The offset to use for the next page of results. Omit if there are no more pages.",
+                                "type": "number"
+                            },
+                            "total": {
+                                "description": "The total number of time-off entries available for this worker.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "Output containing a worker's time-off entries and pagination metadata."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List worker (employee/contingent worker) records.",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_listworkers",
+            "name": "list-workers",
+            "output": ["ActionOutput_workday_refresh_token_listworkers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_listworkers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of workers to return per page. Default is 20, maximum is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "search": {
+                                "description": "Case-insensitive search string to filter workers by name.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input parameters for listing Workday worker records."
+                    },
+                    "ActionOutput_workday_refresh_token_listworkers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The Workday ID of the worker."
+                                        },
+                                        "descriptor": {
+                                            "description": "Display descriptor for the worker, typically the full name.",
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "description": "URL to the full worker resource.",
+                                            "type": "string"
+                                        },
+                                        "primaryWorkEmail": {
+                                            "description": "Primary work email address of the worker.",
+                                            "type": "string"
+                                        },
+                                        "primaryWorkPhone": {
+                                            "description": "Primary work phone number of the worker.",
+                                            "type": "string"
+                                        },
+                                        "isManager": {
+                                            "description": "Whether the worker holds a manager position.",
+                                            "type": "boolean"
+                                        },
+                                        "businessTitle": {
+                                            "description": "Business title of the worker.",
+                                            "type": "string"
+                                        },
+                                        "primarySupervisoryOrganization": {
+                                            "description": "Primary supervisory organization of the worker.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Workday ID of the supervisory organization.",
+                                                    "type": "string"
+                                                },
+                                                "descriptor": {
+                                                    "description": "Display descriptor of the supervisory organization.",
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "description": "URL to the supervisory organization resource.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false,
+                                    "description": "A single Workday worker record."
+                                },
+                                "description": "Array of worker records."
+                            },
+                            "total": {
+                                "description": "Total number of workers available across all pages.",
+                                "type": "number"
+                            },
+                            "nextCursor": {
+                                "description": "Cursor to pass for the next page of results. Omit if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "Output of the list workers action, containing paginated worker records."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a new time-off request for a worker",
+            "endpoint": null,
+            "input": "ActionInput_workday_refresh_token_submittimeoffrequest",
+            "name": "submit-time-off-request",
+            "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_refresh_token_submittimeoffrequest": {
+                        "type": "object",
+                        "properties": {
+                            "worker_id": {
+                                "type": "string",
+                                "description": "Workday ID of the worker submitting the request. Example: \"b8ef48a7f8281005df6b2ecc263b0000\""
+                            },
+                            "time_off_type_id": {
+                                "type": "string",
+                                "description": "Workday ID of the time off type (absence type). Example: \"cf13fdec453b1001a3e7e257d7e90000\""
+                            },
+                            "start_date": {
+                                "type": "string",
+                                "description": "Start date of the time off request in YYYY-MM-DD format. Example: \"2026-08-21\""
+                            },
+                            "end_date": {
+                                "type": "string",
+                                "description": "End date of the time off request in YYYY-MM-DD format. Example: \"2026-08-22\""
+                            },
+                            "daily_quantity": {
+                                "description": "Default quantity for each day in the range. If omitted, defaults to 1.",
+                                "type": "number"
+                            },
+                            "daily_quantities": {
+                                "description": "Per-day quantity overrides. When provided, the quantity for a matching date overrides the default daily_quantity.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "description": "Date of the time off entry in YYYY-MM-DD format. Example: \"2026-08-21\""
+                                        },
+                                        "quantity": {
+                                            "type": "number",
+                                            "description": "Quantity of time off for this date, typically in days or hours depending on the plan. Example: 1"
+                                        }
+                                    },
+                                    "required": ["date", "quantity"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "comment": {
+                                "description": "Optional comment attached to every day in the request. Example: \"Going to a wedding\"",
+                                "type": "string"
+                            },
+                            "reason_id": {
+                                "description": "Optional Workday ID of the absence reason applied to every day. Example: \"a1b08afc53614c37b32b31270bb8bee3\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["worker_id", "time_off_type_id", "start_date", "end_date"],
+                        "additionalProperties": false,
+                        "description": "Input to submit a new time off request for a worker"
+                    },
+                    "ActionOutput_workday_refresh_token_submittimeoffrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Workday ID of the submitted time off request business process."
+                            },
+                            "descriptor": {
+                                "description": "Human-readable description of the submitted request.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Current overall status of the request, such as \"In Progress\" or \"Submitted\".",
+                                "type": "string"
+                            },
+                            "days": {
+                                "description": "Individual day entries created by the request.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Workday ID of the individual time off day entry."
+                                        },
+                                        "date": {
+                                            "description": "Date of the time off entry.",
+                                            "type": "string"
+                                        },
+                                        "daily_quantity": {
+                                            "description": "Quantity of time off for this day.",
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "description": "Comment for this day entry.",
+                                            "type": "string"
+                                        },
+                                        "time_off_type": {
+                                            "description": "Time off type for this day entry.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Workday ID of the time off type.",
+                                                    "type": "string"
+                                                },
+                                                "descriptor": {
+                                                    "description": "Human-readable name of the time off type.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Output of a submitted time off request"
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync organizations (cost centers, companies, regions, supervisory orgs, etc.)",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "organizations",
+            "output": ["Organization"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Organization"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Organization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique stable identifier for the organization"
+                            },
+                            "name": {
+                                "description": "Display name of the organization",
+                                "type": "string"
+                            },
+                            "href": {
+                                "description": "URL to the detailed organization resource in Workday",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "A Workday organization such as a cost center, company, region, or supervisory org"
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync worker (employee/contingent worker) records",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "workers",
+            "output": ["Worker"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Worker"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Worker": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique Workday identifier (WID) for the worker"
+                            },
+                            "descriptor": {
+                                "type": "string",
+                                "description": "Human-readable display name or descriptor of the worker"
+                            },
+                            "href": {
+                                "description": "API hyperlink to the worker resource",
+                                "type": "string"
+                            },
+                            "primaryWorkPhone": {
+                                "description": "Primary work phone number of the worker",
+                                "type": "string"
+                            },
+                            "primaryWorkEmail": {
+                                "description": "Primary work email address of the worker",
+                                "type": "string"
+                            },
+                            "businessTitle": {
+                                "description": "Business title or job title of the worker",
+                                "type": "string"
+                            },
+                            "isManager": {
+                                "description": "Whether the worker holds a manager position",
+                                "type": "boolean"
+                            },
+                            "primarySupervisoryOrganization": {
+                                "description": "Primary supervisory organization the worker belongs to",
+                                "type": "object",
+                                "properties": {
+                                    "descriptor": {
+                                        "description": "Display name of the primary supervisory organization",
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the primary supervisory organization"
+                                    },
+                                    "href": {
+                                        "description": "API hyperlink to the primary supervisory organization resource",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "descriptor"],
+                        "additionalProperties": false,
+                        "description": "Workday worker (employee or contingent worker) record"
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

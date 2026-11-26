@@ -1,0 +1,1673 @@
+{
+    "providerConfigKey": "judgeme-oauth",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new review for a product.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_createreview",
+            "name": "create-review",
+            "output": ["ActionOutput_judgeme_oauth_createreview"],
+            "scopes": ["write_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_createreview", "ActionOutput_judgeme_oauth_createreview"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_createreview": {
+                        "type": "object",
+                        "properties": {
+                            "shop_domain": {
+                                "type": "string",
+                                "description": "Shop domain associated with the review. Example: \"fngeneration.myshopify.com\""
+                            },
+                            "platform": {
+                                "type": "string",
+                                "enum": ["shopify", "woocommerce", "bigcommerce"],
+                                "description": "E-commerce platform. Example: \"shopify\""
+                            },
+                            "reviewer_name": {
+                                "type": "string",
+                                "description": "Display name of the reviewer."
+                            },
+                            "reviewer_email": {
+                                "type": "string",
+                                "description": "Email address of the reviewer."
+                            },
+                            "rating": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5,
+                                "description": "Star rating from 1 to 5."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the review."
+                            },
+                            "body": {
+                                "type": "string",
+                                "description": "Body text of the review."
+                            },
+                            "external_id": {
+                                "type": "string",
+                                "description": "The external (e.g. Shopify) product ID to attach the review to."
+                            }
+                        },
+                        "required": ["shop_domain", "platform", "reviewer_name", "reviewer_email", "rating", "title", "body", "external_id"],
+                        "additionalProperties": false,
+                        "description": "Input for creating a new product review."
+                    },
+                    "ActionOutput_judgeme_oauth_createreview": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Status message from Judge.me indicating the review is being processed."
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false,
+                        "description": "Response confirming the review creation request was accepted."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Register a webhook subscription for a review lifecycle event.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_createwebhook",
+            "name": "create-webhook",
+            "output": ["ActionOutput_judgeme_oauth_createwebhook"],
+            "scopes": ["write_settings"],
+            "usedModels": ["ActionInput_judgeme_oauth_createwebhook", "ActionOutput_judgeme_oauth_createwebhook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "event": {
+                                "type": "string",
+                                "enum": ["review/created", "review/updated", "review/published", "review/unpublished"],
+                                "description": "Review lifecycle event to subscribe to. Example: \"review/created\""
+                            },
+                            "callback_url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The URL Judge.me will POST to when the event occurs."
+                            }
+                        },
+                        "required": ["event", "callback_url"],
+                        "additionalProperties": false,
+                        "description": "Input for creating a Judge.me webhook subscription."
+                    },
+                    "ActionOutput_judgeme_oauth_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "shop_id": {
+                                "type": "number",
+                                "description": "Judge.me internal ID of the shop."
+                            },
+                            "shop_domain": {
+                                "type": "string",
+                                "description": "Domain of the shop the webhook belongs to."
+                            },
+                            "webhook": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number",
+                                        "description": "Judge.me internal ID of the webhook."
+                                    },
+                                    "failure_count": {
+                                        "type": "number",
+                                        "description": "Number of consecutive failed delivery attempts."
+                                    },
+                                    "key": {
+                                        "type": "string",
+                                        "description": "The event key this webhook is subscribed to."
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "The callback URL Judge.me will POST to when the event occurs."
+                                    }
+                                },
+                                "required": ["id", "failure_count", "key", "url"],
+                                "additionalProperties": false,
+                                "description": "The created webhook subscription."
+                            }
+                        },
+                        "required": ["shop_id", "shop_domain", "webhook"],
+                        "additionalProperties": false,
+                        "description": "Output of a created Judge.me webhook subscription."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a webhook subscription by id.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_deletewebhook",
+            "name": "delete-webhook",
+            "output": ["ActionOutput_judgeme_oauth_deletewebhook"],
+            "scopes": ["write_settings"],
+            "usedModels": ["ActionInput_judgeme_oauth_deletewebhook", "ActionOutput_judgeme_oauth_deletewebhook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The Judge.me internal identifier of the webhook subscription to remove. Example: 12345"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input to remove a webhook subscription by its Judge.me id."
+                    },
+                    "ActionOutput_judgeme_oauth_deletewebhook": {
+                        "type": "null",
+                        "description": "Empty response indicating the webhook was removed."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the ready-to-render review widget/badge HTML for one or more products.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_getproductreviewwidget",
+            "name": "get-product-review-widget",
+            "output": ["ActionOutput_judgeme_oauth_getproductreviewwidget"],
+            "scopes": ["read_widgets"],
+            "usedModels": ["ActionInput_judgeme_oauth_getproductreviewwidget", "ActionOutput_judgeme_oauth_getproductreviewwidget"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_getproductreviewwidget": {
+                        "type": "object",
+                        "properties": {
+                            "external_ids": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "External product ID, typically the Shopify product ID. Example: \"10291926270247\""
+                                },
+                                "description": "One or more external product IDs to fetch review widgets for (maximum 100 per call, to stay within the action output size limit)."
+                            }
+                        },
+                        "required": ["external_ids"],
+                        "additionalProperties": false,
+                        "description": "Input for fetching product review widgets."
+                    },
+                    "ActionOutput_judgeme_oauth_getproductreviewwidget": {
+                        "type": "object",
+                        "properties": {
+                            "widgets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "product_external_id": {
+                                            "type": "number",
+                                            "description": "The external product ID that the widget belongs to."
+                                        },
+                                        "widget": {
+                                            "type": "string",
+                                            "description": "XSS-safe, ready-to-render review widget HTML for the product."
+                                        }
+                                    },
+                                    "required": ["product_external_id", "widget"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Review widgets for the requested products, in the same order as the input IDs."
+                            }
+                        },
+                        "required": ["widgets"],
+                        "additionalProperties": false,
+                        "description": "Output containing product review widgets."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch a single product by its Judge.me product id",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_getproduct",
+            "name": "get-product",
+            "output": ["ActionOutput_judgeme_oauth_getproduct"],
+            "scopes": ["read_products"],
+            "usedModels": ["ActionInput_judgeme_oauth_getproduct", "ActionOutput_judgeme_oauth_getproduct"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_getproduct": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal product id. Example: 2117026531"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for fetching a single Judge.me product by its internal id"
+                    },
+                    "ActionOutput_judgeme_oauth_getproduct": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Judge.me internal product id"
+                            },
+                            "external_id": {
+                                "description": "Shopify external product id",
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Product title"
+                            },
+                            "handle": {
+                                "type": "string",
+                                "description": "Product handle"
+                            },
+                            "in_store": {
+                                "type": "boolean",
+                                "description": "Whether the product is available in the store"
+                            },
+                            "path": {
+                                "description": "Product path",
+                                "type": "string"
+                            },
+                            "product_type": {
+                                "type": "string",
+                                "description": "Product type"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Product description"
+                            },
+                            "vendor": {
+                                "type": "string",
+                                "description": "Product vendor"
+                            },
+                            "excluded": {
+                                "type": "boolean",
+                                "description": "Whether the product is excluded from Judge.me"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Product tags"
+                            },
+                            "mpns": {
+                                "description": "Manufacturer part numbers",
+                                "type": "string"
+                            },
+                            "barcodes": {
+                                "description": "Product barcodes",
+                                "type": "string"
+                            },
+                            "skus": {
+                                "description": "Product SKUs",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "lowest_price": {
+                                "description": "Lowest product price",
+                                "type": "string"
+                            },
+                            "highest_price": {
+                                "description": "Highest product price",
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "description": "Full-size product image URL",
+                                "type": "string"
+                            },
+                            "medium_image_url": {
+                                "description": "Medium product image URL",
+                                "type": "string"
+                            },
+                            "small_image_url": {
+                                "description": "Small product image URL",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title", "handle", "in_store", "product_type", "description", "vendor", "excluded", "tags"],
+                        "additionalProperties": false,
+                        "description": "A single Judge.me product"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch a single review by its Judge.me review id.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_getreview",
+            "name": "get-review",
+            "output": ["ActionOutput_judgeme_oauth_getreview"],
+            "scopes": ["read_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_getreview", "ActionOutput_judgeme_oauth_getreview"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_getreview": {
+                        "type": "object",
+                        "properties": {
+                            "review_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The Judge.me review id to fetch. Example: 1306610400"
+                            }
+                        },
+                        "required": ["review_id"],
+                        "additionalProperties": false,
+                        "description": "Input for fetching a single Judge.me review by its id."
+                    },
+                    "ActionOutput_judgeme_oauth_getreview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The unique Judge.me review id."
+                            },
+                            "rating": {
+                                "type": "number",
+                                "description": "The star rating given by the reviewer, typically 1–5."
+                            },
+                            "title": {
+                                "description": "The review title.",
+                                "type": "string"
+                            },
+                            "body": {
+                                "description": "The review body text.",
+                                "type": "string"
+                            },
+                            "reviewer_name": {
+                                "description": "The name of the reviewer.",
+                                "type": "string"
+                            },
+                            "reviewer_email": {
+                                "description": "The email address of the reviewer.",
+                                "type": "string"
+                            },
+                            "product_id": {
+                                "description": "The external product id associated with this review.",
+                                "type": "number"
+                            },
+                            "product_title": {
+                                "description": "The title of the reviewed product.",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp when the review was created."
+                            },
+                            "published": {
+                                "type": "boolean",
+                                "description": "Whether the review is publicly visible."
+                            }
+                        },
+                        "required": ["id", "rating", "created_at", "published"],
+                        "additionalProperties": false,
+                        "description": "A single Judge.me review including rating, content, reviewer, and product details."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch a single reviewer profile by id.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_getreviewer",
+            "name": "get-reviewer",
+            "output": ["ActionOutput_judgeme_oauth_getreviewer"],
+            "scopes": ["read_reviewers"],
+            "usedModels": ["ActionInput_judgeme_oauth_getreviewer", "ActionOutput_judgeme_oauth_getreviewer"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_getreviewer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal ID of the reviewer."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for fetching a single reviewer profile by id."
+                    },
+                    "ActionOutput_judgeme_oauth_getreviewer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Judge.me internal ID of the reviewer."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the reviewer."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the reviewer."
+                            },
+                            "phone": {
+                                "description": "Phone number of the reviewer.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Tags associated with the reviewer.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "accepts_marketing": {
+                                "type": "boolean",
+                                "description": "Whether the reviewer accepts marketing communications."
+                            },
+                            "unsubscribed_at": {
+                                "description": "ISO 8601 timestamp when the reviewer unsubscribed from marketing.",
+                                "type": "string"
+                            },
+                            "external_id": {
+                                "description": "External (Shopify) ID of the reviewer.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "email", "name", "accepts_marketing"],
+                        "additionalProperties": false,
+                        "description": "A single reviewer profile from Judge.me."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch specific named settings for the shop.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_getshopsettings",
+            "name": "get-shop-settings",
+            "output": ["ActionOutput_judgeme_oauth_getshopsettings"],
+            "scopes": ["read_settings"],
+            "usedModels": ["ActionInput_judgeme_oauth_getshopsettings", "ActionOutput_judgeme_oauth_getshopsettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_getshopsettings": {
+                        "type": "object",
+                        "properties": {
+                            "setting_keys": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Non-empty list of setting keys to fetch. Example: [\"widget_theme\", \"badge_position\"]"
+                            }
+                        },
+                        "required": ["setting_keys"],
+                        "additionalProperties": false,
+                        "description": "Input to fetch specific named settings for the shop."
+                    },
+                    "ActionOutput_judgeme_oauth_getshopsettings": {
+                        "type": "object",
+                        "properties": {
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Map of requested setting keys to their values. Unrecognized keys are omitted."
+                            }
+                        },
+                        "required": ["settings"],
+                        "additionalProperties": false,
+                        "description": "Output containing the requested shop settings."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List orders known to Judge.me for this shop within a date range.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_listorders",
+            "name": "list-orders",
+            "output": ["ActionOutput_judgeme_oauth_listorders"],
+            "scopes": ["read_orders"],
+            "usedModels": ["ActionInput_judgeme_oauth_listorders", "ActionOutput_judgeme_oauth_listorders"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_listorders": {
+                        "type": "object",
+                        "properties": {
+                            "start_date": {
+                                "description": "Start of the date range to filter orders, in dd/mm/yyyy format. Example: \"01/01/2024\".",
+                                "type": "string",
+                                "pattern": "^\\d{2}\\/\\d{2}\\/\\d{4}$"
+                            },
+                            "end_date": {
+                                "description": "End of the date range to filter orders, in dd/mm/yyyy format. Example: \"31/01/2024\".",
+                                "type": "string",
+                                "pattern": "^\\d{2}\\/\\d{2}\\/\\d{4}$"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of orders per page. Maximum 100, default 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing orders from Judge.me."
+                    },
+                    "ActionOutput_judgeme_oauth_listorders": {
+                        "type": "object",
+                        "properties": {
+                            "start_date": {
+                                "type": "string",
+                                "description": "Start of the date range covered by this response."
+                            },
+                            "end_date": {
+                                "type": "string",
+                                "description": "End of the date range covered by this response."
+                            },
+                            "current_page": {
+                                "type": "number",
+                                "description": "Current page number returned."
+                            },
+                            "per_page": {
+                                "type": "number",
+                                "description": "Number of orders returned per page."
+                            },
+                            "orders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Order ID."
+                                        },
+                                        "name": {
+                                            "description": "Order name.",
+                                            "type": "string"
+                                        },
+                                        "external_id": {
+                                            "description": "External order ID from the shop platform.",
+                                            "type": ["string", "number"]
+                                        },
+                                        "fulfilled_at": {
+                                            "description": "Date when the order was fulfilled.",
+                                            "type": "string"
+                                        },
+                                        "fulfillment_status": {
+                                            "description": "Fulfillment status of the order.",
+                                            "type": "string"
+                                        },
+                                        "cancelled_at": {
+                                            "description": "Date when the order was cancelled.",
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "description": "Country of the order.",
+                                            "type": "string"
+                                        },
+                                        "reviewer_id": {
+                                            "description": "Reviewer ID associated with the order.",
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "description": "Date when the order was created.",
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "description": "Date when the order was last updated.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of orders known to Judge.me for this shop."
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to try next. Omitted when this page returned fewer results than per_page. The provider does not expose a total count, so a present value means another page is possible, not guaranteed — it may come back empty.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["start_date", "end_date", "current_page", "per_page", "orders"],
+                        "additionalProperties": false,
+                        "description": "Output for listing orders from Judge.me."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List products known to Judge.me for this shop.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_listproducts",
+            "name": "list-products",
+            "output": ["ActionOutput_judgeme_oauth_listproducts"],
+            "scopes": ["read_products"],
+            "usedModels": ["ActionInput_judgeme_oauth_listproducts", "ActionOutput_judgeme_oauth_listproducts"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_listproducts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Page number from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page (max 100, default 10).",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing Judge.me products."
+                    },
+                    "ActionOutput_judgeme_oauth_listproducts": {
+                        "type": "object",
+                        "properties": {
+                            "products": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Judge.me product ID."
+                                        },
+                                        "external_id": {
+                                            "type": "number",
+                                            "description": "Shopify product ID."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Product title."
+                                        },
+                                        "handle": {
+                                            "type": "string",
+                                            "description": "Product handle."
+                                        },
+                                        "in_store": {
+                                            "type": "boolean",
+                                            "description": "Whether the product is available in the store."
+                                        },
+                                        "product_type": {
+                                            "description": "Product type.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Product description.",
+                                            "type": "string"
+                                        },
+                                        "vendor": {
+                                            "description": "Product vendor.",
+                                            "type": "string"
+                                        },
+                                        "excluded": {
+                                            "description": "Whether the product is excluded from Judge.me.",
+                                            "type": "boolean"
+                                        },
+                                        "tags": {
+                                            "description": "Product tags.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "lowest_price": {
+                                            "description": "Lowest product price.",
+                                            "type": "string"
+                                        },
+                                        "highest_price": {
+                                            "description": "Highest product price.",
+                                            "type": "string"
+                                        },
+                                        "image_url": {
+                                            "description": "Product image URL.",
+                                            "type": "string"
+                                        },
+                                        "medium_image_url": {
+                                            "description": "Medium product image URL.",
+                                            "type": "string"
+                                        },
+                                        "small_image_url": {
+                                            "description": "Small product image URL.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "external_id", "title", "handle", "in_store"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of products known to Judge.me for this shop."
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to try next. Omitted when this page returned fewer results than per_page. The provider does not expose a total count, so a present value means another page is possible, not guaranteed — it may come back empty.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["products"],
+                        "additionalProperties": false,
+                        "description": "Output of the list-products action."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List reviews for the shop with optional filters",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_listreviews",
+            "name": "list-reviews",
+            "output": ["ActionOutput_judgeme_oauth_listreviews"],
+            "scopes": ["read_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_listreviews", "ActionOutput_judgeme_oauth_listreviews"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_listreviews": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Page number for offset pagination (starts at 1)",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "per_page": {
+                                "description": "Number of reviews per page (max 100, default 10)",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "rating": {
+                                "description": "Filter reviews by star rating (1-5)",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5
+                            },
+                            "product_id": {
+                                "description": "Filter reviews by Judge.me internal product ID",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "published": {
+                                "description": "Filter reviews by published status",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input parameters for listing reviews"
+                    },
+                    "ActionOutput_judgeme_oauth_listreviews": {
+                        "type": "object",
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Current page number in the paginated result set"
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Number of reviews returned per page"
+                            },
+                            "reviews": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Judge.me internal review ID"
+                                        },
+                                        "title": {
+                                            "description": "Review title",
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "description": "Review body text",
+                                            "type": "string"
+                                        },
+                                        "rating": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 5,
+                                            "description": "Star rating from 1 to 5"
+                                        },
+                                        "product_external_id": {
+                                            "description": "External platform product ID the review belongs to",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "reviewer": {
+                                            "description": "Reviewer who submitted the review",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Judge.me internal reviewer ID"
+                                                },
+                                                "external_id": {
+                                                    "description": "External platform reviewer ID",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "email": {
+                                                    "description": "Reviewer email address",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Reviewer display name",
+                                                    "type": "string"
+                                                },
+                                                "phone": {
+                                                    "description": "Reviewer phone number",
+                                                    "type": "string"
+                                                },
+                                                "accepts_marketing": {
+                                                    "description": "Whether the reviewer accepts marketing emails",
+                                                    "type": "boolean"
+                                                },
+                                                "unsubscribed_at": {
+                                                    "description": "ISO 8601 timestamp when the reviewer unsubscribed",
+                                                    "type": "string"
+                                                },
+                                                "tags": {
+                                                    "description": "Reviewer tags",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "source": {
+                                            "description": "Origin of the review such as web, api, or import",
+                                            "type": "string"
+                                        },
+                                        "curated": {
+                                            "description": "Curation or publish status of the review",
+                                            "type": "string"
+                                        },
+                                        "published": {
+                                            "description": "Whether the review is published",
+                                            "type": "boolean"
+                                        },
+                                        "hidden": {
+                                            "description": "Whether the review is hidden",
+                                            "type": "boolean"
+                                        },
+                                        "verified": {
+                                            "description": "Verification status of the buyer",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the review was created"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the review was last updated"
+                                        },
+                                        "pictures": {
+                                            "description": "Attached pictures with size URLs",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "urls": {
+                                                        "description": "Map of picture size keys to public image URLs",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "rating", "created_at", "updated_at"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of reviews for the current page"
+                            },
+                            "next_page": {
+                                "description": "Page number to try next. Omitted when this page returned fewer results than per_page. The provider does not expose a total count, so a present value means another page is possible, not guaranteed — it may come back empty.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["current_page", "per_page", "reviews"],
+                        "additionalProperties": false,
+                        "description": "Paginated list of reviews for the shop"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhook subscriptions configured for the shop.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_listwebhooks",
+            "name": "list-webhooks",
+            "output": ["ActionOutput_judgeme_oauth_listwebhooks"],
+            "scopes": ["read_settings"],
+            "usedModels": ["ActionInput_judgeme_oauth_listwebhooks", "ActionOutput_judgeme_oauth_listwebhooks"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_listwebhooks": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input required."
+                    },
+                    "ActionOutput_judgeme_oauth_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "shop_id": {
+                                "type": "number",
+                                "description": "Judge.me shop identifier."
+                            },
+                            "shop_domain": {
+                                "type": "string",
+                                "description": "Shop domain registered with Judge.me."
+                            },
+                            "webhooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Judge.me internal ID of the webhook subscription."
+                                        },
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Event type key, for example review/created or review/updated."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "URL where the provider delivers event payloads."
+                                        },
+                                        "failure_count": {
+                                            "type": "number",
+                                            "description": "Number of consecutive failed delivery attempts."
+                                        }
+                                    },
+                                    "required": ["id", "key", "url", "failure_count"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Webhook subscriptions configured for the shop."
+                            }
+                        },
+                        "required": ["shop_id", "shop_domain", "webhooks"],
+                        "additionalProperties": false,
+                        "description": "Webhook subscriptions configured for the shop."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Publish (show) a previously hidden review.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_publishreview",
+            "name": "publish-review",
+            "output": ["ActionOutput_judgeme_oauth_publishreview"],
+            "scopes": ["write_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_publishreview", "ActionOutput_judgeme_oauth_publishreview"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_publishreview": {
+                        "type": "object",
+                        "properties": {
+                            "review_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal review ID to publish. Example: 1306611514"
+                            }
+                        },
+                        "required": ["review_id"],
+                        "additionalProperties": false,
+                        "description": "Input for publishing a previously hidden review."
+                    },
+                    "ActionOutput_judgeme_oauth_publishreview": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Judge.me."
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false,
+                        "description": "Output confirming the review was published."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Post a public reply to a review, shown on the storefront widget.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_replytoreview",
+            "name": "reply-to-review",
+            "output": ["ActionOutput_judgeme_oauth_replytoreview"],
+            "scopes": ["write_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_replytoreview", "ActionOutput_judgeme_oauth_replytoreview"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_replytoreview": {
+                        "type": "object",
+                        "properties": {
+                            "review_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal ID of the review to reply to. Example: 111"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The public reply body text shown on the storefront widget. Example: \"Thanks for the review!\""
+                            },
+                            "send_reply_email": {
+                                "description": "Whether to send an email notification to the reviewer. Defaults to true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["review_id", "content"],
+                        "additionalProperties": false,
+                        "description": "Input for posting a public reply to a Judge.me review."
+                    },
+                    "ActionOutput_judgeme_oauth_replytoreview": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the reply was posted successfully."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Provider confirmation message."
+                            }
+                        },
+                        "required": ["success", "message"],
+                        "additionalProperties": false,
+                        "description": "Output confirming a public reply was posted to a Judge.me review."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Resolve a platform product id to the internal Judge.me product id.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_resolveproductbyexternalid",
+            "name": "resolve-product-by-external-id",
+            "output": ["ActionOutput_judgeme_oauth_resolveproductbyexternalid"],
+            "scopes": ["read_products"],
+            "usedModels": ["ActionInput_judgeme_oauth_resolveproductbyexternalid", "ActionOutput_judgeme_oauth_resolveproductbyexternalid"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_resolveproductbyexternalid": {
+                        "type": "object",
+                        "properties": {
+                            "external_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The external platform product ID to resolve. Example: 10291926270247"
+                            }
+                        },
+                        "required": ["external_id"],
+                        "additionalProperties": false,
+                        "description": "Input for resolving a product by its external platform ID."
+                    },
+                    "ActionOutput_judgeme_oauth_resolveproductbyexternalid": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The internal Judge.me product ID."
+                            },
+                            "external_id": {
+                                "type": "number",
+                                "description": "The external platform product ID that was resolved."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The product title."
+                            },
+                            "handle": {
+                                "type": "string",
+                                "description": "The product handle."
+                            },
+                            "image_url": {
+                                "description": "URL of the product image.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "external_id", "title", "handle"],
+                        "additionalProperties": false,
+                        "description": "The resolved Judge.me product."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a manual review request email for an order.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_sendmanualreviewrequest",
+            "name": "send-manual-review-request",
+            "output": ["ActionOutput_judgeme_oauth_sendmanualreviewrequest"],
+            "scopes": ["write_orders"],
+            "usedModels": ["ActionInput_judgeme_oauth_sendmanualreviewrequest", "ActionOutput_judgeme_oauth_sendmanualreviewrequest"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_sendmanualreviewrequest": {
+                        "type": "object",
+                        "properties": {
+                            "reviewer_name": {
+                                "type": "string",
+                                "description": "Customer name to display in the review request."
+                            },
+                            "reviewer_email": {
+                                "type": "string",
+                                "description": "Customer email address to send the review request to."
+                            },
+                            "shopify_product_id": {
+                                "description": "Shopify product external ID. Provide this or product_handle.",
+                                "type": "string"
+                            },
+                            "product_handle": {
+                                "description": "Product handle slug. Provide this or shopify_product_id.",
+                                "type": "string"
+                            },
+                            "fulfilled_at": {
+                                "type": "string",
+                                "description": "Order fulfillment date in dd/mm/yyyy format."
+                            },
+                            "quantity": {
+                                "description": "Quantity of the purchased product. Defaults to 1.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "processed_at": {
+                                "description": "Date to send the review request in dd/mm/yyyy format. Defaults to fulfilled_at plus the store wait time.",
+                                "type": "string"
+                            },
+                            "order_id": {
+                                "description": "External order ID to associate with the request.",
+                                "type": "string"
+                            },
+                            "order_number": {
+                                "description": "Order number to associate with the request.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["reviewer_name", "reviewer_email", "fulfilled_at"],
+                        "additionalProperties": false,
+                        "description": "Input for sending a manual review request email for an order."
+                    },
+                    "ActionOutput_judgeme_oauth_sendmanualreviewrequest": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the manual review request was queued successfully."
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false,
+                        "description": "Result of sending a manual review request email."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a private email reply to a reviewer instead of posting publicly.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_sendprivatereviewreply",
+            "name": "send-private-review-reply",
+            "output": ["ActionOutput_judgeme_oauth_sendprivatereviewreply"],
+            "scopes": ["write_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_sendprivatereviewreply", "ActionOutput_judgeme_oauth_sendprivatereviewreply"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_sendprivatereviewreply": {
+                        "type": "object",
+                        "properties": {
+                            "email_body": {
+                                "type": "string",
+                                "description": "Body content of the private reply email sent to the reviewer."
+                            },
+                            "email_subject": {
+                                "type": "string",
+                                "description": "Subject line of the private reply email sent to the reviewer."
+                            },
+                            "review_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal ID of the review to reply to."
+                            },
+                            "send_private_email": {
+                                "description": "Whether to send the reply as an email to the reviewer. Defaults to true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["email_body", "email_subject", "review_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_judgeme_oauth_sendprivatereviewreply": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message from the provider."
+                            },
+                            "review_id": {
+                                "type": "number",
+                                "description": "Judge.me internal ID of the review that was replied to."
+                            }
+                        },
+                        "required": ["message", "review_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Hide a published review from the storefront.",
+            "endpoint": null,
+            "input": "ActionInput_judgeme_oauth_unpublishreview",
+            "name": "unpublish-review",
+            "output": ["ActionOutput_judgeme_oauth_unpublishreview"],
+            "scopes": ["write_reviews"],
+            "usedModels": ["ActionInput_judgeme_oauth_unpublishreview", "ActionOutput_judgeme_oauth_unpublishreview"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_judgeme_oauth_unpublishreview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Judge.me internal review ID. Example: 1306611514"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "Input for hiding a published review from the storefront."
+                    },
+                    "ActionOutput_judgeme_oauth_unpublishreview": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Result message from the API indicating the action was performed successfully."
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false,
+                        "description": "Output confirming the review was hidden."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync orders known to Judge.me for the shop.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "orders",
+            "output": ["Order"],
+            "runs": "every hour",
+            "scopes": ["read_orders"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Order"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Order": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The stable Judge.me internal identifier for the order."
+                            },
+                            "name": {
+                                "description": "The human-readable order name or identifier displayed in the shop.",
+                                "type": "string"
+                            },
+                            "fulfilled_at": {
+                                "description": "ISO 8601 timestamp when the order was fulfilled, if available.",
+                                "type": "string"
+                            },
+                            "external_id": {
+                                "description": "The external platform identifier for the order (e.g., Shopify order ID).",
+                                "type": "string"
+                            },
+                            "reviewer_id": {
+                                "description": "The Judge.me internal identifier of the reviewer linked to this order, if any.",
+                                "type": "string"
+                            },
+                            "fulfillment_status": {
+                                "description": "The current fulfillment status of the order (e.g., fulfilled, unfulfilled).",
+                                "type": "string"
+                            },
+                            "cancelled_at": {
+                                "description": "ISO 8601 timestamp when the order was cancelled, if applicable.",
+                                "type": "string"
+                            },
+                            "country": {
+                                "description": "The country code associated with the order.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "An order known to Judge.me for the connected shop."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all products known to Judge.me for the shop.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "products",
+            "output": ["Product"],
+            "runs": "every hour",
+            "scopes": ["read_products"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Product"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Product": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the product in Judge.me."
+                            },
+                            "external_id": {
+                                "description": "The external platform identifier for the product, such as the Shopify product ID.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "The title of the product.",
+                                "type": "string"
+                            },
+                            "handle": {
+                                "description": "The URL-friendly handle of the product.",
+                                "type": "string"
+                            },
+                            "in_store": {
+                                "description": "Whether the product is available in the store.",
+                                "type": "boolean"
+                            },
+                            "product_type": {
+                                "description": "The type or category of the product.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description of the product.",
+                                "type": "string"
+                            },
+                            "vendor": {
+                                "description": "The vendor or brand of the product.",
+                                "type": "string"
+                            },
+                            "excluded": {
+                                "description": "Whether the product is excluded from Judge.me features.",
+                                "type": "boolean"
+                            },
+                            "tags": {
+                                "description": "Tags associated with the product.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "price_min": {
+                                "description": "The minimum price of the product across variants.",
+                                "type": "number"
+                            },
+                            "price_max": {
+                                "description": "The maximum price of the product across variants.",
+                                "type": "number"
+                            },
+                            "images": {
+                                "description": "URLs of product images.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "A product known to Judge.me for the shop."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all reviews for the shop.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "reviews",
+            "output": ["Review"],
+            "runs": "every hour",
+            "scopes": ["read_reviews"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Review"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Review": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the review."
+                            },
+                            "title": {
+                                "description": "Title of the review.",
+                                "type": "string"
+                            },
+                            "body": {
+                                "description": "Body text of the review.",
+                                "type": "string"
+                            },
+                            "rating": {
+                                "description": "Star rating from 1 to 5.",
+                                "type": "number"
+                            },
+                            "pinned": {
+                                "description": "Whether the review is pinned to the top of the product page.",
+                                "type": "boolean"
+                            },
+                            "product_external_id": {
+                                "description": "External (platform) identifier of the reviewed product.",
+                                "type": "number"
+                            },
+                            "product_title": {
+                                "description": "Title of the reviewed product.",
+                                "type": "string"
+                            },
+                            "product_handle": {
+                                "description": "URL handle of the reviewed product.",
+                                "type": "string"
+                            },
+                            "reviewer_id": {
+                                "description": "Judge.me internal identifier of the reviewer.",
+                                "type": "number"
+                            },
+                            "reviewer_name": {
+                                "description": "Name of the reviewer.",
+                                "type": "string"
+                            },
+                            "reviewer_email": {
+                                "description": "Email address of the reviewer.",
+                                "type": "string"
+                            },
+                            "source": {
+                                "description": "Source channel where the review was submitted.",
+                                "type": "string"
+                            },
+                            "published": {
+                                "description": "Whether the review is published and visible.",
+                                "type": "boolean"
+                            },
+                            "hidden": {
+                                "description": "Whether the review is hidden from public display.",
+                                "type": "boolean"
+                            },
+                            "verified": {
+                                "description": "Verification status of the buyer, e.g. \"buyer\", \"nothing\", or \"not_verified\".",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "ISO 8601 timestamp when the review was created.",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "ISO 8601 timestamp when the review was last updated.",
+                                "type": "string"
+                            },
+                            "published_at": {
+                                "description": "ISO 8601 timestamp when the review was published.",
+                                "type": "string"
+                            },
+                            "ip_address": {
+                                "description": "IP address from which the review was submitted.",
+                                "type": "string"
+                            },
+                            "pictures": {
+                                "description": "URLs of pictures attached to the review.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false,
+                        "description": "A product or shop review left by a customer."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

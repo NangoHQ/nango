@@ -1,0 +1,491 @@
+{
+    "providerConfigKey": "tiktok-accounts",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add words to the blocked word list for automatic comment moderation.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_createblockedwords",
+            "name": "create-blocked-words",
+            "output": ["ActionOutput_tiktok_accounts_createblockedwords"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_createblockedwords", "ActionOutput_tiktok_accounts_createblockedwords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_createblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "TikTok ad account advertiser ID. Example: \"7644117588953235464\""
+                            },
+                            "blocked_words": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Words to add to the blocked word list."
+                            }
+                        },
+                        "required": ["advertiser_id", "blocked_words"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_createblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "request_id": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a TikTok user identity (TT_USER) to authorize an account for use in Spark Ads.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_createidentity",
+            "name": "create-identity",
+            "output": ["ActionOutput_tiktok_accounts_createidentity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_createidentity", "ActionOutput_tiktok_accounts_createidentity"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_createidentity": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "Advertiser ID. Example: \"7644117588953235464\""
+                            },
+                            "display_name": {
+                                "type": "string",
+                                "description": "Display name for the identity. Maximum length is 100 characters."
+                            },
+                            "image_uri": {
+                                "description": "image_id of the avatar. Upload via the TikTok image upload endpoint. Width and height ratio must be 1:1.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["advertiser_id", "display_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_createidentity": {
+                        "type": "object",
+                        "properties": {
+                            "identity_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["identity_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove words from the blocked word list.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_deleteblockedwords",
+            "name": "delete-blocked-words",
+            "output": ["ActionOutput_tiktok_accounts_deleteblockedwords"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_deleteblockedwords", "ActionOutput_tiktok_accounts_deleteblockedwords"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_deleteblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "Advertiser ID. Example: \"7644117588953235464\""
+                            },
+                            "blocked_words": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Blocked words to delete. Example: [\"spam\", \"offensive\"]"
+                            }
+                        },
+                        "required": ["advertiser_id", "blocked_words"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_deleteblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "request_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a comment from a TikTok video",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_deletecomment",
+            "name": "delete-comment",
+            "output": ["ActionOutput_tiktok_accounts_deletecomment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_deletecomment", "ActionOutput_tiktok_accounts_deletecomment"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "Advertiser ID. Example: \"7644117588953235464\""
+                            },
+                            "ad_id": {
+                                "type": "string",
+                                "description": "Ad ID. Example: \"123456789\""
+                            },
+                            "tiktok_item_id": {
+                                "type": "string",
+                                "description": "TikTok video/item ID. Example: \"123456789\""
+                            },
+                            "comment_id": {
+                                "type": "string",
+                                "description": "Comment ID to delete. Example: \"123456789\""
+                            },
+                            "identity_type": {
+                                "type": "string",
+                                "description": "Identity type. Enum: AUTH_CODE, TT_USER, CUSTOMIZED_USER, BC_AUTH_TT. Example: \"TT_USER\""
+                            },
+                            "identity_id": {
+                                "type": "string",
+                                "description": "Identity ID. Example: \"123456789\""
+                            }
+                        },
+                        "required": ["advertiser_id", "ad_id", "tiktok_item_id", "comment_id", "identity_type", "identity_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "code": {
+                                "type": "number"
+                            },
+                            "request_id": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a TikTok user identity by identity ID.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_getidentity",
+            "name": "get-identity",
+            "output": ["ActionOutput_tiktok_accounts_getidentity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_getidentity", "ActionOutput_tiktok_accounts_getidentity"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_getidentity": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "TikTok advertiser ID. Example: \"7644117588953235464\""
+                            },
+                            "identity_id": {
+                                "type": "string",
+                                "description": "Identity ID. Example: \"7644635848793210900\""
+                            },
+                            "identity_type": {
+                                "description": "Identity type. Enum values: CUSTOMIZED_USER, AUTH_CODE, TT_USER, BC_AUTH_TT",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["advertiser_id", "identity_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_getidentity": {
+                        "type": "object",
+                        "properties": {
+                            "identity_id": {
+                                "type": "string"
+                            },
+                            "identity_type": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "profile_image": {
+                                "type": "string"
+                            },
+                            "identity_authorized_bc_id": {
+                                "type": "string"
+                            },
+                            "available_status": {
+                                "type": "string"
+                            },
+                            "can_pull_video": {
+                                "type": "boolean"
+                            },
+                            "can_push_video": {
+                                "type": "boolean"
+                            },
+                            "can_use_live_ads": {
+                                "type": "boolean"
+                            },
+                            "can_manage_message": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["identity_id", "identity_type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the blocked word list for automatic comment moderation.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_accounts_listblockedwords",
+            "name": "list-blocked-words",
+            "output": ["ActionOutput_tiktok_accounts_listblockedwords"],
+            "scopes": [],
+            "usedModels": ["ActionInput_tiktok_accounts_listblockedwords", "ActionOutput_tiktok_accounts_listblockedwords"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_accounts_listblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "TikTok advertiser ID. Example: \"7644132249303924753\""
+                            },
+                            "page": {
+                                "description": "Page number for pagination. Defaults to 1.",
+                                "type": "number"
+                            },
+                            "page_size": {
+                                "description": "Number of results per page. Defaults to 10.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["advertiser_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_accounts_listblockedwords": {
+                        "type": "object",
+                        "properties": {
+                            "blocked_words": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "page_info": {
+                                "type": "object",
+                                "properties": {
+                                    "page": {
+                                        "type": "number"
+                                    },
+                                    "page_size": {
+                                        "type": "number"
+                                    },
+                                    "total_number": {
+                                        "type": "number"
+                                    },
+                                    "total_page": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["blocked_words"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync comments on business-owned TikTok videos for moderation and analytics.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/comments"
+                }
+            ],
+            "input": null,
+            "name": "comments",
+            "output": ["Comment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Comment"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Comment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "video_id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "create_time": {
+                                "type": "string"
+                            },
+                            "likes": {
+                                "type": "number"
+                            },
+                            "replies": {
+                                "type": "number"
+                            },
+                            "profile_image": {
+                                "type": "string"
+                            },
+                            "pinned": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "video_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync TikTok user identities (TT_USER) connected to the Business Center or ad account.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/identities"
+                }
+            ],
+            "input": "SyncMetadata_tiktok_accounts_identities",
+            "name": "identities",
+            "output": ["Identity"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Identity", "SyncMetadata_tiktok_accounts_identities"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Identity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable identity ID, usually identity_id"
+                            },
+                            "identity_id": {
+                                "type": "string",
+                                "description": "The provider identity ID"
+                            },
+                            "identity_type": {
+                                "type": "string",
+                                "description": "Enum: AUTH_CODE, TT_USER, BC_AUTH_TT, CUSTOMIZED_USER"
+                            },
+                            "display_name": {
+                                "description": "Display name of the identity",
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "description": "Avatar image URL",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "identity_id", "identity_type"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_tiktok_accounts_identities": {
+                        "type": "object",
+                        "properties": {
+                            "advertiser_id": {
+                                "type": "string",
+                                "description": "TikTok advertiser ID"
+                            }
+                        },
+                        "required": ["advertiser_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

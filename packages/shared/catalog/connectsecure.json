@@ -1,0 +1,1700 @@
+{
+    "providerConfigKey": "connectsecure",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new user account in this tenant.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_connectsecure_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_createuser", "ActionOutput_connectsecure_createuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the new user. Example: \"user@example.com\""
+                            },
+                            "first_name": {
+                                "type": "string",
+                                "description": "First name of the new user."
+                            },
+                            "last_name": {
+                                "type": "string",
+                                "description": "Last name of the new user."
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of role names from the list-roles vocabulary. Example: [\"assetviewer\", \"complianceviewer\"]"
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "Password satisfying the tenant password policy: minimum 8 characters, uppercase, lowercase, number, and symbol."
+                            },
+                            "mobile": {
+                                "description": "Mobile phone number. An empty string is accepted. Example: \"\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["email", "first_name", "last_name", "roles", "password"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "mobile": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get full details for a single asset by id.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_getasset",
+            "name": "get-asset",
+            "output": ["ActionOutput_connectsecure_getasset"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_getasset", "ActionOutput_connectsecure_getasset"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_getasset": {
+                        "type": "object",
+                        "properties": {
+                            "asset_id": {
+                                "type": "string",
+                                "pattern": "^\\d+$",
+                                "description": "Asset ID. Example: \"152060779\""
+                            }
+                        },
+                        "required": ["asset_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_getasset": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single MSP client company by id.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_getcompany",
+            "name": "get-company",
+            "output": ["ActionOutput_connectsecure_getcompany"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_getcompany", "ActionOutput_connectsecure_getcompany"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "company_id": {
+                                "type": "number",
+                                "description": "Company ID. Example: 16637"
+                            }
+                        },
+                        "required": ["company_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "tenant_id": {
+                                "type": "number"
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            },
+                            "is_deleted": {
+                                "type": "boolean"
+                            },
+                            "compliance_scan": {
+                                "type": "boolean"
+                            },
+                            "external_scan": {
+                                "type": "boolean"
+                            },
+                            "internal_scan": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the master list of compliance benchmark checks (e.g. CIS controls) with descriptions and remediation commands.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_getcompliancemaster",
+            "name": "get-compliance-master",
+            "output": ["ActionOutput_connectsecure_getcompliancemaster"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_getcompliancemaster", "ActionOutput_connectsecure_getcompliancemaster"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_getcompliancemaster": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum items per page. Defaults to 5000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_getcompliancemaster": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "check_id": {
+                                            "type": "string"
+                                        },
+                                        "cis_control": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "cis_safeguard": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "cis_title": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "command": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["check_id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the tenant's password complexity policy.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_getpasswordpolicy",
+            "name": "get-password-policy",
+            "output": ["ActionOutput_connectsecure_getpasswordpolicy"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_getpasswordpolicy", "ActionOutput_connectsecure_getpasswordpolicy"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_getpasswordpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "tenant": {
+                                "description": "Tenant ID. If omitted, reads from connection config.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_getpasswordpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "has_lowercase": {
+                                "type": "boolean"
+                            },
+                            "has_number": {
+                                "type": "boolean"
+                            },
+                            "has_symbol": {
+                                "type": "boolean"
+                            },
+                            "has_uppercase": {
+                                "type": "boolean"
+                            },
+                            "min_length": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["has_lowercase", "has_number", "has_symbol", "has_uppercase", "min_length"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List monitoring agents installed across assets in this account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listagents",
+            "name": "list-agents",
+            "output": ["ActionOutput_connectsecure_listagents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listagents", "ActionOutput_connectsecure_listagents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of agents to return per page.",
+                                "type": "number"
+                            },
+                            "sort": {
+                                "description": "Sort expression, e.g. \"host_name ASC\".",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page, if more results are available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users who can act as approvers for a given company.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listapproverusers",
+            "name": "list-approver-users",
+            "output": ["ActionOutput_connectsecure_listapproverusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listapproverusers", "ActionOutput_connectsecure_listapproverusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listapproverusers": {
+                        "type": "object",
+                        "properties": {
+                            "company_id": {
+                                "type": "string",
+                                "description": "Company ID to filter approver users. Example: \"16637\""
+                            }
+                        },
+                        "required": ["company_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listapproverusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_name": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "last_login": {
+                                            "type": "string"
+                                        },
+                                        "created_date": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List discovered assets (endpoints/devices) across this account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listassets",
+            "name": "list-assets",
+            "output": ["ActionOutput_connectsecure_listassets"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listassets", "ActionOutput_connectsecure_listassets"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listassets": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of assets to return per page.",
+                                "type": "number"
+                            },
+                            "condition": {
+                                "description": "SQL-like filter condition. Example: \"id=152060779\"",
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "description": "Sort order for the results.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listassets": {
+                        "type": "object",
+                        "properties": {
+                            "assets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Asset ID. Example: 152060779"
+                                        },
+                                        "company_id": {
+                                            "description": "Company ID. Example: 16637",
+                                            "type": "number"
+                                        },
+                                        "host": {
+                                            "description": "Host name. Example: Victors-MBP",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["assets"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List MSP client companies (tenant-scoped) in this ConnectSecure account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listcompanies",
+            "name": "list-companies",
+            "output": ["ActionOutput_connectsecure_listcompanies"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listcompanies", "ActionOutput_connectsecure_listcompanies"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "condition": {
+                                "description": "SQL-like filter condition. Example: id=16637",
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "description": "Sort order expression",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of rows to return",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company ID. Example: 16637"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "tenant_id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page, if more items exist.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available compliance framework types and the OS/platform variants each supports.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listcompliancetypes",
+            "name": "list-compliance-types",
+            "output": ["ActionOutput_connectsecure_listcompliancetypes"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listcompliancetypes", "ActionOutput_connectsecure_listcompliancetypes"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listcompliancetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listcompliancetypes": {
+                        "type": "object",
+                        "properties": {
+                            "frameworks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "table_name": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["name", "table_name", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["frameworks"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List stored scan/discovery credentials configured for this account",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listcredentials",
+            "name": "list-credentials",
+            "output": ["ActionOutput_connectsecure_listcredentials"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listcredentials", "ActionOutput_connectsecure_listcredentials"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listcredentials": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listcredentials": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List third-party integrations configured or available for this account, including their action/parameter definitions.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listintegrations",
+            "name": "list-integrations",
+            "output": ["ActionOutput_connectsecure_listintegrations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listintegrations", "ActionOutput_connectsecure_listintegrations"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listintegrations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listintegrations": {
+                        "type": "object",
+                        "properties": {
+                            "integrations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "actions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "method": {
+                                                        "type": "string"
+                                                    },
+                                                    "destination": {
+                                                        "type": "string"
+                                                    },
+                                                    "parameters": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": {
+                                                                    "type": "string"
+                                                                },
+                                                                "required": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "default_value": {}
+                                                            },
+                                                            "required": ["name"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "convert_resp": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["name", "method", "destination"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["integrations"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List background jobs (scans, syncs, report generation, etc) run in this account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listjobs",
+            "name": "list-jobs",
+            "output": ["ActionOutput_connectsecure_listjobs"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listjobs", "ActionOutput_connectsecure_listjobs"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listjobs": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of jobs to return. Example: 100",
+                                "type": "number"
+                            },
+                            "sort": {
+                                "description": "Optional sort expression. Example: created_at desc",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listjobs": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List vulnerability/problem severity-group categories used to classify findings.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listproblemgroups",
+            "name": "list-problem-groups",
+            "output": ["ActionOutput_connectsecure_listproblemgroups"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listproblemgroups", "ActionOutput_connectsecure_listproblemgroups"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listproblemgroups": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of items to return per page. Example: 100",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listproblemgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Problem group ID. Example: 1"
+                                        },
+                                        "problem_group_name": {
+                                            "type": "string",
+                                            "description": "Display name of the problem group. Example: \"Critical Vulnerabilities\""
+                                        },
+                                        "problem_group_type": {
+                                            "type": "string",
+                                            "description": "Type classification of the group."
+                                        },
+                                        "severity": {
+                                            "type": "string",
+                                            "description": "Severity level. Example: \"Critical\""
+                                        },
+                                        "sequence": {
+                                            "type": "number",
+                                            "description": "Display sequence order."
+                                        },
+                                        "weightage": {
+                                            "type": "number",
+                                            "description": "Numeric weight assigned to the group."
+                                        }
+                                    },
+                                    "required": ["id", "problem_group_name", "problem_group_type", "severity", "sequence", "weightage"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page, if more items exist.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a summarized, deduplicated view of security problems/vulnerabilities across the account (one row per distinct problem, with aggregate asset/company counts).",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listproblemssummary",
+            "name": "list-problems-summary",
+            "output": ["ActionOutput_connectsecure_listproblemssummary"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listproblemssummary", "ActionOutput_connectsecure_listproblemssummary"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listproblemssummary": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of records to return. Example: 5000",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "sort": {
+                                "description": "Optional sort expression. Example: \"problem_name asc\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listproblemssummary": {
+                        "type": "object",
+                        "properties": {
+                            "problems": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "problem_name": {
+                                            "type": "string"
+                                        },
+                                        "severity": {
+                                            "type": "string"
+                                        },
+                                        "affected_assets": {
+                                            "type": "number"
+                                        },
+                                        "affected_companies": {
+                                            "type": "number"
+                                        },
+                                        "software_name": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["problems", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the fixed vocabulary of assignable user roles.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listroles",
+            "name": "list-roles",
+            "output": ["ActionOutput_connectsecure_listroles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listroles", "ActionOutput_connectsecure_listroles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listroles": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listroles": {
+                        "type": "object",
+                        "properties": {
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["roles"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List global/company-level configuration settings for this account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listsettings",
+            "name": "list-settings",
+            "output": ["ActionOutput_connectsecure_listsettings"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listsettings", "ActionOutput_connectsecure_listsettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listsettings": {
+                        "type": "object",
+                        "properties": {
+                            "condition": {
+                                "description": "SQL-like condition filter. Example: \"id=152060779\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 100",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listsettings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "sub_category": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {},
+                                        "company_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List user accounts in this ConnectSecure tenant.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_connectsecure_listusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listusers", "ActionOutput_connectsecure_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of records to return. Example: 50",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "mobile": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List distinct vulnerabilities (CVEs) detected across assets in this account.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_listvulnerabilities",
+            "name": "list-vulnerabilities",
+            "output": ["ActionOutput_connectsecure_listvulnerabilities"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_listvulnerabilities", "ActionOutput_connectsecure_listvulnerabilities"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_listvulnerabilities": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of items to return. Example: 50",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "condition": {
+                                "description": "SQL-like filter condition. Example: \"base_score>9\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_listvulnerabilities": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "affected_assets": {
+                                            "type": "number"
+                                        },
+                                        "asset_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "base_score": {
+                                            "type": "number"
+                                        },
+                                        "cs_score": {
+                                            "type": "number"
+                                        },
+                                        "cve_id": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "epss_score": {
+                                            "type": "number"
+                                        },
+                                        "severity": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user's assigned roles.",
+            "endpoint": null,
+            "input": "ActionInput_connectsecure_updateuserrole",
+            "name": "update-user-role",
+            "output": ["ActionOutput_connectsecure_updateuserrole"],
+            "scopes": [],
+            "usedModels": ["ActionInput_connectsecure_updateuserrole", "ActionOutput_connectsecure_updateuserrole"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_connectsecure_updateuserrole": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "User ID. Example: \"384670636045300757\""
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Role names to assign. Example: [\"assetviewer\",\"complianceviewer\"]"
+                            },
+                            "included": {
+                                "type": "string",
+                                "description": "Included scope; pass empty string if unused."
+                            },
+                            "excluded": {
+                                "type": "string",
+                                "description": "Excluded scope; pass empty string if unused."
+                            },
+                            "first_name": {
+                                "type": "string",
+                                "description": "User first name."
+                            },
+                            "last_name": {
+                                "type": "string",
+                                "description": "User last name."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "User email address."
+                            }
+                        },
+                        "required": ["user_id", "roles", "included", "excluded", "first_name", "last_name", "email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_connectsecure_updateuserrole": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync monitoring agents installed across assets in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "agents",
+            "output": ["Agent"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Agent"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Agent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "company_id": {
+                                "type": "string"
+                            },
+                            "host_name": {
+                                "type": "string"
+                            },
+                            "agent_type": {
+                                "type": "string"
+                            },
+                            "agent_version": {
+                                "type": "string"
+                            },
+                            "os_name": {
+                                "type": "string"
+                            },
+                            "os_platform": {
+                                "type": "string"
+                            },
+                            "os_version": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            },
+                            "last_reported": {
+                                "type": "string"
+                            },
+                            "last_scanned_time": {
+                                "type": "string"
+                            },
+                            "ip": {
+                                "type": "string"
+                            },
+                            "mac": {
+                                "type": "string"
+                            },
+                            "unique_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync discovered assets (endpoints/devices) across this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "assets",
+            "output": ["Asset"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Asset"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Asset": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync MSP client companies in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "companies",
+            "output": ["Company"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Company"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Company": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync the master list of compliance benchmark checks (e.g. CIS controls).",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "compliance_master",
+            "output": ["ComplianceMasterCheck"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": true,
+            "usedModels": ["ComplianceMasterCheck"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ComplianceMasterCheck": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique check identifier"
+                            },
+                            "cis_control": {
+                                "type": "string"
+                            },
+                            "cis_title": {
+                                "type": "string"
+                            },
+                            "remediation": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the reference list of vulnerability/problem severity-group categories.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "problem_groups",
+            "output": ["ProblemGroup"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ProblemGroup"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ProblemGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "problem_group_name": {
+                                "type": "string"
+                            },
+                            "problem_group_type": {
+                                "type": "string"
+                            },
+                            "problem_group_sub_type": {
+                                "type": "string"
+                            },
+                            "severity": {
+                                "type": "string"
+                            },
+                            "sequence": {
+                                "type": "number"
+                            },
+                            "weightage": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "problem_group_name", "problem_group_type", "severity", "sequence", "weightage"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync user accounts in this tenant.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "user_name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "created_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync distinct vulnerabilities (CVEs) detected across assets in this account",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "vulnerabilities",
+            "output": ["Vulnerability"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Vulnerability"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Vulnerability": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "problem_name": {
+                                "type": "string"
+                            },
+                            "base_score": {
+                                "type": "number"
+                            },
+                            "severity": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "affected_assets": {
+                                "type": "number"
+                            },
+                            "affected_companies": {
+                                "type": "number"
+                            },
+                            "asset_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "epss_score": {
+                                "type": "number"
+                            },
+                            "exploitability_score": {
+                                "type": "number"
+                            },
+                            "impact_score": {
+                                "type": "number"
+                            },
+                            "total_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

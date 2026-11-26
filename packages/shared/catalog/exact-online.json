@@ -1,0 +1,3431 @@
+{
+    "providerConfigKey": "exact-online",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Attach a document/file and optionally link it to a sales invoice",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_attachfileinvoice",
+            "name": "attach-file-invoice",
+            "output": ["ActionOutput_exact_online_attachfileinvoice"],
+            "scopes": ["documents"],
+            "usedModels": ["ActionInput_exact_online_attachfileinvoice", "ActionOutput_exact_online_attachfileinvoice"],
+            "version": "3.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_attachfileinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "subject": {
+                                "type": "string",
+                                "description": "Document subject. Example: \"Invoice attachment\""
+                            },
+                            "documentDate": {
+                                "type": "string",
+                                "description": "Document date in ISO format. Example: \"2024-05-30\""
+                            },
+                            "account": {
+                                "type": "string",
+                                "description": "Customer account GUID. Example: \"a58c29d9-ef92-40f1-b817-31b36990898c\""
+                            },
+                            "type": {
+                                "type": "number",
+                                "description": "Document type number. Example: 10"
+                            },
+                            "fileName": {
+                                "type": "string",
+                                "description": "Name of the file being attached. Example: \"invoice.pdf\""
+                            },
+                            "fileContent": {
+                                "type": "string",
+                                "description": "Base64-encoded file content. Example: \"JVBERi0xLjQKJ...\""
+                            },
+                            "invoiceId": {
+                                "description": "Sales invoice GUID to link this document to. Example: \"7b282ae4-d920-46b0-87fd-3da21b818780\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["subject", "documentDate", "account", "type", "fileName", "fileContent"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_attachfileinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "documentId": {
+                                "type": "string",
+                                "description": "Created document ID."
+                            }
+                        },
+                        "required": ["documentId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new contact linked to an account",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/create-contact"
+            },
+            "input": "ActionInput_exact_online_createcontact",
+            "name": "create-contact",
+            "output": ["ActionOutput_exact_online_createcontact"],
+            "scopes": ["crm.Contacts"],
+            "usedModels": ["ActionInput_exact_online_createcontact", "ActionOutput_exact_online_createcontact"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "account": {
+                                "type": "string",
+                                "description": "Exact Online account GUID. Example: \"11acd652-4496-48e0-a189-e0045cc206e3\""
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "Contact first name"
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Contact last name"
+                            },
+                            "email": {
+                                "description": "Contact email address",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Business phone number",
+                                "type": "string"
+                            },
+                            "businessMobile": {
+                                "description": "Business mobile number",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["account", "firstName", "lastName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "businessMobile": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new customer/account in Exact Online.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/create-customer"
+            },
+            "input": "ActionInput_exact_online_createcustomer",
+            "name": "create-customer",
+            "output": ["ActionOutput_exact_online_createcustomer"],
+            "scopes": ["crm.Accounts"],
+            "usedModels": ["ActionInput_exact_online_createcustomer", "ActionOutput_exact_online_createcustomer"],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "Name": {
+                                "type": "string",
+                                "description": "Account name. Example: \"Acme Corp\""
+                            },
+                            "Status": {
+                                "description": "Account status: C=Customer, S=Supplier",
+                                "type": "string",
+                                "enum": ["C", "S"]
+                            },
+                            "Email": {
+                                "description": "Email address",
+                                "type": "string"
+                            },
+                            "Phone": {
+                                "description": "Phone number",
+                                "type": "string"
+                            },
+                            "City": {
+                                "description": "City",
+                                "type": "string"
+                            },
+                            "Country": {
+                                "description": "Country code",
+                                "type": "string"
+                            },
+                            "VATNumber": {
+                                "description": "VAT number",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["Name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "vat_number": {
+                                "type": "string"
+                            },
+                            "is_sales": {
+                                "type": "boolean"
+                            },
+                            "is_purchase": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new sales invoice.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/create-invoice"
+            },
+            "input": "ActionInput_exact_online_createinvoice",
+            "name": "create-invoice",
+            "output": ["ActionOutput_exact_online_createinvoice"],
+            "scopes": ["SalesInvoices"],
+            "usedModels": ["ActionInput_exact_online_createinvoice", "ActionOutput_exact_online_createinvoice"],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "ordered_by": {
+                                "type": "string",
+                                "description": "Customer account GUID. Example: a58c29d9-ef92-40f1-b817-31b36990898c"
+                            },
+                            "invoice_date": {
+                                "description": "Invoice date in ISO format. Example: 2024-05-30",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Invoice description",
+                                "type": "string"
+                            },
+                            "warehouse": {
+                                "description": "Warehouse GUID. Tenant-specific, omit if not applicable.",
+                                "type": "string"
+                            },
+                            "sales_invoice_lines": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "item": {
+                                            "description": "Item GUID",
+                                            "type": "string"
+                                        },
+                                        "gl_account": {
+                                            "description": "GL Account GUID",
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "net_price": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "vat_code": {
+                                            "description": "VAT code. Example: VN",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["quantity", "net_price"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["ordered_by", "sales_invoice_lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "invoice_number": {
+                                "type": "number"
+                            },
+                            "ordered_by": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "invoice_date": {
+                                "type": "string"
+                            },
+                            "sales_invoice_lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "item": {
+                                            "type": "string"
+                                        },
+                                        "gl_account": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "net_price": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new item/product",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_createitem",
+            "name": "create-item",
+            "output": ["ActionOutput_exact_online_createitem"],
+            "scopes": ["Items"],
+            "usedModels": ["ActionInput_exact_online_createitem", "ActionOutput_exact_online_createitem"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createitem": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "description": "Item code. Example: \"NEW-ITEM-001\""
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Item description. Example: \"New product item\""
+                            },
+                            "itemGroup": {
+                                "type": "string",
+                                "description": "Item group GUID. Example: \"e54a5a52-21b7-4ce5-80ed-976b2100c02b\""
+                            },
+                            "isSalesItem": {
+                                "description": "Whether this item is a sales item.",
+                                "type": "boolean"
+                            },
+                            "isPurchaseItem": {
+                                "description": "Whether this item is a purchase item.",
+                                "type": "boolean"
+                            },
+                            "costPriceStandard": {
+                                "description": "Standard cost price. Example: 10.5",
+                                "type": "number"
+                            },
+                            "salesVatCode": {
+                                "description": "Sales VAT code. Example: \"VN\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "description", "itemGroup"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "itemGroup": {
+                                "type": "string"
+                            },
+                            "isSalesItem": {
+                                "type": "boolean"
+                            },
+                            "isPurchaseItem": {
+                                "type": "boolean"
+                            },
+                            "costPriceStandard": {
+                                "type": "number"
+                            },
+                            "salesVatCode": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new purchase invoice/entry",
+            "endpoint": {
+                "path": "/actions/create-purchase-invoice",
+                "method": "POST"
+            },
+            "input": "ActionInput_exact_online_createpurchaseinvoice",
+            "name": "create-purchase-invoice",
+            "output": ["ActionOutput_exact_online_createpurchaseinvoice"],
+            "scopes": ["purchaseentry.PurchaseEntries"],
+            "usedModels": ["ActionInput_exact_online_createpurchaseinvoice", "ActionOutput_exact_online_createpurchaseinvoice"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createpurchaseinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "journalCode": {
+                                "type": "string",
+                                "description": "Journal code for purchase entries. Example: \"60\""
+                            },
+                            "supplierId": {
+                                "type": "string",
+                                "description": "Supplier account ID. Example: \"454a5d46-ee70-4ed1-9375-9cfedeb138cd\""
+                            },
+                            "entryDate": {
+                                "type": "string",
+                                "description": "Entry date in ISO format YYYY-MM-DD. Example: \"2024-05-30\""
+                            },
+                            "description": {
+                                "description": "Entry description",
+                                "type": "string"
+                            },
+                            "paymentTermId": {
+                                "description": "Payment term ID",
+                                "type": "string"
+                            },
+                            "purchaseEntryLines": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "glAccountId": {
+                                            "type": "string",
+                                            "description": "GL Account ID. Example: \"74752c10-3d31-4725-a66d-001edba8c47f\""
+                                        },
+                                        "amountDc": {
+                                            "type": "number",
+                                            "description": "Amount in default currency. Positive for debit, negative for credit."
+                                        },
+                                        "vatCode": {
+                                            "type": "string",
+                                            "description": "VAT Code string. Example: \"AB\""
+                                        },
+                                        "description": {
+                                            "description": "Line description",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["glAccountId", "amountDc", "vatCode"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Purchase entry lines"
+                            }
+                        },
+                        "required": ["journalCode", "supplierId", "entryDate", "purchaseEntryLines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createpurchaseinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "entryId": {
+                                "description": "The created purchase entry ID",
+                                "type": "string"
+                            },
+                            "id": {
+                                "description": "The created purchase entry ID (alias)",
+                                "type": "string"
+                            },
+                            "entryNumber": {
+                                "description": "The assigned entry number",
+                                "type": "number"
+                            },
+                            "journal": {
+                                "description": "Journal code",
+                                "type": "string"
+                            },
+                            "supplier": {
+                                "description": "Supplier account ID",
+                                "type": "string"
+                            },
+                            "entryDate": {
+                                "description": "Entry date",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Entry description",
+                                "type": "string"
+                            },
+                            "paymentTerm": {
+                                "description": "Payment term ID",
+                                "type": "string"
+                            },
+                            "purchaseEntryLines": {
+                                "description": "Purchase entry lines",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Line ID",
+                                            "type": "string"
+                                        },
+                                        "glAccount": {
+                                            "description": "GL Account ID",
+                                            "type": "string"
+                                        },
+                                        "amountDc": {
+                                            "description": "Amount in default currency",
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "description": "VAT Code string",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Line description",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new sales order",
+            "endpoint": {
+                "path": "/actions/create-sales-order",
+                "method": "POST"
+            },
+            "input": "ActionInput_exact_online_createsalesorder",
+            "name": "create-sales-order",
+            "output": ["ActionOutput_exact_online_createsalesorder"],
+            "scopes": ["Sales orders"],
+            "usedModels": ["ActionInput_exact_online_createsalesorder", "ActionOutput_exact_online_createsalesorder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_createsalesorder": {
+                        "type": "object",
+                        "properties": {
+                            "OrderedBy": {
+                                "type": "string",
+                                "description": "Customer account GUID. Example: \"a58c29d9-ef92-40f1-b817-31b36990898c\""
+                            },
+                            "SalesOrderLines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Item": {
+                                            "type": "string",
+                                            "description": "Item GUID. Example: \"61facaed-0389-4183-bf67-ac1c179e1050\""
+                                        },
+                                        "Quantity": {
+                                            "type": "number",
+                                            "description": "Quantity. Example: 1"
+                                        },
+                                        "NetPrice": {
+                                            "type": "number",
+                                            "description": "Net price. Example: 100.00"
+                                        }
+                                    },
+                                    "required": ["Item", "Quantity", "NetPrice"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Sales order lines"
+                            },
+                            "OrderDate": {
+                                "description": "Order date. Defaults to today if omitted. Example: \"2024-05-30\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["OrderedBy", "SalesOrderLines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_createsalesorder": {
+                        "type": "object",
+                        "properties": {
+                            "OrderID": {
+                                "type": "string"
+                            },
+                            "OrderedBy": {
+                                "type": "string"
+                            },
+                            "OrderDate": {
+                                "type": "string"
+                            },
+                            "SalesOrderLines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Item": {
+                                            "type": "string"
+                                        },
+                                        "Quantity": {
+                                            "type": "number"
+                                        },
+                                        "NetPrice": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a contact by ID",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_deletecontact",
+            "name": "delete-contact",
+            "output": ["ActionOutput_exact_online_deletecontact"],
+            "scopes": ["Crm.Contacts"],
+            "usedModels": ["ActionInput_exact_online_deletecontact", "ActionOutput_exact_online_deletecontact"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_deletecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Contact ID to delete. Example: \"eee35efb-2d64-4682-9642-c6ae745bb8ce\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_deletecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a customer/account by ID.",
+            "endpoint": {
+                "path": "/actions/delete-customer",
+                "method": "POST"
+            },
+            "input": "ActionInput_exact_online_deletecustomer",
+            "name": "delete-customer",
+            "output": ["ActionOutput_exact_online_deletecustomer"],
+            "scopes": ["Crm.Accounts"],
+            "usedModels": ["ActionInput_exact_online_deletecustomer", "ActionOutput_exact_online_deletecustomer"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_deletecustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Exact Online Account ID (GUID). Example: \"2a64d87a-5e60-442a-84f0-2dff86e9d706\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_deletecustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an item/product by ID.",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_deleteitem",
+            "name": "delete-item",
+            "output": ["ActionOutput_exact_online_deleteitem"],
+            "scopes": ["Items"],
+            "usedModels": ["ActionInput_exact_online_deleteitem", "ActionOutput_exact_online_deleteitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_deleteitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"1c0a1580-8e05-4c9d-a898-0148d213d8ec\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_deleteitem": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single CRM account by ID.",
+            "endpoint": {
+                "path": "/actions/get-account",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_getaccount",
+            "name": "get-account",
+            "output": ["ActionOutput_exact_online_getaccount"],
+            "scopes": ["crm.Accounts"],
+            "usedModels": ["ActionInput_exact_online_getaccount", "ActionOutput_exact_online_getaccount"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_getaccount": {
+                        "type": "object",
+                        "properties": {
+                            "account_id": {
+                                "type": "string",
+                                "description": "Account ID. Example: \"a58c29d9-ef92-40f1-b817-31b36990898c\""
+                            }
+                        },
+                        "required": ["account_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_getaccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "is_sales": {
+                                "type": "boolean"
+                            },
+                            "is_purchase": {
+                                "type": "boolean"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address_line1": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "postcode": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "vat_number": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single contact by ID",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-contact"
+            },
+            "input": "ActionInput_exact_online_getcontact",
+            "name": "get-contact",
+            "output": ["ActionOutput_exact_online_getcontact"],
+            "scopes": ["crm.Contacts"],
+            "usedModels": ["ActionInput_exact_online_getcontact", "ActionOutput_exact_online_getcontact"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_getcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The GUID of the contact to retrieve"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_getcontact": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the current authenticated user and their active division.",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_getcurrentuser",
+            "name": "get-current-user",
+            "output": ["ActionOutput_exact_online_getcurrentuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exact_online_getcurrentuser", "ActionOutput_exact_online_getcurrentuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "current_division": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "full_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["current_division", "user_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single sales invoice by ID.",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_getsalesinvoice",
+            "name": "get-sales-invoice",
+            "output": ["ActionOutput_exact_online_getsalesinvoice"],
+            "scopes": ["SalesInvoices"],
+            "usedModels": ["ActionInput_exact_online_getsalesinvoice", "ActionOutput_exact_online_getsalesinvoice"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_getsalesinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The InvoiceID of the sales invoice. Example: \"7b282ae4-d920-46b0-87fd-3da21b818780\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_getsalesinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "InvoiceID": {
+                                "type": ["string", "null"]
+                            },
+                            "InvoiceNumber": {
+                                "type": ["number", "null"]
+                            },
+                            "InvoiceDate": {
+                                "type": ["string", "null"]
+                            },
+                            "DueDate": {
+                                "type": ["string", "null"]
+                            },
+                            "Status": {
+                                "type": ["number", "null"]
+                            },
+                            "AmountDC": {
+                                "type": ["number", "null"]
+                            },
+                            "AmountFC": {
+                                "type": ["number", "null"]
+                            },
+                            "Currency": {
+                                "type": ["string", "null"]
+                            },
+                            "Description": {
+                                "type": ["string", "null"]
+                            },
+                            "Journal": {
+                                "type": ["string", "null"]
+                            },
+                            "OrderNumber": {
+                                "type": ["number", "null"]
+                            },
+                            "Type": {
+                                "type": ["number", "null"]
+                            },
+                            "Modified": {
+                                "type": ["string", "null"]
+                            },
+                            "Created": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List CRM accounts (customers and/or suppliers)",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/list-accounts"
+            },
+            "input": "ActionInput_exact_online_listaccounts",
+            "name": "list-accounts",
+            "output": ["ActionOutput_exact_online_listaccounts"],
+            "scopes": ["crm.Accounts"],
+            "usedModels": ["ActionInput_exact_online_listaccounts", "ActionOutput_exact_online_listaccounts"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "description": "Account status filter: C=Customer, S=Supplier, A=Both",
+                                "type": "string",
+                                "enum": ["C", "S", "A"]
+                            },
+                            "limit": {
+                                "description": "Max records per page (1-1000)",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skip value) from previous response",
+                                "type": "string"
+                            },
+                            "modified_after": {
+                                "description": "ISO 8601 date string for incremental sync filter",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "is_sales": {
+                                            "type": "boolean"
+                                        },
+                                        "is_purchase": {
+                                            "type": "boolean"
+                                        },
+                                        "address_line1": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List CRM contacts.",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_listcontacts",
+            "name": "list-contacts",
+            "output": ["ActionOutput_exact_online_listcontacts"],
+            "scopes": ["crm.Contacts"],
+            "usedModels": ["ActionInput_exact_online_listcontacts", "ActionOutput_exact_online_listcontacts"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of contacts to return per page. Default: 60.",
+                                "type": "number"
+                            },
+                            "modifiedSince": {
+                                "description": "ISO 8601 timestamp to filter contacts modified after this date.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "Account": {
+                                            "type": "string"
+                                        },
+                                        "FullName": {
+                                            "type": "string"
+                                        },
+                                        "FirstName": {
+                                            "type": "string"
+                                        },
+                                        "LastName": {
+                                            "type": "string"
+                                        },
+                                        "Email": {
+                                            "type": "string"
+                                        },
+                                        "Phone": {
+                                            "type": "string"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all divisions/administrations accessible to the authenticated user.",
+            "endpoint": {
+                "path": "/actions/list-divisions",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listdivisions",
+            "name": "list-divisions",
+            "output": ["ActionOutput_exact_online_listdivisions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_exact_online_listdivisions", "ActionOutput_exact_online_listdivisions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listdivisions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listdivisions": {
+                        "type": "object",
+                        "properties": {
+                            "divisions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Code": {
+                                            "type": "number"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "Currency": {
+                                            "type": "string"
+                                        },
+                                        "Country": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["Code"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["divisions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List document attachment metadata.",
+            "endpoint": {
+                "path": "/actions/list-document-attachments",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listdocumentattachments",
+            "name": "list-document-attachments",
+            "output": ["ActionOutput_exact_online_listdocumentattachments"],
+            "scopes": ["documents"],
+            "usedModels": ["ActionInput_exact_online_listdocumentattachments", "ActionOutput_exact_online_listdocumentattachments"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listdocumentattachments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listdocumentattachments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "Document": {
+                                            "type": "string"
+                                        },
+                                        "FileName": {
+                                            "type": "string"
+                                        },
+                                        "FileSize": {
+                                            "type": "number"
+                                        },
+                                        "Url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List documents (invoice PDFs, attachments)",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-documents"
+            },
+            "input": "ActionInput_exact_online_listdocuments",
+            "name": "list-documents",
+            "output": ["ActionOutput_exact_online_listdocuments"],
+            "scopes": ["documents"],
+            "usedModels": ["ActionInput_exact_online_listdocuments", "ActionOutput_exact_online_listdocuments"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response ($skiptoken). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "modified_after": {
+                                "description": "ISO 8601 timestamp to filter documents modified after this date. Example: 2024-05-30T00:00:00Z",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string",
+                                            "description": "Document ID. Example: c9a8297e-61a3-4adc-bc17-167e5a7f45c5"
+                                        },
+                                        "Subject": {
+                                            "description": "Document subject",
+                                            "type": "string"
+                                        },
+                                        "DocumentDate": {
+                                            "description": "Document date. Example: 2024-05-30",
+                                            "type": "string"
+                                        },
+                                        "Modified": {
+                                            "description": "Last modified timestamp. Example: 2024-05-30T12:00:00Z",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page. Pass as cursor on the next call.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List financial transaction headers.",
+            "endpoint": {
+                "path": "/actions/list-financial-transactions",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listfinancialtransactions",
+            "name": "list-financial-transactions",
+            "output": ["ActionOutput_exact_online_listfinancialtransactions"],
+            "scopes": ["FinancialTransactions"],
+            "usedModels": ["ActionInput_exact_online_listfinancialtransactions", "ActionOutput_exact_online_listfinancialtransactions"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listfinancialtransactions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of items to return per page. Default: 100.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listfinancialtransactions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "EntryID": {
+                                            "type": "string",
+                                            "description": "Unique entry ID. Example: \"2ab359f3-0042-4e57-b829-d7d7cc84d1ea\""
+                                        },
+                                        "EntryNumber": {
+                                            "type": "number"
+                                        },
+                                        "Date": {
+                                            "type": "string"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        },
+                                        "JournalCode": {
+                                            "type": "string"
+                                        },
+                                        "JournalDescription": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "number"
+                                        },
+                                        "Type": {
+                                            "type": "number"
+                                        },
+                                        "TypeDescription": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["EntryID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List general ledger accounts.",
+            "endpoint": {
+                "path": "/actions/list-gl-accounts",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listglaccounts",
+            "name": "list-gl-accounts",
+            "output": ["ActionOutput_exact_online_listglaccounts"],
+            "scopes": ["financial"],
+            "usedModels": ["ActionInput_exact_online_listglaccounts", "ActionOutput_exact_online_listglaccounts"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listglaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip value). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of items to return. Defaults to 100.",
+                                "type": "number"
+                            },
+                            "modified_after": {
+                                "description": "ISO 8601 datetime to filter accounts modified after this date. Example: '2024-01-01T00:00:00Z'",
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})?)?$"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listglaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "Code": {
+                                            "type": "string"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List logistics item groups.",
+            "endpoint": {
+                "path": "/actions/list-item-groups",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listitemgroups",
+            "name": "list-item-groups",
+            "output": ["ActionOutput_exact_online_listitemgroups"],
+            "scopes": ["Items"],
+            "usedModels": ["ActionInput_exact_online_listitemgroups", "ActionOutput_exact_online_listitemgroups"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listitemgroups": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor ($skip value). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listitemgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "Code": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "Description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "Modified": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List logistics items/products.",
+            "endpoint": {
+                "path": "/actions/list-items",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listitems",
+            "name": "list-items",
+            "output": ["ActionOutput_exact_online_listitems"],
+            "scopes": ["Items"],
+            "usedModels": ["ActionInput_exact_online_listitems", "ActionOutput_exact_online_listitems"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listitems": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listitems": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "Code": {
+                                            "type": "string"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "ItemGroup": {
+                                            "type": "string"
+                                        },
+                                        "IsSalesItem": {
+                                            "type": "boolean"
+                                        },
+                                        "IsPurchaseItem": {
+                                            "type": "boolean"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List financial journals",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-journals"
+            },
+            "input": "ActionInput_exact_online_listjournals",
+            "name": "list-journals",
+            "output": ["ActionOutput_exact_online_listjournals"],
+            "scopes": ["financial"],
+            "usedModels": ["ActionInput_exact_online_listjournals", "ActionOutput_exact_online_listjournals"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listjournals": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor ($skip value) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listjournals": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "code"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List outgoing payments from the cashflow module.",
+            "endpoint": {
+                "path": "/actions/list-payments",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listpayments",
+            "name": "list-payments",
+            "output": ["ActionOutput_exact_online_listpayments"],
+            "scopes": ["Financial cashflow"],
+            "usedModels": ["ActionInput_exact_online_listpayments", "ActionOutput_exact_online_listpayments"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listpayments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listpayments": {
+                        "type": "object",
+                        "properties": {
+                            "Items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                        },
+                                        "Account": {
+                                            "type": "string"
+                                        },
+                                        "AccountName": {
+                                            "type": "string"
+                                        },
+                                        "AmountDC": {
+                                            "type": "number"
+                                        },
+                                        "EntryDate": {
+                                            "type": "string"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "PaymentReference": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "NextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["Items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List purchase invoice entries.",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_listpurchaseinvoices",
+            "name": "list-purchase-invoices",
+            "output": ["ActionOutput_exact_online_listpurchaseinvoices"],
+            "scopes": ["purchaseentry.PurchaseEntries"],
+            "usedModels": ["ActionInput_exact_online_listpurchaseinvoices", "ActionOutput_exact_online_listpurchaseinvoices"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listpurchaseinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listpurchaseinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "EntryID": {
+                                            "type": "string"
+                                        },
+                                        "EntryNumber": {
+                                            "type": "number"
+                                        },
+                                        "Supplier": {
+                                            "type": "string"
+                                        },
+                                        "AmountDC": {
+                                            "type": "number"
+                                        },
+                                        "EntryDate": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "number"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["EntryID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sales invoices",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-sales-invoices"
+            },
+            "input": "ActionInput_exact_online_listsalesinvoices",
+            "name": "list-sales-invoices",
+            "output": ["ActionOutput_exact_online_listsalesinvoices"],
+            "scopes": ["salesinvoices"],
+            "usedModels": ["ActionInput_exact_online_listsalesinvoices", "ActionOutput_exact_online_listsalesinvoices"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listsalesinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor ($skip value) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "modified_after": {
+                                "description": "Filter invoices modified after this ISO 8601 timestamp. Example: 2024-05-30T00:00:00Z",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listsalesinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "InvoiceID": {
+                                            "type": "string",
+                                            "description": "Invoice ID. Example: 7b282ae4-d920-46b0-87fd-3da21b818780"
+                                        },
+                                        "InvoiceNumber": {
+                                            "description": "Invoice number. Example: 24700006",
+                                            "type": ["number", "null"]
+                                        },
+                                        "OrderedBy": {
+                                            "description": "Customer account GUID. Example: a58c29d9-ef92-40f1-b817-31b36990898c",
+                                            "type": ["string", "null"]
+                                        },
+                                        "AmountDC": {
+                                            "description": "Invoice amount in default currency",
+                                            "type": ["number", "null"]
+                                        },
+                                        "Status": {
+                                            "description": "Invoice status. 20=Open, 50=Processed/Posted",
+                                            "type": ["number", "null"]
+                                        },
+                                        "Modified": {
+                                            "description": "Last modified timestamp. Example: 2024-05-30T12:00:00Z",
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["InvoiceID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Pagination cursor for the next page. Omit if this is the last page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sales orders.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-sales-orders"
+            },
+            "input": "ActionInput_exact_online_listsalesorders",
+            "name": "list-sales-orders",
+            "output": ["ActionOutput_exact_online_listsalesorders"],
+            "scopes": ["SalesOrders"],
+            "usedModels": ["ActionInput_exact_online_listsalesorders", "ActionOutput_exact_online_listsalesorders"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listsalesorders": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of results per page. Default: 50.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "modifiedAfter": {
+                                "description": "ISO 8601 timestamp to filter orders modified after this date. Example: \"2024-01-01T00:00:00Z\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listsalesorders": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "OrderID": {
+                                            "type": "string"
+                                        },
+                                        "OrderNumber": {
+                                            "type": "number"
+                                        },
+                                        "OrderedBy": {
+                                            "type": "string"
+                                        },
+                                        "AmountDC": {
+                                            "type": "number"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["OrderID"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "NextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List financial transaction line details including amounts.",
+            "endpoint": {
+                "path": "/actions/list-transaction-lines",
+                "method": "GET"
+            },
+            "input": "ActionInput_exact_online_listtransactionlines",
+            "name": "list-transaction-lines",
+            "output": ["ActionOutput_exact_online_listtransactionlines"],
+            "scopes": ["FinancialTransactions"],
+            "usedModels": ["ActionInput_exact_online_listtransactionlines", "ActionOutput_exact_online_listtransactionlines"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listtransactionlines": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip value) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of records to return. Defaults to 100.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "entryId": {
+                                "description": "Filter transaction lines by a specific EntryID (UUID). Example: \"2ab359f3-0042-4e57-b829-d7d7cc84d1ea\"",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listtransactionlines": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ID": {
+                                            "type": "string"
+                                        },
+                                        "EntryID": {
+                                            "type": "string"
+                                        },
+                                        "AmountDC": {
+                                            "type": "number"
+                                        },
+                                        "GLAccount": {
+                                            "type": "string"
+                                        },
+                                        "GLAccountCode": {
+                                            "type": "string"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "VATCode": {
+                                            "type": "string"
+                                        },
+                                        "Modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["ID", "EntryID", "AmountDC"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List VAT/tax codes.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-vat-codes"
+            },
+            "input": "ActionInput_exact_online_listvatcodes",
+            "name": "list-vat-codes",
+            "output": ["ActionOutput_exact_online_listvatcodes"],
+            "scopes": ["financial"],
+            "usedModels": ["ActionInput_exact_online_listvatcodes", "ActionOutput_exact_online_listvatcodes"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_listvatcodes": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (skip offset). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_listvatcodes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "modified": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing contact.",
+            "endpoint": {
+                "path": "/actions/update-contact",
+                "method": "POST"
+            },
+            "input": "ActionInput_exact_online_updatecontact",
+            "name": "update-contact",
+            "output": ["ActionOutput_exact_online_updatecontact"],
+            "scopes": ["crm.contacts"],
+            "usedModels": ["ActionInput_exact_online_updatecontact", "ActionOutput_exact_online_updatecontact"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Contact ID. Example: \"da03b498-41d7-481c-b598-4364d09c907c\""
+                            },
+                            "firstName": {
+                                "description": "First name of the contact.",
+                                "type": ["string", "null"]
+                            },
+                            "lastName": {
+                                "description": "Last name of the contact.",
+                                "type": ["string", "null"]
+                            },
+                            "email": {
+                                "description": "Email address of the contact.",
+                                "type": ["string", "null"]
+                            },
+                            "phone": {
+                                "description": "Phone number of the contact.",
+                                "type": ["string", "null"]
+                            },
+                            "mobile": {
+                                "description": "Mobile number of the contact.",
+                                "type": ["string", "null"]
+                            },
+                            "title": {
+                                "description": "Title of the contact.",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing customer/account",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_updatecustomer",
+            "name": "update-customer",
+            "output": ["ActionOutput_exact_online_updatecustomer"],
+            "scopes": ["crm.accounts"],
+            "usedModels": ["ActionInput_exact_online_updatecustomer", "ActionOutput_exact_online_updatecustomer"],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_updatecustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Account ID (GUID). Example: a58c29d9-ef92-40f1-b817-31b36990898c"
+                            },
+                            "name": {
+                                "description": "Account name",
+                                "type": "string"
+                            },
+                            "addressLine1": {
+                                "description": "First address line",
+                                "type": "string"
+                            },
+                            "addressLine2": {
+                                "description": "Second address line",
+                                "type": "string"
+                            },
+                            "city": {
+                                "description": "City",
+                                "type": "string"
+                            },
+                            "country": {
+                                "description": "ISO country code",
+                                "type": "string"
+                            },
+                            "postcode": {
+                                "description": "Postal code",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Account status: C=Customer, S=Supplier, A=Active/Both",
+                                "type": "string"
+                            },
+                            "isSales": {
+                                "description": "Is a sales relation",
+                                "type": "boolean"
+                            },
+                            "isPurchase": {
+                                "description": "Is a purchase relation",
+                                "type": "boolean"
+                            },
+                            "vatNumber": {
+                                "description": "VAT number",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_updatecustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "addressLine1": {
+                                "type": "string"
+                            },
+                            "addressLine2": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "postcode": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "isSales": {
+                                "type": "boolean"
+                            },
+                            "isPurchase": {
+                                "type": "boolean"
+                            },
+                            "vatNumber": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a sales invoice (only Status 20 = Open invoices)",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/update-invoice"
+            },
+            "input": "ActionInput_exact_online_updateinvoice",
+            "name": "update-invoice",
+            "output": ["ActionOutput_exact_online_updateinvoice"],
+            "scopes": ["SalesInvoice"],
+            "usedModels": ["ActionInput_exact_online_updateinvoice", "ActionOutput_exact_online_updateinvoice"],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_updateinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "ID": {
+                                "type": "string",
+                                "description": "Invoice ID. Example: \"610d6972-6490-4947-bf59-6ebbe6237638\""
+                            },
+                            "Description": {
+                                "description": "Invoice description",
+                                "type": "string"
+                            },
+                            "YourRef": {
+                                "description": "Your reference",
+                                "type": "string"
+                            },
+                            "Remarks": {
+                                "description": "Remarks",
+                                "type": "string"
+                            },
+                            "InvoiceDate": {
+                                "description": "Invoice date in ISO format. Example: \"2024-05-30\"",
+                                "type": "string"
+                            },
+                            "DueDate": {
+                                "description": "Due date in ISO format. Example: \"2024-06-30\"",
+                                "type": "string"
+                            },
+                            "OrderDate": {
+                                "description": "Order date in ISO format. Example: \"2024-05-30\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["ID"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_updateinvoice": {
+                        "type": "object",
+                        "properties": {
+                            "InvoiceID": {
+                                "type": "string"
+                            },
+                            "InvoiceNumber": {
+                                "type": ["number", "null"]
+                            },
+                            "Description": {
+                                "type": ["string", "null"]
+                            },
+                            "YourRef": {
+                                "type": ["string", "null"]
+                            },
+                            "Remarks": {
+                                "type": ["string", "null"]
+                            },
+                            "InvoiceDate": {
+                                "type": ["string", "null"]
+                            },
+                            "DueDate": {
+                                "type": ["string", "null"]
+                            },
+                            "OrderDate": {
+                                "type": ["string", "null"]
+                            },
+                            "Status": {
+                                "type": ["number", "null"]
+                            },
+                            "AmountDC": {
+                                "type": ["number", "null"]
+                            }
+                        },
+                        "required": ["InvoiceID"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing item/product",
+            "endpoint": null,
+            "input": "ActionInput_exact_online_updateitem",
+            "name": "update-item",
+            "output": ["ActionOutput_exact_online_updateitem"],
+            "scopes": ["Items"],
+            "usedModels": ["ActionInput_exact_online_updateitem", "ActionOutput_exact_online_updateitem"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_exact_online_updateitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"61facaed-0389-4183-bf67-ac1c179e1050\""
+                            },
+                            "code": {
+                                "description": "Item code",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Item description",
+                                "type": "string"
+                            },
+                            "extraDescription": {
+                                "description": "Extra description",
+                                "type": ["string", "null"]
+                            },
+                            "itemGroup": {
+                                "description": "Item group ID. Example: \"e54a5a52-21b7-4ce5-80ed-976b2100c02b\"",
+                                "type": "string"
+                            },
+                            "salesVatCode": {
+                                "description": "Sales VAT code ID",
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "description": "Start date. ISO format: \"2024-05-30\"",
+                                "type": "string"
+                            },
+                            "unit": {
+                                "description": "Unit of measurement",
+                                "type": "string"
+                            },
+                            "isSalesItem": {
+                                "description": "Whether this is a sales item",
+                                "type": "boolean"
+                            },
+                            "isPurchaseItem": {
+                                "description": "Whether this is a purchase item",
+                                "type": "boolean"
+                            },
+                            "isStockItem": {
+                                "description": "Whether this is a stock item",
+                                "type": "boolean"
+                            },
+                            "costPriceStandard": {
+                                "description": "Standard cost price",
+                                "type": "number"
+                            },
+                            "salesPrice": {
+                                "description": "Sales price",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_exact_online_updateitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "extraDescription": {
+                                "type": "string"
+                            },
+                            "itemGroup": {
+                                "type": "string"
+                            },
+                            "salesVatCode": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "unit": {
+                                "type": "string"
+                            },
+                            "isSalesItem": {
+                                "type": "boolean"
+                            },
+                            "isPurchaseItem": {
+                                "type": "boolean"
+                            },
+                            "isStockItem": {
+                                "type": "boolean"
+                            },
+                            "costPriceStandard": {
+                                "type": "number"
+                            },
+                            "salesPrice": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync CRM contacts with incremental updates via Modified timestamp",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/contacts",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "contacts",
+            "output": ["Contact"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Contact"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "string"
+                            },
+                            "fullName": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync CRM accounts (customers and suppliers) with incremental updates via Modified timestamp.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/customers"
+                }
+            ],
+            "input": null,
+            "name": "customers",
+            "output": ["Customer"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Customer"],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Customer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "isSales": {
+                                "type": "boolean"
+                            },
+                            "isPurchase": {
+                                "type": "boolean"
+                            },
+                            "isSupplier": {
+                                "type": "boolean"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync divisions/administrations as full snapshot",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/divisions",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "divisions",
+            "output": ["Division"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Division"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Division": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "Code": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "Description": {
+                                "type": "string"
+                            },
+                            "Currency": {
+                                "type": "string"
+                            },
+                            "Country": {
+                                "type": "string"
+                            },
+                            "Status": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "Email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "Code"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync document attachment metadata as full snapshot",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/document-attachments"
+                }
+            ],
+            "input": null,
+            "name": "document-attachments",
+            "output": ["DocumentAttachment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["DocumentAttachment"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DocumentAttachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "document": {
+                                "type": "string"
+                            },
+                            "fileName": {
+                                "type": "string"
+                            },
+                            "fileSize": {
+                                "type": "number"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync document metadata (invoices, files) with incremental updates.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/documents"
+                }
+            ],
+            "input": null,
+            "name": "documents",
+            "output": ["Document"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Document"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Document": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "Subject": {
+                                "type": "string"
+                            },
+                            "DocumentDate": {
+                                "type": "string"
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "Modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync financial transaction headers with date-window checkpoints",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/financial-transactions"
+                }
+            ],
+            "input": null,
+            "name": "financial-transactions",
+            "output": ["Transaction"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Transaction"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Transaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "EntryID"
+                            },
+                            "entryNumber": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            },
+                            "journalCode": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "type": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync general ledger accounts as full snapshot.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/gl-accounts",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "gl-accounts",
+            "output": ["GlAccount"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["GlAccount"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GlAccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync item groups as full snapshot (small static dataset).",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/item-groups"
+                }
+            ],
+            "input": null,
+            "name": "item-groups",
+            "output": ["ItemGroup"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ItemGroup"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ItemGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync logistics items/products with incremental updates.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/items"
+                }
+            ],
+            "input": null,
+            "name": "items",
+            "output": ["Item"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Item"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Item": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The Exact Online item ID"
+                            },
+                            "Code": {
+                                "type": "string"
+                            },
+                            "Description": {
+                                "type": "string"
+                            },
+                            "ItemGroup": {
+                                "type": "string"
+                            },
+                            "IsSalesItem": {
+                                "type": "boolean"
+                            },
+                            "IsPurchaseItem": {
+                                "type": "boolean"
+                            },
+                            "CostPriceStandard": {
+                                "type": "number"
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "Modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync financial journals as full snapshot",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/journals"
+                }
+            ],
+            "input": null,
+            "name": "journals",
+            "output": ["Journal"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Journal"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Journal": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "code"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync outgoing payments from the cashflow module.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/payments"
+                }
+            ],
+            "input": null,
+            "name": "payments",
+            "output": ["Payment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Payment"],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Payment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "Account": {
+                                "type": "string"
+                            },
+                            "AmountDC": {
+                                "type": "number"
+                            },
+                            "Description": {
+                                "type": "string"
+                            },
+                            "PaymentReference": {
+                                "type": "string"
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync purchase invoice entries with incremental updates via Modified timestamp",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "purchase-invoices",
+            "output": ["PurchaseInvoice"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["PurchaseInvoice"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PurchaseInvoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "EntryID"
+                            },
+                            "EntryID": {
+                                "type": "string"
+                            },
+                            "EntryNumber": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "Supplier": {
+                                "type": "string"
+                            },
+                            "AmountDC": {
+                                "type": "number"
+                            },
+                            "EntryDate": {
+                                "type": "string"
+                            },
+                            "Status": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "EntryID", "Modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync sales invoices with incremental updates via Modified timestamp",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/sales-invoices"
+                }
+            ],
+            "input": null,
+            "name": "sales-invoices",
+            "output": ["Invoice"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Invoice"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Invoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "invoiceNumber": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "orderedBy": {
+                                "type": "string"
+                            },
+                            "amountDC": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync sales orders with incremental updates",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sales-orders",
+            "output": ["SalesOrder"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["SalesOrder"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SalesOrder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "OrderNumber": {
+                                "type": "number"
+                            },
+                            "OrderedBy": {
+                                "type": "string"
+                            },
+                            "AmountDC": {
+                                "type": "number"
+                            },
+                            "Status": {
+                                "type": "number"
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync financial transaction line details including amounts and GL account assignments.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "transaction-lines",
+            "output": ["TransactionLine"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["TransactionLine"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TransactionLine": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "EntryID": {
+                                "type": "string"
+                            },
+                            "AmountDC": {
+                                "type": "number"
+                            },
+                            "GLAccount": {
+                                "type": "string"
+                            },
+                            "GLAccountCode": {
+                                "type": "string"
+                            },
+                            "Description": {
+                                "type": "string"
+                            },
+                            "VATCode": {
+                                "type": "string"
+                            },
+                            "Modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "Modified"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync VAT/tax codes as full snapshot",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "vat-codes",
+            "output": ["VatCode"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["VatCode"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "VatCode": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

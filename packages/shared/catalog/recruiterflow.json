@@ -1,0 +1,1422 @@
+{
+    "providerConfigKey": "recruiterflow",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Fetches all candidate activities list from RecruiterFlow",
+            "endpoint": null,
+            "input": "ActionInput_recruiterflow_candidateactivitieslist",
+            "name": "candidate-activities-list",
+            "output": ["ActionOutput_recruiterflow_candidateactivitieslist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_recruiterflow_candidateactivitieslist", "ActionOutput_recruiterflow_candidateactivitieslist"],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_recruiterflow_candidateactivitieslist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_recruiterflow_candidateactivitieslist": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "activity_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "associated_entities": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "candidates": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "number"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "first_name": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["id", "name"],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "clients": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "contacts": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "deals": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "jobs": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "number"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["id", "name"],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "placements": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        }
+                                                    },
+                                                    "required": ["candidates", "clients", "contacts", "deals", "jobs", "placements"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "candidate_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "contact_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "interview_plan_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "is_custom": {
+                                            "type": "boolean"
+                                        },
+                                        "job_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "time": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "name": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "first_name": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "id": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "last_name": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["email", "first_name", "id", "last_name", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "activity_id",
+                                        "candidate_id",
+                                        "contact_id",
+                                        "interview_plan_id",
+                                        "is_custom",
+                                        "job_id",
+                                        "subject",
+                                        "text",
+                                        "time",
+                                        "type",
+                                        "user"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["data"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches all candidate activities stage movements from RecruiterFlow",
+            "endpoint": null,
+            "input": "ActionInput_recruiterflow_candidateactivitiesstagemovements",
+            "name": "candidate-activities-stage-movements",
+            "output": ["ActionOutput_recruiterflow_candidateactivitiesstagemovements"],
+            "scopes": [],
+            "usedModels": ["ActionInput_recruiterflow_candidateactivitiesstagemovements", "ActionOutput_recruiterflow_candidateactivitiesstagemovements"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_recruiterflow_candidateactivitiesstagemovements": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "after": {
+                                "type": "string"
+                            },
+                            "before": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_recruiterflow_candidateactivitiesstagemovements": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "added_by": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["email", "id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "transitions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "entered": {
+                                                        "type": "string"
+                                                    },
+                                                    "from": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "left": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "stage_moved_by": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "number"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["email", "id", "name"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "to": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["entered", "from", "left", "stage_moved_by", "to"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "added_by", "transitions"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["data"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches all candidate scorecards from RecruiterFlow",
+            "endpoint": null,
+            "input": "ActionInput_recruiterflow_candidatescorecards",
+            "name": "candidate-scorecards",
+            "output": ["ActionOutput_recruiterflow_candidatescorecards"],
+            "scopes": [],
+            "usedModels": ["ActionInput_recruiterflow_candidatescorecards", "ActionOutput_recruiterflow_candidatescorecards"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_recruiterflow_candidatescorecards": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "job_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_recruiterflow_candidatescorecards": {
+                        "type": "object",
+                        "properties": {
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "job": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "stages": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "scorecard": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "attributes": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "category": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "name": {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["name"],
+                                                                                "additionalProperties": false
+                                                                            },
+                                                                            "name": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "notes": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "rank": {
+                                                                                "type": "number"
+                                                                            },
+                                                                            "rating": {
+                                                                                "type": "number"
+                                                                            }
+                                                                        },
+                                                                        "required": ["category", "name", "notes", "rank", "rating"],
+                                                                        "additionalProperties": false
+                                                                    }
+                                                                },
+                                                                "bottomline": {
+                                                                    "type": "string"
+                                                                },
+                                                                "first_name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "id": {
+                                                                    "type": "number"
+                                                                },
+                                                                "last_name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "middle_name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "notes": {
+                                                                    "type": "string"
+                                                                },
+                                                                "questions": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "category_name": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "id": {
+                                                                                "type": "number"
+                                                                            },
+                                                                            "response": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "text": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["category_name", "id", "response", "text"],
+                                                                        "additionalProperties": false
+                                                                    }
+                                                                },
+                                                                "result_id": {
+                                                                    "type": "number"
+                                                                },
+                                                                "submission_time": {
+                                                                    "type": "string"
+                                                                },
+                                                                "user_id": {
+                                                                    "type": "number"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "attributes",
+                                                                "bottomline",
+                                                                "first_name",
+                                                                "id",
+                                                                "last_name",
+                                                                "middle_name",
+                                                                "name",
+                                                                "notes",
+                                                                "questions",
+                                                                "result_id",
+                                                                "submission_time",
+                                                                "user_id"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["id", "name", "scorecard"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "stages"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["candidate", "job"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches all job pipelines from RecruiterFlow",
+            "endpoint": null,
+            "input": "ActionInput_recruiterflow_jobpipelines",
+            "name": "job-pipelines",
+            "output": ["ActionOutput_recruiterflow_jobpipelines"],
+            "scopes": [],
+            "usedModels": ["ActionInput_recruiterflow_jobpipelines", "ActionOutput_recruiterflow_jobpipelines"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_recruiterflow_jobpipelines": {
+                        "type": "object",
+                        "properties": {
+                            "job_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_recruiterflow_jobpipelines": {
+                        "type": "object",
+                        "properties": {
+                            "detail": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "summary": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "count": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name", "count"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["detail", "summary"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Syncs all candidate activity types from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/candidate-activity-types",
+                    "group": "Candidates"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_candidateactivitytypes",
+            "name": "candidate-activity-types",
+            "output": ["RecruiterFlowCandidateActivityType"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowCandidateActivityType", "SyncMetadata_recruiterflow_candidateactivitytypes"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowCandidateActivityType": {
+                        "type": "object",
+                        "properties": {
+                            "category": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "is_archived": {
+                                "type": "boolean"
+                            },
+                            "is_custom": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "rank": {
+                                "type": "number"
+                            },
+                            "track_last_contacted": {
+                                "type": "boolean"
+                            },
+                            "track_last_engaged": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["category", "id", "is_archived", "is_custom", "name", "rank", "track_last_contacted", "track_last_engaged"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_candidateactivitytypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all candidates from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/candidates",
+                    "group": "Candidates"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_candidates",
+            "name": "candidates",
+            "output": ["RecruiterFlowCandidate"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowCandidate", "SyncMetadata_recruiterflow_candidates"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowCandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "full_name": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "profile_picture_link": {
+                                "type": "string"
+                            },
+                            "added_by_name": {
+                                "type": "string"
+                            },
+                            "added_by_id": {
+                                "type": "number"
+                            },
+                            "added_time": {
+                                "type": "string"
+                            },
+                            "latest_activity_time": {
+                                "type": "string"
+                            },
+                            "last_contacted_time": {
+                                "type": "string"
+                            },
+                            "email_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "current_designation": {
+                                "type": "string"
+                            },
+                            "current_organization": {
+                                "type": "string"
+                            },
+                            "location_city": {
+                                "type": "string"
+                            },
+                            "location_country": {
+                                "type": "string"
+                            },
+                            "location_full_string": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": ["string", "null"]
+                            },
+                            "status_name": {
+                                "type": "string"
+                            },
+                            "linkedin_profile_url": {
+                                "type": "string"
+                            },
+                            "github_profile_url": {
+                                "type": "string"
+                            },
+                            "twitter_profile_url": {
+                                "type": "string"
+                            },
+                            "angellist_profile_url": {
+                                "type": "string"
+                            },
+                            "behance_profile_url": {
+                                "type": "string"
+                            },
+                            "dribbble_profile_url": {
+                                "type": "string"
+                            },
+                            "facebook_profile_url": {
+                                "type": "string"
+                            },
+                            "xing_profile_url": {
+                                "type": "string"
+                            },
+                            "resume_links": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "link": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["filename", "link"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "associated_jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "job_id": {
+                                            "type": "number"
+                                        },
+                                        "job_name": {
+                                            "type": "string"
+                                        },
+                                        "client_company_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "current_stage_name": {
+                                            "type": "string"
+                                        },
+                                        "is_open": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["job_id", "job_name", "client_company_name", "current_stage_name", "is_open"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "custom_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {
+                                        "type": ["string", "number"]
+                                    }
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "full_name",
+                            "first_name",
+                            "last_name",
+                            "added_by_name",
+                            "added_by_id",
+                            "added_time",
+                            "email_addresses",
+                            "phone_numbers",
+                            "source"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_candidates": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all employment types from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employment-types",
+                    "group": "Employments"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_employmenttypes",
+            "name": "employment-types",
+            "output": ["RecruiterFlowEmploymentType"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowEmploymentType", "SyncMetadata_recruiterflow_employmenttypes"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowEmploymentType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_employmenttypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all job departments from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-departments",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_jobdepartments",
+            "name": "job-departments",
+            "output": ["RecruiterFlowJobDepartment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowJobDepartment", "SyncMetadata_recruiterflow_jobdepartments"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowJobDepartment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name", "count"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_jobdepartments": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all job remote statuses from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-remote-statuses",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_jobremotestatuses",
+            "name": "job-remote-statuses",
+            "output": ["RecruiterFlowJobRemoteStatus"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowJobRemoteStatus", "SyncMetadata_recruiterflow_jobremotestatuses"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowJobRemoteStatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_jobremotestatuses": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all job stage names from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-stage-names",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_jobstagenames",
+            "name": "job-stage-names",
+            "output": ["RecruiterFlowLeanJobStageName"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowLeanJobStageName", "SyncMetadata_recruiterflow_jobstagenames"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowLeanJobStageName": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_jobstagenames": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all job statuses from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/job-statuses",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_jobstatuses",
+            "name": "job-statuses",
+            "output": ["RecruiterFlowJobStatus"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowJobStatus", "SyncMetadata_recruiterflow_jobstatuses"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowJobStatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "color"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_jobstatuses": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all jobs from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/jobs",
+                    "group": "Jobs"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_jobs",
+            "name": "jobs",
+            "output": ["RecruiterFlowJob"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowJob", "SyncMetadata_recruiterflow_jobs"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowJob": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "apply_link": {
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "type": "string"
+                            },
+                            "company_logo_link": {
+                                "type": ["string", "null"]
+                            },
+                            "locations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "employment_type": {
+                                "type": "string"
+                            },
+                            "job_type_name": {
+                                "type": ["string", "null"]
+                            },
+                            "experience_range_start": {
+                                "type": ["number", "null"]
+                            },
+                            "experience_range_end": {
+                                "type": ["number", "null"]
+                            },
+                            "is_open": {
+                                "type": "boolean"
+                            },
+                            "job_status_name": {
+                                "type": ["string", "null"]
+                            },
+                            "number_of_openings": {
+                                "type": "number"
+                            },
+                            "salary_range_end": {
+                                "type": ["number", "null"]
+                            },
+                            "salary_range_start": {
+                                "type": ["number", "null"]
+                            },
+                            "salary_range_currency": {
+                                "type": "string"
+                            },
+                            "salary_frequency": {
+                                "type": ["string", "null"]
+                            },
+                            "pay_rate_number": {
+                                "type": "string"
+                            },
+                            "pay_rate_currency": {
+                                "type": "string"
+                            },
+                            "pay_rate_frequency_display_name": {
+                                "type": "string"
+                            },
+                            "bill_rate_number": {
+                                "type": "string"
+                            },
+                            "bill_rate_currency": {
+                                "type": "string"
+                            },
+                            "bill_rate_frequency_display_name": {
+                                "type": "string"
+                            },
+                            "contract_start_date": {
+                                "type": ["string", "null"]
+                            },
+                            "contract_end_date": {
+                                "type": ["string", "null"]
+                            },
+                            "work_quantum_number": {
+                                "type": "string"
+                            },
+                            "work_quantum_unit_display_name": {
+                                "type": "string"
+                            },
+                            "work_quantum_frequency_display_name": {
+                                "type": "string"
+                            },
+                            "work_quantum_is_full_time": {
+                                "type": "boolean"
+                            },
+                            "expected_salary_number": {
+                                "type": "number"
+                            },
+                            "expected_salary_currency": {
+                                "type": "string"
+                            },
+                            "expected_fee_number": {
+                                "type": "number"
+                            },
+                            "expected_fee_currency": {
+                                "type": "string"
+                            },
+                            "commission_rate": {
+                                "type": ["number", "null"]
+                            },
+                            "expected_start_date": {
+                                "type": "string"
+                            },
+                            "expected_end_date": {
+                                "type": "string"
+                            },
+                            "custom_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {
+                                        "type": ["string", "number"]
+                                    }
+                                }
+                            },
+                            "files_links": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "locations",
+                            "department",
+                            "employment_type",
+                            "job_type_name",
+                            "experience_range_start",
+                            "experience_range_end",
+                            "is_open",
+                            "job_status_name",
+                            "number_of_openings"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_jobs": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all locations from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/locations",
+                    "group": "Locations"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_locations",
+            "name": "locations",
+            "output": ["RecruiterFlowLocation"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowLocation", "SyncMetadata_recruiterflow_locations"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowLocation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": "string"
+                            },
+                            "iso_3166_1_alpha_2_code": {
+                                "type": "string"
+                            },
+                            "location_type": {
+                                "type": "string"
+                            },
+                            "location_type_id": {
+                                "type": "number"
+                            },
+                            "postal_code": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "zipcode": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "location_type", "location_type_id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_locations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all organization locations from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/organization-locations",
+                    "group": "Organizations"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_organizationlocations",
+            "name": "organization-locations",
+            "output": ["RecruiterFlowOrganizationLocation"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowOrganizationLocation", "SyncMetadata_recruiterflow_organizationlocations"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowOrganizationLocation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "postal_code": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_organizationlocations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs all users from RecruiterFlow",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_recruiterflow_users",
+            "name": "users",
+            "output": ["RecruiterFlowUser"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["RecruiterFlowUser", "SyncMetadata_recruiterflow_users"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RecruiterFlowUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "img_link": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "email", "first_name", "last_name", "img_link"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_recruiterflow_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

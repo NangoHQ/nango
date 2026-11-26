@@ -1,0 +1,4006 @@
+{
+    "providerConfigKey": "jira",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Attach a file to a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_addattachment",
+            "name": "add-attachment",
+            "output": ["ActionOutput_jira_addattachment"],
+            "scopes": ["write:jira-work", "read:jira-work"],
+            "usedModels": ["ActionInput_jira_addattachment", "ActionOutput_jira_addattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_addattachment": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue to attach the file to. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "file": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "description": "The file content as plain text or base64 encoded string"
+                                    },
+                                    "filename": {
+                                        "type": "string",
+                                        "description": "The name of the file. Example: \"document.pdf\""
+                                    },
+                                    "contentType": {
+                                        "type": "string",
+                                        "description": "The MIME type of the file. Example: \"application/pdf\""
+                                    },
+                                    "isBase64": {
+                                        "description": "Whether the content is base64 encoded. Defaults to false",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["content", "filename", "contentType"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["issueIdOrKey", "file"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_addattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "filename"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a comment to a Jira issue.",
+            "endpoint": null,
+            "input": "ActionInput_jira_addcomment",
+            "name": "add-comment",
+            "output": ["ActionOutput_jira_addcomment"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_addcomment", "ActionOutput_jira_addcomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_addcomment": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue to add the comment to. Example: \"PROJ-123\" or \"10001\""
+                            },
+                            "body": {
+                                "type": "string",
+                                "description": "The plain text content of the comment to add."
+                            }
+                        },
+                        "required": ["issueIdOrKey", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_addcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the created comment."
+                            },
+                            "self": {
+                                "type": "string",
+                                "description": "The REST API URL of the comment."
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["accountId", "displayName"],
+                                "additionalProperties": false
+                            },
+                            "created": {
+                                "description": "When the comment was created.",
+                                "type": "string"
+                            },
+                            "updated": {
+                                "description": "When the comment was last updated.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "self"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a watcher to a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_addwatcher",
+            "name": "add-watcher",
+            "output": ["ActionOutput_jira_addwatcher"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_addwatcher", "ActionOutput_jira_addwatcher"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_addwatcher": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue to add the watcher to. Example: \"PROJ-123\" or \"10001\""
+                            },
+                            "accountId": {
+                                "type": "string",
+                                "description": "The account ID of the user to add as a watcher. Example: \"5b10ac8d82e05b22cc7d4ef5\""
+                            }
+                        },
+                        "required": ["issueIdOrKey", "accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_addwatcher": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Log time against a Jira issue.",
+            "endpoint": null,
+            "input": "ActionInput_jira_addworklog",
+            "name": "add-worklog",
+            "output": ["ActionOutput_jira_addworklog"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_addworklog", "ActionOutput_jira_addworklog"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_addworklog": {
+                        "type": "object",
+                        "properties": {
+                            "issue_id_or_key": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10002\" or \"PROJ-123\""
+                            },
+                            "time_spent_seconds": {
+                                "type": "number",
+                                "description": "The time spent working on the issue in seconds. Example: 12000 (for 3h 20m)"
+                            },
+                            "started": {
+                                "description": "The date/time when the work was started. Format: ISO 8601. Example: \"2021-01-17T12:34:00.000+0000\"",
+                                "type": "string"
+                            },
+                            "comment": {
+                                "description": "A comment about the work done. This is a plain text that will be converted to Atlassian Document Format.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issue_id_or_key", "time_spent_seconds"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_addworklog": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "issue_id": {
+                                "type": "string"
+                            },
+                            "time_spent_seconds": {
+                                "type": "number"
+                            },
+                            "started": {
+                                "type": "string"
+                            },
+                            "time_spent": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "comment": {},
+                            "visibility": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["group", "role"]
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type", "value"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "issue_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Link two Jira issues with a relationship type",
+            "endpoint": null,
+            "input": "ActionInput_jira_createissuelink",
+            "name": "create-issue-link",
+            "output": ["ActionOutput_jira_createissuelink"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_createissuelink", "ActionOutput_jira_createissuelink"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_createissuelink": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "The name of the issue link type. Example: \"Blocks\""
+                            },
+                            "inwardIssueKey": {
+                                "type": "string",
+                                "description": "The issue key for the inward side of the link (the issue that depends on or is affected by the other). Example: \"PROJ-123\""
+                            },
+                            "outwardIssueKey": {
+                                "type": "string",
+                                "description": "The issue key for the outward side of the link (the issue that affects or blocks the other). Example: \"PROJ-456\""
+                            }
+                        },
+                        "required": ["type", "inwardIssueKey", "outwardIssueKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_createissuelink": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "linkType": {
+                                "type": "string"
+                            },
+                            "inwardIssueKey": {
+                                "type": "string"
+                            },
+                            "outwardIssueKey": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "linkType", "inwardIssueKey", "outwardIssueKey"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a Jira issue in a project.",
+            "endpoint": null,
+            "input": "ActionInput_jira_createissue",
+            "name": "create-issue",
+            "output": ["ActionOutput_jira_createissue"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_createissue", "ActionOutput_jira_createissue"],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_createissue": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "update": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "historyMetadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "properties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "transition": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_createissue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "transition": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "key", "self", "url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an attachment from a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_deleteattachment",
+            "name": "delete-attachment",
+            "output": ["ActionOutput_jira_deleteattachment"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_deleteattachment", "ActionOutput_jira_deleteattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_deleteattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the attachment to delete. Example: \"10001\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_deleteattachment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a comment from a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_deletecomment",
+            "name": "delete-comment",
+            "output": ["ActionOutput_jira_deletecomment"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_deletecomment", "ActionOutput_jira_deletecomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"PROJ-123\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to delete. Example: \"10000\""
+                            },
+                            "cloudId": {
+                                "description": "Optional Jira cloud ID. If not provided, will be resolved from connection.",
+                                "type": "string"
+                            },
+                            "baseUrl": {
+                                "description": "Optional Jira base URL. If not provided, will be resolved from connection.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issueIdOrKey", "commentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a link between Jira issues",
+            "endpoint": null,
+            "input": "ActionInput_jira_deleteissuelink",
+            "name": "delete-issue-link",
+            "output": ["ActionOutput_jira_deleteissuelink"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_deleteissuelink", "ActionOutput_jira_deleteissuelink"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_deleteissuelink": {
+                        "type": "object",
+                        "properties": {
+                            "linkId": {
+                                "type": "string",
+                                "description": "The ID of the issue link to delete. Example: \"10001\""
+                            }
+                        },
+                        "required": ["linkId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_deleteissuelink": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "linkId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "linkId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Jira issue by ID or key",
+            "endpoint": null,
+            "input": "ActionInput_jira_deleteissue",
+            "name": "delete-issue",
+            "output": ["ActionOutput_jira_deleteissue"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_deleteissue", "ActionOutput_jira_deleteissue"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_deleteissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue to delete. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "deleteSubtasks": {
+                                "description": "If true, subtasks are also deleted. Defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_deleteissue": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "issueIdOrKey": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "issueIdOrKey"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a worklog from a Jira issue.",
+            "endpoint": null,
+            "input": "ActionInput_jira_deleteworklog",
+            "name": "delete-worklog",
+            "output": ["ActionOutput_jira_deleteworklog"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_deleteworklog", "ActionOutput_jira_deleteworklog"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_deleteworklog": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10032\" or \"PROJ-123\""
+                            },
+                            "worklogId": {
+                                "type": "string",
+                                "description": "The ID of the worklog to delete. Example: \"10011\""
+                            }
+                        },
+                        "required": ["issueIdOrKey", "worklogId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_deleteworklog": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "issueIdOrKey": {
+                                "type": "string"
+                            },
+                            "worklogId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "issueIdOrKey", "worklogId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve project and issue type metadata for issue creation.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getcreateissuemetadata",
+            "name": "get-create-issue-metadata",
+            "output": ["ActionOutput_jira_getcreateissuemetadata"],
+            "scopes": ["read:jira-work", "read:issue-meta:jira"],
+            "usedModels": ["ActionInput_jira_getcreateissuemetadata", "ActionOutput_jira_getcreateissuemetadata"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getcreateissuemetadata": {
+                        "type": "object",
+                        "properties": {
+                            "projectIds": {
+                                "description": "List of project IDs to filter by. Example: [\"10000\", \"10001\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "projectKeys": {
+                                "description": "List of project keys to filter by. Example: [\"PROJ\", \"TEST\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "issuetypeIds": {
+                                "description": "List of issue type IDs to filter by. Example: [\"10000\", \"10001\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "expand": {
+                                "description": "Use expand to include additional information about issue metadata in the response. Supported values: projects, projects.issuetypes, projects.issuetypes.fields",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getcreateissuemetadata": {
+                        "type": "object",
+                        "properties": {
+                            "projects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "avatarUrls": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "key", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve editable field metadata for an existing Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_geteditissuemetadata",
+            "name": "get-edit-issue-metadata",
+            "output": ["ActionOutput_jira_geteditissuemetadata"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_geteditissuemetadata", "ActionOutput_jira_geteditissuemetadata"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_geteditissuemetadata": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10000\" or \"PROJ-123\""
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_geteditissuemetadata": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {}
+                        },
+                        "required": ["fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve Jira field metadata by field ID",
+            "endpoint": null,
+            "input": "ActionInput_jira_getfield",
+            "name": "get-field",
+            "output": ["ActionOutput_jira_getfield"],
+            "scopes": ["read:field:jira"],
+            "usedModels": ["ActionInput_jira_getfield", "ActionOutput_jira_getfield"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getfield": {
+                        "type": "object",
+                        "properties": {
+                            "fieldId": {
+                                "type": "string",
+                                "description": "The ID of the field to retrieve. For example: \"summary\", \"description\", or \"customfield_10101\""
+                            }
+                        },
+                        "required": ["fieldId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getfield": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "custom": {
+                                "type": "boolean"
+                            },
+                            "clauseNames": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "navigable": {
+                                "type": "boolean"
+                            },
+                            "orderable": {
+                                "type": "boolean"
+                            },
+                            "searchable": {
+                                "type": "boolean"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "system": {
+                                        "type": "string"
+                                    },
+                                    "custom": {
+                                        "type": "string"
+                                    },
+                                    "customId": {
+                                        "type": "number"
+                                    },
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name", "custom", "clauseNames", "navigable", "orderable", "searchable"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the changelog for a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_getissuechangelog",
+            "name": "get-issue-changelog",
+            "output": ["ActionOutput_jira_getissuechangelog"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_getissuechangelog", "ActionOutput_jira_getissuechangelog"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getissuechangelog": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string"
+                            },
+                            "startAt": {
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getissuechangelog": {
+                        "type": "object",
+                        "properties": {
+                            "changelog": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string"
+                                                },
+                                                "accountId": {
+                                                    "type": "string"
+                                                },
+                                                "accountType": {
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "avatarUrls": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "field": {
+                                                        "type": "string"
+                                                    },
+                                                    "fieldtype": {
+                                                        "type": "string"
+                                                    },
+                                                    "fieldId": {
+                                                        "type": "string"
+                                                    },
+                                                    "from": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "fromString": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "to": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "toString": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "historyMetadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "created", "items"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "startAt": {
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "isLast": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["changelog"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve Jira issue type metadata by issue type ID.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getissuetype",
+            "name": "get-issue-type",
+            "output": ["ActionOutput_jira_getissuetype"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_getissuetype", "ActionOutput_jira_getissuetype"],
+            "version": "0.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getissuetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the issue type to retrieve."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getissuetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "iconUrl": {
+                                "type": "string"
+                            },
+                            "avatarId": {
+                                "type": "number"
+                            },
+                            "subtask": {
+                                "type": "boolean"
+                            },
+                            "hierarchyLevel": {
+                                "type": "number"
+                            },
+                            "entityId": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "project": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "self": {
+                                                "type": "string"
+                                            },
+                                            "projectTypeKey": {
+                                                "type": "string"
+                                            },
+                                            "simplified": {
+                                                "type": "boolean"
+                                            },
+                                            "avatarUrls": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "projectCategory": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["self", "id", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name", "self"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Jira issue by ID or key",
+            "endpoint": null,
+            "input": "ActionInput_jira_getissue",
+            "name": "get-issue",
+            "output": ["ActionOutput_jira_getissue"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_getissue", "ActionOutput_jira_getissue"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue to retrieve. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to return. Example: \"summary,description,status\"",
+                                "type": "string"
+                            },
+                            "expand": {
+                                "description": "Comma-separated list of fields to expand. Example: \"renderedFields,names,schema\"",
+                                "type": "string"
+                            },
+                            "properties": {
+                                "description": "Comma-separated list of issue property keys to return. Example: \"property1,property2\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getissue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the issue"
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "The issue key (e.g., \"PROJ-123\")"
+                            },
+                            "self": {
+                                "type": "string",
+                                "description": "The REST API URL of the issue"
+                            }
+                        },
+                        "required": ["id", "key", "self"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the currently authenticated Jira user.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getmyself",
+            "name": "get-myself",
+            "output": ["ActionOutput_jira_getmyself"],
+            "scopes": ["read:jira-user"],
+            "usedModels": ["ActionInput_jira_getmyself", "ActionOutput_jira_getmyself"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getmyself": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getmyself": {
+                        "type": "object",
+                        "properties": {
+                            "account_id": {
+                                "type": "string",
+                                "description": "The account ID of the user. Example: \"5b10ac8d82e05b22cc7d4ef5\""
+                            },
+                            "account_type": {
+                                "description": "The type of account. Example: \"atlassian\"",
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string",
+                                "description": "The display name of the user. Example: \"John Doe\""
+                            },
+                            "email_address": {
+                                "description": "The email address of the user. Example: \"john.doe@example.com\"",
+                                "type": "string"
+                            },
+                            "avatar_urls": {
+                                "type": "object",
+                                "properties": {
+                                    "16x16": {
+                                        "type": "string"
+                                    },
+                                    "24x24": {
+                                        "type": "string"
+                                    },
+                                    "32x32": {
+                                        "type": "string"
+                                    },
+                                    "48x48": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "time_zone": {
+                                "description": "The time zone of the user. Example: \"Europe/Berlin\"",
+                                "type": "string"
+                            },
+                            "locale": {
+                                "description": "The locale of the user. Example: \"en_US\"",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Whether the user is active. Example: true",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["account_id", "display_name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Jira priority by priority ID.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getpriority",
+            "name": "get-priority",
+            "output": ["ActionOutput_jira_getpriority"],
+            "scopes": ["read:priority:jira"],
+            "usedModels": ["ActionInput_jira_getpriority", "ActionOutput_jira_getpriority"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getpriority": {
+                        "type": "object",
+                        "properties": {
+                            "priorityId": {
+                                "type": "string",
+                                "description": "The priority ID. Example: \"1\""
+                            }
+                        },
+                        "required": ["priorityId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getpriority": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "iconUrl": {
+                                "type": "string"
+                            },
+                            "statusColor": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Jira project by ID or key.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getproject",
+            "name": "get-project",
+            "output": ["ActionOutput_jira_getproject"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_getproject", "ActionOutput_jira_getproject"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "projectIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the project to retrieve. Example: \"10000\" or \"PROJ\""
+                            }
+                        },
+                        "required": ["projectIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "projectType": {
+                                "type": "string",
+                                "description": "Project type key from Jira"
+                            },
+                            "url": {
+                                "description": "URL to the project",
+                                "type": "string"
+                            },
+                            "browseUrl": {
+                                "description": "Browser-facing URL to the project",
+                                "type": "string"
+                            },
+                            "avatarUrls": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "lead": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "projectCategory": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "key", "name", "projectType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Jira status by status ID or name.",
+            "endpoint": null,
+            "input": "ActionInput_jira_getstatus",
+            "name": "get-status",
+            "output": ["ActionOutput_jira_getstatus"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_getstatus", "ActionOutput_jira_getstatus"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getstatus": {
+                        "type": "object",
+                        "properties": {
+                            "statusIdOrName": {
+                                "type": "string",
+                                "description": "Status ID or name. Example: \"10001\" or \"To Do\""
+                            }
+                        },
+                        "required": ["statusIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getstatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "statusCategory": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "key": {
+                                        "type": "string"
+                                    },
+                                    "colorName": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "key", "colorName", "name"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Jira user by account ID",
+            "endpoint": null,
+            "input": "ActionInput_jira_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_jira_getuser"],
+            "scopes": ["read:jira-user"],
+            "usedModels": ["ActionInput_jira_getuser", "ActionOutput_jira_getuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string",
+                                "description": "The account ID of the user to retrieve. Example: \"5b10ac8d82e05b22cc7d4ef5\""
+                            },
+                            "expand": {
+                                "description": "Additional user details to include in the response. Comma-separated list of: groups, applicationRoles. Example: \"groups,applicationRoles\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "accountType": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "avatarUrls": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name", "self"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "applicationRoles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["key", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["accountId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Jira field metadata available to the user.",
+            "endpoint": null,
+            "input": "ActionInput_jira_listfields",
+            "name": "list-fields",
+            "output": ["ActionOutput_jira_listfields"],
+            "scopes": ["read:field:jira"],
+            "usedModels": ["ActionInput_jira_listfields", "ActionOutput_jira_listfields"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listfields": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listfields": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "custom": {
+                                            "type": "boolean"
+                                        },
+                                        "orderable": {
+                                            "type": "boolean"
+                                        },
+                                        "navigable": {
+                                            "type": "boolean"
+                                        },
+                                        "searchable": {
+                                            "type": "boolean"
+                                        },
+                                        "clauseNames": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "system": {
+                                                    "type": "string"
+                                                },
+                                                "custom": {
+                                                    "type": "string"
+                                                },
+                                                "customId": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments on a Jira issue with pagination",
+            "endpoint": null,
+            "input": "ActionInput_jira_listissuecomments",
+            "name": "list-issue-comments",
+            "output": ["ActionOutput_jira_listissuecomments"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listissuecomments", "ActionOutput_jira_listissuecomments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listissuecomments": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "startAt": {
+                                "description": "The index of the first item to return in a page of results. Example: 0",
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of items to return per page. Example: 50",
+                                "type": "number"
+                            },
+                            "orderBy": {
+                                "description": "Order comments by created or updated date. Use - prefix for descending order.",
+                                "type": "string",
+                                "enum": ["created", "-created", "updated", "-updated"]
+                            },
+                            "expand": {
+                                "description": "A comma-separated list of fields to expand in the response. Example: \"renderedBody\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listissuecomments": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "accountId": {
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "active": {
+                                                    "type": "boolean"
+                                                },
+                                                "self": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["accountId", "displayName"],
+                                            "additionalProperties": false
+                                        },
+                                        "body": {},
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "type": "string"
+                                        },
+                                        "updateAuthor": {
+                                            "type": "object",
+                                            "properties": {
+                                                "accountId": {
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "active": {
+                                                    "type": "boolean"
+                                                },
+                                                "self": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["accountId", "displayName"],
+                                            "additionalProperties": false
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "visibility": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                },
+                                                "identifier": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "maxResults": {
+                                "type": "number"
+                            },
+                            "startAt": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["comments", "maxResults", "startAt", "total"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Jira issue types available to the user",
+            "endpoint": null,
+            "input": "ActionInput_jira_listissuetypes",
+            "name": "list-issue-types",
+            "output": ["ActionOutput_jira_listissuetypes"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listissuetypes", "ActionOutput_jira_listissuetypes"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listissuetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listissuetypes": {
+                        "type": "object",
+                        "properties": {
+                            "issueTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "iconUrl": {
+                                            "type": "string"
+                                        },
+                                        "avatarId": {
+                                            "type": "number"
+                                        },
+                                        "subtask": {
+                                            "type": "boolean"
+                                        },
+                                        "hierarchyLevel": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["issueTypes"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Jira priorities available to the user.",
+            "endpoint": null,
+            "input": "ActionInput_jira_listpriorities",
+            "name": "list-priorities",
+            "output": ["ActionOutput_jira_listpriorities"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listpriorities", "ActionOutput_jira_listpriorities"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listpriorities": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listpriorities": {
+                        "type": "object",
+                        "properties": {
+                            "priorities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "icon_url": {
+                                            "type": "string"
+                                        },
+                                        "is_default": {
+                                            "type": "boolean"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "status_color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "icon_url", "is_default", "self", "status_color"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["priorities"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List components for a Jira project",
+            "endpoint": null,
+            "input": "ActionInput_jira_listprojectcomponents",
+            "name": "list-project-components",
+            "output": ["ActionOutput_jira_listprojectcomponents"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listprojectcomponents", "ActionOutput_jira_listprojectcomponents"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listprojectcomponents": {
+                        "type": "object",
+                        "properties": {
+                            "projectIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the project to list components for. Example: \"10000\" or \"PROJ\""
+                            }
+                        },
+                        "required": ["projectIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listprojectcomponents": {
+                        "type": "object",
+                        "properties": {
+                            "components": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Component ID. Example: \"10000\""
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Component name. Example: \"Component 1\""
+                                        },
+                                        "description": {
+                                            "description": "Component description",
+                                            "type": ["string", "null"]
+                                        },
+                                        "project": {
+                                            "description": "Project key the component belongs to",
+                                            "type": "string"
+                                        },
+                                        "projectId": {
+                                            "description": "Project ID the component belongs to",
+                                            "type": "number"
+                                        },
+                                        "self": {
+                                            "description": "URL to the component resource",
+                                            "type": "string"
+                                        },
+                                        "assigneeType": {
+                                            "description": "Type of assignee for this component",
+                                            "type": "string"
+                                        },
+                                        "leadAccountId": {
+                                            "description": "Account ID of the component lead",
+                                            "type": "string"
+                                        },
+                                        "isAssigneeTypeValid": {
+                                            "description": "Whether the assignee type is valid",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of project components"
+                            },
+                            "count": {
+                                "type": "number",
+                                "description": "Number of components returned"
+                            }
+                        },
+                        "required": ["components", "count"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List versions for a Jira project",
+            "endpoint": null,
+            "input": "ActionInput_jira_listprojectversions",
+            "name": "list-project-versions",
+            "output": ["ActionOutput_jira_listprojectversions"],
+            "scopes": ["read:jira-work", "read:project-version:jira"],
+            "usedModels": ["ActionInput_jira_listprojectversions", "ActionOutput_jira_listprojectversions"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listprojectversions": {
+                        "type": "object",
+                        "properties": {
+                            "projectIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the project. Example: \"PROJ\" or \"10000\""
+                            },
+                            "startAt": {
+                                "description": "The index of the first item to return. Default: 0",
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of items to return. Default: 50",
+                                "type": "number"
+                            },
+                            "orderBy": {
+                                "description": "Order the results by a field. Default: name",
+                                "type": "string",
+                                "enum": [
+                                    "description",
+                                    "description,ASC",
+                                    "description,DESC",
+                                    "name",
+                                    "name,ASC",
+                                    "name,DESC",
+                                    "releaseDate",
+                                    "releaseDate,ASC",
+                                    "releaseDate,DESC",
+                                    "sequence",
+                                    "sequence,ASC",
+                                    "sequence,DESC",
+                                    "startDate",
+                                    "startDate,ASC",
+                                    "startDate,DESC"
+                                ]
+                            },
+                            "query": {
+                                "description": "Filter the results using a literal string. Versions with matching names or descriptions are returned",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Filter by version status",
+                                "type": "string",
+                                "enum": ["released", "unreleased", "archived"]
+                            }
+                        },
+                        "required": ["projectIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listprojectversions": {
+                        "type": "object",
+                        "properties": {
+                            "versions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "archived": {
+                                            "type": "boolean"
+                                        },
+                                        "released": {
+                                            "type": "boolean"
+                                        },
+                                        "overdue": {
+                                            "type": "boolean"
+                                        },
+                                        "projectId": {
+                                            "type": "number"
+                                        },
+                                        "releaseDate": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "userReleaseDate": {
+                                            "type": "string"
+                                        },
+                                        "userStartDate": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "issuesStatusForFixVersion": {
+                                            "type": "object",
+                                            "properties": {
+                                                "done": {
+                                                    "type": "number"
+                                                },
+                                                "inProgress": {
+                                                    "type": "number"
+                                                },
+                                                "toDo": {
+                                                    "type": "number"
+                                                },
+                                                "unmapped": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "isLast": {
+                                "type": "boolean"
+                            },
+                            "nextPage": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["versions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Jira projects accessible to the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_jira_listprojects",
+            "name": "list-projects",
+            "output": ["ActionOutput_jira_listprojects"],
+            "scopes": ["read:project:jira"],
+            "usedModels": ["ActionInput_jira_listprojects", "ActionOutput_jira_listprojects"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Filter projects by name or key. Example: \"PROJ\"",
+                                "type": "string"
+                            },
+                            "categoryId": {
+                                "description": "Filter by project category ID. Example: 10000",
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "description": "Maximum results per page. Default: 50",
+                                "type": "number"
+                            },
+                            "startAt": {
+                                "description": "Pagination offset. Default: 0",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "projects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "avatarUrls": {
+                                            "type": "object",
+                                            "properties": {
+                                                "16x16": {
+                                                    "type": "string"
+                                                },
+                                                "24x24": {
+                                                    "type": "string"
+                                                },
+                                                "32x32": {
+                                                    "type": "string"
+                                                },
+                                                "48x48": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "projectCategory": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "simplified": {
+                                            "type": "boolean"
+                                        },
+                                        "style": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "insight": {
+                                            "type": "object",
+                                            "properties": {
+                                                "totalIssueCount": {
+                                                    "type": "number"
+                                                },
+                                                "lastIssueUpdateTime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["totalIssueCount"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "key", "name", "self"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "isLast": {
+                                "type": "boolean"
+                            },
+                            "nextStartAt": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["projects", "total", "isLast"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Jira statuses available to the user",
+            "endpoint": null,
+            "input": "ActionInput_jira_liststatuses",
+            "name": "list-statuses",
+            "output": ["ActionOutput_jira_liststatuses"],
+            "scopes": ["read:workflow:jira"],
+            "usedModels": ["ActionInput_jira_liststatuses", "ActionOutput_jira_liststatuses"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_liststatuses": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "description": "Project ID to filter statuses. Example: \"10000\"",
+                                "type": "string"
+                            },
+                            "statusCategory": {
+                                "description": "Filter by status category",
+                                "type": "string",
+                                "enum": ["TODO", "IN_PROGRESS", "DONE"]
+                            },
+                            "searchString": {
+                                "description": "Search string to filter statuses by name",
+                                "type": "string"
+                            },
+                            "startAt": {
+                                "description": "Pagination offset. Starts at 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "maxResults": {
+                                "description": "Maximum results per page. Max 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_liststatuses": {
+                        "type": "object",
+                        "properties": {
+                            "statuses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["GLOBAL", "PROJECT"]
+                                                },
+                                                "project": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
+                                        },
+                                        "statusCategory": {
+                                            "type": "string",
+                                            "enum": ["TODO", "IN_PROGRESS", "DONE"]
+                                        }
+                                    },
+                                    "required": ["id", "name", "statusCategory"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "startAt": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "maxResults": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "isLast": {
+                                "type": "boolean"
+                            },
+                            "nextPageStart": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["statuses", "total", "startAt", "maxResults", "isLast"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available workflow transitions for a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_listtransitions",
+            "name": "list-transitions",
+            "output": ["ActionOutput_jira_listtransitions"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listtransitions", "ActionOutput_jira_listtransitions"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listtransitions": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"PROJ-123\" or \"10001\""
+                            },
+                            "expand": {
+                                "description": "Additional fields to expand in the response",
+                                "type": "string",
+                                "enum": ["transitions.fields"]
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listtransitions": {
+                        "type": "object",
+                        "properties": {
+                            "transitions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Transition ID"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Transition name"
+                                        },
+                                        "to": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Status ID"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Status name"
+                                                },
+                                                "statusCategory": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "number"
+                                                        },
+                                                        "key": {
+                                                            "type": "string"
+                                                        },
+                                                        "colorName": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "key", "colorName", "name"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false,
+                                            "description": "The status the transition moves the issue to"
+                                        },
+                                        "fields": {
+                                            "description": "Fields available during the transition",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "hasScreen": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "isConditional": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "isGlobal": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "isInitial": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "hasScreen": {
+                                            "type": "boolean"
+                                        },
+                                        "isConditional": {
+                                            "type": "boolean"
+                                        },
+                                        "isGlobal": {
+                                            "type": "boolean"
+                                        },
+                                        "isInitial": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name", "to"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Available workflow transitions for the issue"
+                            }
+                        },
+                        "required": ["transitions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search Jira users visible to the authenticated account.",
+            "endpoint": null,
+            "input": "ActionInput_jira_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_jira_listusers"],
+            "scopes": ["read:jira-user"],
+            "usedModels": ["ActionInput_jira_listusers", "ActionOutput_jira_listusers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "A query string used to search user attributes. Matches against users visible to the authenticated account."
+                            },
+                            "accountId": {
+                                "description": "A users accountId to filter the search results. Example: \"5b10a2844c20165700ede21g\"",
+                                "type": "string"
+                            },
+                            "startAt": {
+                                "description": "The index of the first item to return in the results. Default: 0",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of items to return. Default: 50, Maximum: 1000",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "accountType": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "emailAddress": {
+                                            "type": "string"
+                                        },
+                                        "avatarUrls": {
+                                            "type": "object",
+                                            "properties": {
+                                                "16x16": {
+                                                    "type": "string"
+                                                },
+                                                "24x24": {
+                                                    "type": "string"
+                                                },
+                                                "32x32": {
+                                                    "type": "string"
+                                                },
+                                                "48x48": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "timeZone": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["accountId"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextStartAt": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List watchers on a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_listwatchers",
+            "name": "list-watchers",
+            "output": ["ActionOutput_jira_listwatchers"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listwatchers", "ActionOutput_jira_listwatchers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listwatchers": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10001\" or \"PROJ-123\""
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listwatchers": {
+                        "type": "object",
+                        "properties": {
+                            "isWatching": {
+                                "type": "boolean"
+                            },
+                            "watchCount": {
+                                "type": "number"
+                            },
+                            "watchers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "accountType": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "avatarUrls": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "emailAddress": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["accountId", "active", "displayName", "self"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["isWatching", "watchCount", "watchers"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List worklogs on a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_listworklogs",
+            "name": "list-worklogs",
+            "output": ["ActionOutput_jira_listworklogs"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_listworklogs", "ActionOutput_jira_listworklogs"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_listworklogs": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"PROJ-123\" or \"10001\""
+                            },
+                            "startAt": {
+                                "description": "The index of the first item to return in a page of results. Default: 0",
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of items to return per page. Default: 50",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["issueIdOrKey"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_listworklogs": {
+                        "type": "object",
+                        "properties": {
+                            "worklogs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "issueId": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "accountId": {
+                                                    "type": "string"
+                                                },
+                                                "accountType": {
+                                                    "type": "string"
+                                                },
+                                                "active": {
+                                                    "type": "boolean"
+                                                },
+                                                "avatarUrls": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "emailAddress": {
+                                                    "type": "string"
+                                                },
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "self": {
+                                                    "type": "string"
+                                                },
+                                                "timeZone": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "updateAuthor": {
+                                            "type": "object",
+                                            "properties": {
+                                                "accountId": {
+                                                    "type": "string"
+                                                },
+                                                "accountType": {
+                                                    "type": "string"
+                                                },
+                                                "active": {
+                                                    "type": "boolean"
+                                                },
+                                                "avatarUrls": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "emailAddress": {
+                                                    "type": "string"
+                                                },
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "self": {
+                                                    "type": "string"
+                                                },
+                                                "timeZone": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "comment": {},
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "updated": {
+                                            "type": "string"
+                                        },
+                                        "started": {
+                                            "type": "string"
+                                        },
+                                        "timeSpent": {
+                                            "type": "string"
+                                        },
+                                        "timeSpentSeconds": {
+                                            "type": "number"
+                                        },
+                                        "visibility": {
+                                            "type": "object",
+                                            "properties": {
+                                                "identifier": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "startAt": {
+                                "type": "number"
+                            },
+                            "maxResults": {
+                                "type": "number"
+                            },
+                            "isLast": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["worklogs"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a watcher from a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_removewatcher",
+            "name": "remove-watcher",
+            "output": ["ActionOutput_jira_removewatcher"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_removewatcher", "ActionOutput_jira_removewatcher"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_removewatcher": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "accountId": {
+                                "type": "string",
+                                "description": "The accountId of the user to remove as a watcher. Example: \"5b10ac8d82e05b22cc7d4ef5\""
+                            }
+                        },
+                        "required": ["issueIdOrKey", "accountId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_removewatcher": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the watcher was successfully removed"
+                            },
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The issue ID or key that was modified"
+                            }
+                        },
+                        "required": ["success", "issueIdOrKey"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search Jira issues using JQL.",
+            "endpoint": null,
+            "input": "ActionInput_jira_searchissues",
+            "name": "search-issues",
+            "output": ["ActionOutput_jira_searchissues"],
+            "scopes": ["read:jira-work"],
+            "usedModels": ["ActionInput_jira_searchissues", "ActionOutput_jira_searchissues"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_searchissues": {
+                        "type": "object",
+                        "properties": {
+                            "jql": {
+                                "type": "string",
+                                "description": "JQL query string to search for issues. Example: \"project = PROJ AND status = Open\""
+                            },
+                            "fields": {
+                                "description": "Array of fields to return for each issue. Defaults to a set of common fields.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "expand": {
+                                "description": "Array of fields to expand in the response. Example: [\"changelog\", \"renderedFields\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "startAt": {
+                                "description": "Index of the first item to return. Used for offset pagination.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "maxResults": {
+                                "description": "Maximum number of results to return per page. Default varies by server.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["jql"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_searchissues": {
+                        "type": "object",
+                        "properties": {
+                            "issues": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "key", "self"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "maxResults": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issues", "total", "maxResults"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a Jira issue through a workflow transition.",
+            "endpoint": null,
+            "input": "ActionInput_jira_transitionissue",
+            "name": "transition-issue",
+            "output": ["ActionOutput_jira_transitionissue"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_transitionissue", "ActionOutput_jira_transitionissue"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_transitionissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"PROJ-123\""
+                            },
+                            "transitionId": {
+                                "type": "string",
+                                "description": "The ID of the transition to perform. Example: \"31\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "update": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["issueIdOrKey", "transitionId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_transitionissue": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "issueIdOrKey": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "issueIdOrKey"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a comment on a Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_updatecomment",
+            "name": "update-comment",
+            "output": ["ActionOutput_jira_updatecomment"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_updatecomment", "ActionOutput_jira_updatecomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "Issue ID or key. Example: \"10001\" or \"PROJ-123\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "Comment ID. Example: \"10000\""
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "visibility": {
+                                "description": "Visibility of the comment",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["role", "group"]
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                            },
+                            "notifyUsers": {
+                                "description": "Notify users about the comment update",
+                                "type": "boolean"
+                            },
+                            "overrideEditableFlag": {
+                                "description": "Override the editable flag",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["issueIdOrKey", "commentId", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "self": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            },
+                            "updateAuthor": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "self": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "visibility": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["role", "group"]
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update issue fields on an existing Jira issue",
+            "endpoint": null,
+            "input": "ActionInput_jira_updateissue",
+            "name": "update-issue",
+            "output": ["ActionOutput_jira_updateissue"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_updateissue", "ActionOutput_jira_updateissue"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_updateissue": {
+                        "type": "object",
+                        "properties": {
+                            "issue_id_or_key": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "update": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                }
+                            },
+                            "notify_users": {
+                                "type": "boolean"
+                            },
+                            "return_issue": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["issue_id_or_key"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_updateissue": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "issue": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "key": {
+                                        "type": "string"
+                                    },
+                                    "self": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "key", "self"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a worklog on a Jira issue.",
+            "endpoint": null,
+            "input": "ActionInput_jira_updateworklog",
+            "name": "update-worklog",
+            "output": ["ActionOutput_jira_updateworklog"],
+            "scopes": ["write:jira-work"],
+            "usedModels": ["ActionInput_jira_updateworklog", "ActionOutput_jira_updateworklog"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_updateworklog": {
+                        "type": "object",
+                        "properties": {
+                            "issueIdOrKey": {
+                                "type": "string",
+                                "description": "The ID or key of the issue. Example: \"10002\" or \"PROJ-123\""
+                            },
+                            "worklogId": {
+                                "type": "string",
+                                "description": "The ID of the worklog to update. Example: \"100028\""
+                            },
+                            "timeSpent": {
+                                "description": "A string representing the time spent. Example: \"3h 20m\"",
+                                "type": "string"
+                            },
+                            "timeSpentSeconds": {
+                                "description": "The time spent in seconds. Example: 12000",
+                                "type": "number"
+                            },
+                            "comment": {
+                                "description": "A comment about the worklog as a plain text string. This will be converted to Atlassian Document Format.",
+                                "type": "string"
+                            },
+                            "started": {
+                                "description": "The datetime when the work was started in ISO 8601 format. Example: \"2021-01-17T12:34:00.000+0000\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["issueIdOrKey", "worklogId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_updateworklog": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "issueId": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "updateAuthor": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "string"
+                            },
+                            "started": {
+                                "type": "string"
+                            },
+                            "timeSpent": {
+                                "type": "string"
+                            },
+                            "timeSpentSeconds": {
+                                "type": "number"
+                            },
+                            "visibility": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Jira field metadata available to the authenticated user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/fields",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "fields",
+            "output": ["Field"],
+            "runs": "every hour",
+            "scopes": ["read:field:jira"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Field"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Field": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "custom": {
+                                "type": "boolean"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "clauseNames": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "orderable": {
+                                "type": "boolean"
+                            },
+                            "navigable": {
+                                "type": "boolean"
+                            },
+                            "searchable": {
+                                "type": "boolean"
+                            },
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "system": {
+                                        "type": "string"
+                                    },
+                                    "custom": {
+                                        "type": "string"
+                                    },
+                                    "customId": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "untranslatedName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "custom"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira issue types available to the authenticated user",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/issue-types"
+                }
+            ],
+            "input": "SyncMetadata_jira_issuetypes",
+            "name": "issue-types",
+            "output": ["IssueType"],
+            "runs": "every hour",
+            "scopes": ["read:jira-work"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["IssueType", "SyncMetadata_jira_issuetypes"],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "IssueType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "iconUrl": {
+                                "type": "string"
+                            },
+                            "avatarId": {
+                                "type": "number"
+                            },
+                            "subtask": {
+                                "type": "boolean"
+                            },
+                            "hierarchyLevel": {
+                                "type": "number"
+                            },
+                            "entityId": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "project": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["type", "project"],
+                                "additionalProperties": false
+                            },
+                            "self": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_jira_issuetypes": {
+                        "type": "object",
+                        "properties": {
+                            "cloudId": {
+                                "type": "string"
+                            },
+                            "baseUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira issues using JQL-backed search with incremental updates",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/issues"
+                }
+            ],
+            "input": "SyncMetadata_jira_issues",
+            "name": "issues",
+            "output": ["Issue"],
+            "runs": "every hour",
+            "scopes": ["read:jira-work"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Issue", "SyncMetadata_jira_issues"],
+            "version": "3.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Issue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "web_url": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "description": {},
+                            "status": {
+                                "type": "string"
+                            },
+                            "issue_type": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "string"
+                            },
+                            "project_key": {
+                                "type": "string"
+                            },
+                            "reporter_id": {
+                                "type": "string"
+                            },
+                            "assignee_id": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "key", "self"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_jira_issues": {
+                        "type": "object",
+                        "properties": {
+                            "jql": {
+                                "type": "string"
+                            },
+                            "cloudId": {
+                                "type": "string"
+                            },
+                            "baseUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira project components for projects in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/project-components",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "project-components",
+            "output": ["ProjectComponent"],
+            "runs": "every hour",
+            "scopes": ["read:jira-work"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ProjectComponent"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ProjectComponent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "projectId": {
+                                "type": "string"
+                            },
+                            "projectKey": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "assigneeType": {
+                                "type": "string"
+                            },
+                            "realAssigneeType": {
+                                "type": "string"
+                            },
+                            "isAssigneeTypeValid": {
+                                "type": "boolean"
+                            },
+                            "leadAccountId": {
+                                "type": "string"
+                            },
+                            "leadDisplayName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "projectId", "projectKey", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira project versions for projects in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/project-versions"
+                }
+            ],
+            "input": "SyncMetadata_jira_projectversions",
+            "name": "project-versions",
+            "output": ["ProjectVersion"],
+            "runs": "every hour",
+            "scopes": ["read:jira-work", "read:project-version:jira"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ProjectVersion", "SyncMetadata_jira_projectversions"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ProjectVersion": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "projectId": {
+                                "type": "number"
+                            },
+                            "projectKey": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "released": {
+                                "type": "boolean"
+                            },
+                            "releaseDate": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            },
+                            "overdue": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_jira_projectversions": {
+                        "type": "object",
+                        "properties": {
+                            "cloudId": {
+                                "type": "string"
+                            },
+                            "baseUrl": {
+                                "type": "string"
+                            },
+                            "projectKeys": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira projects accessible to the authenticated user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/projects"
+                }
+            ],
+            "input": null,
+            "name": "projects",
+            "output": ["Project"],
+            "runs": "every hour",
+            "scopes": ["read:project:jira"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Project"],
+            "version": "2.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Project": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "project_type_key": {
+                                "type": "string"
+                            },
+                            "simplified": {
+                                "type": "boolean"
+                            },
+                            "style": {
+                                "type": "string"
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            },
+                            "entity_id": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "lead": {
+                                "type": "object",
+                                "properties": {
+                                    "account_id": {
+                                        "type": "string"
+                                    },
+                                    "display_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "project_category": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "avatar_urls": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "key", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Jira users visible to the authenticated account",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/users",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["read:jira-user"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "accountType": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "self": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "accountId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

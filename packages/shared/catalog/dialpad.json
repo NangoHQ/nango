@@ -1,0 +1,161 @@
+{
+    "providerConfigKey": "dialpad",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Dialpad",
+            "endpoint": null,
+            "input": "ActionInput_dialpad_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_dialpad_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dialpad_createuser", "ActionOutput_dialpad_createuser"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dialpad_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "license": {
+                                "type": "string"
+                            },
+                            "officeId": {
+                                "type": "string"
+                            },
+                            "autoAssign": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dialpad_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Dialpad by email",
+            "endpoint": null,
+            "input": "ActionInput_dialpad_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_dialpad_deleteuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_dialpad_deleteuser", "ActionOutput_dialpad_deleteuser"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dialpad_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dialpad_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Dialpad",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_dialpad_users",
+            "name": "users",
+            "output": ["User"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_dialpad_users"],
+            "version": "2.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_dialpad_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}
