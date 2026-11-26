@@ -16,6 +16,7 @@ export {
 } from './components/ui/alert-dialog';
 export { Alert, AlertActions, AlertButton, type AlertButtonProps, AlertDescription, type AlertProps, AlertTitle, alertVariants } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
+export { StatusIndicator, type StatusIndicatorProps, statusIndicatorVariants } from './components/ui/status-indicator';
 export {
     Button,
     type ButtonProps,
