@@ -2,38 +2,28 @@ import { format } from 'date-fns';
 import { Globe, MessageSquare } from 'lucide-react';
 import { useLayoutEffect, useMemo, useState } from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { StatusIndicator, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { cn, millisecondsToRuntime } from '@/utils/utils';
 
+import type { StatusIndicatorProps } from '@nangohq/design-system';
 import type { LogLevel, MessageRow } from '@nangohq/types';
 
 export const LOG_GRID = 'grid grid-cols-[96px_64px_minmax(0,1fr)_56px] items-center gap-2 px-3';
 
-const levelLabels: Record<LogLevel, string> = { error: 'Error', warn: 'Warn', info: 'Info', debug: 'Debug' };
+const levels: Record<LogLevel, { label: string; tone: StatusIndicatorProps['tone'] }> = {
+    error: { label: 'Error', tone: 'danger' },
+    warn: { label: 'Warn', tone: 'warning' },
+    info: { label: 'Info', tone: 'neutral' },
+    debug: { label: 'Debug', tone: 'muted' }
+};
 
 const Level: React.FC<{ level: LogLevel }> = ({ level }) => (
-    <span
-        className={cn(
-            'flex items-center gap-1.5 type-text-regular-xs',
-            level === 'error' && 'text-text-danger',
-            level === 'warn' && 'text-text-warning',
-            level === 'info' && 'text-text-secondary',
-            level === 'debug' && 'text-text-muted'
-        )}
-    >
-        <span
-            aria-hidden
-            className={cn(
-                'size-1.5 shrink-0 rounded-full',
-                level === 'error' && 'bg-icon-danger',
-                level === 'warn' && 'bg-icon-warning',
-                level === 'info' && 'bg-border-strong',
-                level === 'debug' && 'bg-border-default'
-            )}
-        />
-        {levelLabels[level]}
+    <span className="flex type-text-regular-xs text-text-secondary">
+        <StatusIndicator tone={levels[level].tone} size="sm">
+            {levels[level].label}
+        </StatusIndicator>
     </span>
 );
 
