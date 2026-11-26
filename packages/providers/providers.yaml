@@ -5072,6 +5072,8 @@ azure-blob-storage:
         - storage
     display_name: Azure Blob Storage
     alias: microsoft
+    webhook_routing_script: ''
+    webhook_user_defined_secret: false
     default_scopes:
         - offline_access
         - https://storage.azure.com/.default
@@ -26061,6 +26063,10 @@ microsoft:
             after:
                 - 'retry-after'
         decompress: true
+    webhook_routing_script: microsoftWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/api-integrations/microsoft
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app
 
@@ -26368,6 +26374,8 @@ microsoft-planner:
         - productivity
         - analytics
     alias: microsoft
+    webhook_routing_script: ''
+    webhook_user_defined_secret: false
     docs: https://nango.dev/docs/api-integrations/microsoft-planner
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
 
@@ -26386,6 +26394,7 @@ microsoft-teams:
         - video
         - popular
     alias: microsoft
+    webhook_user_defined_secret: false
     webhook_routing_script: microsoftTeamsWebhookRouting
     webhook_signature_enforced: true
     post_connection_script: microsoftTeamsPostConnection
@@ -26611,6 +26620,8 @@ microsoft-dataverse:
 microsoft-ads:
     display_name: Microsoft Ads
     alias: microsoft
+    webhook_routing_script: ''
+    webhook_user_defined_secret: false
     categories:
         - marketing
     default_scopes:
@@ -26635,6 +26646,8 @@ microsoft-power-bi:
     categories:
         - productivity
     alias: microsoft
+    webhook_routing_script: ''
+    webhook_user_defined_secret: false
     proxy:
         base_url: https://api.powerbi.com
     docs: https://nango.dev/docs/integrations/all/microsoft-power-bi
@@ -29077,6 +29090,8 @@ one-note:
     categories:
         - productivity
     alias: microsoft
+    webhook_routing_script: ''
+    webhook_user_defined_secret: false
     docs: https://nango.dev/docs/integrations/all/one-note
 
 onelogin:
