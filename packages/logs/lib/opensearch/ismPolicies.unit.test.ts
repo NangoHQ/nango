@@ -140,6 +140,44 @@ describe('putIsmPolicies', () => {
         await expect(putIsmPolicies(asClient(transport))).resolves.toBeUndefined();
     });
 
+    it.each([400, 403])('puts the policy without ism_template when it is rejected (%i)', async (statusCode) => {
+        const transport = mockTransport();
+        transport.request.mockImplementation(({ method, body }: { method: string; body?: { policy: { ism_template?: unknown } } }) => {
+            if (method === 'GET') {
+                throw new osErrors.ResponseError({ statusCode: 404 } as any);
+            }
+            if (method === 'PUT' && body?.policy.ism_template) {
+                throw new osErrors.ResponseError({ statusCode } as any);
+            }
+            return Promise.resolve({ body: {}, statusCode: 200 });
+        });
+
+        await expect(putIsmPolicies(asClient(transport))).resolves.toBeUndefined();
+
+        const putBodies = transport.request.mock.calls.filter(([params]) => params.method === 'PUT').map(([params]) => params.body.policy);
+        expect(putBodies).toHaveLength(4);
+        expect(putBodies.filter((policy) => policy.ism_template)).toHaveLength(2);
+        expect(putBodies.filter((policy) => !policy.ism_template)).toHaveLength(2);
+
+        const addCalls = transport.request.mock.calls.filter(([params]) => params.method === 'POST');
+        expect(addCalls).toHaveLength(0);
+    });
+
+    it('rethrows when the policy is also rejected without ism_template', async () => {
+        const transport = mockTransport();
+        transport.request.mockImplementation(({ method }: { method: string }) => {
+            if (method === 'GET') {
+                throw new osErrors.ResponseError({ statusCode: 404 } as any);
+            }
+            if (method === 'PUT') {
+                throw new osErrors.ResponseError({ statusCode: 403 } as any);
+            }
+            return Promise.resolve({ body: {}, statusCode: 200 });
+        });
+
+        await expect(putIsmPolicies(asClient(transport))).rejects.toThrow();
+    });
+
     it('rethrows on a genuine PUT failure', async () => {
         const transport = mockTransport();
         transport.request.mockImplementation(({ method }: { method: string }) => {

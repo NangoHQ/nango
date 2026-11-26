@@ -23,14 +23,29 @@ import type { Client as OpenSearchClient } from '@opensearch-project/opensearch'
  * ISM only attaches a policy to new indices through the policy's ism_template, the
  * index.plugins.index_state_management.policy_id index setting is ignored. ism_template doesn't apply to
  * indices that already exist, so the policy is also added to them explicitly.
+ *
+ * The ism_template can be rejected when another policy already has a template for the same indices with the
+ * same priority (400) or when the user isn't allowed to manage those indices (403). The policy is then put
+ * without it, as before, so that logs storage still starts.
  */
 export async function putIsmPolicies(client: OpenSearchClient): Promise<void> {
     const policies = [
-        buildRetentionIsmPolicy(policyOperations.name, `${indexOperations.index}.*`),
-        buildRetentionIsmPolicy(policyMessages.name, `${indexMessages.index}.*`)
+        { id: policyOperations.name, indexPattern: `${indexOperations.index}.*` },
+        { id: policyMessages.name, indexPattern: `${indexMessages.index}.*` }
     ];
-    for (const { id, indexPattern, body } of policies) {
-        await putIsmPolicy(client, id, body);
+    for (const { id, indexPattern } of policies) {
+        try {
+            await putIsmPolicy(client, id, buildRetentionIsmPolicy(id, indexPattern));
+        } catch (err: unknown) {
+            if (!(err instanceof osErrors.ResponseError) || (err.statusCode !== 400 && err.statusCode !== 403)) {
+                throw err;
+            }
+            logger.warning(
+                `ISM policy "${id}" was rejected with an ism_template for "${indexPattern}" (${err.statusCode}: ${err.message}), putting it without: new indices won't be attached to it`
+            );
+            await putIsmPolicy(client, id, buildRetentionIsmPolicy(id, null));
+            continue;
+        }
         await addIsmPolicyToExistingIndices(client, id, indexPattern);
     }
 }
@@ -93,33 +108,29 @@ async function getIsmPolicyVersion(client: OpenSearchClient, id: string): Promis
     }
 }
 
-function buildRetentionIsmPolicy(id: string, indexPattern: string): { id: string; indexPattern: string; body: Record<string, unknown> } {
+function buildRetentionIsmPolicy(id: string, indexPattern: string | null): Record<string, unknown> {
     return {
-        id,
-        indexPattern,
-        body: {
-            policy: {
-                policy_id: id,
-                description: `Nango logs retention (ISM): delete indices after ${retentionMinAge}`,
-                default_state: 'hot',
-                states: [
-                    {
-                        name: 'hot',
-                        actions: [],
-                        transitions: [
-                            {
-                                state_name: 'delete',
-                                conditions: { min_index_age: retentionMinAge }
-                            }
-                        ]
-                    },
-                    {
-                        name: 'delete',
-                        actions: [{ delete: {} }]
-                    }
-                ],
-                ism_template: [{ index_patterns: [indexPattern], priority: 100 }]
-            }
+        policy: {
+            policy_id: id,
+            description: `Nango logs retention (ISM): delete indices after ${retentionMinAge}`,
+            default_state: 'hot',
+            states: [
+                {
+                    name: 'hot',
+                    actions: [],
+                    transitions: [
+                        {
+                            state_name: 'delete',
+                            conditions: { min_index_age: retentionMinAge }
+                        }
+                    ]
+                },
+                {
+                    name: 'delete',
+                    actions: [{ delete: {} }]
+                }
+            ],
+            ...(indexPattern ? { ism_template: [{ index_patterns: [indexPattern], priority: 100 }] } : {})
         }
     };
 }

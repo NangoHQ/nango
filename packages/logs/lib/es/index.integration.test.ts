@@ -26,6 +26,25 @@ async function getIsmPolicy(raw: OpenSearchClient, id: string): Promise<IsmPolic
 function minIndexAgeOf(body: IsmPolicyBody): string | undefined {
     return body.policy.states.find((s) => s.transitions && s.transitions.length > 0)?.transitions?.[0]?.conditions.min_index_age;
 }
+async function putOperationsPolicyWithoutIsmTemplate(raw: OpenSearchClient): Promise<void> {
+    const current = await getIsmPolicy(raw, policyOperations.name);
+    await raw.transport.request({
+        method: 'PUT',
+        path: `/_plugins/_ism/policies/${policyOperations.name}`,
+        querystring: { if_seq_no: current._seq_no, if_primary_term: current._primary_term },
+        body: {
+            policy: {
+                policy_id: policyOperations.name,
+                description: 'policy without ism_template',
+                default_state: 'hot',
+                states: [
+                    { name: 'hot', actions: [], transitions: [{ state_name: 'delete', conditions: { min_index_age: retentionMinAge } }] },
+                    { name: 'delete', actions: [{ delete: {} }] }
+                ]
+            }
+        }
+    });
+}
 
 // This file is sequential
 describe('mapping', () => {
@@ -194,23 +213,7 @@ describe('retention policy', () => {
             try {
                 // policy without ism_template, daily index only carrying the policy_id setting
                 await migrateMapping();
-                const current = await getIsmPolicy(openSearchRaw, policyOperations.name);
-                await openSearchRaw.transport.request({
-                    method: 'PUT',
-                    path: `/_plugins/_ism/policies/${policyOperations.name}`,
-                    querystring: { if_seq_no: current._seq_no, if_primary_term: current._primary_term },
-                    body: {
-                        policy: {
-                            policy_id: policyOperations.name,
-                            description: 'policy without ism_template',
-                            default_state: 'hot',
-                            states: [
-                                { name: 'hot', actions: [], transitions: [{ state_name: 'delete', conditions: { min_index_age: retentionMinAge } }] },
-                                { name: 'delete', actions: [{ delete: {} }] }
-                            ]
-                        }
-                    }
-                });
+                await putOperationsPolicyWithoutIsmTemplate(openSearchRaw);
                 await openSearchRaw.indices.create({ index: existingIndex });
                 const settings = await openSearchRaw.indices.getSettings({ index: existingIndex });
                 const indexSettings = settings.body[existingIndex]?.settings?.index as
@@ -235,6 +238,40 @@ describe('retention policy', () => {
         // each explain can wait up to 10s for ISM
         60_000
     );
+
+    it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'opensearch')('still puts the policy when another policy has an ism_template for the same indices', async () => {
+        const openSearchRaw = raw as OpenSearchClient;
+        const customPolicyId = `custom-${nanoid()}`.toLowerCase();
+
+        try {
+            await putIsmPolicies(openSearchRaw);
+            await putOperationsPolicyWithoutIsmTemplate(openSearchRaw);
+            await openSearchRaw.transport.request({
+                method: 'PUT',
+                path: `/_plugins/_ism/policies/${customPolicyId}`,
+                body: {
+                    policy: {
+                        description: 'policy created outside of nango with the same ism_template priority',
+                        default_state: 'hot',
+                        states: [{ name: 'hot', actions: [], transitions: [] }],
+                        ism_template: [{ index_patterns: [`${indexOperations.index}.*`], priority: 100 }]
+                    }
+                }
+            });
+
+            await expect(putIsmPolicies(openSearchRaw)).resolves.toBeUndefined();
+
+            const policy = (await getIsmPolicy(openSearchRaw, policyOperations.name)) as unknown as { policy: { ism_template?: unknown } };
+            expect(policy.policy.ism_template).toBeNull();
+            expect(minIndexAgeOf(await getIsmPolicy(openSearchRaw, policyOperations.name))).toBe(retentionMinAge);
+        } finally {
+            try {
+                await openSearchRaw.transport.request({ method: 'DELETE', path: `/_plugins/_ism/policies/${customPolicyId}` }, { ignore: [404] });
+            } finally {
+                await putIsmPolicies(openSearchRaw);
+            }
+        }
+    });
 
     it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'ec-serverless')('sets data stream data_retention to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
         await migrateMapping();
