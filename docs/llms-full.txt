@@ -8796,8 +8796,12 @@ const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKEN>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="options" defaultOpen>
+      <ResponseField name="connectSessionToken" type="string">
+        A connect session token created by your backend with the [create connect session API](/reference/backend/http-api/connect/sessions/create), or the [reconnect session API](/reference/backend/http-api/connect/sessions/reconnect) to re-authorize an existing connection. Used by `nango.auth`, `nango.create` and `nango.reconnect`, and required by `nango.reconnect`.
+      </ResponseField>
+
       <ResponseField name="publicKey" type="string" deprecated>
-    Get your public key in the environment settings of the Nango UI. This is key is not sensitive.
+    Get your public key in the environment settings of the Nango UI. This key is not sensitive. Use `connectSessionToken` instead.
       </ResponseField>
 
       <ResponseField name="host" type="string">
@@ -8835,7 +8839,7 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
 **Parameters**
 <Expandable>
   <ResponseField name="sessionToken" type="string">
-    The unique token to identify your user. It is required but can be set asynchronously.
+    The unique token to identify your user. It is required but can be set asynchronously with `connectUI.setSessionToken()`. Defaults to the `connectSessionToken` passed to the `Nango` constructor.
   </ResponseField>
 
   <ResponseField name="baseURL" type="string" default="https://connect.nango.dev">
@@ -8847,7 +8851,7 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   </ResponseField>
 
   <ResponseField name="onEvent" type="function">
-    A callback to listen to events sent by Nango Connect
+    A callback to listen to events sent by Nango Connect. Each event has a `type`: `ready`, `connect` (with `payload.providerConfigKey` and `payload.connectionId`), `error` (with `payload.errorType` and `payload.errorMessage`), `close` or `settings_changed`.
   </ResponseField>
 
   <ResponseField name="detectClosedAuthWindow" type="boolean" default="false">
@@ -8867,7 +8871,9 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
 
 <Expandable>
   <ResponseField name="connectUI" type="ConnectUI">
-    The class to manipulate Nango Connect
+    The class to manipulate Nango Connect, with these methods:
+    - `setSessionToken(sessionToken)`: set the session token after opening the UI. A loading indicator shows until it's set.
+    - `close()`: close the UI.
   </ResponseField>
 </Expandable>
 
@@ -8875,11 +8881,17 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
 
 You store end-user credentials with the `nango.auth` method. It creates a connection in Nango.
 
+For OAuth and the other popup-based modes (GitHub App, GitHub App OAuth, MCP OAuth and plugin installs), `nango.auth` opens a popup. For credential-based modes, pass the credentials you collected and the connection is created directly, with no popup. Field names for the two-step and JWT modes are the `credentials` fields of the integration's provider in [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
+
+<Warning>
+The frontend SDK runs in your user's browser, so only pass credentials your end user entered. Never hard-code your own app's secrets, such as client secrets, private keys or developer keys, in frontend code. To create a connection with credentials you hold on your server, use the [import connection API](/reference/backend/http-api/connections/post) from your backend.
+</Warning>
+
 <Tabs>
 
 <Tab title="OAuth">
 
-For OAuth, this will open a modal to let the user log in to their external account.
+For OAuth (OAuth 2, OAuth 1, GitHub App, GitHub App OAuth, MCP OAuth and plugin installs such as Crisp), this will open a modal to let the user log in to their external account.
 
 ```js
 const result = await nango.auth('<INTEGRATION-ID>').catch((error) => {
@@ -8908,12 +8920,145 @@ const result = await nango.auth('<INTEGRATION-ID>', {
 For Basic Auth, pass the end-user's previously-collected username & password in the parameters.
 
 ```js
-const result = nango.auth('<INTEGRATION-ID>', {
-    credentials: { username: '<END-USER-API-KEY>', password: '<END-USER-PASSWORD>' }
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: { username: '<END-USER-USERNAME>', password: '<END-USER-PASSWORD>' }
 }).catch((error) => {
     ...
 });
 ```
+</Tab>
+
+<Tab title="OAuth 2 client credentials">
+
+For OAuth 2 client credentials, pass the end-user's client ID and client secret. Nango fetches the access token, and a new one when it expires.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: { client_id: '<CLIENT-ID>', client_secret: '<CLIENT-SECRET>' }
+}).catch((error) => {
+    ...
+});
+```
+
+For integrations that authenticate the client with a certificate (mTLS) or a private key, pass `client_certificate` and `client_private_key` (PEM) instead of, or in addition to, `client_secret`, as the integration requires.
+
+</Tab>
+
+<Tab title="Two-step">
+
+For two-step auth (Nango exchanges the credentials for a token, e.g. Google Service Account), set `type: 'TWO_STEP'` and pass the integration's credential fields.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: {
+        type: 'TWO_STEP',
+        serviceAccountEmailAddress: 'svc@project.iam.gserviceaccount.com',
+        privateKey: '-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n',
+        scopes: 'https://www.googleapis.com/auth/gmail.readonly',
+        delegatedAccessEmailAddress: 'user@example.com'
+    }
+}).catch((error) => {
+    ...
+});
+```
+
+Nango requests a token while creating the connection, so invalid credentials fail the call.
+
+</Tab>
+
+<Tab title="JWT">
+
+For JWT auth (Nango signs a JWT with the credentials, e.g. Ghost Admin), set `type: 'JWT'` and pass the integration's credential fields. For Ghost Admin, `privateKey` is the Admin API key in `<id>:<secret>` format.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: { type: 'JWT', privateKey: '<KEY-ID>:<KEY-SECRET>' },
+    params: { adminDomain: '<END-USER-ADMIN-DOMAIN>', version: 'v5.0' }
+}).catch((error) => {
+    ...
+});
+```
+
+</Tab>
+
+<Tab title="Signature">
+
+For signature-based auth (Nango signs each request with the credentials, e.g. Emarsys), set `type: 'SIGNATURE'` and pass the username and secret.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: { type: 'SIGNATURE', username: '<END-USER-USERNAME>', password: '<END-USER-SECRET>' }
+}).catch((error) => {
+    ...
+});
+```
+
+</Tab>
+
+<Tab title="TBA">
+
+For token-based authentication (NetSuite TBA), pass the token ID and token secret. Add `oauth_client_id_override` and `oauth_client_secret_override` when your users bring their own integration record.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: {
+        token_id: '<END-USER-TOKEN-ID>',
+        token_secret: '<END-USER-TOKEN-SECRET>',
+        oauth_client_id_override: '<END-USER-CONSUMER-KEY>',
+        oauth_client_secret_override: '<END-USER-CONSUMER-SECRET>'
+    },
+    params: { accountId: '<END-USER-ACCOUNT-ID>' }
+}).catch((error) => {
+    ...
+});
+```
+
+</Tab>
+
+<Tab title="Bill">
+
+For Bill, pass the username, password, organization ID and developer key.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: {
+        username: '<END-USER-USERNAME>',
+        password: '<END-USER-PASSWORD>',
+        organization_id: '<END-USER-ORGANIZATION-ID>',
+        dev_key: '<DEVELOPER-KEY>'
+    }
+}).catch((error) => {
+    ...
+});
+```
+
+</Tab>
+
+<Tab title="AWS SigV4">
+
+For AWS Signature Version 4, set `type: 'AWS_SIGV4'` and pass the ARN of the IAM role Nango assumes. Nango assumes the role while creating the connection and always sends an external ID. If the role's trust policy requires one, generate a UUID, have your user add it to the trust policy, and pass it as `params.external_id`. Otherwise Nango generates a random UUID, which a trust policy that requires an external ID won't match. `region` is optional when the integration has a default region. On reconnect, the stored external ID and region are kept.
+
+```js
+const result = await nango.auth('<INTEGRATION-ID>', {
+    credentials: { type: 'AWS_SIGV4', role_arn: 'arn:aws:iam::123456789012:role/<ROLE-NAME>', region: 'us-east-1' },
+    params: { external_id: '<UUID-IN-THE-TRUST-POLICY>' }
+}).catch((error) => {
+    ...
+});
+```
+
+</Tab>
+
+<Tab title="No auth">
+
+For integrations that need no credentials, use `nango.create` instead of `nango.auth`.
+
+```js
+const result = await nango.create('<INTEGRATION-ID>').catch((error) => {
+    ...
+});
+```
+
 </Tab>
 
 </Tabs>
@@ -8924,8 +9069,8 @@ const result = nango.auth('<INTEGRATION-ID>', {
     The integration ID that you can find in the integration settings on the Nango UI.
   </ResponseField>
 
-  <ResponseField name="connectionId" type="string">
-    The connection ID that you can find in the _Connections_ tab on the Nango UI.
+  <ResponseField name="connectionId" type="string" deprecated>
+    Only with the deprecated `publicKey`. With a connect session token, Nango generates the connection ID and rejects this parameter with `invalid_query_params`. To re-authorize an existing connection, use [`nango.reconnect`](#reconnect-an-existing-connection).
   </ResponseField>
 
   <ResponseField name="options" type="object">
@@ -8950,26 +9095,86 @@ const result = nango.auth('<INTEGRATION-ID>', {
         For Slack OAuth, specify user-specific scopes.
       </ResponseField>
 
+      <ResponseField name="installation" type="string">
+        Set to `outbound` for integrations installed from the provider's side (e.g. Sentry OAuth). Creates the connection without opening the authorization popup. Also pass `credentials: {}`: `nango.auth` throws `missing_credentials` without a `credentials` object.
+      </ResponseField>
+
+      <ResponseField name="assertionOption" type="object">
+        For two-step integrations that sign a token assertion with a key you pass at connection time (e.g. Apple Business Manager, NetSuite client credentials, SAP SuccessFactors), pass the key as `assertionOption.privateKey`. SAP SuccessFactors also needs `assertionOption.userName`, the SuccessFactors user the token is issued for. Nango uses them to sign the assertion and doesn't store them with the connection's credentials.
+      </ResponseField>
+
       <ResponseField name="credentials" type="object">
         <Expandable title="credentials" defaultOpen>
+          <ResponseField name="type" type="string">
+            The auth mode, for modes that need it: `TWO_STEP`, `JWT`, `SIGNATURE` or `AWS_SIGV4`.
+          </ResponseField>
+
           <ResponseField name="apiKey" type="string">
             For API key authorization, pass in the user's API key.
           </ResponseField>
 
           <ResponseField name="username" type="string">
-            For Basic authorization, pass in the user's username.
+            For Basic, Signature and Bill authorization, pass in the user's username.
           </ResponseField>
 
           <ResponseField name="password" type="string">
-            For Basic authorization, pass in the user's password.
+            For Basic and Bill authorization, pass in the user's password. For Signature authorization, pass in the user's secret.
+          </ResponseField>
+
+          <ResponseField name="client_id" type="string">
+            For OAuth 2 client credentials, pass in the user's client ID.
+          </ResponseField>
+
+          <ResponseField name="client_secret" type="string">
+            For OAuth 2 client credentials, pass in the user's client secret.
+          </ResponseField>
+
+          <ResponseField name="client_certificate" type="string">
+            For OAuth 2 client credentials with mTLS, pass in the user's client certificate (PEM).
+          </ResponseField>
+
+          <ResponseField name="client_private_key" type="string">
+            For OAuth 2 client credentials with mTLS or a private key, pass in the user's private key.
+          </ResponseField>
+
+          <ResponseField name="token_id" type="string">
+            For NetSuite TBA, pass in the user's token ID.
+          </ResponseField>
+
+          <ResponseField name="token_secret" type="string">
+            For NetSuite TBA, pass in the user's token secret.
+          </ResponseField>
+
+          <ResponseField name="organization_id" type="string">
+            For Bill, pass in the user's organization ID.
+          </ResponseField>
+
+          <ResponseField name="dev_key" type="string">
+            For Bill, pass in the developer key.
+          </ResponseField>
+
+          <ResponseField name="role_arn" type="string">
+            For AWS SigV4, pass in the ARN of the IAM role Nango assumes.
+          </ResponseField>
+
+          <ResponseField name="region" type="string">
+            For AWS SigV4, pass in the AWS region. Optional when the integration has a default region.
           </ResponseField>
 
           <ResponseField name="oauth_client_id_override" type="string">
-            For OAuth 2, override the integration's client ID with a connection-level client ID. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). Pass it together with `oauth_client_secret_override`.
+            For OAuth 2 and NetSuite TBA, override the integration's client ID with a connection-level client ID. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). For OAuth 2, pass it together with `oauth_client_secret_override`.
           </ResponseField>
 
           <ResponseField name="oauth_client_secret_override" type="string">
-            For OAuth 2, override the integration's client secret with a connection-level client secret. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). Pass it together with `oauth_client_id_override`. Both are sent to Nango in the query string of the authorization popup URL. Nango uses the secret server-side to exchange and refresh tokens. It is never added to the provider's authorization URL.
+            For OAuth 2 and NetSuite TBA, override the integration's client secret with a connection-level client secret. This is useful when your users bring their own OAuth 2 app (e.g. Netsuite). For OAuth 2, pass it together with `oauth_client_id_override`. Both are sent to Nango in the query string of the authorization popup URL. Nango uses the secret server-side to exchange and refresh tokens. It is never added to the provider's authorization URL.
+          </ResponseField>
+
+          <ResponseField name="oauth_refresh_token_override" type="string">
+            For OAuth 2, used together with both `oauth_client_id_override` and `oauth_client_secret_override`: stores this refresh token on the connection instead of the one returned by the provider.
+          </ResponseField>
+
+          <ResponseField name="[field]" type="string">
+            For two-step and JWT authorization, pass in each of the integration's credential fields (e.g. `privateKey`).
           </ResponseField>
         </Expandable>
       </ResponseField>
@@ -8987,26 +9192,43 @@ const result = nango.auth('<INTEGRATION-ID>', {
   <ResponseField name="connectionId" type="string">
     The connection ID that you can find in the _Connections_ tab on the Nango UI.
   </ResponseField>
-</Expandable>
 
-**Error response**
-<Expandable>
-  <ResponseField name="error" type="object">
-    <Expandable title="error" defaultOpen>
-      <ResponseField name="type" type="string">
-        The type of error (e.g. 'authorization_cancelled').
-      </ResponseField>
-
-      <ResponseField name="message" type="string">
-        The detailed error message (e.g. 'Authorization fail: The user has closed the authorization modal before the process was complete.').
-      </ResponseField>
-    </Expandable>
+  <ResponseField name="isPending" type="boolean">
+    `true` when a GitHub App OAuth connection is created but the app installation is still waiting for an admin's approval.
   </ResponseField>
 </Expandable>
 
+**Error response**
+
+`nango.auth` rejects with an [`AuthError`](#handling-errors):
+
+<Expandable>
+  <ResponseField name="type" type="string">
+    The type of error (e.g. `window_closed`). See [Error handling](#error-handling).
+  </ResponseField>
+
+  <ResponseField name="message" type="string">
+    The detailed error message (e.g. `The authorization window was closed before the authorization flow was completed`).
+  </ResponseField>
+</Expandable>
+
+## Reconnect an existing connection
+
+To re-authorize an existing connection, for example after its credentials expired or were revoked, create a reconnect session token with the [reconnect session API](/reference/backend/http-api/connect/sessions/reconnect) and call `nango.reconnect`. It takes the integration ID and the same options as `nango.auth`, and keeps the connection ID.
+
+```js
+const nango = new Nango({ connectSessionToken: '<RECONNECT-SESSION-TOKEN>' });
+
+const result = await nango.reconnect('<INTEGRATION-ID>').catch((error) => {
+    ...
+});
+```
+
+`nango.reconnect` throws `missing_connect_session_token` if the SDK was instantiated without a connect session token.
+
 ## Error Handling
 
-The Nango Frontend SDK may throw different types of errors during authentication and connection setup. Below is a list of all possible error types along with their meanings:
+The Nango Frontend SDK may throw different types of errors during authentication and connection setup. Below are the error types the SDK defines. For headless flows, `type` can also be any error code returned by the Nango API (e.g. `unknown_provider_config`).
 
 1. `missing_auth_token`
    - Occurs when neither a public key nor a connect session token is provided.
@@ -9021,8 +9243,8 @@ The Nango Frontend SDK may throw different types of errors during authentication
    - Message: "Invalid URL provided for the Nango host."
 
 4. `missing_credentials`
-   - Occurs when required credentials are not provided.
-   - Message: "You must specify credentials."
+   - Occurs when required credentials are not provided, including `installation: 'outbound'` without a `credentials` object.
+   - Message: "You must specify credentials." or "Credentials are required for custom auth"
 
 5. `window_closed`
    - Occurs when the authentication window is closed before completing the flow.
@@ -9032,21 +9254,25 @@ The Nango Frontend SDK may throw different types of errors during authentication
    - Occurs when credential verification fails for certain integrations before the connection is established.
    - Message: "The given credentials were found to be invalid. Please check the credentials and try again."
 
-7. `missing_connect_session_token`
+7. `connection_validation_failed`
+   - Occurs when your [connection validation function](/guides/functions/event-functions#create-a-connection-validation-function) rejects the connection.
+   - Message: The message returned by your validation function.
+
+8. `missing_connect_session_token`
     - Occurs when attempting to reconnect without a session token.
     - Message: "Reconnect requires a session token"
 
-8. `resource_capped`
+9. `resource_capped`
     - Occurs when the resource usage limit has been reached.
-    - Message: "Reached maximum number of allowed connections for your plan" or "Reached maximum number of connections with functions enabled"
+    - Message: "Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits."
 
-9. `unknown_error`
+10. `unknown_error`
     - Occurs when an unexpected error happens that doesn't fall into other error categories.
     - Message: Varies depending on the underlying error (e.g., network failures, unexpected exceptions)
 
 ### Error Response Structure
 
-All errors from the Nango Frontend SDK follow this structure:
+Errors returned by the Nango API follow this structure. The SDK turns `code` into the `AuthError`'s `type`, and `message` into its `message`:
 
 ```json
 {
