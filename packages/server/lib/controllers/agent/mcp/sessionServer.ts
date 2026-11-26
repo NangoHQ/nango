@@ -1,6 +1,6 @@
 import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
-import { buildSessionTools, withActionInputSchemas } from '../../../services/agentSessionToolCatalog.service/index.js';
+import { buildSessionTools, TOOLS_PAGE_SIZE, withActionInputSchemas } from '../../../services/agentSessionToolCatalog.service/index.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeDirectToolCall } from './directCall.js';
 import { executeTool } from './execute/execute.js';
@@ -12,8 +12,6 @@ import { toolSearchTool } from './toolSearch/search.js';
 import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
 import type { RegisteredTool, RequestId } from '@modelcontextprotocol/server';
 import type { Result } from '@nangohq/utils';
-
-export const TOOLS_PAGE_SIZE = 50;
 
 const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
 
