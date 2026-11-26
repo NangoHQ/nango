@@ -2,6 +2,7 @@ import * as z from 'zod/v4';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../services/mcpProxySchema.js';
+import { MAX_PROXY_RETRIES } from '../../../services/proxy.service.js';
 
 export const proxyRequestInputSchema = z
     .object({
@@ -13,7 +14,7 @@ export const proxyRequestInputSchema = z
         headers: proxyHeadersSchema.optional(),
         body: z.json().optional(),
         base_url_override: z.url().or(z.literal('')).optional(),
-        retries: z.number().int().min(0).max(5).optional(),
+        retries: z.number().int().min(0).max(MAX_PROXY_RETRIES).optional(),
         decompress: z.boolean().optional(),
         retry_on: z.array(z.number().int().min(100).max(599)).optional(),
         forward_headers_on_redirect: z.boolean().optional()

@@ -28,6 +28,9 @@ const logLevelToColor = {
     warn: 'yellow'
 } as const;
 
+// The /proxy API rejects more retries than this, while deployed functions may ask for more
+const MAX_PROXY_API_RETRIES = 5;
+
 function showLoggerLevelWarning() {
     // only show it once
     let called = false;
@@ -63,6 +66,9 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (!config.method) {
             config.method = 'GET';
+        }
+        if (config.retries && config.retries > MAX_PROXY_API_RETRIES) {
+            config.retries = MAX_PROXY_API_RETRIES;
         }
 
         const res = await this.nango.proxy(config);

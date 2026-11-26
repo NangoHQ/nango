@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { getHeaders, getLogger, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import proxyService from '../../services/proxy.service.js';
+import proxyService, { MAX_PROXY_RETRIES } from '../../services/proxy.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
@@ -23,7 +23,7 @@ const logger = getLogger('Proxy.Controller');
 const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
     'connection-id': connectionIdSchema,
-    retries: z.coerce.number().optional().default(0),
+    retries: z.coerce.number().int().min(0).max(MAX_PROXY_RETRIES).optional().default(0),
     'base-url-override': z.url().or(z.literal('')).optional(),
     decompress: z.enum(['true', 'false']).optional(),
     'retry-on': z
@@ -108,6 +108,15 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
     const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
     const isSync = parsedHeaders['nango-is-sync'] === 'true';
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
+
+    // A client that goes away before its response is sent no longer needs it, so stop the call and any retries left
+    const abortController = new AbortController();
+    res.once('close', () => {
+        if (!res.writableFinished) {
+            abortController.abort();
+        }
+    });
+
     try {
         const method = req.method.toUpperCase() as HTTP_METHOD;
 
@@ -140,7 +149,8 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
             ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
             activityLogId: existingActivityLogId,
             isSync,
-            isDryRun
+            isDryRun,
+            abortSignal: abortController.signal
         });
         logCtx = execution.logCtx;
         if (execution.result.isErr()) {
