@@ -45,8 +45,12 @@ export const LogsShow: React.FC = () => {
             if (!direction) {
                 return;
             }
+            const id = direction === 'next' ? nextId : previousId;
+            if (!id) {
+                return;
+            }
             event.preventDefault();
-            goTo(direction === 'next' ? nextId : previousId);
+            goTo(id);
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
