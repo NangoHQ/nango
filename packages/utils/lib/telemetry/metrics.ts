@@ -8,6 +8,7 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     CATALOG_CODE_RATE_LIMITED = 'nango.catalog.code.rateLimited',
+    CLIENT_METADATA_RATE_LIMITED = 'nango.oauth.clientMetadata.rateLimited',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
