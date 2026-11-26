@@ -12,7 +12,6 @@ import * as zod from 'zod';
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
 import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/utils';
 
-import { botbuilder } from './botbuilder.js';
 import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
@@ -125,8 +124,6 @@ export async function exec({
                             return crypto;
                         case 'zod':
                             return zod;
-                        case 'botbuilder':
-                            return botbuilder;
                         case 'soap':
                             return soap;
                         case 'unzipper':
