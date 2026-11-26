@@ -676,6 +676,45 @@ describe('parse', () => {
         }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
     });
 
+    describe('EMAIL_PROVIDER', () => {
+        it('should leave EMAIL_PROVIDER undefined when unset, without requiring any provider env', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_PROVIDER).toBeUndefined();
+        });
+
+        it('should reject an unknown provider', () => {
+            expect(() => parseEnvs(ENVS, { EMAIL_PROVIDER: 'sendgrid' })).toThrow('EMAIL_PROVIDER');
+        });
+
+        const missingCases = [
+            { provider: 'mailgun', missing: 'MAILGUN_API_KEY' },
+            { provider: 'smtp', missing: 'SMTP_URL' },
+            { provider: 'http', missing: 'EMAIL_HTTP_URL' },
+            { provider: 'ses', missing: 'AWS_SES_REGION' }
+        ];
+        for (const { provider, missing } of missingCases) {
+            it(`should throw when EMAIL_PROVIDER=${provider} is set without ${missing}`, () => {
+                expect(() => parseEnvs(ENVS, { EMAIL_PROVIDER: provider })).toThrow(`${missing} is required when EMAIL_PROVIDER=${provider}`);
+            });
+        }
+
+        it('should accept EMAIL_PROVIDER=ses with AWS_SES_REGION', () => {
+            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_SES_REGION: 'eu-west-1' });
+            expect(res.EMAIL_PROVIDER).toBe('ses');
+            expect(res.AWS_SES_REGION).toBe('eu-west-1');
+        });
+
+        it('should accept EMAIL_PROVIDER=ses with only AWS_REGION', () => {
+            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_REGION: 'us-east-1' });
+            expect(res.EMAIL_PROVIDER).toBe('ses');
+        });
+
+        it('should accept EMAIL_PROVIDER=none without any provider env', () => {
+            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'none' });
+            expect(res.EMAIL_PROVIDER).toBe('none');
+        });
+    });
+
     describe('EMAIL_HTTP_*', () => {
         const body = JSON.stringify({ from: '{{from}}', subject: '{{subject}}' });
 

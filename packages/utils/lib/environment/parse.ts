@@ -740,6 +740,15 @@ const ENVS_SHAPE = z.object({
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
 
+    // Email
+    // Picks the email provider explicitly. Left unset, the provider is inferred from which of
+    // MAILGUN_API_KEY, SMTP_URL and EMAIL_HTTP_URL is set, so existing deployments keep working.
+    EMAIL_PROVIDER: z.enum(['mailgun', 'smtp', 'ses', 'http', 'none']).optional(),
+
+    // AWS SES (EMAIL_PROVIDER=ses). Credentials come from the default AWS credential chain.
+    AWS_SES_REGION: z.string().optional(), // falls back to AWS_REGION
+    AWS_SES_CONFIGURATION_SET: z.string().optional(),
+
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.url().optional(),
@@ -1266,6 +1275,29 @@ function checkInternalAuthKeyPair(
     }
 }
 
+type EmailProviderEnvs = Pick<
+    z.infer<typeof ENVS_SHAPE>,
+    'EMAIL_PROVIDER' | 'MAILGUN_API_KEY' | 'SMTP_URL' | 'EMAIL_HTTP_URL' | 'AWS_SES_REGION' | 'AWS_REGION'
+>;
+
+/** Names of the env vars the explicitly chosen EMAIL_PROVIDER needs but does not have. */
+function requiredEmailProviderEnvs(envs: EmailProviderEnvs): (keyof EmailProviderEnvs)[] {
+    switch (envs.EMAIL_PROVIDER) {
+        case 'mailgun':
+            return envs.MAILGUN_API_KEY ? [] : ['MAILGUN_API_KEY'];
+        case 'smtp':
+            return envs.SMTP_URL ? [] : ['SMTP_URL'];
+        case 'http':
+            // EMAIL_HTTP_BODY is already required alongside EMAIL_HTTP_URL by its own check
+            return envs.EMAIL_HTTP_URL ? [] : ['EMAIL_HTTP_URL'];
+        case 'ses':
+            return envs.AWS_SES_REGION || envs.AWS_REGION ? [] : ['AWS_SES_REGION'];
+        case 'none':
+        case undefined:
+            return [];
+    }
+}
+
 export const ENVS = ENVS_SHAPE.check((ctx) => {
     if (ctx.value.SIGNUP_AD_CONTEXT_ENABLED && !ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
         ctx.issues.push({
@@ -1285,6 +1317,18 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    // An explicitly chosen email provider must be fully configured, so a typo fails at startup
+    // rather than on a user's first signup email. Inferred providers are not checked here, to
+    // keep existing deployments booting exactly as before.
+    for (const name of requiredEmailProviderEnvs(ctx.value)) {
+        ctx.issues.push({
+            code: 'custom',
+            message: `${name} is required when EMAIL_PROVIDER=${ctx.value.EMAIL_PROVIDER}`,
+            path: [name],
+            input: ctx.value[name]
         });
     }
 
