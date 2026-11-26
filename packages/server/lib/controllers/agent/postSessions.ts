@@ -5,8 +5,8 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { createdAgentSessionToPublicApi } from '../../formatters/agentSession.js';
 import { connectionIdSchema, connectionTagsSchema, providerConfigKeySchema, TAG_MAX_COUNT } from '../../helpers/validation.js';
-import * as agentSessionService from '../../services/agentSession.service.js';
 import { trackAgentSessionCreated } from '../../services/agentSessionAnalytics.service.js';
+import * as agentSessionCreationService from '../../services/agentSessionCreation.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type {
@@ -221,7 +221,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         metaTools: body.data.meta_tools?.metaTools,
         expiresInMs: body.data.expires_in
     };
-    const created = await agentSessionService.createAgentSession(params);
+    const created = await agentSessionCreationService.createAgentSession(params);
 
     if (created.isErr()) {
         if (created.error.code === 'server_error') {

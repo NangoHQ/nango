@@ -5,11 +5,11 @@ import { getProvider } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionProxyRequest } from '../../../../services/agentSessionAnalytics.service.js';
+import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
 import { proxyInputSchema, proxyToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
-import { resolveSessionConnection } from '../sessionConnection.js';
 import { invalidArgumentsOf, makeAgentSessionMcpTool } from '../sessionTool.js';
 import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';

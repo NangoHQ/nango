@@ -6,7 +6,6 @@ import db from '@nangohq/database';
 import { buildTagsFromEndUser, configService, connectionService, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, metrics, nanoid, Ok, report, stringifyError } from '@nangohq/utils';
 
-import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
 import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
 import { recordIntegrationCreated } from '../hooks/auditIntegration.js';
@@ -20,6 +19,8 @@ import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js'
 import { isUsableOutcome, trackIntegrationSetup, trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
+import { withConnectionsCreatedInSession } from './agentSessionConnections.service.js';
+import * as agentSessionCreationService from './agentSessionCreation.service.js';
 import { TOOL_NAME_SEPARATOR } from './agentSessionToolCatalog.service/index.js';
 import { getInstantSetup, needsSetupFields } from './instantSetup.js';
 import integrationService from './integration.service.js';
@@ -319,7 +320,7 @@ async function getOrCreateSession(
         metaTools: parsed.data.meta_tools?.metaTools,
         expiresInMs: parsed.data.expires_in
     };
-    const created = await agentSessionService.createAgentSession(params);
+    const created = await agentSessionCreationService.createAgentSession(params);
 
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
