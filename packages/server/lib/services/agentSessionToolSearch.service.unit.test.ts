@@ -177,11 +177,50 @@ describe('rankSessionTools', () => {
         expect(related.map((match) => match.action)).toContain('create_invoice');
     });
 
-    it('promotes none of the tools tied for the lead when the query cannot tell them apart', () => {
+    it('promotes the tools tied for the lead when the query cannot tell them apart', () => {
+        const { best, tied } = rank({ compiledToolset: ledger, query: 'list' });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
+        expect(tied).toBe(true);
+    });
+
+    it('promotes at most three tied tools', () => {
+        const { best, related, tied } = rank({
+            compiledToolset: {
+                xero: { provider: 'xero', pinned: [], searchable: [...(ledger['xero']?.searchable ?? []), { name: 'list_items', description: 'List items.' }] }
+            },
+            query: 'list'
+        });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
+        expect(related.map((match) => match.action)).toStrictEqual(['list_items']);
+        expect(tied).toBe(true);
+    });
+
+    it('promotes none of the tools tied on a fit too weak to be a match', () => {
         const { best, related, tied } = rank({ compiledToolset: ledger, query: 'list records' });
 
         expect(best).toStrictEqual([]);
         expect(related.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
+        expect(tied).toBe(false);
+    });
+
+    it('does not prefer a shorter name that leaves out a query word', () => {
+        const { best, tied } = rank({
+            compiledToolset: {
+                github: {
+                    provider: 'github',
+                    pinned: [],
+                    searchable: [
+                        { name: 'create-label', description: 'Create a label in a repository.' },
+                        { name: 'create-pull-request', description: 'Create a pull request in a repository.' }
+                    ]
+                }
+            },
+            query: 'create repository'
+        });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['create-label', 'create-pull-request']);
         expect(tied).toBe(true);
     });
 
@@ -209,7 +248,7 @@ describe('rankSessionTools', () => {
         });
 
         // A fuzzy 'get' would pick delete_message.
-        expect(best).toStrictEqual([]);
+        expect(best.map((match) => match.action)).toStrictEqual(['delete_message', 'list_messages']);
         expect(tied).toBe(true);
     });
 
@@ -229,19 +268,62 @@ describe('rankSessionTools', () => {
     });
 
     it('does not take an action name several tools share as naming one of them', () => {
-        const { best, tied } = rank({
+        const { best, related, tied } = rank({
             compiledToolset: { ...issues, jira: { provider: 'jira', pinned: [], searchable: [{ name: 'update-issue', description: 'Update an issue.' }] } },
             query: 'update-issue'
         });
 
-        expect(best.map((match) => match.slug)).toStrictEqual([]);
+        expect(best.map((match) => match.slug)).toStrictEqual(['jira__update-issue', 'linear__update-issue']);
+        expect(related.map((match) => match.action).sort()).toStrictEqual(['update-issue-label', 'update-issue-relation']);
         expect(tied).toBe(true);
     });
 
-    it('still ties a query that only shares words with the names', () => {
-        const { best, tied } = rank({ compiledToolset: issues, query: 'update issue' });
+    it('breaks a tie for the tool whose name the query covers most closely', () => {
+        const { best, related, tied } = rank({ compiledToolset: issues, query: 'update issue' });
 
-        expect(best).toStrictEqual([]);
+        expect(best.map((match) => match.action)).toStrictEqual(['update-issue']);
+        expect(related.map((match) => match.action).sort()).toStrictEqual(['update-issue-label', 'update-issue-relation']);
+        expect(tied).toBe(false);
+    });
+
+    it('matches a tool whose name is the query, though longer names hold the same words', () => {
+        const compiledToolset: AgentSessionCompiledToolset = {
+            pinterest: {
+                provider: 'pinterest',
+                pinned: [],
+                searchable: [
+                    { name: 'create-board', description: 'Create a board.' },
+                    { name: 'create-board-section', description: 'Create a board section.' },
+                    { name: 'list-boards', description: 'List boards.' },
+                    { name: 'list-following-boards', description: 'List boards the user follows.' },
+                    { name: 'list-board-pins', description: 'List pins on a board' }
+                ]
+            }
+        };
+        const matchFor = (query: string) => rank({ compiledToolset, query }).best.map((match) => match.action);
+
+        expect(matchFor('create board')).toStrictEqual(['create-board']);
+        expect(matchFor('create a board')).toStrictEqual(['create-board']);
+        expect(matchFor('list boards')).toStrictEqual(['list-boards']);
+        expect(matchFor('list my boards')).toStrictEqual(['list-boards']);
+    });
+
+    it('still ties when every tied name leaves out as many words', () => {
+        const { best, tied } = rank({
+            compiledToolset: {
+                pinterest: {
+                    provider: 'pinterest',
+                    pinned: [],
+                    searchable: [
+                        { name: 'create-board', description: 'Create a board.' },
+                        { name: 'delete-board', description: 'Delete a board.' }
+                    ]
+                }
+            },
+            query: 'board'
+        });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['create-board', 'delete-board']);
         expect(tied).toBe(true);
     });
 
