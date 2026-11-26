@@ -224,6 +224,23 @@ describe('rankSessionTools', () => {
         expect(tied).toBe(true);
     });
 
+    it('ranks tied tools the same way whatever order they come in', () => {
+        const board = { name: 'create-board', description: 'Create a board.' };
+        const section = { name: 'create-board-section', description: 'Create a board section.' };
+        const recreate = { name: 'recreate-board', description: 'Create a replacement board.' };
+
+        for (const searchable of [
+            [board, section, recreate],
+            [recreate, section, board],
+            [recreate, board, section]
+        ]) {
+            const { best, tied } = rank({ compiledToolset: { pinterest: { provider: 'pinterest', pinned: [], searchable } }, query: 'create board' });
+
+            expect(best.map((match) => match.action)).toStrictEqual(['create-board']);
+            expect(tied).toBe(false);
+        }
+    });
+
     it('breaks a tie for the lead on the query words a tool holds, stopwords included', () => {
         const { best, related, tied } = rank({ compiledToolset: messages, query: 'get message' });
 

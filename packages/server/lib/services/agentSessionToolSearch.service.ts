@@ -271,11 +271,11 @@ function toolNamed({ candidates, query }: { candidates: SearchCandidate[]; query
 
 /**
  * When several tools share the top score, the one whose name and description hold the most query
- * words, stopwords included, is the only match. Between tools whose names each hold every meaningful
- * query word, the one whose name has the fewest words the query left out is, so 'create board' is
- * create-board and not create-board-section. A name missing a query word has no claim to be the
- * closer fit for being shorter, or 'create repository' would be create-label. If neither
- * tells them apart, the tools still level at the top are all matches, up to MAX_TIED_MATCHES, for
+ * words, stopwords included, is the only match. After that, a tool whose name holds every
+ * meaningful query word beats one whose name does not, and between those the name with the fewest
+ * words the query left out wins, so 'create board' is create-board and not create-board-section.
+ * Names missing a query word are not ranked on length, or 'create repository' would be
+ * create-label. Tools that still cannot be told apart are all matches, up to MAX_TIED_MATCHES, for
  * the agent to pick between on their descriptions. Words are compared exactly, since a fuzzy 'get'
  * also hits 'delete'.
  */
@@ -296,12 +296,13 @@ function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandida
         leaders.map(({ candidate }) => {
             const own = new Set(queryWords(`${candidate.action} ${candidate.description}`).map(singular));
             const nameWords = new Set(queryWords(candidate.action).map(singular));
+            const namesEveryTerm = terms.every((term) => nameWords.has(term));
             return [
                 candidate,
                 {
                     wordsFound: [...words].filter((word) => own.has(word)).length,
-                    namesEveryTerm: terms.every((term) => nameWords.has(term)),
-                    nameWordsLeftOut: [...nameWords].filter((word) => !words.has(word)).length
+                    // Every name that misses a query word gets the same distance, so none of them is ranked on length.
+                    nameDistance: namesEveryTerm ? [...nameWords].filter((word) => !words.has(word)).length : Number.POSITIVE_INFINITY
                 }
             ];
         })
@@ -313,8 +314,7 @@ function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandida
             return 0;
         }
 
-        const byWords = fitB.wordsFound - fitA.wordsFound;
-        return byWords || (fitA.namesEveryTerm && fitB.namesEveryTerm ? fitA.nameWordsLeftOut - fitB.nameWordsLeftOut : 0);
+        return ascending(fitB.wordsFound, fitA.wordsFound) || ascending(fitA.nameDistance, fitB.nameDistance);
     };
     const reordered = [...leaders].sort(compare);
 
@@ -322,6 +322,11 @@ function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandida
     const tiedCount = first ? reordered.filter((leader) => compare(first, leader) === 0).length : 0;
 
     return { scored: [...reordered, ...scored.slice(leaders.length)], lead: tiedCount > 1 ? 'tied' : 'tie_broken', tiedCount };
+}
+
+// Unlike a subtraction, this is safe on Infinity.
+function ascending(a: number, b: number): number {
+    return a === b ? 0 : a < b ? -1 : 1;
 }
 
 function sameScore(a: number, b: number): boolean {
