@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import tracer from 'dd-trace';
+import * as z from 'zod/v4';
 
 import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
@@ -92,8 +93,9 @@ export function encodeResultId(ref: StoredResultRef): string {
 export function decodeResultId(resultId: string): StoredResultRef | null {
     try {
         const parsed = JSON.parse(Buffer.from(resultId, 'base64url').toString('utf8')) as unknown;
-        if (Array.isArray(parsed) && parsed.length === 2 && typeof parsed[0] === 'string' && typeof parsed[1] === 'string') {
-            return { integrationId: parsed[0], recordId: parsed[1] };
+        const ref = z.tuple([z.string(), z.uuid()]).safeParse(parsed);
+        if (ref.success) {
+            return { integrationId: ref.data[0], recordId: ref.data[1] };
         }
     } catch {
         // not an id we issued

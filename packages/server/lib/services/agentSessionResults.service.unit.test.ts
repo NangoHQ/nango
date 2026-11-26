@@ -139,7 +139,13 @@ describe('result ids', () => {
         expect(decodeResultId(encodeResultId(ref))).toEqual(ref);
     });
 
-    it.each(['', 'not-base64!', Buffer.from('{"a":1}').toString('base64url'), Buffer.from('["only-one"]').toString('base64url')])('reject %j', (resultId) => {
+    it.each([
+        '',
+        'not-base64!',
+        Buffer.from('{"a":1}').toString('base64url'),
+        Buffer.from('["only-one"]').toString('base64url'),
+        Buffer.from('["gmail","not-a-uuid"]').toString('base64url')
+    ])('reject %j', (resultId) => {
         expect(decodeResultId(resultId)).toBeNull();
     });
 });
