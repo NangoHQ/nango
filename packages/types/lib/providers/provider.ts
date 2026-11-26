@@ -123,6 +123,8 @@ export interface ProviderOAuth2 extends BaseProvider {
     refresh_params?: {
         grant_type: 'refresh_token';
     };
+    // Sent on the code exchange and refresh token requests. Values can reference ${connectionConfig.*}.
+    token_headers?: Record<string, string>;
     authorization_method?: OAuthAuthorizationMethodType;
     alternate_access_token_response_path?: string;
 

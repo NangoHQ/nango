@@ -38,10 +38,12 @@ import PreBuiltUseCases from "/snippets/generated/stripe-link/PreBuiltUseCases.m
 
   <Step title="Choose your scopes">
     Request only the scopes your agent needs. For agent payments the typical pair is `payment_methods.agentic` and `userinfo:read`. The full list is published in Link's [authorization server metadata](https://login.link.com/.well-known/oauth-authorization-server).
+
+    [Financial insights](https://docs.stripe.com/financial-connections/agents/financial-insights) (sources, balances, transactions) additionally requires an `authorization_details` JSON array on the authorization request. Pass it per connection through the Connect session's `integrations_config_defaults.<integration-id>.authorization_params`, for example `{ "authorization_details": "[{\"type\":\"source\",\"actions\":[\"read_link_transactions\",\"read_external_transactions\",\"read_balances\",\"read_source_details\"]}]" }`. Nango URL-encodes it.
   </Step>
 
   <Step title="Have your Stripe publishable key ready">
-    Link's authorization request requires your Stripe publishable key as the `key` parameter. When creating a connection, provide it as the `publishableKey` connection configuration value and Nango appends it to the authorization URL.
+    Link requires your Stripe publishable key on the authorization request (`key` parameter) and on token requests (bearer `Authorization` header). When creating a connection, provide it as the `publishableKey` connection configuration value and Nango sends it in both places.
   </Step>
 
   <Step title="Next">
@@ -68,7 +70,6 @@ import PreBuiltUseCases from "/snippets/generated/stripe-link/PreBuiltUseCases.m
 
 - Refresh tokens rotate: every refresh response contains a new `refresh_token` and invalidates the one you sent. Nango handles this automatically, but don't reuse tokens outside Nango.
 - The token response echoes the `scope` the customer actually granted, which can be a subset of what you requested. Read it instead of assuming the full request was approved.
-- The authorization URL requires a `key` parameter carrying your Stripe publishable key. Nango sends it from the `publishableKey` connection configuration value.
-- Link's token endpoint supports `client_secret_post` (client secret in the request body) per its authorization server metadata, which is how Nango authenticates token requests. Stripe's examples additionally show the publishable key as a bearer `Authorization` header on token requests.
+- The authorization URL requires a `key` parameter carrying your Stripe publishable key, and token requests (code exchange and refresh) send the same key as a bearer `Authorization` header. Nango does both from the `publishableKey` connection configuration value; your `client_secret` stays in the request body.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/stripe-link.mdx)</Note>

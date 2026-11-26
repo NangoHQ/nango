@@ -37600,11 +37600,13 @@ stripe-link:
         key: ${connectionConfig.publishableKey}
     token_params:
         grant_type: authorization_code
+    token_headers:
+        authorization: Bearer ${connectionConfig.publishableKey}
     connection_config:
         publishableKey:
             type: string
             title: Stripe Publishable Key
-            description: The Stripe publishable key associated with your Link OAuth client. Sent as the `key` parameter on the authorization request.
+            description: The Stripe publishable key associated with your Link OAuth client. Sent as the `key` parameter on the authorization request and as a bearer token on token requests.
             example: pk_live_xxxxxxxxxxxxxxxxxxxxxxxx
             pattern: '^pk_(live|test)_[a-zA-Z0-9]+$'
             order: 1
