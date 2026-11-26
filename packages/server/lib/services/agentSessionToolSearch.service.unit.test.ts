@@ -267,6 +267,23 @@ describe('rankSessionTools', () => {
         expect(best.map((match) => match.slug)).toStrictEqual(['linear__update-issue']);
     });
 
+    it('returns the tool a query names, though its name starts with a stopword', () => {
+        const compiledToolset: AgentSessionCompiledToolset = {
+            sheets: {
+                provider: 'google-sheet',
+                pinned: [],
+                searchable: [
+                    { name: 'create-spreadsheet', description: 'Create a spreadsheet.' },
+                    { name: 'get-spreadsheet', description: 'Get a spreadsheet.' },
+                    { name: 'get-spreadsheet-values', description: 'Get values from a spreadsheet.' }
+                ]
+            }
+        };
+
+        expect(rank({ compiledToolset, query: 'get-spreadsheet' }).best.map((match) => match.slug)).toStrictEqual(['sheets__get-spreadsheet']);
+        expect(rank({ compiledToolset, query: 'get spreadsheet' }).best.map((match) => match.slug)).toStrictEqual(['sheets__get-spreadsheet']);
+    });
+
     it('does not take an action name several tools share as naming one of them', () => {
         const { best, related, tied } = rank({
             compiledToolset: { ...issues, jira: { provider: 'jira', pinned: [], searchable: [{ name: 'update-issue', description: 'Update an issue.' }] } },
