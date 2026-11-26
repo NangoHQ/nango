@@ -117,7 +117,7 @@ export const OperationProperties: React.FC<{ env: string; operation: OperationRo
             {integrationName && (
                 <Property
                     label="Integration"
-                    to={`/${env}/integrations/${integrationName}`}
+                    to={`/${env}/integrations/${encodeURIComponent(integrationName)}`}
                     copy={{ value: integrationName, label: 'Copy integration key' }}
                     filter={{ label: "Show only this integration's operations", kind: 'integration', onClick: () => void setIntegrations([integrationName]) }}
                 >
@@ -129,7 +129,7 @@ export const OperationProperties: React.FC<{ env: string; operation: OperationRo
             {integrationName && connectionName && (
                 <Property
                     label="Connection"
-                    to={`/${env}/connections/${integrationName}/${connectionName}`}
+                    to={`/${env}/connections/${encodeURIComponent(integrationName)}/${encodeURIComponent(connectionName)}`}
                     copy={{ value: connectionName, label: 'Copy connection ID' }}
                     filter={{ label: "Show only this connection's operations", kind: 'connection', onClick: () => void setConnections([connectionName]) }}
                 >
