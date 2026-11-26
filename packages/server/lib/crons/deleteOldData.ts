@@ -26,7 +26,7 @@ import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.j
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
-import { expireAgentSessions } from '../services/agentSession.service.js';
+import { deleteStaleSessionData, expireAgentSessions } from '../services/agentSession.service.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
 
@@ -119,6 +119,12 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'expired agent sessions',
             deleteFn: async () => await expireAgentSessions(db.knex, { limit })
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'stale agent session data',
+            deleteFn: async () => await deleteStaleSessionData(db.knex, { limit })
         });
 
         // Delete private keys

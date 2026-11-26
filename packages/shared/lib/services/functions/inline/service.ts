@@ -88,6 +88,31 @@ export async function get(db: Knex, { environmentId, uuid }: { environmentId: nu
     }
 }
 
+export async function deleteBySession(db: Knex, { agentSessionId }: { agentSessionId: string }): Promise<Result<number>> {
+    try {
+        return Ok(await db<DBInlineFunction>(INLINE_FUNCTIONS_TABLE).where({ agent_session_id: agentSessionId }).delete());
+    } catch (err) {
+        return Err(new Error('failed_to_delete_session_inline_functions', { cause: err }));
+    }
+}
+
+export async function deleteOlderThan(db: Knex, { olderThanMs, limit }: { olderThanMs: number; limit: number }): Promise<Result<number>> {
+    try {
+        const deleted = await db<DBInlineFunction>(INLINE_FUNCTIONS_TABLE)
+            .whereIn(
+                'uuid',
+                db<DBInlineFunction>(INLINE_FUNCTIONS_TABLE)
+                    .select('uuid')
+                    .where('created_at', '<', new Date(Date.now() - olderThanMs))
+                    .limit(limit)
+            )
+            .delete();
+        return Ok(deleted);
+    } catch (err) {
+        return Err(new Error('failed_to_delete_old_inline_functions', { cause: err }));
+    }
+}
+
 function toInlineFunction(row: DBInlineFunction): InlineFunction {
     return {
         uuid: row.uuid,

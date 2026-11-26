@@ -5,11 +5,13 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
-import { seeders } from '@nangohq/shared';
-import { Err } from '@nangohq/utils';
+import { records } from '@nangohq/records';
+import { agentSessionResultModel, inlineFunctionService, seeders } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import {
     createAgentSessionToken,
+    deleteStaleSessionData,
     endAgentSession,
     expireAgentSessions,
     fillPendingMcpServers,
@@ -189,6 +191,71 @@ describe('agentSession service', () => {
         expect(retried.alreadyEnded).toBe(true);
         expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
         expect(retried.session.endedReason).toBe('terminated');
+    });
+
+    it('deletes the results the session stored when it ends, and only once', async () => {
+        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        const model = agentSessionResultModel(session.id);
+        const getCountsByModel = vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({ [model]: { count: 1 } as never }));
+        const deleteRecords = vi.spyOn(records, 'deleteRecords').mockResolvedValue(Ok({ count: 1, lastCursor: null }));
+
+        const end = () => endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' });
+        (await end()).unwrap();
+        (await end()).unwrap();
+
+        expect(getCountsByModel).toHaveBeenCalledOnce();
+        expect(deleteRecords).toHaveBeenCalledOnce();
+        expect(deleteRecords).toHaveBeenCalledWith({ connectionId: 42, environmentId: environment.id, model, mode: 'hard', plan: null });
+    });
+
+    it('deletes the inline functions the session stored when it ends', async () => {
+        const session = await createSession({ account, environment });
+        const created = (
+            await inlineFunctionService.create(db.knex, {
+                environmentId: environment.id,
+                agentSessionId: session.id,
+                code: 'return 1;',
+                resultRecordId: randomUUID()
+            })
+        ).unwrap();
+
+        (await endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' })).unwrap();
+
+        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: created.uuid })).unwrap()).toBeUndefined();
+    });
+
+    it('sweeps session data that outlived the longest session', async () => {
+        const session = await createSession({ account, environment });
+        const createInline = async (createdAt: Date) => {
+            const created = (
+                await inlineFunctionService.create(db.knex, {
+                    environmentId: environment.id,
+                    agentSessionId: session.id,
+                    code: 'return 1;',
+                    resultRecordId: randomUUID()
+                })
+            ).unwrap();
+            await db.knex('agent_sessions_inline_functions').where({ uuid: created.uuid }).update({ created_at: createdAt });
+            return created;
+        };
+        const stale = await createInline(new Date(Date.now() - 18 * 24 * 60 * 60 * 1000));
+        const recent = await createInline(new Date(Date.now() - 16 * 24 * 60 * 60 * 1000));
+        const listStaleDatasets = vi.spyOn(records, 'listStaleDatasets').mockResolvedValue(Ok([]));
+
+        expect(await deleteStaleSessionData(db.knex, { limit: 10 })).toBe(1);
+
+        expect(listStaleDatasets).toHaveBeenCalledWith({ modelPrefix: '_nango_agent_session_', staleAfterMs: 17 * 24 * 60 * 60 * 1000, limit: 10 });
+        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: stale.uuid })).unwrap()).toBeUndefined();
+        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: recent.uuid })).unwrap()).toBeDefined();
+    });
+
+    it('still ends the session when its results cannot be deleted', async () => {
+        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Err(new Error('records down')));
+
+        const ended = await endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' });
+
+        expect(ended.unwrap().session.endedReason).toBe('terminated');
     });
 
     it('records the terminated operation without a payload', async () => {
@@ -448,20 +515,26 @@ async function keysFor(sessionId: string): Promise<number> {
     return keys.length;
 }
 
+const RESOLVED_CONNECTIONS: AgentSessionResolvedConnections = {
+    github: { integrationId: 'github', provider: 'github', connectionId: 'acme', internalConnectionId: 42, configId: 7 }
+};
+
 async function createSession({
     account,
     environment,
-    expiresAt = new Date(Date.now() + 60_000)
+    expiresAt = new Date(Date.now() + 60_000),
+    resolvedConnections = {}
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     expiresAt?: Date;
+    resolvedConnections?: AgentSessionResolvedConnections;
 }): Promise<AgentSession> {
     return (
         await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
-            resolvedConnections: {},
+            resolvedConnections,
             compiledToolset: {},
             metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
             expiresAt

@@ -6,7 +6,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../../seeders/global.seeder.js';
 import { resolveFunctionByUuid } from '../lookup/service.js';
-import { create, get, INLINE_FUNCTIONS_TABLE, maxInlineFunctionCodeLength } from './service.js';
+import { create, deleteBySession, deleteOlderThan, get, INLINE_FUNCTIONS_TABLE, maxInlineFunctionCodeLength } from './service.js';
 import { isInlineFunctionUuid } from './uuid.js';
 
 beforeAll(async () => {
@@ -100,5 +100,36 @@ describe('inline functions', () => {
         await db.knex('agent_sessions').where({ id: agentSessionId }).delete();
 
         expect((await get(db.knex, { environmentId: env.id, uuid: created.uuid })).unwrap()).toBeUndefined();
+    });
+
+    it('deletes the code of one session and leaves the others', async () => {
+        const ended = await seedSession();
+        const other = await seedSession();
+        await create(db.knex, { environmentId: ended.env.id, agentSessionId: ended.agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' });
+        const kept = (
+            await create(db.knex, { environmentId: other.env.id, agentSessionId: other.agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' })
+        ).unwrap();
+
+        expect((await deleteBySession(db.knex, { agentSessionId: ended.agentSessionId })).unwrap()).toBe(1);
+        expect(await db.knex(INLINE_FUNCTIONS_TABLE).where({ agent_session_id: ended.agentSessionId })).toHaveLength(0);
+        expect((await get(db.knex, { environmentId: other.env.id, uuid: kept.uuid })).unwrap()).toBeDefined();
+    });
+
+    it('deletes code older than the cutoff, up to the limit', async () => {
+        await db.knex(INLINE_FUNCTIONS_TABLE).delete();
+        const { env, agentSessionId } = await seedSession();
+        const oneDay = 24 * 60 * 60 * 1000;
+        const createAt = async (createdAt: Date) => {
+            const created = (await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' })).unwrap();
+            await db.knex(INLINE_FUNCTIONS_TABLE).where({ uuid: created.uuid }).update({ created_at: createdAt });
+            return created;
+        };
+        await createAt(new Date(Date.now() - 3 * oneDay));
+        await createAt(new Date(Date.now() - 2 * oneDay));
+        const fresh = await createAt(new Date());
+
+        expect((await deleteOlderThan(db.knex, { olderThanMs: oneDay, limit: 1 })).unwrap()).toBe(1);
+        expect((await deleteOlderThan(db.knex, { olderThanMs: oneDay, limit: 10 })).unwrap()).toBe(1);
+        expect(await db.knex(INLINE_FUNCTIONS_TABLE).select('uuid')).toEqual([{ uuid: fresh.uuid }]);
     });
 });

@@ -4,8 +4,8 @@ import tracer from 'dd-trace';
 import * as z from 'zod/v4';
 
 import { records, format as recordsFormatter } from '@nangohq/records';
-import { agentSessionResultModel } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { AGENT_SESSION_RESULT_MODEL_PREFIX, agentSessionResultModel } from '@nangohq/shared';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { describeResult } from './agentSessionResultShape.js';
@@ -101,6 +101,56 @@ export function decodeResultId(resultId: string): StoredResultRef | null {
         // not an id we issued
     }
     return null;
+}
+
+export async function deleteSessionResults(session: Pick<AgentSession, 'id' | 'environmentId' | 'resolvedConnections'>): Promise<Result<number>> {
+    const model = agentSessionResultModel(session.id);
+
+    let deleted = 0;
+    for (const connection of Object.values(session.resolvedConnections)) {
+        // Checked first because deleting routes the model, and routing records a store for every dataset it sees.
+        const counts = await records.getCountsByModel({ connectionId: connection.internalConnectionId, environmentId: session.environmentId, models: [model] });
+        if (counts.isErr()) {
+            return Err(counts.error);
+        }
+        if (!counts.value[model]) {
+            continue;
+        }
+
+        const result = await records.deleteRecords({
+            connectionId: connection.internalConnectionId,
+            environmentId: session.environmentId,
+            model,
+            mode: 'hard',
+            plan: null
+        });
+        if (result.isErr()) {
+            return Err(result.error);
+        }
+        deleted += result.value.count;
+    }
+
+    return Ok(deleted);
+}
+
+/** Backstop for results that deleting on session end missed. Returns how many datasets it deleted. */
+export async function deleteStaleSessionResults({ staleAfterMs, limit }: { staleAfterMs: number; limit: number }): Promise<number> {
+    const datasets = await records.listStaleDatasets({ modelPrefix: AGENT_SESSION_RESULT_MODEL_PREFIX, staleAfterMs, limit });
+    if (datasets.isErr()) {
+        throw datasets.error;
+    }
+
+    let deleted = 0;
+    for (const dataset of datasets.value) {
+        const result = await records.deleteRecords({ ...dataset, mode: 'hard', plan: null });
+        if (result.isErr()) {
+            report(result.error, dataset);
+            continue;
+        }
+        deleted++;
+    }
+
+    return deleted;
 }
 
 async function storeToolResult({

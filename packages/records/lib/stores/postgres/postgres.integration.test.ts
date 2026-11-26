@@ -2110,6 +2110,51 @@ describe('PostgresStore', () => {
         });
     });
 
+    describe('listStaleDatasets', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+            await db(RECORD_COUNTS_TABLE).truncate();
+        });
+
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        async function seedDataset({ model, updatedAt }: { model: string; updatedAt: Date }) {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            await upsertRecords({ records: [{ id: '1', name: 'Record' }], connectionId, environmentId, model, syncId: uuid.v4() });
+            await db(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).update({ updated_at: updatedAt });
+            return { connectionId, environmentId, model };
+        }
+
+        it('lists datasets under the prefix not written to within the stale window, oldest first', async () => {
+            const older = await seedDataset({ model: '_prefix_older', updatedAt: new Date(Date.now() - 3 * oneDay) });
+            const old = await seedDataset({ model: '_prefix_old', updatedAt: new Date(Date.now() - 2 * oneDay) });
+            await seedDataset({ model: '_prefix_fresh', updatedAt: new Date() });
+            await seedDataset({ model: 'other_old', updatedAt: new Date(Date.now() - 2 * oneDay) });
+
+            const datasets = (await store.listStaleDatasets({ modelPrefix: '_prefix_', staleAfterMs: oneDay, limit: 10 })).unwrap();
+
+            expect(datasets).toEqual([older, old]);
+        });
+
+        it('matches the prefix literally', async () => {
+            await seedDataset({ model: 'xprefixxold', updatedAt: new Date(Date.now() - 2 * oneDay) });
+
+            const datasets = (await store.listStaleDatasets({ modelPrefix: '_prefix_', staleAfterMs: oneDay, limit: 10 })).unwrap();
+
+            expect(datasets).toEqual([]);
+        });
+
+        it('honors the limit', async () => {
+            await seedDataset({ model: '_prefix_a', updatedAt: new Date(Date.now() - 2 * oneDay) });
+            await seedDataset({ model: '_prefix_b', updatedAt: new Date(Date.now() - 2 * oneDay) });
+
+            const datasets = (await store.listStaleDatasets({ modelPrefix: '_prefix_', staleAfterMs: oneDay, limit: 1 })).unwrap();
+
+            expect(datasets).toHaveLength(1);
+        });
+    });
+
     describe('autoDeletingCandidate', () => {
         beforeEach(async () => {
             await db(RECORDS_TABLE).truncate();

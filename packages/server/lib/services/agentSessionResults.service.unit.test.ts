@@ -3,13 +3,29 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { decodeResultId, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
+import {
+    decodeResultId,
+    deleteSessionResults,
+    deleteStaleSessionResults,
+    encodeResultId,
+    formatMegabytes,
+    toolResultForAgent
+} from './agentSessionResults.service.js';
 
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 
 const mocks = vi.hoisted(() => ({
     upsert: vi.fn(),
+    getCountsByModel: vi.fn(),
+    deleteRecords: vi.fn(),
+    listStaleDatasets: vi.fn(),
+    report: vi.fn(),
     setTag: vi.fn()
+}));
+
+vi.mock('@nangohq/utils', async (importOriginal) => ({
+    ...(await importOriginal<Record<string, unknown>>()),
+    report: mocks.report
 }));
 
 vi.mock('dd-trace', () => {
@@ -23,7 +39,12 @@ vi.mock('dd-trace', () => {
 });
 
 vi.mock('@nangohq/records', () => ({
-    records: { upsert: mocks.upsert },
+    records: {
+        upsert: mocks.upsert,
+        getCountsByModel: mocks.getCountsByModel,
+        deleteRecords: mocks.deleteRecords,
+        listStaleDatasets: mocks.listStaleDatasets
+    },
     format: { formatRecords: ({ data }: { data: unknown[] }) => Ok(data) }
 }));
 
@@ -59,6 +80,10 @@ async function resultFor(data: unknown, session: AgentSession = SESSION): Promis
 beforeEach(() => {
     mocks.upsert.mockReset().mockResolvedValue(Ok({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] }));
     mocks.setTag.mockReset();
+    mocks.getCountsByModel.mockReset();
+    mocks.deleteRecords.mockReset();
+    mocks.listStaleDatasets.mockReset();
+    mocks.report.mockReset();
 });
 
 describe('toolResultForAgent', () => {
@@ -147,5 +172,51 @@ describe('result ids', () => {
         Buffer.from('["gmail","not-a-uuid"]').toString('base64url')
     ])('reject %j', (resultId) => {
         expect(decodeResultId(resultId)).toBeNull();
+    });
+});
+
+describe('deleteSessionResults', () => {
+    const OTHER_CONNECTION: AgentSessionResolvedConnection = { ...CONNECTION, integrationId: 'slack', provider: 'slack', internalConnectionId: 11 };
+    const session = { id: 'session-1', environmentId: 1, resolvedConnections: { gmail: CONNECTION, slack: OTHER_CONNECTION } };
+
+    it('hard deletes the session model on each connection that stored results', async () => {
+        mocks.getCountsByModel.mockImplementation(({ connectionId }: { connectionId: number }) =>
+            Promise.resolve(Ok(connectionId === CONNECTION.internalConnectionId ? { [MODEL]: { count: 3 } } : {}))
+        );
+        mocks.deleteRecords.mockResolvedValue(Ok({ count: 3, lastCursor: null }));
+
+        expect((await deleteSessionResults(session)).unwrap()).toBe(3);
+        expect(mocks.deleteRecords).toHaveBeenCalledOnce();
+        expect(mocks.deleteRecords).toHaveBeenCalledWith({ connectionId: 10, environmentId: 1, model: MODEL, mode: 'hard', plan: null });
+    });
+
+    it('returns the error when a delete fails', async () => {
+        mocks.getCountsByModel.mockResolvedValue(Ok({ [MODEL]: { count: 1 } }));
+        mocks.deleteRecords.mockResolvedValue(Err(new Error('boom')));
+
+        expect((await deleteSessionResults(session)).isErr()).toBe(true);
+    });
+});
+
+describe('deleteStaleSessionResults', () => {
+    it('lists stale datasets under the session result prefix and hard deletes each', async () => {
+        const datasets = [
+            { connectionId: 10, environmentId: 1, model: MODEL },
+            { connectionId: 11, environmentId: 1, model: '_nango_agent_session_session-2' }
+        ];
+        mocks.listStaleDatasets.mockResolvedValue(Ok(datasets));
+        mocks.deleteRecords.mockResolvedValue(Ok({ count: 1, lastCursor: null }));
+
+        expect(await deleteStaleSessionResults({ staleAfterMs: 1000, limit: 10 })).toBe(2);
+        expect(mocks.listStaleDatasets).toHaveBeenCalledWith({ modelPrefix: '_nango_agent_session_', staleAfterMs: 1000, limit: 10 });
+        expect(mocks.deleteRecords).toHaveBeenCalledWith({ ...datasets[1], mode: 'hard', plan: null });
+    });
+
+    it('reports a failed delete and leaves it out of the count', async () => {
+        mocks.listStaleDatasets.mockResolvedValue(Ok([{ connectionId: 10, environmentId: 1, model: MODEL }]));
+        mocks.deleteRecords.mockResolvedValue(Err(new Error('boom')));
+
+        expect(await deleteStaleSessionResults({ staleAfterMs: 1000, limit: 10 })).toBe(0);
+        expect(mocks.report).toHaveBeenCalledOnce();
     });
 });

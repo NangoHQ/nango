@@ -98,6 +98,16 @@ export class RecordsRouter<K extends string> implements RoutedRecordsStore {
         })();
     };
 
+    listStaleDatasets: RecordsStore['listStaleDatasets'] = async (params) => {
+        const results = await Promise.all([...this.stores.values()].map((s) => s.listStaleDatasets(params)));
+        const datasets = [];
+        for (const result of results) {
+            if (result.isErr()) return result;
+            datasets.push(...result.value);
+        }
+        return Ok(datasets.slice(0, params.limit));
+    };
+
     // Candidate ops: pick a random store
     autoPruningCandidate: RecordsStore['autoPruningCandidate'] = (params) => this.random().autoPruningCandidate(params);
     autoDeletingCandidate: RecordsStore['autoDeletingCandidate'] = (params) => this.random().autoDeletingCandidate(params);

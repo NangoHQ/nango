@@ -115,6 +115,17 @@ export interface RecordsStore {
 
     paginateCounts: (params?: { connectionIds?: number[]; environmentIds?: number[]; batchSize?: number }) => AsyncGenerator<Result<RecordCount[]>>;
 
+    /** Datasets under a model prefix that nothing has written to in `staleAfterMs`, oldest first. */
+    listStaleDatasets: ({
+        modelPrefix,
+        staleAfterMs,
+        limit
+    }: {
+        modelPrefix: string;
+        staleAfterMs: number;
+        limit: number;
+    }) => Promise<Result<{ connectionId: number; environmentId: number; model: string }[]>>;
+
     // Pruning operations
     autoPruningCandidate: ({ staleAfterMs }: { staleAfterMs: number }) => Promise<
         Result<{

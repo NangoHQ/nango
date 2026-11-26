@@ -164,6 +164,35 @@ describe('RecordsRouter', () => {
         });
     });
 
+    describe('listStaleDatasets', () => {
+        it('merges datasets from all stores up to the limit', async () => {
+            const dataset = (model: string) => ({ connectionId: 1, environmentId: 1, model });
+            const router = new RecordsRouter<StoreKey>({
+                stores: {
+                    a: makeStore({ listStaleDatasets: vi.fn().mockResolvedValue(Ok([dataset('a1'), dataset('a2')])) }),
+                    b: makeStore({ listStaleDatasets: vi.fn().mockResolvedValue(Ok([dataset('b1')])) })
+                },
+                routing: routeToA
+            });
+
+            const result = await router.listStaleDatasets({ modelPrefix: 'x', staleAfterMs: 1, limit: 2 });
+
+            expect(result.unwrap()).toEqual([dataset('a1'), dataset('a2')]);
+        });
+
+        it('returns the error if any store fails', async () => {
+            const router = new RecordsRouter<StoreKey>({
+                stores: {
+                    a: makeStore({ listStaleDatasets: vi.fn().mockResolvedValue(Ok([])) }),
+                    b: makeStore({ listStaleDatasets: vi.fn().mockResolvedValue(Err(new Error('boom'))) })
+                },
+                routing: routeToA
+            });
+
+            expect((await router.listStaleDatasets({ modelPrefix: 'x', staleAfterMs: 1, limit: 2 })).isErr()).toBe(true);
+        });
+    });
+
     describe('candidate ops', () => {
         it('autoPruningCandidate calls exactly one store', async () => {
             const candidateA = vi.fn().mockResolvedValue(Ok(null));
