@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <!-- Speed lines (rounded, staggered for dynamism) -->
+  <rect x="48" y="136" width="108" height="32" rx="16" fill="url(#g)"/>
+  <rect x="32" y="240" width="132" height="32" rx="16" fill="url(#g)"/>
+  <rect x="48" y="344" width="108" height="32" rx="16" fill="url(#g)"/>
+  <!-- Lightning bolt (sharp, angular, heavier) -->
+  <path d="M320 40L208 256h96L256 472l176-264H328z" fill="url(#g)"/>
+</svg>

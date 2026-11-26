@@ -1858,6 +1858,8 @@
               "api-integrations/slack",
               "api-integrations/slack-app-configuration",
               "api-integrations/slack-mcp",
+              "api-integrations/smarfle",
+              "api-integrations/smarfle-mcp",
               "integrations/all/smartlead-ai",
               "integrations/all/smartrecruiters-api-key",
               "api-integrations/smartsheet",
