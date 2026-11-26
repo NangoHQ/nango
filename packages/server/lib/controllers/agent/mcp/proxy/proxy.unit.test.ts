@@ -5,10 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NangoError, productTracking, withProductTrackingContext } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { buildSessionTools } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import proxyService, { ProxyServiceError } from '../../../../services/proxy.service.js';
 import { egressTelemetryRecorder } from '../../../../utils/egressTelemetry.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { buildSessionTools } from '../sessionServer.js';
 import { proxyTool } from './proxy.js';
 
 import type { ProxyServiceResponse } from '../../../../services/proxy.service.js';

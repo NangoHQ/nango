@@ -5,9 +5,9 @@ import { Err, Ok } from '@nangohq/utils';
 
 import * as agentSessionService from '../../../../services/agentSession.service.js';
 import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
+import { buildSessionTools } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { buildSessionTools } from '../sessionServer.js';
 import { createConnectionTool } from './createConnection.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';

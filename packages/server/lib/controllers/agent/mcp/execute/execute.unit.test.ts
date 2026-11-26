@@ -5,9 +5,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
 import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
+import { buildSessionTools, executeInputSchema } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
-import { buildSessionTools } from '../sessionServer.js';
-import { executeInputSchema } from './schema.js';
 
 import type * as actionService from '../../../../services/action.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';

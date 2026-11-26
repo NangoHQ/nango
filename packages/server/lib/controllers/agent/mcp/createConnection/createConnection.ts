@@ -4,29 +4,18 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { AGENT_SESSION_TAG_KEY } from '../../../../services/agentSessionConnections.service.js';
+import { createConnectionToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { connectionDeletedError, resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, invalidArgumentsOf } from '../sessionTool.js';
-import { createConnectionInputSchema, createConnectionOutputSchema } from './schema.js';
+import { invalidArgumentsOf, makeAgentSessionMcpTool } from '../sessionTool.js';
 
-import type { CreateConnectionOutput } from './schema.js';
+import type { CreateConnectionOutput } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
-export const createConnectionTool = defineAgentSessionMcpTool({
-    name: 'nango_create_connection',
-    description:
-        "Start the connect flow for one of this session's integrations that has no connection yet. Returns a link for the user to open and authorise, after which the integration's tools work for the rest of the session. The user has to open it, you cannot complete this yourself. Pass reconnect to have the user authorise an integration that is already connected again, for example when it is missing a permission, or its credentials expired or ran out of refresh attempts, and it keeps the same connection.",
-    inputSchema: createConnectionInputSchema,
-    outputSchema: createConnectionOutputSchema,
-    annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: true
-    },
-    isEnabled: (metaTools) => metaTools.nangoCreateConnection.enabled,
+export const createConnectionTool = makeAgentSessionMcpTool({
+    ...createConnectionToolDefinition,
     onInvalidArguments: ({ session }, { error }) => {
         trackAgentSessionToolCall({ metaTool: 'nango_create_connection', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },

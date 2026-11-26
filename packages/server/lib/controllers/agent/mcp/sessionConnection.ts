@@ -4,9 +4,9 @@ import { report } from '@nangohq/utils';
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import * as agentSessionConnectionsService from '../../../services/agentSessionConnections.service.js';
 import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
+import { withAddedToolSlugs } from '../../../services/agentSessionToolCatalog.service/index.js';
 import * as agentSessionToolsetService from '../../../services/agentSessionToolset.service.js';
 import { PublicMcpError } from '../../mcp/utils.js';
-import { withAddedToolSlugs } from './sessionServer.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 

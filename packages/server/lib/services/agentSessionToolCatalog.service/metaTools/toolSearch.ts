@@ -2,6 +2,8 @@ import * as z from 'zod/v4';
 
 import { goalSchema } from '../purposeSchema.js';
 
+import type { AgentSessionToolDefinition } from '../types.js';
+
 const MAX_TOOL_SEARCH_QUERIES = 5;
 
 export const toolSearchInputSchema = z
@@ -76,3 +78,13 @@ export const toolSearchOutputSchema = z
         results: z.array(queryResultSchema).describe('One result per query, in the order the queries were sent.')
     })
     .strict();
+
+export const toolSearchToolDefinition = {
+    name: 'nango_tool_search',
+    description:
+        'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. When the task needs several tools, search for all of them in one call with one query each. Results come back grouped by query, and each match carries a tool name to pass to nango_execute, and the integration and action it stands for. If nothing fits a query, search again with other words for the action or the object before deciding no tool covers it.',
+    inputSchema: toolSearchInputSchema,
+    outputSchema: toolSearchOutputSchema,
+    annotations: { readOnlyHint: true },
+    isEnabled: (metaTools) => metaTools.nangoToolSearch
+} satisfies AgentSessionToolDefinition;
