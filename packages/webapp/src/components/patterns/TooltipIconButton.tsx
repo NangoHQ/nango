@@ -7,7 +7,7 @@ export const TooltipIconButton: React.FC<IconButtonProps & { label: string; tool
     <Tooltip>
         <TooltipTrigger asChild>
             {/* An empty title stops IconButton's native tooltip from showing next to this one. */}
-            <IconButton label={label} title="" {...props} />
+            <IconButton label={label} {...props} title="" />
         </TooltipTrigger>
         <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
