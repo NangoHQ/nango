@@ -1,0 +1,53 @@
+---
+title: 'NocoDB - How do I link my account?'
+sidebarTitle: 'NocoDB'
+---
+
+## Overview
+
+To authenticate with NocoDB, you need:
+
+1. **NocoDB Host** — the host of your NocoDB instance.
+2. **API Token** — a NocoDB API token.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A NocoDB account, on NocoDB Cloud or on a self-hosted instance. If you don't have one, [sign up for NocoDB Cloud](https://app.nocodb.com/#/signin) for free.
+
+### Step 1: Find your NocoDB host
+
+- On NocoDB Cloud, your host is `app.nocodb.com`.
+- On a self-hosted instance, use the host you open NocoDB at, for example `nocodb.example.com` for `https://nocodb.example.com`. Enter only the host, without `https://`, a trailing slash or a path. Your instance must be reachable over HTTPS from Nango.
+
+### Step 2: Create an API token
+
+1. Sign in to NocoDB.
+2. In the bottom-left corner of the sidebar, click your user to open the user menu, then click **API Tokens** (also under **Account Settings** > **API Tokens**).
+
+<img src="/api-integrations/nocodb/user_menu_api_tokens.png" alt="NocoDB user menu in the bottom-left of the sidebar with API Tokens highlighted"/>
+
+3. Click **Create New API Token**.
+4. Enter a **Token name**, choose an **Expiration**, set **Access** to all resources or to specific projects, and set the **Token Permissions** your integration needs (**Read all** is enough for read-only access). Then click **Create token**.
+
+<img src="/api-integrations/nocodb/create_api_token_form.png" alt="NocoDB Create New API Token form with a token name, expiration, access and permissions, and the Create token button highlighted"/>
+
+5. Click **Copy token** and store the token somewhere safe.
+
+<img src="/api-integrations/nocodb/api_token_created.png" alt="NocoDB confirmation that the token was created, with the Copy token button highlighted"/>
+
+<Note>NocoDB shows the token only once. Copy it before you leave the page.</Note>
+
+<Tip>Access, permissions and expiration are available on NocoDB Cloud and licensed self-hosted deployments. On Community Edition and unlicensed self-hosted deployments, tokens get access to all resources and never expire. Existing legacy API tokens also work: paste one in the same field.</Tip>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with NocoDB.
+2. Enter your NocoDB host in the **NocoDB Host** field.
+3. Paste your token in the **API Token** field.
+4. Submit the form. Nango checks the token with NocoDB and rejects a token NocoDB does not accept.
+
+<img src="/api-integrations/nocodb/form.png" alt="NocoDB Connect UI form with the NocoDB Host and API Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to NocoDB.

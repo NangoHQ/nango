@@ -1,0 +1,49 @@
+---
+title: 'HoneyHive - How do I link my account?'
+sidebarTitle: 'HoneyHive'
+---
+
+## Overview
+
+To authenticate with HoneyHive, you need:
+
+1. **Project ID** — the ID of the HoneyHive project you connect.
+2. **Data Plane API Key** — a fine-grained data plane API key (it starts with `hh_fgdp_`).
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A HoneyHive account. You can sign up for free at [app.us.honeyhive.ai](https://app.us.honeyhive.ai/).
+
+### Step 1: Find your project ID
+
+1. Log in to [HoneyHive](https://app.us.honeyhive.ai/) and select your project from the project switcher at the top.
+2. Go to **Settings** > **Project** > **API Keys** and open the **Data Plane** tab.
+3. Copy the **Project ID** with the copy button next to it.
+
+<img src="/api-integrations/honeyhive/data_plane_tab.png" alt="HoneyHive project API Keys settings on the Data Plane tab, showing the Project ID field and the Create API Key button"/>
+
+### Step 2: Create a data plane API key
+
+1. On the same **Data Plane** tab, click **Create API Key**.
+2. Enter a name for the key and choose an expiration. The default is 90 days and the maximum is 365 days.
+3. Select the permissions your integration needs, for example the `.get` and `.list` permissions to read data, then click **Create Key**.
+
+<img src="/api-integrations/honeyhive/create_key_dialog.png" alt="HoneyHive Create API Key dialog with read permissions selected and the Create Key button highlighted"/>
+
+4. Copy the full key from the **API Key Created** dialog, then click **Done**.
+
+<img src="/api-integrations/honeyhive/key_created.png" alt="HoneyHive API Key Created dialog with the copy button highlighted"/>
+
+<Tip>HoneyHive shows the key only once. Store it somewhere safe; if you lose it, create a new one.</Tip>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with HoneyHive.
+2. Enter your **Project ID** and **Data Plane API Key** in the designated fields.
+3. Submit the form. Nango saves the connection without checking your credentials, so a wrong key shows up as an authentication error on the first API request.
+
+<img src="/api-integrations/honeyhive/form.png" alt="HoneyHive connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to HoneyHive.
