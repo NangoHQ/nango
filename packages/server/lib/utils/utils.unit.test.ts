@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { getProvider, interpolateObjectValues, oauth2Client } from '@nangohq/shared';
+
 import {
     getAdditionalAuthorizationParams,
     isBinaryContentType,
@@ -331,5 +333,23 @@ describe('mergeIntegrationConfigIntoConnectionConfig', () => {
         const connectionConfig: Record<string, string> = {};
         mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, null, connectionConfig);
         expect(connectionConfig).toStrictEqual({});
+    });
+
+    // Loads the real definition so this fails if stripe-link stops declaring publishableKey in both
+    // `integration_config` and `connection_config`: end users would be asked for the app owner's key again.
+    it('sends the admin-set stripe-link publishable key on the authorize request and token requests', () => {
+        const provider = getProvider('stripe-link');
+        if (!provider?.authorization_params) {
+            throw new Error('stripe-link provider with authorization_params not found');
+        }
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(provider, { publishableKey: 'pk_test_admin' }, connectionConfig);
+
+        expect(interpolateObjectValues(provider.authorization_params, connectionConfig)['key']).toBe('pk_test_admin');
+        const integration = { oauth_client_id: 'client', oauth_client_secret: 'secret', oauth_scopes: '' } as Parameters<
+            typeof oauth2Client.getSimpleOAuth2ClientConfig
+        >[0];
+        const cfg = oauth2Client.getSimpleOAuth2ClientConfig(integration, provider, connectionConfig);
+        expect(cfg.http.headers?.['authorization']).toBe('Bearer pk_test_admin');
     });
 });
