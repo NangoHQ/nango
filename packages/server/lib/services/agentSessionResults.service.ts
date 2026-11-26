@@ -4,8 +4,8 @@ import tracer from 'dd-trace';
 import * as z from 'zod/v4';
 
 import { records, format as recordsFormatter } from '@nangohq/records';
-import { AGENT_SESSION_RESULT_MODEL_PREFIX, agentSessionResultModel } from '@nangohq/shared';
-import { Err, Ok, report } from '@nangohq/utils';
+import { agentSessionResultModel } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { describeResult } from './agentSessionResultShape.js';
@@ -13,6 +13,9 @@ import { describeResult } from './agentSessionResultShape.js';
 import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
+
+// Stored results can each be megabytes, so batches stay small to keep every delete transaction short.
+const DELETE_BATCH_SIZE = 100;
 
 const STORED_RESULT_HINT =
     'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_query_result with this result_id and JavaScript that reads `result` and returns only what you need.';
@@ -103,10 +106,16 @@ export function decodeResultId(resultId: string): StoredResultRef | null {
     return null;
 }
 
-export async function deleteSessionResults(session: Pick<AgentSession, 'id' | 'environmentId' | 'resolvedConnections'>): Promise<Result<number>> {
+/**
+ * Sessions have no cap on what they store, so results are deleted in batches that each commit on their own.
+ * Returns `done: false` when the deadline stops it before everything is gone.
+ */
+export async function deleteSessionResults(
+    session: Pick<AgentSession, 'id' | 'environmentId' | 'resolvedConnections'>,
+    { deadline }: { deadline: Date }
+): Promise<Result<{ done: boolean }>> {
     const model = agentSessionResultModel(session.id);
 
-    let deleted = 0;
     for (const connection of Object.values(session.resolvedConnections)) {
         // Checked first because deleting routes the model, and routing records a store for every dataset it sees.
         const counts = await records.getCountsByModel({ connectionId: connection.internalConnectionId, environmentId: session.environmentId, models: [model] });
@@ -117,40 +126,30 @@ export async function deleteSessionResults(session: Pick<AgentSession, 'id' | 'e
             continue;
         }
 
-        const result = await records.deleteRecords({
-            connectionId: connection.internalConnectionId,
-            environmentId: session.environmentId,
-            model,
-            mode: 'hard',
-            plan: null
-        });
-        if (result.isErr()) {
-            return Err(result.error);
+        while (true) {
+            if (Date.now() >= deadline.getTime()) {
+                return Ok({ done: false });
+            }
+
+            const deleted = await records.deleteRecords({
+                connectionId: connection.internalConnectionId,
+                environmentId: session.environmentId,
+                model,
+                mode: 'hard',
+                limit: DELETE_BATCH_SIZE,
+                batchSize: DELETE_BATCH_SIZE,
+                plan: null
+            });
+            if (deleted.isErr()) {
+                return Err(deleted.error);
+            }
+            if (deleted.value.count < DELETE_BATCH_SIZE) {
+                break;
+            }
         }
-        deleted += result.value.count;
     }
 
-    return Ok(deleted);
-}
-
-/** Backstop for results that deleting on session end missed. Returns how many datasets it deleted. */
-export async function deleteStaleSessionResults({ staleAfterMs, limit }: { staleAfterMs: number; limit: number }): Promise<number> {
-    const datasets = await records.listStaleDatasets({ modelPrefix: AGENT_SESSION_RESULT_MODEL_PREFIX, staleAfterMs, limit });
-    if (datasets.isErr()) {
-        throw datasets.error;
-    }
-
-    let deleted = 0;
-    for (const dataset of datasets.value) {
-        const result = await records.deleteRecords({ ...dataset, mode: 'hard', plan: null });
-        if (result.isErr()) {
-            report(result.error, dataset);
-            continue;
-        }
-        deleted++;
-    }
-
-    return deleted;
+    return Ok({ done: true });
 }
 
 async function storeToolResult({

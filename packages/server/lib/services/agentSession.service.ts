@@ -4,7 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { inlineFunctionService } from '@nangohq/shared';
 import { Err, Ok, report } from '@nangohq/utils';
 
-import { deleteSessionResults, deleteStaleSessionResults } from './agentSessionResults.service.js';
+import { deleteSessionResults } from './agentSessionResults.service.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -25,8 +25,8 @@ import type { Result } from '@nangohq/utils';
 const AGENT_SESSIONS_TABLE = 'agent_sessions';
 const ENVIRONMENTS_TABLE = '_nango_environments';
 
-export const MAX_EXPIRES_IN_MS = 15 * 24 * 60 * 60 * 1000;
-const STALE_SESSION_DATA_BUFFER_MS = 2 * 24 * 60 * 60 * 1000;
+const ENDED_SESSION_GRACE_MS = 5 * 60 * 1000;
+const TERMINATED_SESSION_DATA_DELETE_BUDGET_MS = 60 * 1000;
 
 export const DEFAULT_CREATE_CONNECTION_CONFIG: AgentSessionCreateConnectionConfig = { enabled: false, tags: {} };
 
@@ -40,6 +40,7 @@ export interface DBAgentSession {
     readonly expires_at: Date;
     readonly ended_at: Date | null;
     readonly ended_reason: AgentSessionEndedReason | null;
+    readonly data_deleted_at: Date | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -126,6 +127,9 @@ export async function terminateAgentSession(params: TerminateAgentSessionParams)
         await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
         void logCtx.info('Agent session terminated');
         await logCtx.success();
+
+        // Not awaited so terminating stays fast. deleteEndedSessionsData finishes whatever this leaves.
+        void deleteSessionData(session, { deadline: new Date(Date.now() + TERMINATED_SESSION_DATA_DELETE_BUDGET_MS) });
     }
 
     return Ok(ended.value);
@@ -179,9 +183,8 @@ export async function endAgentSession(
     trx: Knex,
     { id, accountId, environmentId, reason }: { id: string; accountId: number; environmentId: number; reason: AgentSessionEndedReason }
 ): Promise<Result<EndedAgentSession, AgentSessionError>> {
-    let ended: Result<EndedAgentSession, AgentSessionError>;
     try {
-        ended = await trx.transaction(async (innerTrx) => {
+        return await trx.transaction(async (innerTrx) => {
             const [terminated] = await innerTrx<DBAgentSession>(AGENT_SESSIONS_TABLE)
                 .where({ id, account_id: accountId, environment_id: environmentId })
                 .whereNull('ended_at')
@@ -207,44 +210,74 @@ export async function endAgentSession(
     } catch (err) {
         return Err(terminationFailedError({ id, accountId, environmentId }, err));
     }
-
-    if (ended.isOk() && !ended.value.alreadyEnded) {
-        await deleteSessionData(trx, ended.value.session);
-    }
-
-    return ended;
 }
 
 /**
  * Sessions have no cap on the results and inline functions they store, so ending one is what bounds them.
- * Runs after the end commits because results live in the records database. What it misses, deleteStaleSessionData sweeps.
+ * Marks the session once everything is gone. A session left unmarked is retried by deleteEndedSessionsData.
  */
-async function deleteSessionData(trx: Knex, session: AgentSession): Promise<void> {
-    const [results, inlineFunctions] = await Promise.all([
-        deleteSessionResults(session),
-        inlineFunctionService.deleteBySession(trx, { agentSessionId: session.id })
-    ]);
-    for (const deleted of [results, inlineFunctions]) {
-        if (deleted.isErr()) {
-            report(deleted.error, { agentSessionId: session.id });
+async function deleteSessionData(
+    session: Pick<AgentSession, 'id' | 'environmentId' | 'resolvedConnections'>,
+    { deadline }: { deadline: Date }
+): Promise<boolean> {
+    try {
+        const [results, inlineFunctions] = await Promise.all([
+            deleteSessionResults(session, { deadline }),
+            inlineFunctionService.deleteBySession(db.knex, { agentSessionId: session.id })
+        ]);
+        if (inlineFunctions.isErr()) {
+            report(inlineFunctions.error, { agentSessionId: session.id });
         }
+        if (results.isErr()) {
+            report(results.error, { agentSessionId: session.id });
+            return false;
+        }
+        if (inlineFunctions.isErr()) {
+            return false;
+        }
+        if (!results.value.done) {
+            return false;
+        }
+
+        await db.knex<DBAgentSession>(AGENT_SESSIONS_TABLE).where({ id: session.id }).update({ data_deleted_at: db.knex.fn.now() });
+        return true;
+    } catch (err) {
+        report(err, { agentSessionId: session.id });
+        return false;
     }
 }
 
-/** Backstop for deleteSessionData. Nothing is written for a session after its longest possible life, plus a buffer. */
-export async function deleteStaleSessionData(trx: Knex, { limit }: { limit: number }): Promise<number> {
-    const olderThanMs = MAX_EXPIRES_IN_MS + STALE_SESSION_DATA_BUFFER_MS;
+/**
+ * Deletes the data of ended sessions that are not marked as deleted yet, oldest first: expired sessions, and
+ * terminated ones whose delete failed or ran out of time. Returns how many sessions it finished.
+ */
+export async function deleteEndedSessionsData({ limit, deadline }: { limit: number; deadline: Date }): Promise<number> {
+    // Candidates can come from a lagging replica: ended_at and data_deleted_at are only ever set, so the worst case is a repeated no-op delete.
+    const sessions = await db.readOnly
+        .from<DBAgentSession>(AGENT_SESSIONS_TABLE)
+        .select('id', 'environment_id', 'resolved_connections')
+        .whereNotNull('ended_at')
+        .whereNull('data_deleted_at')
+        // Leaves a just-terminated session to the delete its termination started.
+        .where('ended_at', '<', new Date(Date.now() - ENDED_SESSION_GRACE_MS))
+        .orderBy('ended_at', 'asc')
+        .limit(limit);
 
-    const [results, inlineFunctions] = await Promise.all([
-        deleteStaleSessionResults({ staleAfterMs: olderThanMs, limit }),
-        inlineFunctionService.deleteOlderThan(trx, { olderThanMs, limit })
-    ]);
-    if (inlineFunctions.isErr()) {
-        throw inlineFunctions.error;
+    let done = 0;
+    for (const session of sessions) {
+        if (Date.now() >= deadline.getTime()) {
+            break;
+        }
+        const deleted = await deleteSessionData(
+            { id: session.id, environmentId: session.environment_id, resolvedConnections: session.resolved_connections },
+            { deadline }
+        );
+        if (deleted) {
+            done++;
+        }
     }
 
-    // batchDelete keeps going while either side still fills a batch.
-    return Math.max(results, inlineFunctions.value);
+    return done;
 }
 
 // Agent session tokens are minted through the keystore for now. Once the unified authz project

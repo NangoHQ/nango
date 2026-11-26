@@ -1631,30 +1631,6 @@ export class PostgresStore implements RecordsStore {
         }
     }
 
-    async listStaleDatasets({
-        modelPrefix,
-        staleAfterMs,
-        limit
-    }: {
-        modelPrefix: string;
-        staleAfterMs: number;
-        limit: number;
-    }): Promise<Result<{ connectionId: number; environmentId: number; model: string }[]>> {
-        try {
-            const rows = await this.dbRead
-                .from(RECORD_COUNTS_TABLE)
-                .select<{ connection_id: number; environment_id: number; model: string }[]>('connection_id', 'environment_id', 'model')
-                .where('model', 'like', `${escapeLike(modelPrefix)}%`)
-                .where('updated_at', '<', this.dbRead.raw(`NOW() - ? * INTERVAL '1 millisecond'`, [staleAfterMs]))
-                .orderBy('updated_at', 'asc')
-                .limit(limit);
-
-            return Ok(rows.map((row) => ({ connectionId: row.connection_id, environmentId: row.environment_id, model: row.model })));
-        } catch (err) {
-            return Err(new Error(`Failed to list stale datasets for model prefix ${modelPrefix}`, { cause: err }));
-        }
-    }
-
     /*
      * autoPruningCandidate
      * @desc finds a candidate connection/model for auto-pruning
@@ -2025,8 +2001,4 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
         }
         return isInactiveThisMonth({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
     });
-}
-
-function escapeLike(value: string): string {
-    return value.replace(/[\\%_]/g, '\\$&');
 }

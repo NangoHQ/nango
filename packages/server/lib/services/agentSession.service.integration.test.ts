@@ -11,7 +11,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import {
     createAgentSessionToken,
-    deleteStaleSessionData,
+    deleteEndedSessionsData,
     endAgentSession,
     expireAgentSessions,
     fillPendingMcpServers,
@@ -193,24 +193,69 @@ describe('agentSession service', () => {
         expect(retried.session.endedReason).toBe('terminated');
     });
 
-    it('deletes the results the session stored when it ends, and only once', async () => {
+    it('deletes the session data in the background on terminate and marks it deleted', async () => {
+        vi.spyOn(logContextGetter, 'create').mockResolvedValue({ enrichOperation: vi.fn(), info: vi.fn(), success: vi.fn() } as unknown as LogContextOrigin);
         const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        const inline = await createInlineFunction(session);
         const model = agentSessionResultModel(session.id);
-        const getCountsByModel = vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({ [model]: { count: 1 } as never }));
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({ [model]: { count: 1 } as never }));
         const deleteRecords = vi.spyOn(records, 'deleteRecords').mockResolvedValue(Ok({ count: 1, lastCursor: null }));
 
-        const end = () => endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' });
-        (await end()).unwrap();
-        (await end()).unwrap();
+        (await terminateAgentSession({ account, environment, sessionId: session.id })).unwrap();
 
-        expect(getCountsByModel).toHaveBeenCalledOnce();
-        expect(deleteRecords).toHaveBeenCalledOnce();
-        expect(deleteRecords).toHaveBeenCalledWith({ connectionId: 42, environmentId: environment.id, model, mode: 'hard', plan: null });
+        await vi.waitFor(async () => expect(await dataDeletedAt(session.id)).toBeInstanceOf(Date));
+        expect(deleteRecords).toHaveBeenCalledWith({
+            connectionId: 42,
+            environmentId: environment.id,
+            model,
+            mode: 'hard',
+            limit: 100,
+            batchSize: 100,
+            plan: null
+        });
+        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: inline.uuid })).unwrap()).toBeUndefined();
     });
 
-    it('deletes the inline functions the session stored when it ends', async () => {
-        const session = await createSession({ account, environment });
-        const created = (
+    it('sweeps the data of ended sessions not marked deleted, and leaves the rest', async () => {
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({}));
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        const pending = await createSession({ account, environment });
+        const justEnded = await createSession({ account, environment });
+        const live = await createSession({ account, environment });
+        const alreadyDeleted = await createSession({ account, environment });
+        await db.knex(table).where({ id: pending.id }).update({ ended_at: tenMinutesAgo, ended_reason: 'expired' });
+        await db.knex(table).where({ id: justEnded.id }).update({ ended_at: new Date(), ended_reason: 'expired' });
+        await db.knex(table).where({ id: alreadyDeleted.id }).update({ ended_at: tenMinutesAgo, ended_reason: 'expired', data_deleted_at: tenMinutesAgo });
+        const inlines = await Promise.all([pending, justEnded, live, alreadyDeleted].map((session) => createInlineFunction(session)));
+
+        expect(await deleteEndedSessionsData({ limit: 10, deadline: new Date(Date.now() + 60_000) })).toBe(1);
+
+        expect(await dataDeletedAt(pending.id)).toBeInstanceOf(Date);
+        expect(await dataDeletedAt(justEnded.id)).toBeNull();
+        expect(await dataDeletedAt(live.id)).toBeNull();
+        const remaining = await db.knex('agent_sessions_inline_functions').pluck('uuid');
+        expect(remaining.sort()).toEqual(
+            inlines
+                .slice(1)
+                .map((inline) => inline.uuid)
+                .sort()
+        );
+    });
+
+    it('leaves an ended session unmarked when its results cannot be deleted, so the sweep retries it', async () => {
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Err(new Error('records down')));
+        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        await db
+            .knex(table)
+            .where({ id: session.id })
+            .update({ ended_at: new Date(Date.now() - 10 * 60 * 1000), ended_reason: 'expired' });
+
+        expect(await deleteEndedSessionsData({ limit: 10, deadline: new Date(Date.now() + 60_000) })).toBe(0);
+        expect(await dataDeletedAt(session.id)).toBeNull();
+    });
+
+    async function createInlineFunction(session: AgentSession) {
+        return (
             await inlineFunctionService.create(db.knex, {
                 environmentId: environment.id,
                 agentSessionId: session.id,
@@ -218,45 +263,12 @@ describe('agentSession service', () => {
                 resultRecordId: randomUUID()
             })
         ).unwrap();
+    }
 
-        (await endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' })).unwrap();
-
-        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: created.uuid })).unwrap()).toBeUndefined();
-    });
-
-    it('sweeps session data that outlived the longest session', async () => {
-        const session = await createSession({ account, environment });
-        const createInline = async (createdAt: Date) => {
-            const created = (
-                await inlineFunctionService.create(db.knex, {
-                    environmentId: environment.id,
-                    agentSessionId: session.id,
-                    code: 'return 1;',
-                    resultRecordId: randomUUID()
-                })
-            ).unwrap();
-            await db.knex('agent_sessions_inline_functions').where({ uuid: created.uuid }).update({ created_at: createdAt });
-            return created;
-        };
-        const stale = await createInline(new Date(Date.now() - 18 * 24 * 60 * 60 * 1000));
-        const recent = await createInline(new Date(Date.now() - 16 * 24 * 60 * 60 * 1000));
-        const listStaleDatasets = vi.spyOn(records, 'listStaleDatasets').mockResolvedValue(Ok([]));
-
-        expect(await deleteStaleSessionData(db.knex, { limit: 10 })).toBe(1);
-
-        expect(listStaleDatasets).toHaveBeenCalledWith({ modelPrefix: '_nango_agent_session_', staleAfterMs: 17 * 24 * 60 * 60 * 1000, limit: 10 });
-        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: stale.uuid })).unwrap()).toBeUndefined();
-        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: recent.uuid })).unwrap()).toBeDefined();
-    });
-
-    it('still ends the session when its results cannot be deleted', async () => {
-        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
-        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Err(new Error('records down')));
-
-        const ended = await endAgentSession(db.knex, { id: session.id, accountId: account.id, environmentId: environment.id, reason: 'terminated' });
-
-        expect(ended.unwrap().session.endedReason).toBe('terminated');
-    });
+    async function dataDeletedAt(id: string): Promise<Date | null> {
+        const row = await db.knex(table).select<{ data_deleted_at: Date | null }>('data_deleted_at').where({ id }).first();
+        return row?.data_deleted_at ?? null;
+    }
 
     it('records the terminated operation without a payload', async () => {
         const session = await createSession({ account, environment });

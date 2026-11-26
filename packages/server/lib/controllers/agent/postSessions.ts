@@ -23,6 +23,7 @@ export const MAX_SELECTORS = 10;
 const ALLOW_ALL = '*';
 
 const MIN_EXPIRES_IN_MS = 60 * 1000;
+const MAX_EXPIRES_IN_MS = 15 * 24 * 60 * 60 * 1000;
 
 const EXPIRES_IN_PATTERN = /^([1-9]\d*)([smhd])$/;
 
@@ -166,7 +167,7 @@ export const agentSessionExpiresInSchema = z
         return ms;
     })
     .refine((ms) => ms >= MIN_EXPIRES_IN_MS, { message: 'expires_in cannot be shorter than 60s' })
-    .refine((ms) => ms <= agentSessionService.MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
+    .refine((ms) => ms <= MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
 
 export const postAgentSessionsBodySchema = z.strictObject({
     tenant: z.strictObject({
