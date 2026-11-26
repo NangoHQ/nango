@@ -5,7 +5,7 @@ import { redactHeaders } from '@nangohq/utils';
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import connectionsManager from '../services/connection.service.js';
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, getOAuthSafeHttpAgents, OAUTH_TOKEN_RESPONSE_MAX_BYTES } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { interpolateObjectValues, makeUrl } from '../utils/utils.js';
@@ -85,6 +85,7 @@ export function getSimpleOAuth2ClientConfig(
               },
         http: {
             headers,
+            maxBytes: OAUTH_TOKEN_RESPONSE_MAX_BYTES,
             // @ts-expect-error agents are not specified in the types, but are available as an option
             agents: agentConfig
         },
