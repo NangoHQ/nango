@@ -225,9 +225,15 @@ describe('retention policy', () => {
                 await openSearchRaw.indices.create({ index: newIndex });
                 expect(await explain(newIndex, 1)).toBe(1);
             } finally {
-                await openSearchRaw.indices.delete({ index: `${existingIndex},${newIndex}`, ignore_unavailable: true });
+                try {
+                    await openSearchRaw.indices.delete({ index: `${existingIndex},${newIndex}`, ignore_unavailable: true });
+                } finally {
+                    await putIsmPolicies(openSearchRaw);
+                }
             }
-        }
+        },
+        // each explain can wait up to 10s for ISM
+        60_000
     );
 
     it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'ec-serverless')('sets data stream data_retention to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
