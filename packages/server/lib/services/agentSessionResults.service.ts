@@ -81,7 +81,10 @@ export async function storeLargeResult({ environmentId, plan, session, connectio
 
     const stored = await tracer.trace<Promise<Result<string>>>('server.agentSession.storeResult', async (span: Span) => {
         span.setTag('nango.agentSessionId', session.id).setTag('nango.actionName', toolName).setTag('nango.resultBytes', bytes);
-        const result = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data });
+        // The tool already ran, so a throw here has to end as a failed store, not as an error the agent retries.
+        const result = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data }).catch(
+            (err: unknown): Result<string> => Err(err instanceof Error ? err : new Error(String(err)))
+        );
         if (result.isErr()) {
             span.setTag('error', result.error);
         }

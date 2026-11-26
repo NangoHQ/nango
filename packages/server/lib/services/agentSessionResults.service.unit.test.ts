@@ -140,6 +140,12 @@ describe('storeLargeResult', () => {
         expect(mocks.upsert).not.toHaveBeenCalled();
     });
 
+    it('says storing failed when the records store throws', async () => {
+        mocks.upsert.mockRejectedValue(new Error('connection reset'));
+
+        await expect(store(LARGE)).resolves.toEqual({ kind: 'store_failed' });
+    });
+
     it('says when storing failed', async () => {
         mocks.upsert.mockResolvedValue(Err(new Error('records down')));
 

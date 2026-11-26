@@ -468,6 +468,7 @@ describe('proxyTool large responses', () => {
         expect(result.status).toBe(200);
         expect(result.headers).toEqual({ 'content-type': 'application/json' });
         expect(result.body).toMatchObject({ result_id: expect.any(String), truncated: true, shape: expect.stringContaining('pages: {') });
+        expect(result.body).not.toHaveProperty('pages');
         expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
     });
 

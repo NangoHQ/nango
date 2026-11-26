@@ -117,7 +117,7 @@ export const queryResultTool = makeAgentSessionMcpTool({
             const output = 'data' in run.value ? run.value.data : null;
 
             // A large output is stored as a result of its own, so the agent can run code over it in turn. The code
-            // already ran, so an output that cannot be stored is returned in full, as nango_execute does.
+            // already ran, so an output that fails to store is returned in full. One over the stored limit is rejected.
             const large = await storeLargeResult({ environmentId: environment.id, plan, session, connection, toolName: 'nango_query_result', data: output });
             if (large.kind === 'over_stored_limit') {
                 const limit = formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES);
