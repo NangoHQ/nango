@@ -1,4 +1,4 @@
-import { ChevronRight, ListFilter } from 'lucide-react';
+import { Bot, ChevronRight, ListFilter } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs';
 import { Link } from 'react-router-dom';
 
@@ -151,6 +151,7 @@ export const OperationProperties: React.FC<{ env: string; operation: OperationRo
                     copy={{ value: sessionId, label: 'Copy agent session ID' }}
                     filter={{ label: "Show only this session's operations", kind: 'agent_session', onClick: () => void setAgentSessions([sessionId]) }}
                 >
+                    <Bot className="size-4 shrink-0 text-text-muted" />
                     <Code>{sessionId}</Code>
                 </Property>
             )}
