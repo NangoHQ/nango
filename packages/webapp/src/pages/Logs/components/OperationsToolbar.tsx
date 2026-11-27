@@ -10,7 +10,7 @@ import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { usePrefetchSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
-import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
+import { last24hPreset, liveDisplayPeriod, logsPresets, slidePeriod } from '../../../utils/logs';
 import { statusOptions, typesOptions } from '../constants';
 import { useLogsFilters } from '../filters';
 import { groupState, toggleGroup, toggleSubtype, typeLabel } from '../typeFilter';
@@ -167,10 +167,7 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
         void filters.setLive(live);
     };
 
-    // Live mode slides the stored window. Unslid, it stops matching "Last 24 hours" a minute after it was set.
-    const displayedPeriod = filters.isLive
-        ? slidePeriod({ from: filters.period[0], to: filters.period[1] })
-        : { from: filters.period[0], to: filters.period[1] };
+    const displayedPeriod = liveDisplayPeriod(filters.isLive, { from: filters.period[0], to: filters.period[1] });
 
     const toggleLive = () => {
         track('logs:filter_update', { filter: 'period' });

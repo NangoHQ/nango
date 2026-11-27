@@ -6,14 +6,12 @@ import { statusValues, typesList } from './constants';
 
 import type { LogsState, LogsType } from './constants';
 
-const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
+const parseLive = parseAsBoolean.withDefault(true);
 const parseStates = parseAsArrayOf(parseAsStringLiteral<LogsState | 'all'>(['all', ...statusValues]), ',').withDefault([]);
 const parseTypes = parseAsArrayOf(parseAsStringEnum<LogsType | 'all'>(['all', ...typesList]), ',').withDefault([]);
 const parseIds = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const defaultPeriod = last24hPreset.toPeriod()!;
-const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',')
-    .withOptions({ history: 'push' })
-    .withDefault([defaultPeriod.from, defaultPeriod.to ?? new Date()]);
+const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withDefault([defaultPeriod.from, defaultPeriod.to ?? new Date()]);
 
 /** Links written before empty meant "all" carry an explicit `all`, sometimes next to real values. */
 export function withoutAll<T extends string>(values: (T | 'all')[]): T[] {
