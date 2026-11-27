@@ -563,3 +563,16 @@ export interface DocusignWebhookEvent {
         envelopeSummary?: Record<string, unknown>;
     };
 }
+
+export interface ZohoCrmWebhookPayload {
+    server_time?: number;
+    query_params?: Record<string, string>;
+    module?: string;
+    resource_uri?: string;
+    ids?: string[];
+    affected_fields?: unknown[];
+    affected_values?: { record_id: string; values: Record<string, unknown> }[];
+    operation?: string;
+    channel_id?: string;
+    token?: string;
+}

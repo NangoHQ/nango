@@ -1,0 +1,282 @@
+---
+title: 'How to set up webhooks with Zoho CRM on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Zoho CRM record events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. You enable a notification channel for a connection with Zoho's [Notification API](https://www.zoho.com/crm/developer/docs/api/v8/notifications/enable.html), through Nango's proxy. The channel's `notify_url` is your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended.
+2. When a watched record is created, updated or deleted, Zoho sends a POST request to that URL. The body lists the module, the record `ids`, the `operation` (`insert`, `update` or `delete`) and the `token` you chose when enabling the channel.
+3. Nango looks up the connection named by `nangoConnectionId` and checks the body's `token` against that connection's `webhookSecret`. If they match, Nango routes the event to the connection, using `<module>.<operation>` as the webhook type, for example `Leads.update`.
+
+Zoho doesn't sign notifications, and the payload doesn't say which org it comes from. So each connection needs its own channel and its own `webhookSecret` in Nango. Notifications without a matching token are rejected.
+
+Channels are created through the API with the connection's own access token. The connection needs the `ZohoCRM.notifications.ALL` scope, or `ZohoCRM.notifications.CREATE`, `ZohoCRM.notifications.UPDATE` and `ZohoCRM.notifications.DELETE` for the calls below.
+
+## Setup
+
+The calls below use a Nango [Environment API key](/reference/backend/http-api/api-keys#scopes). A scoped key needs `environment:connections:update` to update connection metadata and `environment:proxy` to call Zoho through the proxy.
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Zoho CRM integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are enabling a channel for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Pick a channel token
+
+Generate a random token of 16 to 50 characters for the connection, for example with `openssl rand -hex 20`. Zoho accepts at most 50 characters, and Nango rejects every notification for a connection whose `webhookSecret` is shorter than 16. You use the same value in Nango and in the channel.
+
+The event function in step 4 generates and stores the token for you, so with it you can skip to step 4.
+
+### 3. Set the token as the webhook secret in Nango
+
+Store the token as `webhookSecret` in the connection's metadata **before** enabling the channel, so the first notifications aren't rejected:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<CHANNEL-TOKEN>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for Zoho CRM. Nango only checks against the connection's `webhookSecret`.
+</Note>
+
+### 4. Enable the notification channel when a connection is created
+
+Enable one channel per connection with [Enable notifications](https://www.zoho.com/crm/developer/docs/api/v8/notifications/enable.html), and store its `channel_id` in the connection's metadata to renew or disable it later.
+
+- `events` takes `<Module>.all`, or `<Module>.create`, `<Module>.edit` and `<Module>.delete` for specific operations.
+- `channel_expiry` can be at most one week ahead. Without it, the channel expires after one hour.
+- The `notify_url` must carry `?nangoConnectionId=`. `nango.getWebhookURL()` alone returns the URL without it, and Nango rejects every event sent to it.
+
+<Tabs>
+  <Tab title="Event function">
+    Enable a channel for each new connection with a [post-connection-creation function](/guides/platform/functions/event-functions). It stores the token as `webhookSecret` before enabling the channel, so the first notifications aren't rejected, and stores `channelId` only once the channel is enabled:
+
+    ```typescript
+    import { createOnEvent } from 'nango';
+    import { randomBytes } from 'crypto';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ webhookSecret: z.string().optional(), channelId: z.number().optional() });
+
+    // Zoho allows a channel_expiry of at most one week ahead
+    const channelExpiry = () => new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, '+00:00');
+
+    export default createOnEvent({
+        event: 'post-connection-creation',
+        description: 'Enable a Zoho CRM notification channel for the connection',
+        metadata: Metadata,
+        exec: async (nango) => {
+            const webhookUrl = await nango.getWebhookURL();
+            if (!webhookUrl) {
+                await nango.log('The Zoho CRM integration has no webhook URL', { level: 'error' });
+                return;
+            }
+
+            // Stored before the channel is enabled, so the first notifications aren't rejected
+            const webhookSecret = randomBytes(20).toString('hex');
+            await nango.updateMetadata({ webhookSecret });
+
+            const channelId = Date.now();
+            const notifyUrl = `${webhookUrl}?nangoConnectionId=${encodeURIComponent(nango.connectionId)}`;
+            try {
+                await nango.post({
+                    endpoint: '/crm/v8/actions/watch',
+                    data: {
+                        watch: [
+                            {
+                                channel_id: channelId,
+                                events: ['Leads.all', 'Contacts.all'],
+                                notify_url: notifyUrl,
+                                token: webhookSecret,
+                                channel_expiry: channelExpiry(),
+                                return_affected_field_values: true
+                            }
+                        ]
+                    }
+                });
+            } catch (err) {
+                await nango.log(`Failed to enable the Zoho CRM notification channel: ${String(err)}`, { level: 'error' });
+                return;
+            }
+
+            // Stored only once the channel exists, so renewal and cleanup never target a missing channel
+            await nango.updateMetadata({ channelId });
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="API">
+    After storing the token as in step 3, enable the channel through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/crm/v8/actions/watch" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "watch": [
+          {
+            "channel_id": "<CHANNEL-ID>",
+            "events": ["Leads.all", "Contacts.all"],
+            "notify_url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>",
+            "token": "<CHANNEL-TOKEN>",
+            "channel_expiry": "<ISO-8601-DATETIME>",
+            "return_affected_field_values": true
+          }
+        ]
+      }'
+    ```
+
+    `channel_id` is a number you choose. Save it to renew or disable the channel later.
+  </Tab>
+</Tabs>
+
+### 5. Renew the channel before it expires
+
+Zoho channels expire, and Zoho doesn't renew them. Before each expiry, send the channel again with `PATCH` to the same endpoint ([Update specific notification information](https://www.zoho.com/crm/developer/docs/api/v8/notifications/update-info.html)), always with a new `channel_expiry`.
+
+<Tabs>
+  <Tab title="Sync">
+    Run a daily sync that extends the channel stored in the connection's metadata:
+
+    ```typescript
+    import { createSync } from 'nango';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ webhookSecret: z.string().optional(), channelId: z.number().optional() });
+
+    // Zoho allows a channel_expiry of at most one week ahead
+    const channelExpiry = () => new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, '+00:00');
+
+    export default createSync({
+        description: 'Renew the Zoho CRM notification channel before it expires',
+        frequency: '1d',
+        syncType: 'full',
+        models: {},
+        metadata: Metadata,
+        exec: async (nango) => {
+            const metadata = await nango.getMetadata<z.infer<typeof Metadata>>();
+            const webhookUrl = await nango.getWebhookURL();
+            if (!metadata?.channelId || !metadata.webhookSecret || !webhookUrl) {
+                return;
+            }
+
+            try {
+                await nango.patch({
+                    endpoint: '/crm/v8/actions/watch',
+                    data: {
+                        watch: [
+                            {
+                                channel_id: metadata.channelId,
+                                // The same events as when the channel was enabled
+                                events: ['Leads.all', 'Contacts.all'],
+                                notify_url: `${webhookUrl}?nangoConnectionId=${encodeURIComponent(nango.connectionId)}`,
+                                token: metadata.webhookSecret,
+                                channel_expiry: channelExpiry()
+                            }
+                        ]
+                    }
+                });
+            } catch (err) {
+                // An expired or disabled channel can't be renewed. Enable it again as in step 4.
+                await nango.log(`Failed to renew channel ${metadata.channelId}: ${String(err)}`, { level: 'error' });
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="API">
+    ```bash
+    curl -X PATCH "https://api.nango.dev/proxy/crm/v8/actions/watch" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "watch": [
+          {
+            "channel_id": "<CHANNEL-ID>",
+            "events": ["Leads.all", "Contacts.all"],
+            "notify_url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>",
+            "token": "<CHANNEL-TOKEN>",
+            "channel_expiry": "<NEW-ISO-8601-DATETIME>"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+Zoho stops sending notifications when a channel expires, and Nango doesn't renew channels for you. If renewals stop, events are silently missed until the channel is enabled again.
+</Warning>
+
+### 6. Disable the channel when a connection is deleted
+
+Disable a connection's channel before the connection itself, so Zoho stops sending its notifications. See [Disable notifications](https://www.zoho.com/crm/developer/docs/api/v8/notifications/disable.html).
+
+<Tabs>
+  <Tab title="Event function">
+    ```typescript
+    import { createOnEvent } from 'nango';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ webhookSecret: z.string().optional(), channelId: z.number().optional() });
+
+    export default createOnEvent({
+        event: 'pre-connection-deletion',
+        description: 'Disable the Zoho CRM notification channel before the connection is deleted',
+        metadata: Metadata,
+        exec: async (nango) => {
+            const metadata = await nango.getMetadata<z.infer<typeof Metadata>>();
+            if (!metadata?.channelId) {
+                return;
+            }
+
+            try {
+                await nango.delete({ endpoint: '/crm/v8/actions/watch', params: { channel_ids: String(metadata.channelId) } });
+            } catch (err) {
+                // Don't block the connection deletion if the channel is already gone.
+                await nango.log(`Failed to disable channel ${metadata.channelId}: ${String(err)}`, { level: 'error' });
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="API">
+    ```bash
+    curl -X DELETE "https://api.nango.dev/proxy/crm/v8/actions/watch?channel_ids=<CHANNEL-ID>" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+
+    Then clear `webhookSecret` and `channelId` from the connection's metadata.
+  </Tab>
+</Tabs>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to webhook types like `Leads.insert`, `Leads.update` or `Leads.delete`, or `*` for all of them. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+Notifications only carry record IDs and, with `return_affected_field_values`, the changed values. Fetch the full record through the proxy if you need it.
+
+## Rollback strategy
+
+Disable each channel as in [step 6](#6-disable-the-channel-when-a-connection-is-deleted), then clear `webhookSecret` and `channelId` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

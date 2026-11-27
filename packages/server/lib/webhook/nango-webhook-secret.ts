@@ -24,7 +24,7 @@ export const NANGO_WEBHOOK_SECRET_HEADER = 'x-nango-webhook-secret';
 export const NANGO_WEBHOOK_SECRET_QUERY_PARAM = 'nangoWebhookSecret';
 
 // Customer chosen, so a short one would be guessable from the public webhook URL.
-const MIN_SECRET_LENGTH = 16;
+export const MIN_SECRET_LENGTH = 16;
 
 export function verifyNangoWebhookSecret({
     secret,
