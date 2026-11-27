@@ -10825,6 +10825,64 @@ Source: https://nango.dev/docs/reference/backend/http-api/catalog/get-provider.m
 ```
 </ResponseExample>
 
+## List a catalog provider's functions
+
+Source: https://nango.dev/docs/reference/backend/http-api/catalog/list-functions.md
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "name": "add-attendee",
+      "type": "action",
+      "description": "Fetch an event, append an attendee, and patch the attendee list",
+      "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events"] }
+    },
+    {
+      "name": "calendar-events",
+      "type": "sync",
+      "description": "Incrementally sync full Google Calendar event objects",
+      "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events.readonly"] }
+    }
+  ],
+  "pagination": { "total": 46, "page": 0, "limit": 2 }
+}
+```
+</ResponseExample>
+
+## Get a catalog function
+
+Source: https://nango.dev/docs/reference/backend/http-api/catalog/get-function.md
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "name": "create-domain-record",
+    "type": "tool",
+    "description": "Create an A, AAAA, CAA, CNAME, MX, NS, SRV or TXT record in a managed DNS domain.",
+    "required_scopes": { "any": ["domain:create", "domain:update"] },
+    "input_json_schema": {
+      "type": "object",
+      "properties": {
+        "domainName": { "type": "string", "minLength": 1, "description": "Parent managed DNS domain name." },
+        "type": { "type": "string", "enum": ["A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"] }
+      },
+      "required": ["domainName", "type"]
+    },
+    "output_json_schema": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Created record identifier." }
+      },
+      "required": ["id"]
+    }
+  }
+}
+```
+</ResponseExample>
+
 ## List all providers
 
 Source: https://nango.dev/docs/reference/backend/http-api/providers/list.md

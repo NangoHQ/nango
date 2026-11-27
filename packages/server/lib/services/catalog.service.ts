@@ -1,12 +1,19 @@
 import { getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import providerService from './provider.service.js';
+import providerService, { isCatalogToolTemplate } from './provider.service.js';
 
-import type { ApiProviderFunctionCounts, Provider } from '@nangohq/types';
+import type { ProviderTemplateConfig } from './provider.service.js';
+import type { CatalogFunctionDefinition } from '@nangohq/shared';
+import type { ApiCatalogFunctionTypeFilter, ApiProviderFunctionCounts, NangoSyncConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export type CatalogServiceErrorCode = 'not_found' | 'providers_unavailable' | 'managed_apps_unavailable' | 'function_counts_unavailable';
+export type CatalogServiceErrorCode =
+    | 'not_found'
+    | 'providers_unavailable'
+    | 'managed_apps_unavailable'
+    | 'function_counts_unavailable'
+    | 'functions_unavailable';
 
 export class CatalogServiceError extends Error {
     public readonly code: CatalogServiceErrorCode;
@@ -81,6 +88,52 @@ export function rankProviders<T extends CatalogProviderCandidate>(candidates: T[
         .map(({ candidate }) => candidate);
 }
 
+interface CatalogFunctionBase {
+    name: string;
+    description: string | null;
+}
+
+export type CatalogFunction =
+    | (CatalogFunctionBase & { type: 'action' | 'sync'; template: NangoSyncConfig })
+    | (CatalogFunctionBase & { type: 'tool'; template: CatalogFunctionDefinition });
+
+const FunctionTypePriority = {
+    tool: 0,
+    action: 1,
+    sync: 2
+} as const;
+
+function toCatalogFunction(template: ProviderTemplateConfig): CatalogFunction | null {
+    if (isCatalogToolTemplate(template)) {
+        return { name: template.name, type: 'tool', description: template.description, template };
+    }
+
+    const type = template.type ?? 'action';
+    if (type !== 'action' && type !== 'sync') {
+        return null;
+    }
+    return { name: template.name, type, description: template.description ?? null, template };
+}
+
+function matchesTypeFilter(fn: CatalogFunction, type: ApiCatalogFunctionTypeFilter | undefined): boolean {
+    switch (type) {
+        case undefined:
+            return true;
+        case 'tool':
+            return fn.type === 'tool' || fn.type === 'action';
+        case 'sync':
+            return fn.type === 'sync';
+    }
+}
+
+function matchesSearch(fn: CatalogFunction, normalizedQuery: string): boolean {
+    return normalizeSearch(fn.name).includes(normalizedQuery) || normalizeSearch(fn.description ?? '').includes(normalizedQuery);
+}
+
+function byNameThenType(a: CatalogFunction, b: CatalogFunction): number {
+    return a.name.localeCompare(b.name) || FunctionTypePriority[a.type] - FunctionTypePriority[b.type];
+}
+
 interface CatalogDetails {
     managedApps: Record<string, { scopes: string[] }>;
     functionCounts: Map<string, ApiProviderFunctionCounts>;
@@ -129,6 +182,67 @@ export class CatalogService {
     }
 
     async getProvider(name: string): Promise<Result<CatalogProvider, CatalogServiceError>> {
+        const provider = this.findProvider(name);
+        if (provider.isErr()) {
+            return Err(provider.error);
+        }
+
+        const details = await this.loadCatalogDetails();
+        if (details.isErr()) {
+            return Err(details.error);
+        }
+
+        return Ok(toCatalogProvider({ name, provider: provider.value }, details.value));
+    }
+
+    listFunctions({
+        provider,
+        type,
+        search,
+        page,
+        limit
+    }: {
+        provider: string;
+        type: ApiCatalogFunctionTypeFilter | undefined;
+        search: string | undefined;
+        page: number;
+        limit: number;
+    }): Result<{ functions: CatalogFunction[]; total: number }, CatalogServiceError> {
+        const functions = this.loadFunctions(provider);
+        if (functions.isErr()) {
+            return Err(functions.error);
+        }
+
+        const normalizedQuery = search === undefined ? undefined : normalizeSearch(search);
+        const matches = functions.value
+            .filter((fn) => matchesTypeFilter(fn, type) && (normalizedQuery === undefined || matchesSearch(fn, normalizedQuery)))
+            .sort(byNameThenType);
+
+        return Ok({ functions: matches.slice(page * limit, (page + 1) * limit), total: matches.length });
+    }
+
+    getFunction({
+        provider,
+        name,
+        type
+    }: {
+        provider: string;
+        name: string;
+        type: ApiCatalogFunctionTypeFilter | undefined;
+    }): Result<CatalogFunction, CatalogServiceError> {
+        const functions = this.loadFunctions(provider);
+        if (functions.isErr()) {
+            return Err(functions.error);
+        }
+
+        const [match] = functions.value.filter((fn) => fn.name === name && matchesTypeFilter(fn, type)).sort(byNameThenType);
+        if (!match) {
+            return Err(new CatalogServiceError({ code: 'not_found', message: `Unknown function ${name}` }));
+        }
+        return Ok(match);
+    }
+
+    private findProvider(name: string): Result<Provider, CatalogServiceError> {
         const providers = getProviders();
         if (!providers) {
             return Err(new CatalogServiceError({ code: 'providers_unavailable', message: 'Failed to load providers' }));
@@ -138,13 +252,21 @@ export class CatalogService {
         if (!provider) {
             return Err(new CatalogServiceError({ code: 'not_found', message: `Unknown provider ${name}` }));
         }
+        return Ok(provider);
+    }
 
-        const details = await this.loadCatalogDetails();
-        if (details.isErr()) {
-            return Err(details.error);
+    private loadFunctions(provider: string): Result<CatalogFunction[], CatalogServiceError> {
+        const found = this.findProvider(provider);
+        if (found.isErr()) {
+            return Err(found.error);
         }
 
-        return Ok(toCatalogProvider({ name, provider }, details.value));
+        const templates = providerService.listTemplates({ providerName: provider });
+        if (templates.isErr()) {
+            return Err(new CatalogServiceError({ code: 'functions_unavailable', message: 'Failed to load functions', cause: templates.error }));
+        }
+
+        return Ok(templates.value.map(toCatalogFunction).filter((fn) => fn !== null));
     }
 
     private async loadCatalogDetails(): Promise<Result<CatalogDetails, CatalogServiceError>> {

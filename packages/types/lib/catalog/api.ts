@@ -1,5 +1,7 @@
 import type { ApiEndpoint } from '../api.js';
 import type { AuthModeType } from '../auth/api.js';
+import type { RequiredScopes } from '../function/tool.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type ApiCatalogProviderSetup = { type: 'nango-managed-app'; scopes: string[] } | { type: 'none' } | { type: 'required' };
 
@@ -35,5 +37,63 @@ export type GetPublicCatalogProvider = ApiEndpoint<{
     Params: { provider: string };
     Success: {
         data: ApiCatalogProvider;
+    };
+}>;
+
+export type ApiCatalogFunctionType = 'action' | 'sync' | 'tool';
+export type ApiCatalogFunctionTypeFilter = 'sync' | 'tool';
+
+export interface ApiCatalogFunction {
+    name: string;
+    type: ApiCatalogFunctionType;
+    description: string | null;
+    required_scopes: RequiredScopes | null;
+}
+
+export interface ApiCatalogActionFunction extends ApiCatalogFunction {
+    type: 'action';
+    input: string | null;
+    returns: string[];
+    json_schema: JSONSchema7 | null;
+}
+
+export interface ApiCatalogSyncFunction extends ApiCatalogFunction {
+    type: 'sync';
+    input: string | null;
+    returns: string[];
+    json_schema: JSONSchema7 | null;
+    runs: string | null;
+    auto_start: boolean;
+    track_deletes: boolean;
+}
+
+export interface ApiCatalogToolFunction extends ApiCatalogFunction {
+    type: 'tool';
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
+}
+
+export type ApiCatalogFunctionDetail = ApiCatalogActionFunction | ApiCatalogSyncFunction | ApiCatalogToolFunction;
+
+export type GetPublicCatalogFunctions = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/catalog/providers/:provider/functions';
+    Params: { provider: string };
+    Querystring: { type?: ApiCatalogFunctionTypeFilter; search?: string; page?: number; limit?: number };
+    Success: {
+        data: ApiCatalogFunction[];
+        pagination: { total: number; page: number; limit: number };
+    };
+}>;
+
+export type GetPublicCatalogFunction = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/catalog/providers/:provider/functions/:name';
+    Params: { provider: string; name: string };
+    Querystring: { type?: ApiCatalogFunctionTypeFilter };
+    Success: {
+        data: ApiCatalogFunctionDetail;
     };
 }>;

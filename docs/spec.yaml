@@ -101,6 +101,121 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '404':
                     $ref: '#/components/responses/NotFound'
+    /catalog/providers/{provider}/functions:
+        get:
+            summary: List a catalog provider's functions
+            description: Returns the prebuilt functions Nango offers for a provider. Doesn't require an API key.
+            security: []
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider slug, for example `google-calendar`
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [sync, tool]
+                  description: Filter by function type. `tool` also returns deprecated actions, which you call as tools.
+                - name: search
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  description: Matches the function name and description, ignoring case, accents, spaces, and punctuation. A search with no Latin letters (a-z) or digits returns 400.
+                - name: page
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+            responses:
+                '200':
+                    description: Successfully returned the provider's functions, sorted by name
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                    - pagination
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/CatalogFunction'
+                                    pagination:
+                                        type: object
+                                        required:
+                                            - total
+                                            - page
+                                            - limit
+                                        properties:
+                                            total:
+                                                type: integer
+                                            page:
+                                                type: integer
+                                            limit:
+                                                type: integer
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+    /catalog/providers/{provider}/functions/{name}:
+        get:
+            summary: Get a catalog function
+            description: Returns one prebuilt function with its input and output schemas. Doesn't require an API key.
+            security: []
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider slug, for example `google-calendar`
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The function name
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [sync, tool]
+                  description: Filter by function type. `tool` also matches deprecated actions. When omitted and several functions share the name, tools are returned first, then actions, then syncs.
+            responses:
+                '200':
+                    description: Successfully returned the function
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/CatalogFunctionDetail'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
     /providers:
         get:
             summary: List all providers
@@ -4510,36 +4625,8 @@ components:
                         instructions:
                             type: string
                         required_scopes:
+                            $ref: '#/components/schemas/RequiredScopes'
                             description: Provider scopes the tool needs. Absent when unknown.
-                            oneOf:
-                                - type: object
-                                  description: Every listed scope is required.
-                                  required: [all]
-                                  additionalProperties: false
-                                  properties:
-                                      all:
-                                          type: array
-                                          minItems: 1
-                                          items:
-                                              type: string
-                                - type: object
-                                  description: At least one listed scope is required.
-                                  required: [any]
-                                  additionalProperties: false
-                                  properties:
-                                      any:
-                                          type: array
-                                          minItems: 1
-                                          items:
-                                              type: string
-                                - type: object
-                                  description: No scopes are required.
-                                  required: [none]
-                                  additionalProperties: false
-                                  properties:
-                                      none:
-                                          type: boolean
-                                          enum: [true]
                         tags:
                             type: object
                             additionalProperties:
@@ -4663,6 +4750,137 @@ components:
                         sync:
                             type: integer
                             description: Prebuilt sync functions
+        RequiredScopes:
+            oneOf:
+                - type: object
+                  description: Every listed scope is required.
+                  required: [all]
+                  additionalProperties: false
+                  properties:
+                      all:
+                          type: array
+                          minItems: 1
+                          items:
+                              type: string
+                - type: object
+                  description: At least one listed scope is required.
+                  required: [any]
+                  additionalProperties: false
+                  properties:
+                      any:
+                          type: array
+                          minItems: 1
+                          items:
+                              type: string
+                - type: object
+                  description: No scopes are required.
+                  required: [none]
+                  additionalProperties: false
+                  properties:
+                      none:
+                          type: boolean
+                          enum: [true]
+
+        CatalogFunction:
+            type: object
+            required:
+                - name
+                - type
+                - description
+                - required_scopes
+            properties:
+                name:
+                    type: string
+                type:
+                    type: string
+                    enum: [action, sync, tool]
+                    description: The function type. `action` is deprecated; call actions as tools.
+                description:
+                    type: [string, 'null']
+                required_scopes:
+                    description: The provider scopes the function needs, for example to pick the scopes your integration requests. Indicative; Nango doesn't enforce them. `null` when unknown.
+                    oneOf:
+                        - $ref: '#/components/schemas/RequiredScopes'
+                        - type: 'null'
+
+        CatalogFunctionDetail:
+            description: A catalog function with its schemas. The extra fields depend on `type`.
+            oneOf:
+                - allOf:
+                      - $ref: '#/components/schemas/CatalogFunction'
+                      - type: object
+                        required:
+                            - type
+                            - input_json_schema
+                            - output_json_schema
+                        properties:
+                            type:
+                                type: string
+                                enum: [tool]
+                            input_json_schema:
+                                type: [object, 'null']
+                                description: Input JSON Schema with its referenced definitions, or null when absent.
+                            output_json_schema:
+                                type: [object, 'null']
+                                description: Output JSON Schema with its referenced definitions, or null when absent.
+                - allOf:
+                      - $ref: '#/components/schemas/CatalogFunction'
+                      - type: object
+                        deprecated: true
+                        required:
+                            - type
+                            - input
+                            - returns
+                            - json_schema
+                        properties:
+                            type:
+                                type: string
+                                enum: [action]
+                            input:
+                                type: [string, 'null']
+                                description: The input model name
+                            returns:
+                                type: array
+                                items:
+                                    type: string
+                                description: The output model names
+                            json_schema:
+                                type: [object, 'null']
+                                description: JSON Schema for the models
+                - allOf:
+                      - $ref: '#/components/schemas/CatalogFunction'
+                      - type: object
+                        required:
+                            - type
+                            - input
+                            - returns
+                            - json_schema
+                            - runs
+                            - auto_start
+                            - track_deletes
+                        properties:
+                            type:
+                                type: string
+                                enum: [sync]
+                            input:
+                                type: [string, 'null']
+                                description: The metadata model name
+                            returns:
+                                type: array
+                                items:
+                                    type: string
+                                description: The record model names
+                            json_schema:
+                                type: [object, 'null']
+                                description: JSON Schema for the models
+                            runs:
+                                type: [string, 'null']
+                                description: Schedule expression, e.g. `every day`.
+                            auto_start:
+                                type: boolean
+                            track_deletes:
+                                type: boolean
+
         ProviderTemplateFunction:
             description: A sync template or catalog tool definition (no deployment metadata).
             oneOf:
