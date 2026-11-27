@@ -1,84 +1,51 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeLogsColumnSizing, getLogsColumnStyle } from './column-sizing.js';
+import { computeLogsGridTemplate } from './column-sizing.js';
 
 import type { SearchOperationsData } from '@nangohq/types';
-import type { Column } from '@tanstack/react-table';
 
-// Keep in sync with column-sizing.ts. Duplicated here so the expected widths below read as plain arithmetic.
-const CHAR = 7.6;
-const LOGO = 22;
-const PAD = 24;
+const now = new Date('2026-11-27T15:00:00');
 
 function row(overrides: Partial<SearchOperationsData>): SearchOperationsData {
-    return { integrationName: null, syncConfigName: null, connectionName: null, ...overrides } as SearchOperationsData;
+    return { createdAt: '2026-11-27T14:29:22', integrationName: null, syncConfigName: null, connectionName: null, ...overrides } as SearchOperationsData;
 }
 
-describe('computeLogsColumnSizing', () => {
-    it('sizes each column to fit its value (content + padding, plus a logo for integration)', () => {
-        const sizing = computeLogsColumnSizing([row({ integrationName: 'github', syncConfigName: 'commits', connectionName: 'conn-1' })]);
+const tracks = (template: string) => template.split(' ');
 
-        expect(sizing.integrationId).toBe(Math.ceil('github'.length * CHAR) + LOGO + PAD);
-        expect(sizing.syncConfigId).toBe(Math.ceil('commits'.length * CHAR) + PAD);
-        expect(sizing.connectionId).toBe(Math.ceil('conn-1'.length * CHAR) + PAD);
+describe('computeLogsGridTemplate', () => {
+    it('has seven columns, with Connection last', () => {
+        const template = tracks(computeLogsGridTemplate([row({})], { panelOpen: false, now }));
+        expect(template).toHaveLength(7);
+        expect(template[6]).toBe('minmax(100px,100px)');
     });
 
-    it('uses the widest value across all rows', () => {
-        const sizing = computeLogsColumnSizing([
-            row({ integrationName: 'short' }),
-            row({ integrationName: 'google-calendar-getting-started' }),
-            row({ integrationName: 'mid' })
-        ]);
-
-        expect(sizing.integrationId).toBe(Math.ceil('google-calendar-getting-started'.length * CHAR) + LOGO + PAD);
+    it('drops Integration and Connection while the panel is open', () => {
+        const template = tracks(computeLogsGridTemplate([row({ integrationName: 'github', connectionName: 'abc' })], { panelOpen: true, now }));
+        expect(template).toHaveLength(5);
+        expect(template[4]).toBe('minmax(0,1fr)');
     });
 
-    it('a longer value produces a wider column', () => {
-        const shorter = computeLogsColumnSizing([row({ connectionName: 'a' })]);
-        const longer = computeLogsColumnSizing([row({ connectionName: 'aaaaaaaaaaaaaaaaaaaa' })]);
-
-        expect(longer.connectionId).toBeGreaterThan(shorter.connectionId);
+    it('keeps the timestamp column wide enough for its header with no rows', () => {
+        expect(tracks(computeLogsGridTemplate([], { panelOpen: false, now }))[0]).toBe(
+            tracks(computeLogsGridTemplate([row({})], { panelOpen: false, now }))[0]
+        );
     });
 
-    it('treats missing values as empty, falling back to just the padding (and logo)', () => {
-        const sizing = computeLogsColumnSizing([row({})]);
-
-        expect(sizing.integrationId).toBe(LOGO + PAD);
-        expect(sizing.syncConfigId).toBe(PAD);
-        expect(sizing.connectionId).toBe(PAD);
+    it('widens the timestamp column when a row is not from today', () => {
+        const today = parseInt(tracks(computeLogsGridTemplate([row({})], { panelOpen: false, now }))[0] ?? '');
+        const older = parseInt(tracks(computeLogsGridTemplate([row({}), row({ createdAt: '2026-11-25T09:00:00' })], { panelOpen: false, now }))[0] ?? '');
+        expect(older).toBeGreaterThan(today);
     });
 
-    it('returns the padding baseline for no rows', () => {
-        const sizing = computeLogsColumnSizing([]);
-
-        expect(sizing).toEqual({ integrationId: LOGO + PAD, syncConfigId: PAD, connectionId: PAD });
-    });
-});
-
-describe('getLogsColumnStyle', () => {
-    function column(meta: { canGrow?: boolean; canShrink?: boolean } | undefined, size = 200, minSize = 120) {
-        return { getSize: () => size, columnDef: { meta, minSize } } as unknown as Column<SearchOperationsData, unknown>;
-    }
-
-    it('lays a fixed column at its size with no grow or shrink', () => {
-        expect(getLogsColumnStyle(column(undefined, 180))).toEqual({ flexBasis: 180, flexGrow: 0, flexShrink: 0, minWidth: 180 });
+    it('fits a full UUID connection ID, and caps a longer one at 320px', () => {
+        const uuid = tracks(computeLogsGridTemplate([row({ connectionName: '4504f681-7dd1-47be-a43c-d9b9a8ec3cae' })], { panelOpen: false, now }))[6];
+        expect(uuid).toBe(`minmax(100px,${Math.ceil(36 * 7.6) + 30}px)`);
+        const long = tracks(computeLogsGridTemplate([row({ connectionName: 'x'.repeat(80) })], { panelOpen: false, now }))[6];
+        expect(long).toBe('minmax(100px,320px)');
     });
 
-    it('lets a shrinkable column give up space first, down to its minSize', () => {
-        const style = getLogsColumnStyle(column({ canShrink: true }, 200, 120));
-
-        expect(style.flexBasis).toBe(200);
-        expect(style.flexGrow).toBe(0);
-        expect(style.flexShrink).toBeGreaterThan(1); // shrinks before the grow column
-        expect(style.minWidth).toBe(120);
-    });
-
-    it('lets the grow column fill space and shrink only as a last resort', () => {
-        const shrink = getLogsColumnStyle(column({ canShrink: true }, 200, 120));
-        const grow = getLogsColumnStyle(column({ canGrow: true }, 200, 120));
-
-        expect(grow.flexGrow).toBe(1);
-        expect(grow.minWidth).toBe(120);
-        expect(grow.flexShrink).toBeLessThan(Number(shrink.flexShrink)); // last to truncate
+    it('fits Integration to its content and gives Function the spare width', () => {
+        const template = tracks(computeLogsGridTemplate([row({ integrationName: 'a' })], { panelOpen: false, now }));
+        expect(template.slice(4, 6)).toEqual(['minmax(0,120px)', 'minmax(120px,1fr)']);
     });
 });

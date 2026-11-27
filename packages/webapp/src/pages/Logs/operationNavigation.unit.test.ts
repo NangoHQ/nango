@@ -19,6 +19,12 @@ describe('neighbourId', () => {
     it('returns null when the current id is not in the list', () => {
         expect(neighbourId(ids, 'z', 'next')).toBeNull();
     });
+
+    it('starts at the first id when nothing is selected', () => {
+        expect(neighbourId(ids, null, 'next')).toBe('a');
+        expect(neighbourId(ids, null, 'previous')).toBeNull();
+        expect(neighbourId([], null, 'next')).toBeNull();
+    });
 });
 
 describe('navigationDirection', () => {

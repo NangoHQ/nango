@@ -1,66 +1,71 @@
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Search, X } from 'lucide-react';
-import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@nangohq/design-system';
 
-import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
-import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { usePageVisible } from '@/hooks/usePageVisible';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { queryClient, useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
 import { APIError, apiFetch } from '../../../utils/api';
-import { expandLogsTypes, last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
-import { formatQuantity } from '../../../utils/utils';
-import { computeLogsColumnSizing, getLogsColumnStyle } from '../column-sizing';
-import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
-import { OperationRow } from './OperationRow';
-import { SearchableMultiSelect } from './SearchableMultiSelect';
+import { expandLogsTypes, slidePeriod } from '../../../utils/logs';
+import { computeLogsGridTemplate } from '../column-sizing';
+import { defaultLimit, refreshInterval } from '../constants';
+import { useLogsFilters } from '../filters';
+import { ConnectionCell, DurationCell, FunctionCell, IntegrationCell, StatusCell, TimestampCell, TypeCell } from '../operationCells';
 
-import type { Period } from '../../../utils/dates';
-import type { AnalyticsEventProperties, OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
-import type { Table as ReactTable } from '@tanstack/react-table';
+import type { SearchOperations, SearchOperationsData } from '@nangohq/types';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
     selectedOperationId?: string | null;
+    tabStopOperationId?: string | null;
     onLoadedIdsChange?: (ids: string[]) => void;
+    onTotalChange?: (total: number) => void;
+    panelOpen: boolean;
 }
 
-type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
+interface CellContext {
+    now: Date;
+    panelOpen: boolean;
+}
 
-const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
-const parseStates = parseAsArrayOf(parseAsStringLiteral(statusOptions.map((opt) => opt.value)), ',')
-    .withDefault(['all'])
-    .withOptions({ history: 'push' });
-const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withDefault(['all']).withOptions({ history: 'push' });
-const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parseConnections = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parseSyncs = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parseAgentSessions = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
+const columns: {
+    id: string;
+    header: string;
+    hiddenWithPanel?: boolean;
+    align?: 'start' | 'end';
+    cell: (operation: SearchOperationsData, context: CellContext) => React.ReactNode;
+}[] = [
+    { id: 'createdAt', header: 'Timestamp', cell: (operation, { now }) => <TimestampCell createdAt={operation.createdAt} now={now} /> },
+    { id: 'duration', header: 'Duration', cell: (operation) => <DurationCell operation={operation} /> },
+    { id: 'state', header: 'Status', cell: (operation) => <StatusCell operation={operation} /> },
+    { id: 'type', header: 'Type', cell: (operation) => <TypeCell operation={operation} /> },
+    { id: 'integration', header: 'Integration', hiddenWithPanel: true, cell: (operation) => <IntegrationCell operation={operation} /> },
+    { id: 'function', header: 'Function', cell: (operation, { panelOpen }) => <FunctionCell operation={operation} withLogo={panelOpen} /> },
+    { id: 'connection', header: 'Connection', hiddenWithPanel: true, cell: (operation) => <ConnectionCell operation={operation} /> }
+];
 
-export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, selectedOperationId, onLoadedIdsChange }) => {
+const ROW_HEIGHT_PX = 36;
+
+export const SearchAllOperations: React.FC<Props> = ({
+    onSelectOperation,
+    selectedOperationId,
+    tabStopOperationId,
+    onLoadedIdsChange,
+    onTotalChange,
+    panelOpen
+}) => {
     const env = useStore((state) => state.env);
 
-    // The virtualizer will need a reference to the scrollable container element
     const tableContainerRef = useRef<HTMLDivElement>(null);
 
     // --- Data fetch
-    const [search, setSearch] = useSearchQueryState();
-    const [isLive, setLive] = useQueryState('live', parseLive);
-    const [states, setStates] = useQueryState('states', parseStates);
-    const [types, setTypes] = useQueryState('types', parseTypes);
-    const [integrations, setIntegrations] = useQueryState('integrations', parseIntegrations);
-    const [connections, setConnections] = useQueryState('connections', parseConnections);
-    const [syncs, setSyncs] = useQueryState('syncs', parseSyncs);
-    const [agentSessions, setAgentSessions] = useQueryState('agentSessions', parseAgentSessions);
-    const [period, setPeriod] = useQueryState('period', parsePeriod);
+    const [search] = useSearchQueryState();
+    const { isLive, states, types, integrations, connections, syncs, agentSessions, period } = useLogsFilters();
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
@@ -89,14 +94,18 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
      * - When you scroll to the bottom, we disable interval refresh, and the infiniteQuery load the next pages
      * - When you scroll back to the top we trim all the pages so they don't get refresh, and we re-enable the interval refresh
      */
-    const { data, isLoading, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery<
+    const queryKey = useMemo(
+        () => [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
+        [env, states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch]
+    );
+    const { data, isLoading, isFetching, isFetchingNextPage, isPlaceholderData, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery<
         SearchOperations['Success'],
         SearchOperations['Errors'],
         { pages: SearchOperations['Success'][] },
         unknown[],
         string | null
     >({
-        queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
+        queryKey,
         queryFn: async ({ pageParam, signal }) => {
             let periodCopy: SearchOperations['Body']['period'];
             // Slide the window automatically when live
@@ -145,11 +154,17 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
         refetchOnMount: false
     });
 
+    const polling = isLive && isScrollTop && !debouncedSearch;
+    const pageVisible = usePageVisible(() => {
+        if (polling) {
+            void refetch({ cancelRefetch: true });
+        }
+    });
     useInterval(
         async () => {
             await refetch({ cancelRefetch: true });
         },
-        isLive && isScrollTop && !debouncedSearch ? refreshInterval : null
+        polling && pageVisible ? refreshInterval : null
     );
     useMount(async () => {
         // We can't use standard refetchOnMount because it will refresh every pages so we force refresh the first one
@@ -159,23 +174,20 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
     });
 
     const trim = useCallback(() => {
-        queryClient.setQueryData(
-            [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
-            (oldData: any) => {
-                if (!oldData || !oldData.pages || oldData.pages.length <= 1) {
-                    return oldData;
-                }
-
-                return {
-                    ...oldData,
-                    pages: [oldData.pages[0]],
-                    pageParams: [oldData.pageParams[0]]
-                };
+        queryClient.setQueryData(queryKey, (oldData: any) => {
+            if (!oldData || !oldData.pages || oldData.pages.length <= 1) {
+                return oldData;
             }
-        );
-    }, [env, states, types, integrations, connections, syncs, agentSessions, period]);
 
-    const flatData = useMemo<OperationRowType[]>(() => {
+            return {
+                ...oldData,
+                pages: [oldData.pages[0]],
+                pageParams: [oldData.pageParams[0]]
+            };
+        });
+    }, [queryKey]);
+
+    const flatData = useMemo<SearchOperationsData[]>(() => {
         return data?.pages?.flatMap((page) => page.data) ?? [];
     }, [data]);
 
@@ -183,27 +195,16 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
         onLoadedIdsChange?.(flatData.map((op) => op.id));
     }, [flatData, onLoadedIdsChange]);
 
-    const [totalHumanReadable, totalOperations] = useMemo(() => {
-        if (!data?.pages?.[0]?.pagination.total) {
-            return ['0', 0];
-        }
-        return [formatQuantity(data?.pages?.[0]?.pagination.total || 0), data?.pages?.[0]?.pagination.total || 0];
-    }, [data]);
+    const totalOperations = data?.pages?.[0]?.pagination.total ?? 0;
+    useEffect(() => {
+        onTotalChange?.(totalOperations);
+    }, [totalOperations, onTotalChange]);
 
-    // --- Table Display
-    const table = useReactTable({
-        data: flatData,
-        columns,
-        getCoreRowModel: getCoreRowModel()
-    });
+    const flashIds = useArrivedIds(flatData, JSON.stringify(queryKey), !data || isPlaceholderData);
 
-    // Measure the width of a single monospace character in the cell font, once. Column widths are derived
-    // from character counts, so this lets us size columns to their content without measuring every cell.
-    // Size the variable columns to fit their widest value. Flexbox (see getLogsColumnStyle) then handles
-    // filling leftover space and shrinking/truncating when the row is too narrow, so no width math here.
-    useLayoutEffect(() => {
-        table.setColumnSizing(computeLogsColumnSizing(flatData));
-    }, [table, flatData]);
+    const now = new Date();
+    const gridTemplate = computeLogsGridTemplate(flatData, { panelOpen, now });
+    const visibleColumns = panelOpen ? columns.filter((column) => !column.hiddenWithPanel) : columns;
 
     // --- Infinite scroll
     const totalFetched = flatData.length;
@@ -256,187 +257,111 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
         }
     }, [data, hasNextPage]);
 
-    // --- Period
-    const onPeriodChange = (period: Period | null, live: boolean) => {
-        track('logs:filter_update', { filter: 'period' });
-        void setPeriod(period ? [period.from, period.to ?? new Date()] : []);
-        void setLive(live);
-    };
-
-    const trackedFilter =
-        <T,>(filter: LogsFilter, current: T[], set: (value: T[]) => unknown) =>
-        (value: T[]) => {
-            if (value.join(',') !== current.join(',')) {
-                track('logs:filter_update', { filter });
-            }
-            void set(value);
-        };
-
     return (
-        <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="flex flex-wrap gap-2 justify-between">
-                <div className="flex-1 min-w-60">
-                    <InputGroup>
-                        <InputGroupAddon>
-                            <Search />
-                        </InputGroupAddon>
-                        <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
-                        {search && (
-                            <InputGroupAddon align="inline-end">
-                                <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
-                                    <X />
-                                </InputGroupButton>
-                            </InputGroupAddon>
-                        )}
-                    </InputGroup>
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto" ref={tableContainerRef} onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}>
+            <Table columns={gridTemplate}>
+                <TableHeader>
+                    <TableRow>
+                        {visibleColumns.map((column) => (
+                            <TableHead key={column.id} align={column.align}>
+                                {column.header}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+
+                {isLoading && (
+                    <TableBody>
+                        {Array.from({ length: 8 }, (_, i) => (
+                            <TableRow key={i}>
+                                {visibleColumns.map((column) => (
+                                    <TableCell key={column.id}>
+                                        <Skeleton className="w-3/4" />
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                )}
+
+                {flatData.length > 0 && (
+                    <OperationsBody
+                        operations={flatData}
+                        columns={visibleColumns}
+                        context={{ now, panelOpen }}
+                        flashIds={flashIds}
+                        tableContainerRef={tableContainerRef}
+                        onSelectOperation={onSelectOperation}
+                        selectedOperationId={selectedOperationId}
+                        tabStopOperationId={tabStopOperationId}
+                    />
+                )}
+            </Table>
+
+            {flatData.length > 0 && hasNextPage && (
+                <div className="flex justify-center p-4">
+                    <Button onClick={onClickLoadMore} variant={'outline'} loading={isFetchingNextPage}>
+                        Load more...
+                    </Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <FilterMultiSelect
-                        label="Status"
-                        options={statusOptions}
-                        selected={states}
-                        defaultSelect={['all']}
-                        onChange={trackedFilter('status', states, setStates)}
-                    />
-                    <FilterMultiSelect
-                        label="Type"
-                        options={typesOptions}
-                        selected={types}
-                        defaultSelect={['all']}
-                        onChange={trackedFilter('type', types, setTypes)}
-                        width="w-80"
-                    />
-                    <SearchableMultiSelect
-                        label="Integration"
-                        selected={integrations}
-                        category={'integration'}
-                        onChange={trackedFilter('integration', integrations, setIntegrations)}
-                        max={20}
-                    />
-                    <SearchableMultiSelect
-                        label="Connection"
-                        selected={connections}
-                        category={'connection'}
-                        onChange={trackedFilter('connection', connections, setConnections)}
-                        max={20}
-                    />
-                    <SearchableMultiSelect
-                        label="Script"
-                        selected={syncs}
-                        category={'syncConfig'}
-                        onChange={trackedFilter('script', syncs, setSyncs)}
-                        max={20}
-                    />
-                    <SearchableMultiSelect
-                        label="Agent session"
-                        selected={agentSessions}
-                        category={'agentSession'}
-                        onChange={trackedFilter('agent_session', agentSessions, setAgentSessions)}
-                        max={20}
-                    />
+            )}
+            {flatData.length > 0 && !hasNextPage && <div className="px-5 py-4 type-text-regular-xs text-text-secondary">Nothing more to load...</div>}
 
-                    <PeriodSelector
-                        isLive={!manualLoadMore && isLive}
-                        period={{ from: period[0], to: period[1] }}
-                        onChange={onPeriodChange}
-                        presets={logsPresets}
-                        defaultPreset={last24hPreset}
-                    />
+            {!isLoading && flatData.length <= 0 && (
+                <div className="flex flex-col items-center gap-2 p-10 py-20 text-center">
+                    <div className="type-text-regular-sm text-text-strong">No logs found</div>
+                    <div className="type-text-regular-sm text-text-muted">Note that logs older than 15 days are automatically cleared.</div>
                 </div>
-            </div>
-            <div className="flex items-center justify-end">
-                <div className="text-text-muted text-body-small-regular">
-                    {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
-                </div>
-            </div>
-            <div
-                className="flex-1 min-h-0"
-                style={{ overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
-                ref={tableContainerRef}
-                onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
-            >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
-                    <thead className="grid sticky top-0 z-10 bg-surface-page">
-                        {table.getHeaderGroups().map((headerGroup) => {
-                            return (
-                                <tr key={headerGroup.id} className="flex w-full">
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <th
-                                                key={header.id}
-                                                className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold overflow-hidden"
-                                                style={getLogsColumnStyle(header.column)}
-                                            >
-                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                            </th>
-                                        );
-                                    })}
-                                </tr>
-                            );
-                        })}
-                    </thead>
-
-                    {flatData.length > 0 && (
-                        <TableBody
-                            table={table}
-                            tableContainerRef={tableContainerRef}
-                            onSelectOperation={onSelectOperation}
-                            selectedOperationId={selectedOperationId}
-                        />
-                    )}
-
-                    {flatData.length > 0 && hasNextPage && (
-                        <Button onClick={onClickLoadMore} variant={'outline'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
-                            Load more...
-                        </Button>
-                    )}
-                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-text-secondary p-4 mt-2">Nothing more to load...</div>}
-
-                    {isLoading && (
-                        <tbody>
-                            <tr>
-                                {table.getAllColumns().map((col, i) => {
-                                    return (
-                                        <td key={i} className="px-3 py-2.5">
-                                            <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        </tbody>
-                    )}
-
-                    {!isLoading && flatData.length <= 0 && (
-                        <tbody>
-                            <tr className="hover:bg-transparent flex absolute w-full">
-                                <td colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
-                                    <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
-                                        <div className="text-center">No logs found</div>
-                                        <div className="text-text-muted">Note that logs older than 15 days are automatically cleared.</div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    )}
-                </table>
-            </div>
+            )}
         </div>
     );
 };
 
-const TableBody: React.FC<{
-    table: ReactTable<SearchOperationsData>;
-    tableContainerRef: React.RefObject<HTMLDivElement>;
+function useArrivedIds(operations: SearchOperationsData[], resetKey: string, pending: boolean): Set<string> {
+    const seen = useRef<{ key: string; ids: Set<string> } | null>(null);
+    const arrived = useMemo(() => {
+        const previous = seen.current?.key === resetKey ? seen.current.ids : null;
+        const ids = new Set<string>();
+        if (!previous || pending) {
+            return ids;
+        }
+        // Stop at the first known row: rows below it are an older page loading, not new arrivals.
+        for (const operation of operations) {
+            if (previous.has(operation.id)) {
+                break;
+            }
+            ids.add(operation.id);
+        }
+        return ids;
+    }, [operations, resetKey, pending]);
+
+    useEffect(() => {
+        if (pending) {
+            return;
+        }
+        const previous = seen.current?.key === resetKey ? seen.current.ids : [];
+        seen.current = { key: resetKey, ids: new Set([...previous, ...operations.map((operation) => operation.id)]) };
+    }, [operations, resetKey, pending]);
+
+    return arrived;
+}
+
+const OperationsBody: React.FC<{
+    operations: SearchOperationsData[];
+    columns: typeof columns;
+    context: CellContext;
+    flashIds: Set<string>;
+    tableContainerRef: React.RefObject<HTMLDivElement | null>;
     onSelectOperation: Props['onSelectOperation'];
     selectedOperationId: Props['selectedOperationId'];
-}> = ({ table, tableContainerRef, onSelectOperation, selectedOperationId }) => {
-    const { rows } = table.getRowModel();
-
+    tabStopOperationId: Props['tabStopOperationId'];
+}> = ({ operations, columns, context, flashIds, tableContainerRef, onSelectOperation, selectedOperationId, tabStopOperationId }) => {
     // Important: Keep the row virtualizer in the lowest component possible to avoid unnecessary re-renders.
     const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-        count: rows.length,
-        estimateSize: () => 41,
+        count: operations.length,
+        estimateSize: () => ROW_HEIGHT_PX,
         getScrollElement: () => tableContainerRef.current,
+        getItemKey: (index) => operations[index]?.id ?? index,
         // Measure dynamic row height, except in firefox because it measures table border height incorrectly
         measureElement:
             typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
@@ -445,7 +370,7 @@ const TableBody: React.FC<{
 
     useEffect(() => {
         const container = tableContainerRef.current;
-        const index = selectedOperationId ? rows.findIndex((row) => row.original.id === selectedOperationId) : -1;
+        const index = selectedOperationId ? operations.findIndex((operation) => operation.id === selectedOperationId) : -1;
         const item = rowVirtualizer.measurementsCache[index];
         if (!container || !item) {
             return;
@@ -461,21 +386,49 @@ const TableBody: React.FC<{
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedOperationId]);
 
+    const lastSelectedId = useRef(selectedOperationId);
+    useEffect(() => {
+        const closedId = lastSelectedId.current;
+        lastSelectedId.current = selectedOperationId;
+        if (closedId && !selectedOperationId) {
+            tableContainerRef.current?.querySelector<HTMLElement>(`[data-operation-id="${CSS.escape(closedId)}"]`)?.focus({ preventScroll: true });
+        }
+    }, [selectedOperationId, tableContainerRef]);
+
+    const virtualItems = rowVirtualizer.getVirtualItems();
+    // The tab stop must be a rendered row, or Tab skips the table while that row is scrolled out of the window.
+    const renderedIds = virtualItems.map((item) => operations[item.index]?.id);
+    const firstVisible = virtualItems.find((item) => item.start >= (rowVirtualizer.scrollOffset ?? 0)) ?? virtualItems[0];
+    const tabStopId = tabStopOperationId && renderedIds.includes(tabStopOperationId) ? tabStopOperationId : firstVisible && operations[firstVisible.index]?.id;
+
     return (
-        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
+        <TableBody height={rowVirtualizer.getTotalSize()}>
+            {virtualItems.map((virtualRow) => {
+                const operation = operations[virtualRow.index];
+                if (!operation) {
+                    return null;
+                }
                 return (
-                    <OperationRow
-                        key={row.original.id}
-                        row={row}
-                        onSelectOperation={onSelectOperation}
-                        isSelected={row.original.id === selectedOperationId}
-                        virtualRow={virtualRow}
-                        rowVirtualizer={rowVirtualizer}
-                    />
+                    <TableRow
+                        key={operation.id}
+                        ref={rowVirtualizer.measureElement}
+                        data-index={virtualRow.index}
+                        data-operation-id={operation.id}
+                        tabIndex={operation.id === tabStopId ? 0 : -1}
+                        offset={virtualRow.start}
+                        interactive
+                        selected={operation.id === selectedOperationId}
+                        flash={flashIds.has(operation.id)}
+                        onClick={() => onSelectOperation(operation.id !== selectedOperationId, operation.id)}
+                    >
+                        {columns.map((column) => (
+                            <TableCell key={column.id} align={column.align}>
+                                {column.cell(operation, context)}
+                            </TableCell>
+                        ))}
+                    </TableRow>
                 );
             })}
-        </tbody>
+        </TableBody>
     );
 };
