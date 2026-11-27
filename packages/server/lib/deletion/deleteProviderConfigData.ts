@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { configService, functionConfigService } from '@nangohq/shared';
 
-import { batchDelete } from './batchDelete.js';
+import { assertWithinDeadline, batchDelete } from './batchDelete.js';
 import { deleteConnectionData } from './deleteConnectionData.js';
 import { deleteFunctionConfigData } from './deleteFunctionConfigData.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
@@ -33,6 +33,7 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
 
             for (const functionConfig of functionConfigs.value) {
                 await deleteFunctionConfigData(functionConfig, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return functionConfigs.value.length;
@@ -40,15 +41,17 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
     });
 
     await batchDelete({
+        ...opts,
         name: 'syncConfigs < providerConfigs',
-        deadline,
-        limit,
-        logger,
         deleteFn: async () => {
-            const syncConfigs = await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ nango_config_id: providerConfigId }).limit(opts.limit);
+            const syncConfigs = await db.knex
+                .from<DBSyncConfig, DBSyncConfig[]>('_nango_sync_configs')
+                .where({ nango_config_id: providerConfigId })
+                .limit(opts.limit);
 
             for (const syncConfig of syncConfigs || []) {
                 await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return syncConfigs?.length || 0;
@@ -59,10 +62,11 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
         ...opts,
         name: 'connections < providerConfigs',
         deleteFn: async () => {
-            const connections = await db.knex.from<DBConnection>('_nango_connections').where({ config_id: providerConfigId }).limit(opts.limit);
+            const connections = await db.knex.from<DBConnection, DBConnection[]>('_nango_connections').where({ config_id: providerConfigId }).limit(opts.limit);
 
             for (const connection of connections) {
                 await deleteConnectionData(connection, opts);
+                assertWithinDeadline(deadline, logger);
             }
 
             return connections.length;

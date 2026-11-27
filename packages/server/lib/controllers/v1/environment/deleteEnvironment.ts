@@ -1,8 +1,8 @@
-import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { startEnvironmentDeletion } from '../../../tasks/startEnvironmentDeletion.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
-import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DeleteEnvironment } from '@nangohq/types';
 
@@ -20,7 +20,12 @@ export const deleteEnvironment = asyncWrapperWithEnvironment<DeleteEnvironment>(
         return;
     }
 
-    await environmentService.softDelete({ environmentId: environment.id, orchestrator: getOrchestrator() });
+    const enqueued = await startEnvironmentDeletion({ environmentId: environment.id });
+    if (enqueued.isErr()) {
+        report(enqueued.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to enqueue environment deletion' } });
+        return;
+    }
 
     res.status(204).send();
 });

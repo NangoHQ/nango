@@ -1146,6 +1146,7 @@ export class ConnectionService {
                 'providers_shared_credentials.credentials as shared_credentials'
             )
             .where('_nango_connections.deleted', false)
+            .andWhere('_nango_environments.deleted', false)
             .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
             .andWhere((builder) => builder.where('last_fetched_at', '<', dateThreshold).orWhereNull('last_fetched_at'))
             .orderBy('_nango_connections.id', 'asc')
@@ -2638,6 +2639,7 @@ export class ConnectionService {
                     }[]
                 >(db.knex.raw(`_nango_environments.account_id as "accountId"`), db.knex.raw(`count(_nango_connections.id) AS "count"`))
                 .whereNull('_nango_connections.deleted_at')
+                .andWhere('_nango_environments.deleted', false)
                 .groupBy('_nango_environments.account_id');
 
             if (res) {
@@ -2670,6 +2672,7 @@ export class ConnectionService {
                         { connection: DBConnectionAsJSONRow; account: DBTeam; environment: DBEnvironment; cursor: number }[]
                     >(db.knex.raw('row_to_json(_nango_connections.*) as connection'), db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'), '_nango_connections.id as cursor')
                     .where('_nango_connections.deleted', false)
+                    .andWhere('_nango_environments.deleted', false)
                     .orderBy('_nango_connections.id', 'asc')
                     .limit(batchSize);
 
