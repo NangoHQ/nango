@@ -235,7 +235,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                             key={option.value}
                             value={option.value}
                             count={levelCounts ? formatQuantity(levelCount(levelCounts, option.value)) : undefined}
-                            disabled={option.value !== 'all' && option.value !== level && levelCounts?.[option.value] === 0}
+                            disabled={!isLive && option.value !== 'all' && option.value !== level && levelCounts?.[option.value] === 0}
                         >
                             {option.label}
                         </SegmentedControlItem>
