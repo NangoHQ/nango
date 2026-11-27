@@ -59,7 +59,7 @@ Enable one channel per connection with [Enable notifications](https://www.zoho.c
 
 <Tabs>
   <Tab title="Event function">
-    Enable a channel for each new connection with a [post-connection-creation function](/guides/platform/functions/event-functions). It stores the token as `webhookSecret` before enabling the channel, so the first notifications aren't rejected:
+    Enable a channel for each new connection with a [post-connection-creation function](/guides/platform/functions/event-functions). It stores the token as `webhookSecret` before enabling the channel, so the first notifications aren't rejected, and stores `channelId` only once the channel is enabled:
 
     ```typescript
     import { createOnEvent } from 'nango';
@@ -82,26 +82,35 @@ Enable one channel per connection with [Enable notifications](https://www.zoho.c
                 return;
             }
 
+            // Stored before the channel is enabled, so the first notifications aren't rejected
             const webhookSecret = randomBytes(20).toString('hex');
-            const channelId = Date.now();
-            await nango.updateMetadata({ webhookSecret, channelId });
+            await nango.updateMetadata({ webhookSecret });
 
+            const channelId = Date.now();
             const notifyUrl = `${webhookUrl}?nangoConnectionId=${encodeURIComponent(nango.connectionId)}`;
-            await nango.post({
-                endpoint: '/crm/v8/actions/watch',
-                data: {
-                    watch: [
-                        {
-                            channel_id: channelId,
-                            events: ['Leads.all', 'Contacts.all'],
-                            notify_url: notifyUrl,
-                            token: webhookSecret,
-                            channel_expiry: channelExpiry(),
-                            return_affected_field_values: true
-                        }
-                    ]
-                }
-            });
+            try {
+                await nango.post({
+                    endpoint: '/crm/v8/actions/watch',
+                    data: {
+                        watch: [
+                            {
+                                channel_id: channelId,
+                                events: ['Leads.all', 'Contacts.all'],
+                                notify_url: notifyUrl,
+                                token: webhookSecret,
+                                channel_expiry: channelExpiry(),
+                                return_affected_field_values: true
+                            }
+                        ]
+                    }
+                });
+            } catch (err) {
+                await nango.log(`Failed to enable the Zoho CRM notification channel: ${String(err)}`, { level: 'error' });
+                return;
+            }
+
+            // Stored only once the channel exists, so renewal and cleanup never target a missing channel
+            await nango.updateMetadata({ channelId });
         }
     });
     ```
