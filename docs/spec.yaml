@@ -4619,22 +4619,7 @@ components:
                     type: [object, 'null']
                     description: Output JSON Schema with its referenced definitions, or null when absent or unresolved.
                 meta:
-                    type: object
-                    required: [tags]
-                    properties:
-                        instructions:
-                            type: string
-                        required_scopes:
-                            $ref: '#/components/schemas/RequiredScopes'
-                            description: Provider scopes the tool needs. Absent when unknown.
-                        tags:
-                            type: object
-                            additionalProperties:
-                                oneOf:
-                                    - type: string
-                                    - type: array
-                                      items:
-                                          type: string
+                    $ref: '#/components/schemas/FunctionMeta'
 
         ProviderTemplateToolFunction:
             type: object
@@ -4750,6 +4735,26 @@ components:
                         sync:
                             type: integer
                             description: Prebuilt sync functions
+        FunctionMeta:
+            type: object
+            required: [tags]
+            properties:
+                instructions:
+                    type: string
+                    description: Guidance on when and how to call the tool. Tools only.
+                required_scopes:
+                    $ref: '#/components/schemas/RequiredScopes'
+                    description: The provider scopes the function needs. Indicative; Nango doesn't enforce them. Absent when unknown.
+                tags:
+                    type: object
+                    description: Other tool tags, such as `read_only_hint`, `destructive_hint` and `idempotent_hint`. Empty for actions and syncs.
+                    additionalProperties:
+                        oneOf:
+                            - type: string
+                            - type: array
+                              items:
+                                  type: string
+
         RequiredScopes:
             oneOf:
                 - type: object
@@ -4787,7 +4792,7 @@ components:
                 - name
                 - type
                 - description
-                - required_scopes
+                - meta
             properties:
                 name:
                     type: string
@@ -4797,11 +4802,8 @@ components:
                     description: The function type. `action` is deprecated; call actions as tools.
                 description:
                     type: [string, 'null']
-                required_scopes:
-                    description: The provider scopes the function needs, for example to pick the scopes your integration requests. Indicative; Nango doesn't enforce them. `null` when unknown.
-                    oneOf:
-                        - $ref: '#/components/schemas/RequiredScopes'
-                        - type: 'null'
+                meta:
+                    $ref: '#/components/schemas/FunctionMeta'
 
         CatalogFunctionDetail:
             description: A catalog function with its schemas. The extra fields depend on `type`.

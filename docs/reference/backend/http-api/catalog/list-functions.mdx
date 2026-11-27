@@ -11,13 +11,19 @@ openapi: 'GET /catalog/providers/{provider}/functions'
       "name": "add-attendee",
       "type": "action",
       "description": "Fetch an event, append an attendee, and patch the attendee list",
-      "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events"] }
+      "meta": {
+        "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events"] },
+        "tags": {}
+      }
     },
     {
       "name": "calendar-events",
       "type": "sync",
       "description": "Incrementally sync full Google Calendar event objects",
-      "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events.readonly"] }
+      "meta": {
+        "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events.readonly"] },
+        "tags": {}
+      }
     }
   ],
   "pagination": { "total": 46, "page": 0, "limit": 2 }

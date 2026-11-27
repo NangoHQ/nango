@@ -1,6 +1,6 @@
 import type { ApiEndpoint } from '../api.js';
 import type { AuthModeType } from '../auth/api.js';
-import type { RequiredScopes } from '../function/tool.js';
+import type { ListedNangoToolFunction } from '../functions/domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type ApiCatalogProviderSetup = { type: 'nango-managed-app'; scopes: string[] } | { type: 'none' } | { type: 'required' };
@@ -43,11 +43,13 @@ export type GetPublicCatalogProvider = ApiEndpoint<{
 export type ApiCatalogFunctionType = 'action' | 'sync' | 'tool';
 export type ApiCatalogFunctionTypeFilter = 'sync' | 'tool';
 
+export type ApiCatalogFunctionMeta = ListedNangoToolFunction['meta'];
+
 export interface ApiCatalogFunction {
     name: string;
     type: ApiCatalogFunctionType;
     description: string | null;
-    required_scopes: RequiredScopes | null;
+    meta: ApiCatalogFunctionMeta;
 }
 
 export interface ApiCatalogActionFunction extends ApiCatalogFunction {

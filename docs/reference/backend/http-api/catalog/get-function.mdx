@@ -10,7 +10,11 @@ openapi: 'GET /catalog/providers/{provider}/functions/{name}'
     "name": "create-domain-record",
     "type": "tool",
     "description": "Create an A, AAAA, CAA, CNAME, MX, NS, SRV or TXT record in a managed DNS domain.",
-    "required_scopes": { "any": ["domain:create", "domain:update"] },
+    "meta": {
+      "instructions": "Get the domain from `list-domains`. Use @ for apex or the provider-style host/service name, and supply type-specific fields. Use `update-domain-record` to change an existing record. SOA is managed automatically and is not created through this tool.",
+      "required_scopes": { "any": ["domain:create", "domain:update"] },
+      "tags": { "read_only_hint": "false", "destructive_hint": "false", "idempotent_hint": "false" }
+    },
     "input_json_schema": {
       "$ref": "#/definitions/FunctionInput_digitalocean_createdomainrecord",
       "definitions": {

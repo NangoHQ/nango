@@ -5,13 +5,28 @@ import { eventTypeMapper } from '../../on-event-scripts.service.js';
 import type { FunctionRow } from './models/listing.js';
 import type {
     DBOnEventScript,
+    FunctionTags,
     FunctionTagValue,
     ListedNangoActionFunction,
     ListedNangoFunction,
     ListedNangoOnEventFunction,
-    ListedNangoSyncFunction
+    ListedNangoSyncFunction,
+    ListedNangoToolFunction,
+    ToolTags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export function toToolMeta(toolTags: FunctionTags | ToolTags): ListedNangoToolFunction['meta'] {
+    const { instructions, required_scopes, ...customTags } = toolTags;
+    const tags = Object.fromEntries(
+        Object.entries(customTags).filter((entry): entry is [string, FunctionTagValue] => typeof entry[1] === 'string' || Array.isArray(entry[1]))
+    );
+    return {
+        tags,
+        ...(typeof instructions === 'string' && { instructions }),
+        ...(typeof required_scopes === 'object' && !Array.isArray(required_scopes) && { required_scopes })
+    };
+}
 
 export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunction> {
     const description = row.metadata?.description;
@@ -33,10 +48,6 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
             if (!row.tool) {
                 return Err(new Error('Missing tool function details'));
             }
-            const { instructions, required_scopes, ...customTags } = row.tool.tags;
-            const tags = Object.fromEntries(
-                Object.entries(customTags).filter((entry): entry is [string, FunctionTagValue] => typeof entry[1] === 'string' || Array.isArray(entry[1]))
-            );
             return Ok({
                 ...base,
                 ...availability,
@@ -47,11 +58,7 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
                 description: description ?? '',
                 input_json_schema: resolveSchemaRef(row.json_schema, row.tool.input_schema_ref),
                 output_json_schema: resolveSchemaRef(row.json_schema, row.tool.output_schema_ref),
-                meta: {
-                    tags,
-                    ...(typeof instructions === 'string' && { instructions }),
-                    ...(typeof required_scopes === 'object' && !Array.isArray(required_scopes) && { required_scopes })
-                }
+                meta: toToolMeta(row.tool.tags)
             });
         }
         case 'sync': {

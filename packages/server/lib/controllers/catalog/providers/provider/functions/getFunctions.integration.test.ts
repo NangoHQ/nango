@@ -36,7 +36,7 @@ describe(`GET ${route}`, () => {
             name: 'add-attendee',
             type: 'action',
             description: expect.any(String),
-            required_scopes: { all: expect.arrayContaining([expect.any(String)]) }
+            meta: { tags: {}, required_scopes: { all: expect.arrayContaining([expect.any(String)]) } }
         });
     });
 

@@ -1,3 +1,4 @@
+import { functionLookupService } from '@nangohq/shared';
 import { basePublicUrl, resolveSchemaRef } from '@nangohq/utils';
 
 import { getInstantSetup } from '../services/instantSetup.js';
@@ -6,11 +7,11 @@ import type { CatalogFunction, CatalogProvider } from '../services/catalog.servi
 import type {
     ApiCatalogFunction,
     ApiCatalogFunctionDetail,
+    ApiCatalogFunctionMeta,
     ApiCatalogProvider,
     ApiCatalogProviderSetup,
     NangoSyncConfig,
-    Provider,
-    RequiredScopes
+    Provider
 } from '@nangohq/types';
 
 const POPULAR_CATEGORY = 'popular';
@@ -42,14 +43,13 @@ export function catalogProviderToApi({ name, provider, managedAppScopes, functio
     };
 }
 
-function toRequiredScopes(fn: CatalogFunction): RequiredScopes | null {
+function toFunctionMeta(fn: CatalogFunction): ApiCatalogFunctionMeta {
     if (fn.type === 'tool') {
-        const requiredScopes = fn.template.tags?.['required_scopes'];
-        return typeof requiredScopes === 'object' && !Array.isArray(requiredScopes) ? requiredScopes : null;
+        return functionLookupService.toToolMeta(fn.template.tags ?? {});
     }
 
     const [first, ...rest] = fn.template.scopes ?? [];
-    return first === undefined ? null : { all: [first, ...rest] };
+    return { tags: {}, ...(first !== undefined && { required_scopes: { all: [first, ...rest] } }) };
 }
 
 export function catalogFunctionToApi(fn: CatalogFunction): ApiCatalogFunction {
@@ -57,7 +57,7 @@ export function catalogFunctionToApi(fn: CatalogFunction): ApiCatalogFunction {
         name: fn.name,
         type: fn.type,
         description: fn.description,
-        required_scopes: toRequiredScopes(fn)
+        meta: toFunctionMeta(fn)
     };
 }
 
