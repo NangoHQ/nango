@@ -15929,7 +15929,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `data247` | Data247 | API_KEY | [docs](https://nango.dev/docs/api-integrations/data247.md) | [connect](https://nango.dev/docs/api-integrations/data247/connect.md) |  | other |
 | `databox` | Databox | API_KEY | [docs](https://nango.dev/docs/api-integrations/databox.md) | [connect](https://nango.dev/docs/api-integrations/databox/connect.md) |  | analytics |
 | `databricks-account` | Databricks (Account Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-account.md) |  |  | analytics |
-| `databricks-account-oauth` | Databricks Account (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/databricks-account-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/databricks-account-oauth/how-to-register-your-own-databricks-account-oauth-api-oauth-app.md) | analytics |
+| `databricks-account-oauth` | Databricks Account (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/databricks-account-oauth.md) | [connect](https://nango.dev/docs/api-integrations/databricks-account-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/databricks-account-oauth/how-to-register-your-own-databricks-account-oauth-api-oauth-app.md) | analytics |
 | `databricks-workspace` | Databricks (Workspace Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-workspace.md) |  |  | analytics |
 | `datacandy` | DataCandy | BASIC | [docs](https://nango.dev/docs/integrations/all/datacandy.md) |  |  | payment |
 | `datadog` | Datadog | API_KEY | [docs](https://nango.dev/docs/api-integrations/datadog.md) | [connect](https://nango.dev/docs/api-integrations/datadog/connect.md) |  | analytics, dev-tools |

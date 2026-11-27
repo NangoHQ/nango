@@ -12525,25 +12525,28 @@ databricks-account-oauth:
     proxy:
         base_url: https://${connectionConfig.region}/api
     docs: https://nango.dev/docs/api-integrations/databricks-account-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/databricks-account-oauth/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/databricks-account-oauth/how-to-register-your-own-databricks-account-oauth-api-oauth-app
     connection_config:
         region:
             type: string
             title: Cloud region
-            description: The Databricks account console host for your cloud (AWS, GCP or Azure).
+            description: The Databricks account console host for your cloud.
             format: hostname
             enum:
                 - accounts.cloud.databricks.com
                 - accounts.gcp.databricks.com
                 - accounts.azuredatabricks.net
             order: 1
+            doc_section: '#step-1-find-your-account-console-host'
         accountId:
             type: string
             title: Account ID
-            description: Your Databricks account ID, shown in the account console under your username menu.
+            description: Your Databricks account ID.
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
             order: 2
+            doc_section: '#step-2-find-your-account-id'
 
 databricks-workspace:
     display_name: Databricks (Workspace Level)
