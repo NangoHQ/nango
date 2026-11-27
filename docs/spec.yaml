@@ -14,6 +14,93 @@ servers:
 security:
     - bearerAuth: []
 paths:
+    /catalog/providers:
+        get:
+            summary: Search the catalog providers
+            description: Returns the APIs Nango supports, with what an agent needs to pick one and set it up. Doesn't require an API key.
+            security: []
+            parameters:
+                - name: search
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  description: Matches the provider slug and display name, ignoring case, accents, spaces, and punctuation. A search with no Latin letters (a-z) or digits returns 400. Results are ranked exact slug, exact display name, slug prefix, display name prefix, then substring. Without a search, providers are sorted by slug.
+                - name: page
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+            responses:
+                '200':
+                    description: Successfully returned the matching providers
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                    - pagination
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/CatalogProvider'
+                                    pagination:
+                                        type: object
+                                        required:
+                                            - total
+                                            - page
+                                            - limit
+                                        properties:
+                                            total:
+                                                type: integer
+                                            page:
+                                                type: integer
+                                            limit:
+                                                type: integer
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+    /catalog/providers/{provider}:
+        get:
+            summary: Get a catalog provider
+            description: Returns one provider from the catalog by its slug. Doesn't require an API key.
+            security: []
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider slug, for example `google-calendar`
+            responses:
+                '200':
+                    description: Successfully returned the provider
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/CatalogProvider'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
     /providers:
         get:
             summary: List all providers
@@ -4490,6 +4577,68 @@ components:
                     type: [object, 'null']
                     description: Output JSON Schema with its referenced definitions, or null when absent or unresolved.
 
+        CatalogProvider:
+            type: object
+            required:
+                - name
+                - display_name
+                - categories
+                - auth_mode
+                - logo_url
+                - docs
+                - docs_connect
+                - setup_guide_url
+                - default_scopes
+                - instant_setup
+                - function_counts
+            properties:
+                name:
+                    type: string
+                    description: The provider slug. Pass it as `provider` when you create an integration.
+                display_name:
+                    type: string
+                categories:
+                    type: array
+                    items:
+                        type: string
+                auth_mode:
+                    type: string
+                    description: How end users authenticate with this API, for example `OAUTH2` or `API_KEY`
+                logo_url:
+                    type: string
+                docs:
+                    type: string
+                    description: The provider's page in the Nango docs
+                docs_connect:
+                    type: [string, 'null']
+                    description: The guide for end users connecting their account
+                setup_guide_url:
+                    type: [string, 'null']
+                    description: The guide for registering your own OAuth app with this API
+                default_scopes:
+                    type: array
+                    items:
+                        type: string
+                instant_setup:
+                    type: [string, 'null']
+                    enum: ['nango-managed-app', 'no-dev-app', null]
+                    description: |
+                        Whether you can create the integration without extra setup.
+                        - `nango-managed-app`: Nango's managed OAuth app is available, so you don't need to register your own. Only on Nango Cloud, where Nango hosts managed apps.
+                        - `no-dev-app`: the API doesn't use a developer app. End users authorize or enter their credentials in Connect.
+                        - `null`: you need to register your own OAuth app or fill in required integration settings first.
+                function_counts:
+                    type: object
+                    required:
+                        - tool
+                        - sync
+                    properties:
+                        tool:
+                            type: integer
+                            description: Prebuilt tools, including deprecated actions
+                        sync:
+                            type: integer
+                            description: Prebuilt sync functions
         ProviderTemplateFunction:
             description: A sync template or catalog tool definition (no deployment metadata).
             oneOf:

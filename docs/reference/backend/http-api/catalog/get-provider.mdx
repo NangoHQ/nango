@@ -1,0 +1,24 @@
+---
+title: 'Get a catalog provider'
+openapi: 'GET /catalog/providers/{provider}'
+---
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "name": "posthog",
+    "display_name": "PostHog",
+    "categories": ["dev-tools"],
+    "auth_mode": "API_KEY",
+    "logo_url": "https://app.nango.dev/images/template-logos/posthog.svg",
+    "docs": "https://nango.dev/docs/api-integrations/posthog",
+    "docs_connect": "https://nango.dev/docs/api-integrations/posthog/connect",
+    "setup_guide_url": null,
+    "default_scopes": [],
+    "instant_setup": "no-dev-app",
+    "function_counts": { "tool": 66, "sync": 14 }
+  }
+}
+```
+</ResponseExample>

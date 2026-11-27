@@ -128,6 +128,8 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Proxy: Proxy - PUT requests](https://nango.dev/docs/reference/backend/http-api/proxy/put.md)
 - [Backend: HTTP API: Proxy: Proxy - PATCH requests](https://nango.dev/docs/reference/backend/http-api/proxy/patch.md)
 - [Backend: HTTP API: Proxy: Proxy - DELETE requests](https://nango.dev/docs/reference/backend/http-api/proxy/delete.md)
+- [Backend: HTTP API: Catalog: Search catalog providers](https://nango.dev/docs/reference/backend/http-api/catalog/list-providers.md)
+- [Backend: HTTP API: Catalog: Get a catalog provider](https://nango.dev/docs/reference/backend/http-api/catalog/get-provider.md)
 - [Backend: HTTP API: Providers: List all providers](https://nango.dev/docs/reference/backend/http-api/providers/list.md)
 - [Backend: HTTP API: Providers: Get a provider](https://nango.dev/docs/reference/backend/http-api/providers/get.md)
 - [Backend: HTTP API: Providers: List provider templates](https://nango.dev/docs/reference/backend/http-api/providers/templates.md)
