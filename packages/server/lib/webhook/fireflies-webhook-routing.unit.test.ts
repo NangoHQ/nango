@@ -1,11 +1,13 @@
 import crypto from 'node:crypto';
 
+import qs from 'qs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
+import { connectionIdSchema } from '../helpers/validation.js';
 import * as FirefliesWebhookRouting from './fireflies-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
 
@@ -16,6 +18,8 @@ const OTHER_CONNECTION_ID = 'someone-elses-connection-id';
 const CONNECTION_SECRET = 'fireflies-test-secret-1234';
 const OTHER_CONNECTION_SECRET = 'another-fireflies-secret-1';
 const QUERY = { nangoConnectionId: CONNECTION_ID };
+// Allowed by connectionIdSchema.
+const AWKWARD_CONNECTION_ID = 'tenant:1/a b@x+y';
 
 function getNangoMock({ connectionSecret = CONNECTION_SECRET, connectionExists = true }: { connectionSecret?: unknown; connectionExists?: boolean } = {}) {
     const integration = getTestConfig({ provider: 'fireflies' });
@@ -48,7 +52,7 @@ function sign(rawBody: string, secret: string = CONNECTION_SECRET): string {
     return crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 }
 
-// Webhooks V2 prefix the digest with `sha256=`.
+// Fireflies prefixes the digest with `sha256=`.
 function getSignedHeaders(rawBody: string, secret: string = CONNECTION_SECRET): Record<string, string> {
     return { 'x-hub-signature': `sha256=${sign(rawBody, secret)}` };
 }
@@ -80,7 +84,39 @@ describe('Fireflies webhook routing', () => {
         });
     });
 
-    it('routes a V1 delivery, signed with a bare digest, by its eventType', async () => {
+    // A connection id may hold characters a URL treats specially. The webhook URL carries it URL-encoded, and the
+    // server's query parser (qs, see server.ts) decodes it before the router sees it.
+    it.each([
+        ['percent-encoded', encodeURIComponent(AWKWARD_CONNECTION_ID)],
+        ['form-encoded', new URLSearchParams({ id: AWKWARD_CONNECTION_ID }).toString().slice('id='.length)]
+    ])('routes by a connection id with characters a URL makes awkward, sent %s', async (_encoding, encoded) => {
+        expect(connectionIdSchema.parse(AWKWARD_CONNECTION_ID)).toBe(AWKWARD_CONNECTION_ID);
+        const query = qs.parse(`nangoConnectionId=${encoded}`) as Record<string, string>;
+        expect(query).toEqual({ nangoConnectionId: AWKWARD_CONNECTION_ID });
+
+        const { nango, getConnection, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+
+        const result = await FirefliesWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, query);
+
+        expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(AWKWARD_CONNECTION_ID);
+        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifierValue: AWKWARD_CONNECTION_ID }));
+    });
+
+    it('routes a V1 delivery by its eventType', async () => {
+        const { nango, execute } = getNangoMock();
+        const body: FirefliesWebhookPayload = { meetingId: '01KAB2C3D4E5F6G7H8J9K0', eventType: 'Transcription completed' };
+        const rawBody = JSON.stringify(body);
+
+        const result = await FirefliesWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, QUERY);
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ webhookType: 'eventType', connectionIdentifierValue: CONNECTION_ID }));
+    });
+
+    it('accepts a digest sent without the sha256= prefix', async () => {
         const { nango, execute } = getNangoMock();
         const body: FirefliesWebhookPayload = { meetingId: '01KAB2C3D4E5F6G7H8J9K0', eventType: 'Transcription completed' };
         const rawBody = JSON.stringify(body);
@@ -88,7 +124,7 @@ describe('Fireflies webhook routing', () => {
         const result = await FirefliesWebhookRouting.default(nango, { 'x-hub-signature': sign(rawBody) }, body, rawBody, QUERY);
 
         expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ webhookType: 'eventType', connectionIdentifierValue: CONNECTION_ID }));
+        expect(execute).toHaveBeenCalledOnce();
     });
 
     it.each([

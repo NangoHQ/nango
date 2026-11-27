@@ -25,8 +25,14 @@ const TIMESTAMP_HEADER = 'x-zendesk-webhook-signature-timestamp';
 const SIGNATURE_HEADER = 'x-zendesk-webhook-signature';
 
 // Zendesk signs `{timestamp}{rawBody}` with HMAC-SHA256 keyed by the webhook's signing secret, base64 encoded.
-// The timestamp is ISO 8601, and deliveries more than 5 minutes off are rejected as replays.
 // https://developer.zendesk.com/documentation/webhooks/verifying/
+// The timestamp is ISO 8601 in UTC, for example `2021-03-25T05:09:27Z`, going by Zendesk's example request; the
+// verifying docs don't specify it. https://developer.zendesk.com/documentation/webhooks/anatomy-of-a-webhook-request/
+// Zendesk gives no replay window, so the 5 minutes is our choice, the window Standard Webhooks and Stripe use.
+// Zendesk retries only briefly: up to 3 times after a 409, up to 5 times after a 12-second timeout, and after a 429
+// or 503 only when `retry-after` is under 60 seconds. It doesn't publish the delay between retries or say whether a
+// retry is signed again, so a retry that kept the first timestamp is accepted only while inside the window.
+// https://developer.zendesk.com/documentation/webhooks/creating-and-monitoring-webhooks/#webhook-retry-logic
 // Each webhook has its own signing secret, so each one is registered with `?nangoConnectionId=` and verified
 // against the secret stored on that connection.
 const route: WebhookHandler<ZendeskWebhookPayload> = async (nango, headers, body, rawBody, query) => {

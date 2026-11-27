@@ -1,11 +1,13 @@
 import crypto from 'node:crypto';
 
+import qs from 'qs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
+import { connectionIdSchema } from '../helpers/validation.js';
 import elevenLabsWebhookRouting from './elevenlabs-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
 import pylonWebhookRouting from './pylon-webhook-routing.js';
@@ -19,6 +21,8 @@ const OTHER_CONNECTION_ID = 'someone-elses-connection-id';
 const CONNECTION_SECRET = 'connection-webhook-secret';
 const OTHER_CONNECTION_SECRET = 'another-connections-secret';
 const QUERY = { nangoConnectionId: CONNECTION_ID };
+// Allowed by connectionIdSchema.
+const AWKWARD_CONNECTION_ID = 'tenant:1/a b@x+y';
 
 function getNangoMock({
     provider,
@@ -134,6 +138,24 @@ describe.each(cases)('$provider webhook routing', ({ provider, route, body, webh
             propName: 'connectionId'
         });
         expect(result.isOk() && result.value).toMatchObject({ statusCode: 200, connectionIds: [CONNECTION_ID], toForward: body });
+    });
+
+    // A connection id may hold characters a URL treats specially. The webhook URL carries it URL-encoded, and the
+    // server's query parser (qs, see server.ts) decodes it before the router sees it.
+    it.each([
+        ['percent-encoded', encodeURIComponent(AWKWARD_CONNECTION_ID)],
+        ['form-encoded', new URLSearchParams({ id: AWKWARD_CONNECTION_ID }).toString().slice('id='.length)]
+    ])('routes by a connection id with characters a URL makes awkward, sent %s', async (_encoding, encoded) => {
+        expect(connectionIdSchema.parse(AWKWARD_CONNECTION_ID)).toBe(AWKWARD_CONNECTION_ID);
+        const query = qs.parse(`nangoConnectionId=${encoded}`) as Record<string, string>;
+        expect(query).toEqual({ nangoConnectionId: AWKWARD_CONNECTION_ID });
+        const { nango, getConnection, execute } = getNangoMock({ provider });
+
+        const result = await route(nango, sign(rawBody), body, rawBody, query);
+
+        expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(AWKWARD_CONNECTION_ID);
+        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifierValue: AWKWARD_CONNECTION_ID }));
     });
 
     it('rejects a webhook without nangoConnectionId', async () => {

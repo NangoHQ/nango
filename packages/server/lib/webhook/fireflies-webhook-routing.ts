@@ -24,8 +24,9 @@ export interface FirefliesWebhookPayload {
 const SIGNATURE_HEADER = 'x-hub-signature';
 
 // Fireflies signs the raw body with HMAC-SHA256 keyed by the webhook's secret and sends the hex digest in
-// `x-hub-signature`, prefixed with `sha256=` by Webhooks V2 and bare by V1.
-// https://docs.fireflies.ai/graphql-api/webhooks-v2
+// `x-hub-signature` as `sha256=<hex>`, the format Fireflies' V1 → V2 migration table lists for both versions. A bare
+// hex digest is accepted too.
+// https://docs.fireflies.ai/graphql-api/webhooks-v2#migrating-from-webhooks-v1
 // Fireflies signs no timestamp header, but a Webhooks V2 body carries `timestamp`, the Unix milliseconds the
 // delivery was sent, new on every retry. It is signed with the body, so V2 deliveries more than 5 minutes off are
 // rejected as replays. V1 bodies have no timestamp.

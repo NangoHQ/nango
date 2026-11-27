@@ -14,7 +14,10 @@ export interface WorkOSWebhookPayload {
 }
 
 const SIGNATURE_HEADER = 'workos-signature';
-// WorkOS' own SDK accepts deliveries signed up to 3 minutes ago.
+// WorkOS' Node and Ruby SDKs accept deliveries signed up to 3 minutes ago by default.
+// In production WorkOS retries a failed delivery up to 6 times over 3 days, and its docs don't say whether a retry
+// is signed again with a new `t=`. If a retry kept the first `t=`, this window would reject it, and so would the
+// SDKs' own check, which suggests retries are signed again. Not yet confirmed with a real failed delivery.
 const TOLERANCE_SECONDS = 3 * 60;
 
 // WorkOS sends `t=<unix milliseconds>, v1=<hex>` in `workos-signature`, where the hex is HMAC-SHA256 of
