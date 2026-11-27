@@ -1,0 +1,82 @@
+---
+title: 'HoneyHive'
+sidebarTitle: 'HoneyHive'
+description: 'Integrate your application with the HoneyHive API'
+---
+
+## 🚀 Quickstart
+
+Connect to HoneyHive with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _HoneyHive_.
+    </Step>
+    <Step id="authorize-honeyhive" title="Authorize HoneyHive">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your project ID and data plane API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-honeyhive-api" title="Call the HoneyHive API">
+    Let's make your first request to the HoneyHive API to list the charts in your project. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID and the project ID stored on the connection:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/projects/<PROJECT-ID>/charts" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/projects/<PROJECT-ID>/charts',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 HoneyHive integration guides
+
+- [How do I link my account?](/api-integrations/honeyhive/connect)  
+Find your project ID and create a data plane API key to connect your HoneyHive account.
+
+Official docs: [HoneyHive API reference](https://docs.honeyhive.ai/api-reference)
+
+## 🧩 Pre-built syncs & tools for HoneyHive
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/honeyhive/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango stores the project ID in the `projectId` connection config field but adds it to no request: read it from the connection's `connection_config` and put it in the path of project-scoped calls, `/v1/projects/<projectId>/...`.
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+
+---

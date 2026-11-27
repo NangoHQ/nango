@@ -1,0 +1,46 @@
+---
+title: 'Hookdeck - How do I link my account?'
+sidebarTitle: 'Hookdeck'
+---
+
+## Overview
+
+To authenticate with Hookdeck, you need:
+
+1. **API Key** — a Hookdeck project API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Hookdeck account. You can [sign up](https://dashboard.hookdeck.com/signup) for the free Developer plan without a credit card.
+
+### Step 1: Create an API key
+
+A project API key works with one project: it selects that project on every request.
+
+1. Sign in to the [Hookdeck dashboard](https://dashboard.hookdeck.com) and open **Settings** -> **API Keys & Secrets** for your project ([project settings](https://dashboard.hookdeck.com/settings/project/secrets)).
+2. In the **Project API Keys** section, click **New API Key**.
+
+<img src="/api-integrations/hookdeck/project_api_keys_page.png" alt="Hookdeck API Keys & Secrets page with the New API Key button in the Project API Keys section"/>
+
+3. Enter a name and choose the key's scopes: **All scopes**, **Read-only** or **Specific scopes**. Give the key only the scopes your integration needs.
+4. Click **Create API Key**.
+
+<img src="/api-integrations/hookdeck/create_project_api_key.png" alt="Hookdeck Create API Key dialog with the name field, scope options and Create API Key button"/>
+
+5. Copy the new key with the copy button next to it.
+
+<img src="/api-integrations/hookdeck/project_api_key_created.png" alt="Hookdeck Project API Keys list with the copy button next to the new key"/>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Hookdeck.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+Nango checks the key when you submit the form and rejects a wrong one.
+
+<img src="/api-integrations/hookdeck/form.png" alt="Hookdeck Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Hookdeck.

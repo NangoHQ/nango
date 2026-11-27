@@ -1,0 +1,55 @@
+---
+title: 'CloudConvert - How do I link my account?'
+sidebarTitle: 'CloudConvert'
+---
+
+## Overview
+
+To authenticate with CloudConvert, you need:
+
+1. **Environment / region** - the CloudConvert API host to connect to.
+2. **API Key** - a CloudConvert API key for that environment.
+
+This guide shows you how to get them.
+
+### Prerequisites
+
+- A CloudConvert account. You can [sign up](https://cloudconvert.com/register) for free, no credit card required.
+
+### Step 1: Choose your environment and region
+
+Pick the API host that matches where your jobs should run:
+
+| Host | Use it for |
+| --- | --- |
+| `api.cloudconvert.com` | The live API. It selects the nearest processing region, unless your account region settings override it. |
+| `eu-central.api.cloudconvert.com` | The live API, always in the `eu-central` region (Germany). |
+| `us-east.api.cloudconvert.com` | The live API, always in the `us-east` region (Virginia, USA). |
+| `sandbox.api.cloudconvert.com` | The Sandbox API, for testing. It needs a Sandbox API key. |
+
+If you are unsure, choose `api.cloudconvert.com`. To see whether your account is set to a region, sign in to CloudConvert and open **API** > **Region** in the dashboard sidebar.
+
+### Step 2: Create an API key
+
+1. Sign in to [CloudConvert](https://cloudconvert.com/login) and open [**API** > **Authorization** > **API keys**](https://cloudconvert.com/dashboard/api/v2/keys) in the dashboard sidebar.
+2. Keep **Live** selected in the environment selector, or choose **Sandbox** if you picked `sandbox.api.cloudconvert.com` in step 1. Then click **Create API Key**.
+
+<img src="/api-integrations/cloudconvert/api_keys_page.png" alt="CloudConvert API Keys page with the Live environment selector and the Create API Key button"/>
+
+3. Enter a **Name**, for example `Nango`, and select the scopes your integration needs. Include at least one of `user.read`, `task.read` or `webhook.read`: Nango checks the key with a read request that needs one of them. Then click **Create**.
+
+<img src="/api-integrations/cloudconvert/create_api_key_dialog.png" alt="CloudConvert Create API Key dialog with the Name field, the scope checkboxes and the Create button"/>
+
+4. Click **Copy** to copy the access token. CloudConvert shows it only once.
+
+<img src="/api-integrations/cloudconvert/api_key_created.png" alt="CloudConvert Personal Access Token dialog with the Copy button"/>
+
+### Step 3: Enter your environment and API key in the Connect UI
+
+1. Open the form where you need to authenticate with CloudConvert.
+2. Select your **Environment / region** and enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with CloudConvert and rejects it if it is wrong.
+
+<img src="/api-integrations/cloudconvert/form.png" alt="Nango Connect UI form for choosing the CloudConvert environment and entering the API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to CloudConvert.
