@@ -1,4 +1,4 @@
-import { formatOperationTime } from './format';
+import { formatOperationTime, operationTypeLabel } from './format';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
@@ -35,11 +35,20 @@ export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpe
 
     if (panelOpen) {
         // The panel can leave the list ~400px. Timestamp, Type and Function shrink, or fixed widths push Function out of the card.
+        const type = Math.max(
+            PANEL_TEXT_MIN_WIDTH,
+            Math.ceil(
+                widest(rows, (row) => {
+                    const { type, action } = operationTypeLabel(row);
+                    return `${type} ${action}`;
+                }) * SANS_CHAR_WIDTH
+            ) + CELL_PADDING
+        );
         return [
             `minmax(${timeOnly}px,${timestamp}px)`,
             `${PANEL_DURATION_WIDTH}px`,
             `${PANEL_STATUS_WIDTH}px`,
-            `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`,
+            `minmax(${PANEL_TEXT_MIN_WIDTH}px,${type}px)`,
             `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`
         ].join(' ');
     }

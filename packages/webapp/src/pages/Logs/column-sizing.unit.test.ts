@@ -7,7 +7,14 @@ import type { SearchOperationsData } from '@nangohq/types';
 const now = new Date('2026-11-27T15:00:00');
 
 function row(overrides: Partial<SearchOperationsData>): SearchOperationsData {
-    return { createdAt: '2026-11-27T14:29:22', integrationName: null, syncConfigName: null, connectionName: null, ...overrides } as SearchOperationsData;
+    return {
+        createdAt: '2026-11-27T14:29:22',
+        operation: { type: 'action', action: 'run' },
+        integrationName: null,
+        syncConfigName: null,
+        connectionName: null,
+        ...overrides
+    } as SearchOperationsData;
 }
 
 const tracks = (template: string) => template.split(' ');
@@ -22,7 +29,16 @@ describe('computeLogsGridTemplate', () => {
     it('drops Integration and Connection while the panel is open', () => {
         const template = tracks(computeLogsGridTemplate([row({ integrationName: 'github', connectionName: 'abc' })], { panelOpen: true, now }));
         expect(template).toHaveLength(5);
-        expect(template.slice(3)).toEqual(['minmax(64px,1fr)', 'minmax(64px,1fr)']);
+        expect(template[4]).toBe('minmax(64px,1fr)');
+    });
+
+    it('fits Type to its content while the panel is open, so Function gets the spare width', () => {
+        const short = tracks(computeLogsGridTemplate([row({})], { panelOpen: true, now }))[3];
+        const long = tracks(
+            computeLogsGridTemplate([row({}), row({ operation: { type: 'sync', action: 'pause' } } as Partial<SearchOperationsData>)], { panelOpen: true, now })
+        )[3];
+        expect(short).toMatch(/^minmax\(64px,\d+px\)$/);
+        expect(parseInt(long?.split(',')[1] ?? '')).toBeGreaterThan(parseInt(short?.split(',')[1] ?? ''));
     });
 
     it('lets a dated timestamp shrink to the time-only width while the panel is open', () => {
