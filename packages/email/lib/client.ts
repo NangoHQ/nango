@@ -1,3 +1,5 @@
+import { EMAIL_PROVIDER_ENVS, EMAIL_PROVIDERS } from '@nangohq/utils';
+
 import { envs } from './env.js';
 import { logger } from './logger.js';
 import { HttpEmailProvider } from './providers/http.provider.js';
@@ -7,32 +9,24 @@ import { SesEmailProvider } from './providers/ses.provider.js';
 import { SmtpEmailProvider } from './providers/smtp.provider.js';
 
 import type { EmailProvider } from './provider.js';
+import type { EmailProviderName, EmailProviderRequiredEnv } from '@nangohq/utils';
 
-export type EmailProviderName = NonNullable<typeof envs.EMAIL_PROVIDER>;
-
-type ProviderEnvs = Pick<typeof envs, 'EMAIL_PROVIDER' | 'MAILGUN_API_KEY' | 'SMTP_URL' | 'EMAIL_HTTP_URL'>;
+type ProviderEnvs = Pick<typeof envs, 'EMAIL_PROVIDER' | EmailProviderRequiredEnv>;
 
 /**
  * EMAIL_PROVIDER wins when set. Otherwise the provider is inferred the way it always was, so
- * self-hosted deployments upgrade without config changes. SES is never inferred: AWS_REGION is
- * set on most AWS deployments and must not silently switch them away from their current provider.
+ * self-hosted deployments upgrade without config changes. Which providers can be inferred, and in
+ * what order, is defined by EMAIL_PROVIDERS and EMAIL_PROVIDER_ENVS.
  */
 export function resolveEmailProvider(providerEnvs: ProviderEnvs): { provider: EmailProviderName; ignored: EmailProviderName[] } {
     if (providerEnvs.EMAIL_PROVIDER) {
         return { provider: providerEnvs.EMAIL_PROVIDER, ignored: [] };
     }
 
-    // Mailgun first for legacy reasons
-    const configured: EmailProviderName[] = [];
-    if (providerEnvs.MAILGUN_API_KEY) {
-        configured.push('mailgun');
-    }
-    if (providerEnvs.SMTP_URL) {
-        configured.push('smtp');
-    }
-    if (providerEnvs.EMAIL_HTTP_URL) {
-        configured.push('http');
-    }
+    const configured = EMAIL_PROVIDERS.filter((name) => {
+        const { required, inferred }: { required: readonly EmailProviderRequiredEnv[]; inferred: boolean } = EMAIL_PROVIDER_ENVS[name];
+        return inferred && required.every((env) => providerEnvs[env]);
+    });
 
     const [provider = 'none', ...ignored] = configured;
     return { provider, ignored };

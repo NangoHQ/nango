@@ -255,6 +255,9 @@ function internalAuthPublicKeysSchema(varName: string) {
 // batch window and the delete.
 export const AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY = 2 / 3;
 
+export const EMAIL_PROVIDERS = ['mailgun', 'smtp', 'ses', 'http', 'none'] as const;
+export type EmailProviderName = (typeof EMAIL_PROVIDERS)[number];
+
 const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -743,10 +746,11 @@ const ENVS_SHAPE = z.object({
     // Email
     // Picks the email provider explicitly. Left unset, the provider is inferred from which of
     // MAILGUN_API_KEY, SMTP_URL and EMAIL_HTTP_URL is set, so existing deployments keep working.
-    EMAIL_PROVIDER: z.enum(['mailgun', 'smtp', 'ses', 'http', 'none']).optional(),
+    EMAIL_PROVIDER: z.enum(EMAIL_PROVIDERS).optional(),
 
     // AWS SES (EMAIL_PROVIDER=ses). Region comes from AWS_REGION, credentials from the default AWS credential chain.
     AWS_SES_CONFIGURATION_SET: z.string().optional(),
+    EMAIL_SES_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(10_000), // whole send, retries included
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
@@ -1274,25 +1278,21 @@ function checkInternalAuthKeyPair(
     }
 }
 
-type EmailProviderEnvs = Pick<z.infer<typeof ENVS_SHAPE>, 'EMAIL_PROVIDER' | 'MAILGUN_API_KEY' | 'SMTP_URL' | 'EMAIL_HTTP_URL' | 'AWS_REGION'>;
+/**
+ * Env vars each email provider needs. Providers marked `inferred` are picked, in EMAIL_PROVIDERS
+ * order, when EMAIL_PROVIDER is unset and their required vars are present. SES is never inferred:
+ * AWS_REGION is set on most AWS deployments and must not silently switch their provider.
+ * EMAIL_HTTP_BODY is not listed for http: its own check requires it whenever EMAIL_HTTP_URL is set.
+ */
+export const EMAIL_PROVIDER_ENVS = {
+    mailgun: { required: ['MAILGUN_API_KEY'], inferred: true },
+    smtp: { required: ['SMTP_URL'], inferred: true },
+    ses: { required: ['AWS_REGION'], inferred: false },
+    http: { required: ['EMAIL_HTTP_URL'], inferred: true },
+    none: { required: [], inferred: false }
+} as const satisfies Record<EmailProviderName, { required: readonly (keyof z.infer<typeof ENVS_SHAPE>)[]; inferred: boolean }>;
 
-/** Names of the env vars the explicitly chosen EMAIL_PROVIDER needs but does not have. */
-function requiredEmailProviderEnvs(envs: EmailProviderEnvs): (keyof EmailProviderEnvs)[] {
-    switch (envs.EMAIL_PROVIDER) {
-        case 'mailgun':
-            return envs.MAILGUN_API_KEY ? [] : ['MAILGUN_API_KEY'];
-        case 'smtp':
-            return envs.SMTP_URL ? [] : ['SMTP_URL'];
-        case 'http':
-            // EMAIL_HTTP_BODY is already required alongside EMAIL_HTTP_URL by its own check
-            return envs.EMAIL_HTTP_URL ? [] : ['EMAIL_HTTP_URL'];
-        case 'ses':
-            return envs.AWS_REGION ? [] : ['AWS_REGION'];
-        case 'none':
-        case undefined:
-            return [];
-    }
-}
+export type EmailProviderRequiredEnv = (typeof EMAIL_PROVIDER_ENVS)[EmailProviderName]['required'][number];
 
 export const ENVS = ENVS_SHAPE.check((ctx) => {
     if (ctx.value.SIGNUP_AD_CONTEXT_ENABLED && !ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
@@ -1321,7 +1321,8 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
     // An explicitly chosen email provider must be fully configured, so a typo fails at startup
     // rather than on a user's first signup email. Inferred providers are not checked here, to
     // keep existing deployments booting exactly as before.
-    for (const name of requiredEmailProviderEnvs(ctx.value)) {
+    const requiredEmailEnvs: readonly EmailProviderRequiredEnv[] = ctx.value.EMAIL_PROVIDER ? EMAIL_PROVIDER_ENVS[ctx.value.EMAIL_PROVIDER].required : [];
+    for (const name of requiredEmailEnvs.filter((name) => !ctx.value[name])) {
         ctx.issues.push({
             code: 'custom',
             message: `${name} is required when EMAIL_PROVIDER=${ctx.value.EMAIL_PROVIDER}`,

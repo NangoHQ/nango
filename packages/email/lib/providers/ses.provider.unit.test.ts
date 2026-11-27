@@ -6,7 +6,8 @@ import { SesEmailProvider } from './ses.provider.js';
 const mockEnvs = vi.hoisted(() => ({
     AWS_REGION: 'eu-west-1' as string | undefined,
     AWS_SES_CONFIGURATION_SET: undefined as string | undefined,
-    SMTP_FROM: 'Nango <noreply@example.com>'
+    SMTP_FROM: 'Nango <noreply@example.com>',
+    EMAIL_SES_TIMEOUT_MS: 10_000
 }));
 
 vi.mock('../env.js', () => ({ envs: mockEnvs }));
@@ -14,6 +15,7 @@ vi.mock('../env.js', () => ({ envs: mockEnvs }));
 function resetEnvs() {
     mockEnvs.AWS_REGION = 'eu-west-1';
     mockEnvs.AWS_SES_CONFIGURATION_SET = undefined;
+    mockEnvs.EMAIL_SES_TIMEOUT_MS = 10_000;
 }
 
 describe('SesEmailProvider', () => {
@@ -60,6 +62,27 @@ describe('SesEmailProvider', () => {
         mockEnvs.AWS_REGION = undefined;
 
         expect(() => new SesEmailProvider()).toThrow('AWS_REGION is required to send emails through AWS SES');
+    });
+
+    it('passes an abort signal so the send is bounded', async () => {
+        const sendMock = vi.spyOn(SESv2Client.prototype, 'send').mockResolvedValue({ MessageId: 'abc' } as never);
+
+        await new SesEmailProvider().send('user@example.com', 'Verify your email', '<p>Hi</p>');
+
+        const options = sendMock.mock.calls[0]?.[1] as { abortSignal?: AbortSignal } | undefined;
+        expect(options?.abortSignal).toBeInstanceOf(AbortSignal);
+    });
+
+    it('rejects when SES does not answer within EMAIL_SES_TIMEOUT_MS', async () => {
+        mockEnvs.EMAIL_SES_TIMEOUT_MS = 20;
+        // Stands in for a stalled request: settles only when the SDK aborts it
+        vi.spyOn(SESv2Client.prototype, 'send').mockImplementation(((_command: unknown, options?: { abortSignal?: AbortSignal }) => {
+            return new Promise((_resolve, reject) => {
+                options?.abortSignal?.addEventListener('abort', () => reject(options.abortSignal?.reason as Error));
+            });
+        }) as never);
+
+        await expect(new SesEmailProvider().send('user@example.com', 'Verify your email', '<p>Hi</p>')).rejects.toMatchObject({ name: 'TimeoutError' });
     });
 
     it('propagates SES errors', async () => {

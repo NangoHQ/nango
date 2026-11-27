@@ -698,6 +698,15 @@ describe('parse', () => {
             });
         }
 
+        it('should default EMAIL_SES_TIMEOUT_MS to 10 seconds', () => {
+            expect(parseEnvs(ENVS, {}).EMAIL_SES_TIMEOUT_MS).toBe(10_000);
+        });
+
+        it('should parse EMAIL_SES_TIMEOUT_MS and reject non-positive values', () => {
+            expect(parseEnvs(ENVS, { EMAIL_SES_TIMEOUT_MS: '5000' }).EMAIL_SES_TIMEOUT_MS).toBe(5000);
+            expect(() => parseEnvs(ENVS, { EMAIL_SES_TIMEOUT_MS: '0' })).toThrow('EMAIL_SES_TIMEOUT_MS');
+        });
+
         it('should accept EMAIL_PROVIDER=ses with AWS_REGION', () => {
             const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_REGION: 'us-east-1' });
             expect(res.EMAIL_PROVIDER).toBe('ses');

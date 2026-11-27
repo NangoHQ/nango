@@ -20,6 +20,8 @@ export class SesEmailProvider implements EmailProvider<void> {
     }
 
     async send(email: string, subject: string, html: string): Promise<void> {
+        // The SDK has no request timeout by default and retries, so a stalled SES call would hold
+        // up signups and invites indefinitely. The signal bounds the whole send, retries included.
         await this.client.send(
             new SendEmailCommand({
                 FromEmailAddress: envs.SMTP_FROM,
@@ -31,7 +33,8 @@ export class SesEmailProvider implements EmailProvider<void> {
                     }
                 },
                 ...(envs.AWS_SES_CONFIGURATION_SET ? { ConfigurationSetName: envs.AWS_SES_CONFIGURATION_SET } : {})
-            })
+            }),
+            { abortSignal: AbortSignal.timeout(envs.EMAIL_SES_TIMEOUT_MS) }
         );
     }
 }
