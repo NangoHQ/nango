@@ -35,8 +35,8 @@ npm run seed:logs -- --account 3 --env dev # another account or a single environ
 | Level | Operations | Source |
 | --- | --- | --- |
 | `low` | ~1 every 16s | p90 production environment |
-| `medium` | ~1 every 2s | 10× low |
-| `high` | ~2 per second | p99 production environment |
+| `medium` | ~1 every 1.6s | 10× low |
+| `high` | ~1.7 per second | p99 production environment |
 
 The backfill follows EU business hours (peak 08:00–18:00 Europe/Prague, nights at ~15%, weekends at 40%), averaging out to the level's rate over a week. Live mode runs at the flat rate. Each live operation starts as `running`, writes its lines as it goes and ends in its final state, with durations capped at 60s; Ctrl+C marks the ones still running as `cancelled`.
 
