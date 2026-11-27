@@ -237,7 +237,7 @@ describe('startFunction', () => {
         expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
         expect(logCtx.info).toHaveBeenCalledWith(
             "Starting function 'inline'",
-            expect.objectContaining({ function: 'inline', source: 'inline', description: 'Names of the open issues' })
+            expect.objectContaining({ function: 'inline', source: 'inline', functionUuid: INLINE_FUNCTION_UUID, description: 'Names of the open issues' })
         );
     });
 

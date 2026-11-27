@@ -51,7 +51,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: string | undefined = isInlineFunctionUuid(task.functionUuid) ? functionLookupService.INLINE_FUNCTION_NAME : undefined;
+    let functionName: string | undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -104,8 +104,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 ...(fn.kind === 'deployed' && { 'function.id': fn.definition.function_config_id }),
                 'function.uuid': fn.uuid
             });
-        const configIds = { environmentId: task.connection.environment_id, configId: providerConfig.id };
-        syncConfig = fn.kind === 'inline' ? toInlineConfig(configIds) : toLegacyConfig(fn, configIds);
+        syncConfig = toLegacyConfig(fn, { environmentId: task.connection.environment_id, configId: providerConfig.id });
 
         const getEndUser = await tracer.trace('function.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
@@ -589,11 +588,14 @@ function inlineLogFields(fn: ResolvedFunction | ResolvedInlineFunction): Record<
     if (fn.kind !== 'inline') {
         return {};
     }
-    return { source: 'inline', ...(fn.description && { description: fn.description }) };
+    return { source: 'inline', functionUuid: fn.uuid, ...(fn.description && { description: fn.description }) };
 }
 
 // TODO: refactor NangoProps to support native function config
-function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
+function toLegacyConfig(fn: ResolvedFunction | ResolvedInlineFunction, { environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
+    if (fn.kind === 'inline') {
+        return toInlineConfig({ environmentId, configId });
+    }
     const version = fn.definition;
     const deployed = fn.kind === 'deployed' ? fn.definition : undefined;
     const now = new Date();
