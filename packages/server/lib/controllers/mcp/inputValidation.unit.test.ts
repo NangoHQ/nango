@@ -1,0 +1,146 @@
+import { createRequire } from 'node:module';
+
+import { describe, expect, it } from 'vitest';
+
+import { getCatalogTool } from '@nangohq/shared';
+
+import { validateMcpActionInput } from './inputValidation.js';
+
+import type { ResolvedLegacyAction } from '@nangohq/shared';
+import type { FlowsZeroJson } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
+
+const nodeRequire = createRequire(import.meta.url);
+const flows = nodeRequire('../../../../shared/flows.zero.json') as FlowsZeroJson;
+
+let nextId = 0;
+function deployed(schema: JSONSchema7 | null, model: string | null = 'Input'): Exclude<ResolvedLegacyAction, { kind: 'missing' }> {
+    return { kind: 'deployed', config: { id: ++nextId, version: '1', input: model, models_json_schema: schema } } as Exclude<
+        ResolvedLegacyAction,
+        { kind: 'missing' }
+    >;
+}
+
+const objectSchema: JSONSchema7 = {
+    definitions: { Input: { type: 'object', properties: { calendarId: { type: 'string' } }, required: ['calendarId'], additionalProperties: false } }
+};
+
+describe('validateMcpActionInput', () => {
+    it('rejects JSON-encoded object input without parsing it', () => {
+        const action = deployed(objectSchema);
+        const result = validateMcpActionInput(action, '{"calendarId":"primary"}');
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('invalid_input');
+            expect(result.error.message).toBe('input must be object');
+        }
+        expect(validateMcpActionInput(action, { calendarId: 'primary' }).isOk()).toBe(true);
+    });
+
+    it.each([undefined, null, {}, [], 123, { calendarId: 123 }, { calendarId: 'primary', extra: true }])('lets non-string input %j through', (input) => {
+        expect(validateMcpActionInput(deployed(objectSchema), input).isOk()).toBe(true);
+    });
+
+    it('rejects a string when no branch of the schema accepts one', () => {
+        const action = deployed({ definitions: { Input: { anyOf: [{ type: 'object', properties: { calendarId: { type: 'string' } } }, { type: 'null' }] } } });
+        const result = validateMcpActionInput(action, '{"calendarId":"primary"}');
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) expect(result.error.code).toBe('invalid_input');
+    });
+
+    it.each([
+        { type: 'string', pattern: '^[0-9]+$' },
+        { type: 'string', enum: ['a', 'b'] },
+        { anyOf: [{ type: 'string', minLength: 50 }, { type: 'null' }] },
+        { oneOf: [{ type: 'string' }, { type: 'string', minLength: 1 }] }
+    ] as const)('lets a string through when the schema takes a string: %j', (schema) => {
+        expect(validateMcpActionInput(deployed({ definitions: { Input: schema } } as JSONSchema7), 'not matching').isOk()).toBe(true);
+    });
+
+    it.each([
+        { type: 'array', input: ['primary'] },
+        { type: 'string', input: '{"calendarId":"primary"}' },
+        { type: 'number', input: 0 },
+        { type: 'boolean', input: false },
+        { type: 'null', input: null }
+    ] as const)('preserves valid $type inputs', ({ type, input }) => {
+        expect(validateMcpActionInput(deployed({ definitions: { Input: { type } } }), input).isOk()).toBe(true);
+    });
+
+    it('does not validate nested fields', () => {
+        const schema: JSONSchema7 = {
+            definitions: {
+                Input: { type: 'object', properties: { event: { $ref: '#/definitions/Event' } }, required: ['event'] },
+                Event: { type: 'object', properties: { summary: { type: 'string' } }, required: ['summary'] }
+            }
+        };
+        const action = deployed(schema);
+        expect(validateMcpActionInput(action, { event: { summary: 'Focus time' } }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, { event: {} }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, {}).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, '{"event":{"summary":"Focus time"}}').isErr()).toBe(true);
+    });
+
+    it('preserves omitted input for optional object and null schemas', () => {
+        for (const schema of [{ type: 'object', properties: {} }, { type: 'null' }] as const) {
+            expect(validateMcpActionInput(deployed({ definitions: { Input: schema } }), undefined).isOk()).toBe(true);
+        }
+    });
+
+    it('accepts any structured arguments for no-input actions', () => {
+        const action = deployed({ definitions: { Input: { type: 'null' } } });
+        expect(validateMcpActionInput(action, {}).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, { unexpected: true }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, []).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, '').isErr()).toBe(true);
+    });
+
+    it('keeps deployments without a JSON schema compatible', () => {
+        expect(validateMcpActionInput(deployed(null), 'legacy input').isOk()).toBe(true);
+        expect(validateMcpActionInput(deployed(objectSchema, null), undefined).isOk()).toBe(true);
+    });
+
+    it('distinguishes an invalid schema from invalid caller input', () => {
+        const result = validateMcpActionInput(deployed({ definitions: {} }), '{}');
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) expect(result.error.code).toBe('invalid_schema');
+    });
+
+    it('rejects encoded input for the actual Calendar create-event catalog schema', () => {
+        const tool = getCatalogTool('google-calendar', 'create-event');
+        expect(tool).toBeDefined();
+        if (!tool) throw new Error('Missing Calendar catalog action');
+        const action = { kind: 'catalog' as const, tool };
+        const input = {
+            calendarId: 'primary',
+            summary: 'Focus time',
+            start: { dateTime: '2026-11-20T11:00:00-03:00' },
+            end: { dateTime: '2026-11-20T12:00:00-03:00' }
+        };
+        expect(validateMcpActionInput(action, input).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, JSON.stringify(input)).isErr()).toBe(true);
+    });
+
+    it('resolves embedded JSON value definitions in the PayPal patch schema', () => {
+        const tool = getCatalogTool('paypal', 'update-order');
+        if (!tool) throw new Error('Missing PayPal catalog action');
+        const action = { kind: 'catalog' as const, tool };
+        expect(validateMcpActionInput(action, { id: 'order', patch: [{ op: 'add', path: '/value', value: { nested: [true, null, 'text'] } }] }).isOk()).toBe(
+            true
+        );
+        expect(validateMcpActionInput(action, { id: 'order', patch: [{ op: 'invalid', path: '/value' }] }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, '{"id":"order"}').isErr()).toBe(true);
+    });
+
+    it.each(flows)('can compile the input schemas for $providerConfigKey', (integration) => {
+        const failures: string[] = [];
+        for (const action of integration.actions) {
+            const tool = getCatalogTool(integration.providerConfigKey, action.name);
+            if (!tool) throw new Error('Missing catalog action');
+            const result = validateMcpActionInput({ kind: 'catalog', tool }, '');
+            if (result.isErr() && result.error.code === 'invalid_schema')
+                failures.push(`${integration.providerConfigKey}/${action.name}: ${String(result.error.cause)}`);
+        }
+        expect(failures).toEqual([]);
+    });
+});

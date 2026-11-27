@@ -5,9 +5,10 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
 import { buildSessionTools, executeInputSchema } from '../../../../services/agentSessionToolCatalog.service/index.js';
+import { McpActionInputError } from '../../../mcp/actions/execute.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
 
-import type * as actionService from '../../../../services/action.service.js';
+import type * as actionService from '../../../mcp/actions/execute.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
 import type * as NangoShared from '@nangohq/shared';
 import type { FunctionInvokeError, ResolvedTool } from '@nangohq/shared';
@@ -24,9 +25,9 @@ import type {
 import type { Result } from '@nangohq/utils';
 
 const executeAction = vi.fn();
-vi.mock('../../../../services/action.service.js', async (importOriginal) => ({
+vi.mock('../../../mcp/actions/execute.js', async (importOriginal) => ({
     ...(await importOriginal<typeof actionService>()),
-    executeAction: (...args: unknown[]) => executeAction(...args)
+    executeMcpAction: (...args: unknown[]) => executeAction(...args)
 }));
 
 const invokeFunction = vi.fn();
@@ -504,6 +505,13 @@ describe('executeSessionTool', () => {
         expect(codeOf(result)).toBe('tool_not_in_session');
         expect(invokeFunction).not.toHaveBeenCalled();
         expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('returns invalid action input as a correctable error', async () => {
+        executeAction.mockResolvedValue({ logCtx: undefined, result: Err(new McpActionInputError('input must be object')) });
+        const result = await execute('read_doc', { input: '{"id":"1"}' });
+        expect(codeOf(result)).toBe('invalid_input');
+        expect(errorOf(result).message).toMatch(/rejected its input: input must be object\. Correct the input and call it again\.$/);
     });
 
     it('refuses an integration that was deleted after the session was created', async () => {
