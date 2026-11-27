@@ -168,7 +168,7 @@ const KeyPage: React.FC<KeyPageProps> = ({ apiKey, env, onBack, canReadSecret, c
                                     Delete API key
                                 </Button>
                             }
-                            onConfirm={() => void onDelete()}
+                            onConfirm={onDelete}
                             open={deleteOpen}
                             onOpenChange={setDeleteOpen}
                         />
