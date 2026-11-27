@@ -3,49 +3,14 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { validateSvixSignature } from './signature.js';
 
-import type { WebhookHandler } from './types.js';
-
-/** https://docs.incident.io/api-reference/webhooks */
-export interface IncidentIoWebhookPayload {
-    event_type: string;
-    [key: string]: unknown;
-}
-
-/** https://clerk.com/docs/webhooks/overview */
-export interface ClerkWebhookPayload {
-    type: string;
-    object: 'event';
-    data: Record<string, unknown>;
-    timestamp: number;
-    instance_id: string;
-}
-
-/** https://resend.com/docs/dashboard/webhooks/introduction */
-export interface ResendWebhookPayload {
-    type: string;
-    created_at: string;
-    data: Record<string, unknown>;
-}
-
-/** https://platform.openai.com/docs/guides/webhooks */
-export interface OpenAIWebhookPayload {
-    id: string;
-    object: 'event';
-    type: string;
-    created_at: number;
-    data: Record<string, unknown>;
-}
-
-/**
- * The body of a PostHog webhook destination is a template the user can edit. The default one sends the
- * captured event, whose name is `event.event`, for example `$pageview`.
- * https://posthog.com/docs/data-pipelines/destinations/webhook
- */
-export interface PostHogWebhookPayload {
-    event?: { uuid?: string; event?: string; distinct_id?: string; properties?: Record<string, unknown>; timestamp?: string; url?: string };
-    person?: Record<string, unknown>;
-    [key: string]: unknown;
-}
+import type {
+    ClerkWebhookPayload,
+    IncidentIoWebhookPayload,
+    OpenAIWebhookPayload,
+    PostHogWebhookPayload,
+    ResendWebhookPayload,
+    WebhookHandler
+} from './types.js';
 
 // Standard Webhooks names its headers `webhook-*`; Svix-hosted senders use `svix-*`.
 const hasHeader = (headers: Record<string, string>, name: 'id' | 'timestamp' | 'signature') => Boolean(headers[`webhook-${name}`] || headers[`svix-${name}`]);
@@ -79,6 +44,11 @@ function standardWebhooksConnectionRouting<T extends object>(webhookType?: strin
             return Err(new NangoError('webhook_invalid_signature'));
         }
 
+        // The default window, 5 minutes either way, is the one the Standard Webhooks reference libraries and
+        // OpenAI's SDK use. It doesn't drop retries: the spec has the sender sign every attempt again with the
+        // attempt's own `webhook-timestamp`, keeping only `webhook-id`, so the window covers clock skew and time in
+        // transit, not the retry schedule. PostHog, for one, signs each attempt just before sending it.
+        // https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
         if (validateSvixSignature({ secret, headers, rawBody }) !== 'valid') {
             return Err(new NangoError('webhook_invalid_signature'));
         }
