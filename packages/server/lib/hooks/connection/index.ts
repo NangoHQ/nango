@@ -78,3 +78,6 @@ export { default as zerobounceCredentialsVerification } from './providers/zerobo
 export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
 export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';
 export { default as batchdataCredentialsVerification } from './providers/batchdata/credentials-verification.js';
+export { default as impactCredentialsVerification } from './providers/impact/credentials-verification.js';
+export { default as statuspalCredentialsVerification } from './providers/statuspal/credentials-verification.js';
+export { default as deeplCredentialsVerification } from './providers/deepl/credentials-verification.js';

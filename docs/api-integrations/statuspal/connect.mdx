@@ -1,0 +1,60 @@
+---
+title: 'Statuspal - How do I link my account?'
+sidebarTitle: 'Statuspal'
+---
+
+## Overview
+
+To authenticate with Statuspal, you need:
+
+1. **Region** — the Statuspal region your account was created in.
+2. **API Key** — a Statuspal user API key or organization API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Statuspal account.
+
+### Step 1: Find your region
+
+Statuspal runs separate US and EU regions. Your region is the site you sign in to:
+
+| Region | Sign-in site | Value to select |
+|--------|--------------|-----------------|
+| US | statuspal.io | `statuspal.io` |
+| EU | statuspal.eu | `statuspal.eu` |
+
+### Step 2: Get an API key
+
+Statuspal accepts two kinds of API key. Use either one.
+
+**Organization API key** — read-only or read-and-write access to all status pages in your organization:
+
+1. Sign in to Statuspal and open your organization by clicking its name in the left sidebar.
+2. Expand **Security** and click **API keys**.
+
+<img src="/api-integrations/statuspal/org_security_api_keys_menu.png" alt="Statuspal organization sidebar with Security expanded and API keys highlighted"/>
+
+3. Click **Create API Key**, enter a name, keep **Read only** checked if your integration only reads data, and click **Create**.
+
+<img src="/api-integrations/statuspal/new_org_api_key_form.png" alt="Statuspal New Organization API Key form with a name, the Read only checkbox and the Create button"/>
+
+4. Copy the API key. It starts with `ok_` and is shown only once.
+
+<img src="/api-integrations/statuspal/organization_api_key_created.png" alt="Statuspal Edit Organization API Key page showing the new key, which is shown only once"/>
+
+**User API key** — acts with your own role in the organization:
+
+1. Sign in to Statuspal, click the profile icon at the top right, then click **My details**.
+2. On the User Account page, copy the value under **Your API key**. It starts with `uk_`.
+
+<img src="/api-integrations/statuspal/user_api_key.png" alt="Statuspal User Account page with the Your API key field highlighted"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Statuspal.
+2. Select your **Region** from Step 1 and enter your **API Key** from Step 2.
+3. Submit the form.
+
+<img src="/api-integrations/statuspal/form.png" alt="Statuspal Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>

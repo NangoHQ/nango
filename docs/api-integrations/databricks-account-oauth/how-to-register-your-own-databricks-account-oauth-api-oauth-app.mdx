@@ -1,0 +1,45 @@
+---
+title: 'How to register your own Databricks OAuth app'
+sidebarTitle: 'Databricks Account (OAuth) Setup'
+description: 'Register a custom OAuth app connection with Databricks and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Databricks to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Databricks account.
+
+<Steps>
+  <Step id="create-account" title="Create a Databricks account">
+    If you don't already have one, sign up for a [Databricks trial](https://www.databricks.com/try-databricks). No credit card is required. Calling the account API requires a user who is an account admin.
+  </Step>
+  <Step id="create-app" title="Create a new app connection">
+    1. Log in to the account console for your cloud: [accounts.cloud.databricks.com](https://accounts.cloud.databricks.com/) (AWS), [accounts.gcp.databricks.com](https://accounts.gcp.databricks.com/) (GCP) or [accounts.azuredatabricks.net](https://accounts.azuredatabricks.net/) (Azure).
+    2. Click **Settings** in the sidebar and open the **App connections** tab.
+    3. Select **Custom apps** and click **Add connection**.
+
+    <img src="/api-integrations/databricks-account-oauth/app_connections_add.png" alt="Databricks account console Settings, App connections tab with Custom apps selected and the Add connection button" />
+  </Step>
+  <Step id="add-callback-url" title="Configure OAuth settings">
+    1. Enter an **Application Name**.
+    2. Under **Redirect URLs**, add `https://api.nango.dev/oauth/callback`.
+    3. Under **Access scopes**, click **Add scope** and add `all-apis`. Keep `offline_access` so Nango gets a refresh token. See [Databricks' API scopes](https://docs.databricks.com/api/account/scopes) for narrower scopes.
+    4. Keep **Generate a client secret** checked so the app is a confidential client, then click **Add**.
+
+    <img src="/api-integrations/databricks-account-oauth/add_connection_form.png" alt="Databricks Add connection form with the application name, the Redirect URLs field and the all-apis and offline_access access scopes" />
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    In the **Connection created** dialog, copy the **Client ID** and **Client Secret**. You'll need them when configuring your integration in Nango. The client secret can't be retrieved later.
+
+    <img src="/api-integrations/databricks-account-oauth/connection_created.png" alt="Databricks Connection created dialog with the Client ID and Client Secret fields and their copy buttons" />
+
+    Updates to OAuth applications can take 30 minutes to process, so the app may not accept sign-ins right away.
+  </Step>
+  <Step id="find-account-id" title="Find your account ID">
+    In the account console, click the down arrow next to your username in the upper right corner and copy your account ID. Users enter it, with their cloud's account console host, when they connect.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details on Databricks' OAuth implementation, see [Databricks' OAuth user authorization documentation](https://docs.databricks.com/gcp/en/dev-tools/auth/oauth-u2m) and [Enable or disable partner OAuth applications](https://docs.databricks.com/gcp/en/integrations/enable-disable-oauth).
+
+---
