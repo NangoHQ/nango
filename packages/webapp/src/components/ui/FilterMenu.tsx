@@ -184,7 +184,11 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
             }}
             itemToStringLabel={(value: string) => labels.get(value) ?? value}
             inputValue={search}
-            onInputValueChange={(value) => {
+            onInputValueChange={(value, details) => {
+                // Base UI empties the search after each pick in a multi-select; keep it so several matches can be ticked.
+                if (details.reason === 'input-clear') {
+                    return;
+                }
                 setSearch(value);
                 onSearchChange?.(value);
             }}
@@ -285,7 +289,9 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
                                     </Combobox.Item>
                                 );
                             })}
-                            {rows.length === 0 && <EmptyState loading={loading} error={error} searching={Boolean(search.trim())} onRetry={onRetry} />}
+                            {(rows.length === 0 || error) && (
+                                <EmptyState loading={loading} error={error} searching={Boolean(search.trim())} onRetry={onRetry} />
+                            )}
                         </Combobox.List>
                         {note && rows.length > 0 && <div className="shrink-0 px-3 pb-1.5 text-ds-xs text-text-muted">{note}</div>}
                         {selected.length > 0 && (

@@ -7,7 +7,7 @@ import { CountBadge } from './CountBadge';
 
 import type { ButtonProps } from '@nangohq/design-system';
 
-export interface FilterTriggerProps extends Omit<ButtonProps, 'children' | 'variant' | 'size'> {
+export interface FilterTriggerProps extends Omit<ButtonProps, 'children' | 'variant' | 'size' | 'asChild'> {
     label: string;
     selectedLabel?: string | null;
     count: number;
