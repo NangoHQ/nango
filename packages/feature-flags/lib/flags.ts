@@ -97,6 +97,13 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
+         * Whether this account can create agent sessions with `nango_run_code`. Without it the setting
+         * is rejected as an unknown meta tool. Default `false`.
+         */
+        isAgentSessionRunCodeEnabled(accountUuid: string) {
+            return client.isEnabled('agent-session-run-code', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
          * account. Deprecation: default `true`; on cloud, Unleash restricts it to an allowlist.
          */
@@ -123,6 +130,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isGithubAppConnectionCredentialsEnabled() {
             return client.isEnabled('github-app-connection-credentials', {}, false);
+        },
+        /**
+         * Whether the template catalog is read from `catalog.json` and one file per provider, loaded on demand,
+         * instead of loading all of `flows.zero.json`. Global. Default `false`.
+         */
+        isCatalogIndexFileEnabled() {
+            return client.isEnabled('catalog-index-file', {}, false);
         }
     };
 }

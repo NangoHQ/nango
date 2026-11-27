@@ -35,14 +35,6 @@ export interface DBPlan extends Timestamps {
     growth_features_starts_at: Date | null;
     growth_features_ends_at: Date | null;
 
-    // Trial
-    // Remove all values when you upgrade a customer
-    trial_start_at: Date | null;
-    trial_end_at: Date | null;
-    trial_extension_count: number;
-    trial_end_notified_at: Date | null;
-    trial_expired: boolean | null;
-
     /**
      * Limit the number of total non-deleted connections
      * Set to null to remove limit
@@ -142,12 +134,6 @@ export interface DBPlan extends Timestamps {
      * @default "m"
      */
     api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '8xl' | '9xl' | '10xl' | '11xl' | '12xl';
-
-    /**
-     * Enable or disable machine auto idling
-     * @default true
-     */
-    auto_idle: boolean;
 
     /**
      * Enable or disable webhooks script

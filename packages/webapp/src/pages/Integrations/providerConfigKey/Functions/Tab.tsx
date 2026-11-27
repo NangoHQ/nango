@@ -1,16 +1,19 @@
-import { Code, Plus, Search } from 'lucide-react';
+import { Code, Plus } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Button, CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { SearchField } from '@/components/patterns/SearchField';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { FunctionList, FunctionListCell, FunctionListNoMatches, FunctionListRow } from '@/features/Functions/FunctionList';
+import { FunctionTypeTabs } from '@/features/Functions/FunctionTypeTabs';
+import { SlidingPanelLayout } from '@/features/Functions/SlidingPanelLayout';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -23,17 +26,16 @@ import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { FunctionDetailsPanel } from './FunctionDetailsPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
-import { SlidingPanelLayout } from './SlidingPanelLayout';
 
 import type { ApiIntegration, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction, NangoFunctionTemplate } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['tool', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
-const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[] = [
-    { value: 'tool', label: 'Tools', emptyLabel: 'No tools' },
-    { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
-    { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
+const TYPE_TABS: { value: TypeFilterValue; label: string; singular: string; emptyLabel: string }[] = [
+    { value: 'tool', label: 'Tools', singular: 'tool', emptyLabel: 'No tools' },
+    { value: 'sync', label: 'Syncs', singular: 'sync', emptyLabel: 'No syncs' },
+    { value: 'on-event', label: 'Triggers', singular: 'trigger', emptyLabel: 'No triggers' }
 ];
 
 function functionRowKey(fn: ListedNangoFunction): string {
@@ -45,32 +47,14 @@ function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
 }
 
-const COLUMN_HEAD = 'h-8 px-3';
-
-function ColumnHead({ className, children }: { className?: string; children: string }) {
-    return (
-        <TableHead className={cn(COLUMN_HEAD, className)}>
-            <span className="type-label-xxs uppercase text-text-secondary">{children}</span>
-        </TableHead>
-    );
-}
-
-function FunctionNameCell({ name, description }: { name: string; description?: string }) {
-    return (
-        <TableCell className="max-w-0 px-3 py-0 whitespace-normal">
-            <div className="flex min-w-0 flex-col gap-0.5">
-                <div className="flex min-w-0 items-center gap-1">
-                    <span className="truncate type-code-medium-sm text-text-default">{name}</span>
-                    <span className="flex shrink-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100">
-                        <CopyButton size="sm" inline value={name} />
-                    </span>
-                </div>
-                {description && (
-                    <span className="truncate text-ds-xs font-ds-regular leading-ds-normal tracking-ds-tight text-text-disabled">{description}</span>
-                )}
-            </div>
-        </TableCell>
-    );
+function pickTypeFilter(requested: TypeFilterValue | null, counts: Record<TypeFilterValue, number | undefined>, countsSettled: boolean): TypeFilterValue {
+    if (requested && counts[requested] !== 0) {
+        return requested;
+    }
+    if (!countsSettled) {
+        return requested ?? 'tool';
+    }
+    return TYPE_TABS.find((tab) => (counts[tab.value] ?? 0) > 0)?.value ?? 'tool';
 }
 
 function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integration: ApiIntegration }) {
@@ -98,26 +82,6 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     );
 }
 
-const FUNCTION_ROW_CLASS = 'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset focus-inset';
-const FUNCTION_ROW_SELECTED_CLASS = 'border-l-2 border-l-interactive-selected-fill bg-state-selected';
-
-function functionRowProps(selected: boolean, onSelect: () => void): React.ComponentProps<'tr'> {
-    return {
-        tabIndex: 0,
-        'aria-selected': selected,
-        className: cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS),
-        onClick: onSelect,
-        onKeyDown: (event) => {
-            // Enter on the row's own copy or source button must keep doing that button's job.
-            if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) {
-                return;
-            }
-            event.preventDefault();
-            onSelect();
-        }
-    };
-}
-
 function templateRowKey(template: NangoFunctionTemplate): string {
     return `${template.type}:${template.name}:`;
 }
@@ -143,7 +107,7 @@ function listedFromTemplate(template: NangoFunctionTemplate): ListedNangoSyncFun
     return { ...template, ...availability, type: 'action' };
 }
 
-type FunctionListRow = { kind: 'function'; fn: ListedNangoFunction } | { kind: 'template'; template: NangoFunctionTemplate };
+type FunctionListRowData = { kind: 'function'; fn: ListedNangoFunction } | { kind: 'template'; template: NangoFunctionTemplate };
 
 function mergeTemplateSection(previous: string[], incoming: string[]): string[] {
     const seen = new Set(previous);
@@ -154,85 +118,6 @@ function mergeTemplateSection(previous: string[], incoming: string[]): string[] 
         seen.add(key);
     }
     return next;
-}
-
-function FunctionTableRow({
-    fn,
-    integration,
-    selected,
-    showStatus,
-    onSelect
-}: {
-    fn: ListedNangoFunction;
-    integration: ApiIntegration;
-    selected: boolean;
-    showStatus: boolean;
-    onSelect: () => void;
-}) {
-    return (
-        <TableRow {...functionRowProps(selected, onSelect)}>
-            <FunctionNameCell name={fn.name} description={fn.description} />
-            <TableCell className="w-35 px-3">
-                <FunctionSourceLabel source={fn.source} />
-            </TableCell>
-            {showStatus && (
-                <TableCell className="w-35 px-3">
-                    <FunctionStatus fn={fn} integration={integration} />
-                </TableCell>
-            )}
-        </TableRow>
-    );
-}
-
-function FunctionTemplateRow({
-    template,
-    integration,
-    showStatus,
-    selected,
-    onSelect
-}: {
-    template: NangoFunctionTemplate;
-    integration: ApiIntegration;
-    showStatus: boolean;
-    selected: boolean;
-    onSelect: () => void;
-}) {
-    return (
-        <TableRow {...functionRowProps(selected, onSelect)}>
-            <FunctionNameCell name={template.name} description={template.description} />
-            <TableCell className="w-35 px-3">
-                <FunctionSourceLabel source="template" />
-            </TableCell>
-            {showStatus && (
-                <TableCell className="w-35 px-3">
-                    <FunctionStatus fn={listedFromTemplate(template)} integration={integration} />
-                </TableCell>
-            )}
-        </TableRow>
-    );
-}
-
-function FunctionListWithDetails({
-    selectedFunction,
-    integration,
-    onClose,
-    children
-}: {
-    selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
-    integration: ApiIntegration;
-    onClose: () => void;
-    children: React.ReactNode;
-}) {
-    return (
-        <SlidingPanelLayout
-            selected={selectedFunction}
-            getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
-            renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onDeleted={onClose} />}
-            onClose={onClose}
-        >
-            {children}
-        </SlidingPanelLayout>
-    );
 }
 
 function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean {
@@ -261,9 +146,43 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
-    const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'tool';
     // The open panel is the URL, so a reload or a shared link restores it. Old `/functions/:name` links redirect here.
     const [selectedFunctionName, setSelectedFunctionName] = useQueryState('function', parseAsString);
+
+    // Unfiltered totals for the tabs, including templates that are not deployed yet. Search only narrows the active list.
+    const toolsCount = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'tool', limit: 1 });
+    const syncCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'sync', limit: 1 });
+    const triggerCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'on-event', limit: 1 });
+
+    const { data: templatesResponse, isFetched: templatesFetched } = useGetIntegrationTemplates({
+        env,
+        providerConfigKey: integration.unique_key
+    });
+
+    const undeployedActionTemplates = useMemo(
+        () => (templatesResponse?.data ?? []).filter((template) => template.type === 'action' && !template.deployed),
+        [templatesResponse]
+    );
+    const undeployedSyncTemplates = useMemo(
+        () => (templatesResponse?.data ?? []).filter((template) => template.type === 'sync' && !template.deployed),
+        [templatesResponse]
+    );
+
+    const counts: Record<TypeFilterValue, number | undefined> = {
+        // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the count stays hidden instead of showing a deployed-only number.
+        tool: pillCount(
+            toolsCount.data?.pages[0]?.pagination.total,
+            templatesResponse !== undefined,
+            metaData?.data.toolsCatalog === false ? undeployedActionTemplates.length : 0
+        ),
+        sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesResponse !== undefined, undeployedSyncTemplates.length),
+        'on-event': triggerCounts.data?.pages[0]?.pagination.total
+    };
+    const countsSettled = [toolsCount, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
+    const countsReady = counts.tool != null && counts.sync != null && counts['on-event'] != null;
+    const totalAcrossTypes = (counts.tool ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
+
+    const typeFilter = pickTypeFilter(rawType && isTypeFilterValue(rawType) ? rawType : null, counts, countsSettled && templatesFetched);
 
     const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } = useGetIntegrationFunctions({
         env,
@@ -272,17 +191,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
         type: typeFilter
     });
 
-    // Unfiltered totals for the pills, including templates that are not deployed yet. Search only narrows the active table.
-    const toolsCount = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'tool', limit: 1 });
-    const syncCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'sync', limit: 1 });
-    const triggerCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'on-event', limit: 1 });
-
     const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
-
-    const { data: templatesResponse, isFetched: templatesFetched } = useGetIntegrationTemplates({
-        env,
-        providerConfigKey: integration.unique_key
-    });
 
     const onRowClick = useCallback(
         (name: string, isDeployed: boolean) => {
@@ -314,14 +223,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     });
 
     const searchNeedle = debouncedSearch.trim().toLowerCase();
-    const undeployedActionTemplates = useMemo(
-        () => (templatesResponse?.data ?? []).filter((template) => template.type === 'action' && !template.deployed),
-        [templatesResponse]
-    );
-    const undeployedSyncTemplates = useMemo(
-        () => (templatesResponse?.data ?? []).filter((template) => template.type === 'sync' && !template.deployed),
-        [templatesResponse]
-    );
     const matchingActionTemplates = useMemo(
         () => undeployedActionTemplates.filter((template) => matchesSearch(template, searchNeedle)),
         [undeployedActionTemplates, searchNeedle]
@@ -348,7 +249,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     useEffect(() => () => onFunctionOpenChange?.(false), [onFunctionOpenChange]);
 
     const tailScope = `${integration.unique_key}:${typeFilter}`;
-    const templateRows = typeFilter === 'tool' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
+    let templateRows: NangoFunctionTemplate[] = [];
+    if (typeFilter === 'tool') {
+        templateRows = visibleActionTemplates;
+    } else if (typeFilter === 'sync') {
+        templateRows = visibleSyncTemplates;
+    }
     const incomingTailKeys = templateRows.map(templateSectionKey);
     const incomingTailKey = incomingTailKeys.join('\n');
     const templateSectionKeys = mergeTemplateSection(templateTail.scope === tailScope ? templateTail.keys : [], incomingTailKeys);
@@ -370,8 +276,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
         const templatesByKey = new Map((templatesResponse?.data ?? []).map((template) => [templateSectionKey(template), template]));
         const pinned = new Set(templateSectionKeys);
         const functionByKey = new Map(functions.map((fn) => [templateSectionKey(fn), fn]));
-        const leading: FunctionListRow[] = functions.filter((fn) => !pinned.has(templateSectionKey(fn))).map((fn) => ({ kind: 'function', fn }));
-        const tail: FunctionListRow[] = templateSectionKeys.flatMap((key): FunctionListRow[] => {
+        const leading: FunctionListRowData[] = functions.filter((fn) => !pinned.has(templateSectionKey(fn))).map((fn) => ({ kind: 'function', fn }));
+        const tail: FunctionListRowData[] = templateSectionKeys.flatMap((key): FunctionListRowData[] => {
             const listed = functionByKey.get(key);
             if (listed) return [{ kind: 'function', fn: listed }];
             const template = templatesByKey.get(key);
@@ -381,20 +287,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
         });
         return [...leading, ...tail];
     }, [functions, searchNeedle, templateSectionKeys, templatesResponse?.data]);
-
-    const counts: Record<TypeFilterValue, number | undefined> = {
-        // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the pill stays hidden instead of showing a deployed-only number.
-        tool: pillCount(
-            toolsCount.data?.pages[0]?.pagination.total,
-            templatesResponse !== undefined,
-            metaData?.data.toolsCatalog === false ? undeployedActionTemplates.length : 0
-        ),
-        sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesResponse !== undefined, undeployedSyncTemplates.length),
-        'on-event': triggerCounts.data?.pages[0]?.pagination.total
-    };
-    const countsSettled = [toolsCount, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
-    const countsReady = counts.tool != null && counts.sync != null && counts['on-event'] != null;
-    const totalAcrossTypes = (counts.tool ?? 0) + (counts.sync ?? 0) + (counts['on-event'] ?? 0);
 
     if (error) {
         return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
@@ -415,208 +307,151 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
     const showEmptyWithSearch = !isLoading && hasSearch && !activeListHasRows;
     const showEmptyType = countsSettled && !hasSearch && !showEmptyNoFilters && !isLoading && !activeListHasRows;
     const waitingForEmptyDecision = !hasSearch && functions.length === 0 && (!countsSettled || !templatesFetched);
-    const activePill = TYPE_PILLS.find((pill) => pill.value === typeFilter) ?? TYPE_PILLS[0];
-    const listedRows = functionRows.map((row) => {
-        if (row.kind === 'template') {
-            return (
-                <FunctionTemplateRow
-                    key={`template:${row.template.type}:${row.template.name}`}
-                    template={row.template}
-                    integration={integration}
-                    showStatus={showStatus}
-                    selected={row.template.name === selectedFunctionName}
-                    onSelect={() => onRowClick(row.template.name, false)}
-                />
-            );
-        }
+    const activeTab = TYPE_TABS.find((tab) => tab.value === typeFilter) ?? TYPE_TABS[0];
+    const visibleTabs = TYPE_TABS.filter((tab) => tab.value !== 'on-event' || typeFilter === 'on-event' || (counts['on-event'] ?? 0) > 0);
+    const shownCount = functions.length + templateRows.length;
+    const totalCount = total + templateRows.length;
+    const columns = [{ header: 'Source', className: 'w-35' }, ...(showStatus ? [{ header: 'Status', className: 'w-35' }] : [])];
 
+    if (isLoading || waitingForEmptyDecision) {
+        return <Skeleton className="w-full h-50" />;
+    }
+
+    if (showEmptyNoFilters) {
         return (
-            <FunctionTableRow
-                key={functionRowKey(row.fn)}
-                fn={row.fn}
-                integration={integration}
-                selected={row.fn.name === selectedFunctionName}
-                showStatus={showStatus}
-                onSelect={() => onRowClick(row.fn.name, row.fn.id !== null)}
-            />
+            <EmptyCard>
+                <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
+                <p className="text-text-secondary text-body-medium-regular text-center">Build your own custom functions.</p>
+                <ButtonLink to="https://nango.dev/docs/guides/platform/functions/functions-guide" target="_blank" variant="secondary">
+                    <Code /> Build custom
+                </ButtonLink>
+            </EmptyCard>
         );
-    });
+    }
+
+    let listBody: React.ReactNode;
+    if (isPlaceholderData) {
+        listBody = <Skeleton className="w-full h-50" />;
+    } else if (showEmptyType) {
+        listBody = (
+            <EmptyCard>
+                <p className="text-text-secondary text-body-medium-regular">{activeTab.emptyLabel}</p>
+            </EmptyCard>
+        );
+    } else {
+        listBody = (
+            <SlidingPanelLayout
+                selected={selectedFunction}
+                getKey={(fn) => ('enabled' in fn ? functionRowKey(fn) : templateRowKey(fn))}
+                renderPanel={(fn) => <FunctionDetailsPanel fn={fn} integration={integration} onClose={() => void setSelectedFunctionName(null)} />}
+                onClose={() => void setSelectedFunctionName(null)}
+            >
+                <FunctionList
+                    title={activeTab.label}
+                    columns={columns}
+                    footer={`Showing ${shownCount} of ${totalCount} ${totalCount === 1 ? activeTab.singular : activeTab.label.toLowerCase()}`}
+                    empty={
+                        showEmptyWithSearch && (
+                            <FunctionListNoMatches query={debouncedSearch.trim()} noun={activeTab.label.toLowerCase()} onClear={() => setSearch('')} />
+                        )
+                    }
+                >
+                    {functionRows.map((row) => {
+                        if (row.kind === 'template') {
+                            return (
+                                <FunctionListRow
+                                    key={`template:${row.template.type}:${row.template.name}`}
+                                    name={row.template.name}
+                                    description={row.template.description}
+                                    selected={row.template.name === selectedFunctionName}
+                                    onSelect={() => onRowClick(row.template.name, false)}
+                                >
+                                    <FunctionListCell>
+                                        <FunctionSourceLabel source="template" />
+                                    </FunctionListCell>
+                                    {showStatus && (
+                                        <FunctionListCell>
+                                            <FunctionStatus fn={listedFromTemplate(row.template)} integration={integration} />
+                                        </FunctionListCell>
+                                    )}
+                                </FunctionListRow>
+                            );
+                        }
+                        return (
+                            <FunctionListRow
+                                key={functionRowKey(row.fn)}
+                                name={row.fn.name}
+                                description={row.fn.description}
+                                selected={row.fn.name === selectedFunctionName}
+                                onSelect={() => onRowClick(row.fn.name, row.fn.id !== null)}
+                            >
+                                <FunctionListCell>
+                                    <FunctionSourceLabel source={row.fn.source} />
+                                </FunctionListCell>
+                                {showStatus && (
+                                    <FunctionListCell>
+                                        <FunctionStatus fn={row.fn} integration={integration} />
+                                    </FunctionListCell>
+                                )}
+                            </FunctionListRow>
+                        );
+                    })}
+                </FunctionList>
+            </SlidingPanelLayout>
+        );
+    }
 
     return (
-        <div className="flex flex-col gap-4 w-full">
-            {isLoading || waitingForEmptyDecision ? (
-                <Skeleton className="w-full h-50" />
-            ) : showEmptyNoFilters ? (
-                <EmptyCard>
-                    <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
-                    <p className="text-text-secondary text-body-medium-regular text-center">Build your own custom functions.</p>
-                    <ButtonLink to="https://nango.dev/docs/guides/platform/functions/functions-guide" target="_blank" variant="secondary">
-                        <Code /> Build custom
-                    </ButtonLink>
-                </EmptyCard>
-            ) : (
-                <>
-                    <div className="flex items-center gap-2">
-                        {TYPE_PILLS.map((pill) => {
-                            const selected = pill.value === typeFilter;
-                            const count = counts[pill.value];
-                            const empty = count === 0;
-                            return (
-                                <button
-                                    key={pill.value}
-                                    type="button"
-                                    aria-pressed={selected}
-                                    disabled={empty}
-                                    onClick={() => {
-                                        void setSelectedFunctionName(null);
-                                        void setType(pill.value);
-                                    }}
-                                    className={cn(
-                                        'inline-flex items-center justify-center gap-1 rounded-full border-ds-hairline px-2 py-0.5',
-                                        empty ? 'cursor-not-allowed border-border-default bg-surface-panel text-text-disabled' : 'cursor-pointer',
-                                        !empty &&
-                                            (selected
-                                                ? 'bg-status-info-bg border-status-info-border text-status-info-text'
-                                                : 'bg-surface-panel border-border-default text-text-default')
-                                    )}
-                                >
-                                    <span className="text-ds-xs font-ds-medium leading-ds-normal">{pill.label}</span>
-                                    {count != null && count > 0 && <span className="text-ds-2xs font-ds-regular tracking-ds-tight">{count}</span>}
-                                </button>
-                            );
-                        })}
-                    </div>
+        <div className="flex flex-col gap-3 w-full">
+            <FunctionTypeTabs
+                tabs={visibleTabs.map((tab) => ({ value: tab.value, label: tab.label, count: counts[tab.value] }))}
+                value={typeFilter}
+                onChange={(type) => {
+                    void setSelectedFunctionName(null);
+                    void setType(type);
+                }}
+            />
 
-                    <div className="flex items-center gap-2">
-                        <InputGroup>
-                            <InputGroupInput
-                                type="text"
-                                placeholder="Search functions"
-                                value={search || ''}
-                                onChange={(e) => {
-                                    void setSelectedFunctionName(null);
-                                    setSearch(e.target.value);
-                                }}
-                            />
-                            <InputGroupAddon>
-                                <Search />
-                            </InputGroupAddon>
-                        </InputGroup>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button type="button" variant="secondary" size="md">
-                                    <Plus /> Add
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-64">
-                                <DropdownMenuItem asChild>
-                                    <a
-                                        href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="flex items-center gap-4"
-                                    >
-                                        <Code />
-                                        <div>
-                                            <span className="text-text-strong text-body-medium-medium">Build custom</span>
-                                            <p className="text-text-secondary text-body-small-regular">
-                                                Bring your own code or leverage AI agents to build for your use case.
-                                            </p>
-                                        </div>
-                                    </a>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+            <div className="flex items-center gap-2">
+                <SearchField
+                    value={search || ''}
+                    placeholder={`Search ${activeTab.label.toLowerCase()}`}
+                    onChange={(value) => {
+                        void setSelectedFunctionName(null);
+                        setSearch(value);
+                    }}
+                />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button type="button" variant="secondary" size="md">
+                            <Plus /> Add
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuItem asChild>
+                            <a
+                                href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-4"
+                            >
+                                <Code />
+                                <div>
+                                    <span className="text-text-strong text-body-medium-medium">Build custom</span>
+                                    <p className="text-text-secondary text-body-small-regular">
+                                        Bring your own code or leverage AI agents to build for your use case.
+                                    </p>
+                                </div>
+                            </a>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
-                    {isPlaceholderData ? (
-                        <Skeleton className="w-full h-50" />
-                    ) : showEmptyWithSearch ? (
-                        <EmptyCard>
-                            <p className="text-text-secondary text-body-medium-regular">No functions match your filters.</p>
-                        </EmptyCard>
-                    ) : showEmptyType ? (
-                        <EmptyCard>
-                            <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
-                        </EmptyCard>
-                    ) : typeFilter === 'tool' ? (
-                        <FunctionListWithDetails
-                            selectedFunction={selectedFunction}
-                            integration={integration}
-                            onClose={() => void setSelectedFunctionName(null)}
-                        >
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <ColumnHead>Function name</ColumnHead>
-                                        <ColumnHead className="w-35">Source</ColumnHead>
-                                        {showStatus && <ColumnHead className="w-35">Status</ColumnHead>}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>{listedRows}</TableBody>
-                                <TableFooter className="bg-transparent font-ds-regular">
-                                    <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} tools
-                                        </TableCell>
-                                    </TableRow>
-                                </TableFooter>
-                            </Table>
-                        </FunctionListWithDetails>
-                    ) : typeFilter === 'sync' ? (
-                        <FunctionListWithDetails
-                            selectedFunction={selectedFunction}
-                            integration={integration}
-                            onClose={() => void setSelectedFunctionName(null)}
-                        >
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <ColumnHead>Function name</ColumnHead>
-                                        <ColumnHead className="w-35">Source</ColumnHead>
-                                        <ColumnHead className="w-35">Status</ColumnHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>{listedRows}</TableBody>
-                                <TableFooter className="bg-transparent font-ds-regular">
-                                    <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length + visibleSyncTemplates.length} of {total + visibleSyncTemplates.length} sync functions
-                                        </TableCell>
-                                    </TableRow>
-                                </TableFooter>
-                            </Table>
-                        </FunctionListWithDetails>
-                    ) : (
-                        <FunctionListWithDetails
-                            selectedFunction={selectedFunction}
-                            integration={integration}
-                            onClose={() => void setSelectedFunctionName(null)}
-                        >
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <ColumnHead>Function name</ColumnHead>
-                                        <ColumnHead className="w-35">Source</ColumnHead>
-                                        <ColumnHead className="w-35">Status</ColumnHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>{listedRows}</TableBody>
-                                <TableFooter className="bg-transparent font-ds-regular">
-                                    <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                            Showing {functions.length} of {total} triggers
-                                        </TableCell>
-                                    </TableRow>
-                                </TableFooter>
-                            </Table>
-                        </FunctionListWithDetails>
-                    )}
+            {listBody}
 
-                    <div ref={sentinelRef} aria-hidden />
-                    {isFetchingNextPage && <Skeleton className="h-13 w-full" />}
-                </>
-            )}
+            <div ref={sentinelRef} aria-hidden />
+            {isFetchingNextPage && <Skeleton className="h-13 w-full" />}
         </div>
     );
 };

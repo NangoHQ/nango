@@ -22,7 +22,17 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, productTracking, pubsub } from '@nangohq/shared';
+import {
+    getGlobalOAuthCallbackUrl,
+    getOtlpRoutes,
+    getProviders,
+    getServerPort,
+    getWebsocketsPath,
+    productTracking,
+    pubsub,
+    startCatalogFlagRefresh,
+    stopCatalogFlagRefresh
+} from '@nangohq/shared';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
@@ -33,7 +43,6 @@ import { manageGrowthAddonsCron } from './crons/manageGrowthAddons.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
-import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { checkEnterpriseLicense } from './license.js';
@@ -121,7 +130,6 @@ timeoutLogsOperations();
 timeoutFunctionAsyncJobsCron();
 deleteOldData();
 manageGrowthAddonsCron();
-trialCron();
 lambdaKeepWarmCron();
 tasks.start();
 void otlp.register(getOtlpRoutes);
@@ -132,6 +140,8 @@ if (pubsubConnect.isErr()) {
 }
 
 await initializeFeatureFlags();
+// Decides whether the template catalog is read from catalog.json; read before serving requests.
+await startCatalogFlagRefresh();
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -163,6 +173,7 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        stopCatalogFlagRefresh();
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();

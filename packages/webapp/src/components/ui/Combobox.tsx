@@ -31,6 +31,8 @@ interface ComboboxBaseProps<T extends string = string> {
     className?: string;
     contentClassName?: string;
     showSearch?: boolean;
+    // Set this inside a Dialog or Sheet, or the list won't scroll with the mouse wheel.
+    modal?: boolean;
 }
 
 interface SingleProps<T extends string = string> extends ComboboxBaseProps<T> {
@@ -92,7 +94,17 @@ function getParentCheckboxState<T extends string>(opt: ComboboxOption<T>, select
 }
 
 export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T>) {
-    const { options, disabled, searchPlaceholder = 'Search', emptyText = 'No results found.', footer, className, contentClassName, showSearch = true } = props;
+    const {
+        options,
+        disabled,
+        searchPlaceholder = 'Search',
+        emptyText = 'No results found.',
+        footer,
+        className,
+        contentClassName,
+        showSearch = true,
+        modal = false
+    } = props;
 
     const multiSelected = props.allowMultiple ? props.selected : undefined;
     const multiDefaultSelect = props.allowMultiple ? props.defaultSelect : undefined;
@@ -348,7 +360,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     };
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal={modal}>
             <PopoverTrigger asChild>{trigger}</PopoverTrigger>
             <PopoverContent
                 align={props.allowMultiple ? 'end' : 'start'}

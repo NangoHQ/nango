@@ -1,6 +1,8 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
+import { useUser } from './useUser';
 
 import type {
     DeleteConnection,
@@ -12,7 +14,7 @@ import type {
     PostConnectionRefresh
 } from '@nangohq/types';
 
-export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>) {
+export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>, { enabled = true }: { enabled?: boolean } = {}) {
     return useInfiniteQuery<GetConnections['Success'], APIError>({
         queryKey: ['connections', 'list', queries],
         queryFn: async ({ pageParam = 0 }): Promise<GetConnections['Success']> => {
@@ -22,6 +24,9 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
             }
             if (queries.search) {
                 usp.set('search', queries.search);
+            }
+            if (queries.endUserEmail) {
+                usp.set('endUserEmail', queries.endUserEmail);
             }
             if (queries.integrationIds && queries.integrationIds.length > 0) {
                 usp.append('integrationIds', queries.integrationIds.join(','));
@@ -55,8 +60,18 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
             return allPages.length;
         },
         initialPageParam: 0,
-        enabled: Boolean(queries.env)
+        enabled: enabled && Boolean(queries.env)
     });
+}
+
+export function useOwnTestConnections(env: string, integrationIds: string[] | null) {
+    const { user } = useUser();
+    const email = user?.email;
+    const enabled = Boolean(email) && integrationIds !== null && integrationIds.length > 0;
+    const { data, isPending } = useConnections({ env, integrationIds: integrationIds ?? [], endUserEmail: email }, { enabled });
+    const connections = useMemo(() => data?.pages[0]?.data ?? [], [data]);
+
+    return { connections, isPending: enabled && isPending };
 }
 
 export function useConnectionsCount(env: string) {

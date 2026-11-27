@@ -62,7 +62,8 @@ const agentSessionRequest = z.object({
             nango_tool_search: metaToolSwitch.optional(),
             nango_execute: metaToolSwitch.optional(),
             nango_proxy: metaToolSwitch.optional(),
-            nango_create_connection: createConnectionSwitch.optional()
+            nango_create_connection: createConnectionSwitch.optional(),
+            nango_run_code: metaToolSwitch.optional()
         })
         .optional(),
     expires_in: z.string().optional()
@@ -217,13 +218,14 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'playground:integration_create': {
         surface: 'server',
-        insight: "How often an Agent Playground starter can't run because its integration can't be set up, and for which provider",
-        fires: "When an Agent Playground starter creates its integration, reuses one, or can't set one up",
+        insight: "How often the Agent Playground sets up an integration for a starter or a typed request, and how often it can't, for which provider",
+        fires: "When an Agent Playground starter or the agent creates an integration, reuses one, or can't set one up",
         properties: z.union([
-            z.object({ provider: z.string(), is_existing: z.boolean(), is_success: z.literal(true) }),
+            z.object({ provider: z.string(), is_existing: z.boolean(), trigger: z.enum(['starter', 'agent']), is_success: z.literal(true) }),
             z.object({
                 provider: z.string(),
                 is_existing: z.boolean(),
+                trigger: z.enum(['starter', 'agent']),
                 is_success: z.literal(false),
                 error_code: stringOf<Exclude<AgentPlaygroundIntegrationSetup['outcome'], 'created' | 'existing'>>()
             })
@@ -232,9 +234,13 @@ export const analyticsEventCatalogue = defineCatalogue({
     'playground:try_button_click': {
         surface: 'app',
         insight:
-            'How often catalog, integration and connection pages send people to the Agent Playground, and whether a provider-specific starter prompt was ready for them',
-        fires: 'When someone clicks Try in Playground',
-        properties: z.object({ provider: z.string(), source: z.enum(['catalog', 'integration', 'connection']), has_starter_prompt: z.boolean() })
+            'How often Getting Started, catalog, integration and connection pages send people to the Agent Playground, and whether a provider-specific starter prompt was ready for them',
+        fires: 'When someone clicks Try in Playground, or a Playground prompt on the Getting Started page',
+        properties: z.object({
+            provider: z.string(),
+            source: z.enum(['getting_started', 'catalog', 'integration', 'connection']),
+            has_starter_prompt: z.boolean()
+        })
     },
     'playground:agent_turn_complete': {
         surface: 'server',
@@ -302,10 +308,10 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone copies the API key on the Getting Started page',
         properties: none
     },
-    'onboarding:playground_link_click': {
+    'onboarding:catalog_link_click': {
         surface: 'app',
-        insight: 'How many accounts try the Agent Playground before installing Nango in their own agent',
-        fires: 'When someone follows the Agent Playground link on the Getting Started page',
+        insight: 'How many accounts go from Getting Started to the catalog, the first step of the Getting Started to Playground funnel',
+        fires: 'When someone follows the catalog link on the Getting Started page',
         properties: none
     },
     'onboarding:try_prompt_button_click': {
@@ -318,7 +324,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'app',
         insight: 'Where accounts go after finishing Getting Started',
         fires: 'When someone opens a Go further link on the Getting Started page',
-        properties: z.object({ destination: z.enum(['catalog', 'agent_sessions_docs', 'logs', 'syncs_docs']) })
+        properties: z.object({ destination: z.enum(['agent_sessions_docs', 'logs', 'syncs_docs']) })
     },
     'onboarding:restart_button_click': {
         surface: 'app',
@@ -338,6 +344,16 @@ export const analyticsEventCatalogue = defineCatalogue({
         insight: 'How many people start creating a connection, and for which provider',
         fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
         properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
+    },
+    'connections:test_connection_button_click': {
+        surface: 'app',
+        insight: 'Whether people who already have a test connection open it from the integration page, or add another one',
+        fires: 'When someone opens or adds a test connection from the buttons on an integration page',
+        properties: z.object({
+            provider: z.string(),
+            action: z.enum(['open_one', 'open_from_menu', 'add']),
+            own_connection_count: z.number()
+        })
     },
     'connections:share_link_button_click': {
         surface: 'app',
@@ -383,10 +399,10 @@ export const analyticsEventCatalogue = defineCatalogue({
     'catalog:setup_button_click': {
         surface: 'app',
         insight: 'How many catalog detail visits lead to adding an integration, whether in one click or through the setup form, and which button people use',
-        fires: "When someone clicks Add integration, Advanced… or Add another integration on an API's catalog page",
+        fires: "When someone clicks Add integration, Advanced… or Add another on an API's catalog page",
         properties: z.object({
             provider: z.string(),
-            source: z.enum(['header', 'panel', 'more_menu']),
+            source: z.enum(['header', 'panel', 'callout']),
             setup_type: z.enum(['one_click', 'form', 'advanced']).optional()
         })
     },
@@ -618,6 +634,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_execute_enabled: z.boolean(),
             is_proxy_enabled: z.boolean(),
             is_create_connection_enabled: z.boolean(),
+            is_run_code_enabled: z.boolean().optional(),
             pinned_tool_count: z.number(),
             searchable_tool_count: z.number(),
             // What the caller sent, next to what the session compiled to above.

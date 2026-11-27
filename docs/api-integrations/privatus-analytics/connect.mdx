@@ -1,0 +1,41 @@
+---
+title: 'Privatus Analytics - How do I link my account?'
+sidebarTitle: 'Privatus Analytics'
+---
+
+## Overview
+
+To authenticate with Privatus Analytics, you need:
+
+1. **API Token** — a Privatus Analytics API token (starts with `pat_`).
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Privatus Analytics account. You can [sign up](https://privatusanalytics.com/users/sign_up) without a payment card.
+
+### Step 1: Create an API token
+
+1. Sign in to [Privatus Analytics](https://privatusanalytics.com/users/sign_in) and click **Workspace** in the bottom-left sidebar to open Workspace settings.
+2. Open the **API tokens** tab and click **New token**.
+
+<img src="/api-integrations/privatus-analytics/workspace_settings_api_tokens.png" alt="Privatus Analytics Workspace settings with the API tokens tab highlighted"/>
+
+3. Enter a name for the token (for example, `nango`), choose the permissions your integration needs (for example, `analytics.read`), the sites it can access and an expiry, and optionally restrict allowed IPs. Then click **Create token**.
+
+<img src="/api-integrations/privatus-analytics/create_api_token_form.png" alt="Privatus Analytics new API token form with name, permissions, sites and expiry filled in and the Create token button"/>
+
+4. Under **Copy your new token**, click **Copy** and store the token (`pat_…`) right away. It is shown only once.
+
+<img src="/api-integrations/privatus-analytics/copy_api_token.png" alt="Privatus Analytics Copy your new token panel with the Copy button highlighted"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Privatus Analytics.
+2. Paste the token you copied in Step 1 into the **API Token** field.
+3. Submit the form. Nango checks the token with Privatus Analytics and rejects it if it is invalid.
+
+<img src="/api-integrations/privatus-analytics/form.png" alt="Privatus Analytics Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Privatus Analytics.

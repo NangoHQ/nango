@@ -1,0 +1,2147 @@
+{
+    "providerConfigKey": "hubstaff",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new client in an organization.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_createclient",
+            "name": "create-client",
+            "output": [
+                "ActionOutput_hubstaff_createclient"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createclient",
+                "ActionOutput_hubstaff_createclient"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_createclient": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Client name. Example: \"Nango Registry Test Client 3\""
+                            }
+                        },
+                        "required": [
+                            "organization_id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_createclient": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "organization_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "project_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "inherit_invoice_notes": {
+                                "type": "boolean"
+                            },
+                            "inherit_net_terms": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "metadata": {}
+                        },
+                        "required": [
+                            "id",
+                            "organization_id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new project in an organization.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_createproject",
+            "name": "create-project",
+            "output": [
+                "ActionOutput_hubstaff_createproject"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createproject",
+                "ActionOutput_hubstaff_createproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_createproject": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Project name."
+                            }
+                        },
+                        "required": [
+                            "organization_id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_createproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new task in a project.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_createtask",
+            "name": "create-task",
+            "output": [
+                "ActionOutput_hubstaff_createtask"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createtask",
+                "ActionOutput_hubstaff_createtask"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_createtask": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Project ID. Example: 4145631"
+                            },
+                            "summary": {
+                                "type": "string",
+                                "description": "Task summary. Example: \"Review Q3 report\""
+                            },
+                            "assignee_id": {
+                                "type": "number",
+                                "description": "User ID to assign the task to. Example: 4453817"
+                            },
+                            "description": {
+                                "description": "Optional task description.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "project_id",
+                            "summary",
+                            "assignee_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_createtask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "project_type": {
+                                "type": "string"
+                            },
+                            "assignee_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "lock_version": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "summary"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Manually log tracked time for a user against a project",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_createtimeentry",
+            "name": "create-time-entry",
+            "output": [
+                "ActionOutput_hubstaff_createtimeentry"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createtimeentry",
+                "ActionOutput_hubstaff_createtimeentry"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_createtimeentry": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "description": "Hubstaff user ID. Example: \"4453817\"",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "project_id": {
+                                "description": "Hubstaff project ID. Example: 4145631",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "start_time": {
+                                "type": "string",
+                                "description": "ISO 8601 start time. Example: \"2026-07-30T10:00:00Z\""
+                            },
+                            "tracked": {
+                                "type": "number",
+                                "description": "Tracked time in seconds. Example: 3600"
+                            },
+                            "note": {
+                                "description": "Reason/note for the manual time entry. Required by some organizations.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "user_id",
+                            "project_id",
+                            "start_time",
+                            "tracked"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_createtimeentry": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "tracked": {
+                                "type": "number"
+                            },
+                            "note": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "user_id",
+                            "project_id",
+                            "start_time",
+                            "tracked"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete (soft-delete) a task",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_deletetask",
+            "name": "delete-task",
+            "output": [
+                "ActionOutput_hubstaff_deletetask"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_deletetask",
+                "ActionOutput_hubstaff_deletetask"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_deletetask": {
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "number",
+                                "description": "The ID of the task to delete. Example: 165909246"
+                            }
+                        },
+                        "required": [
+                            "task_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_deletetask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string",
+                                "const": "deleted"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single client by id.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_getclient",
+            "name": "get-client",
+            "output": [
+                "ActionOutput_hubstaff_getclient"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getclient",
+                "ActionOutput_hubstaff_getclient"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_getclient": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Client ID. Example: \"458914\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_getclient": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "organization_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "project_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "inherit_invoice_notes": {
+                                "type": "boolean"
+                            },
+                            "inherit_net_terms": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "metadata": {}
+                        },
+                        "required": [
+                            "id",
+                            "organization_id",
+                            "name",
+                            "emails",
+                            "project_ids",
+                            "inherit_invoice_notes",
+                            "inherit_net_terms",
+                            "status",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the profile of the user this connection authenticates as.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_getcurrentuser",
+            "name": "get-current-user",
+            "output": [
+                "ActionOutput_hubstaff_getcurrentuser"
+            ],
+            "scopes": [
+                "hubstaff:read",
+                "email",
+                "openid",
+                "profile"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getcurrentuser",
+                "ActionOutput_hubstaff_getcurrentuser"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "ip_address": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single project by id.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_getproject",
+            "name": "get-project",
+            "output": [
+                "ActionOutput_hubstaff_getproject"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getproject",
+                "ActionOutput_hubstaff_getproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "type": "number",
+                                "description": "Project ID. Example: 4145631"
+                            }
+                        },
+                        "required": [
+                            "projectId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "billable": {
+                                "type": "boolean"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single task by id.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_gettask",
+            "name": "get-task",
+            "output": [
+                "ActionOutput_hubstaff_gettask"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_gettask",
+                "ActionOutput_hubstaff_gettask"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "taskId": {
+                                "type": "string",
+                                "description": "Task ID. Example: \"165909246\""
+                            }
+                        },
+                        "required": [
+                            "taskId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "project_type": {
+                                "type": "string"
+                            },
+                            "assignee_id": {
+                                "type": "number"
+                            },
+                            "assignee_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "due_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "completed_at": {
+                                "type": "string"
+                            },
+                            "lock_version": {
+                                "type": "number"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "budget": {
+                                "type": "number"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tracked-time activity records for an organization within a date range.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listactivities",
+            "name": "list-activities",
+            "output": [
+                "ActionOutput_hubstaff_listactivities"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listactivities",
+                "ActionOutput_hubstaff_listactivities"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listactivities": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "start": {
+                                "type": "string",
+                                "description": "Start of date range in ISO8601 format. Example: 2026-07-29T00:00:00Z"
+                            },
+                            "stop": {
+                                "type": "string",
+                                "description": "End of date range in ISO8601 format. Example: 2026-07-30T00:00:00Z"
+                            }
+                        },
+                        "required": [
+                            "organization_id",
+                            "start",
+                            "stop"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listactivities": {
+                        "type": "object",
+                        "properties": {
+                            "activities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "time_slot": {
+                                            "type": "string"
+                                        },
+                                        "starts_at": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "number"
+                                        },
+                                        "project_id": {
+                                            "type": "number"
+                                        },
+                                        "task_id": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "keyboard": {
+                                            "type": "number"
+                                        },
+                                        "mouse": {
+                                            "type": "number"
+                                        },
+                                        "overall": {
+                                            "type": "number"
+                                        },
+                                        "tracked": {
+                                            "type": "number"
+                                        },
+                                        "input_tracked": {
+                                            "type": "number"
+                                        },
+                                        "tracks_input": {
+                                            "type": "boolean"
+                                        },
+                                        "location_type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "billable": {
+                                            "type": "boolean"
+                                        },
+                                        "paid": {
+                                            "type": "boolean"
+                                        },
+                                        "client_invoiced": {
+                                            "type": "boolean"
+                                        },
+                                        "team_invoiced": {
+                                            "type": "boolean"
+                                        },
+                                        "immutable": {
+                                            "type": "boolean"
+                                        },
+                                        "timesheet_locked": {
+                                            "type": "boolean"
+                                        },
+                                        "time_type": {
+                                            "type": "string"
+                                        },
+                                        "client": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "activities"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List clients in an organization.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listclients",
+            "name": "list-clients",
+            "output": [
+                "ActionOutput_hubstaff_listclients"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listclients",
+                "ActionOutput_hubstaff_listclients"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listclients": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "organization_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listclients": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List notes attached to tracked time, within a date range.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listnotes",
+            "name": "list-notes",
+            "output": [
+                "ActionOutput_hubstaff_listnotes"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listnotes",
+                "ActionOutput_hubstaff_listnotes"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listnotes": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "description": "Organization ID. Example: \"775646\"",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "time_slot_start": {
+                                "type": "string",
+                                "description": "Start of the time slot in ISO 8601 format. Example: \"2026-07-29T00:00:00Z\""
+                            },
+                            "time_slot_stop": {
+                                "type": "string",
+                                "description": "End of the time slot in ISO 8601 format. Example: \"2026-07-29T23:59:59Z\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "organization_id",
+                            "time_slot_start",
+                            "time_slot_stop"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listnotes": {
+                        "type": "object",
+                        "properties": {
+                            "notes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "note": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "project_id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "notes"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List members of an organization, with their role and membership status.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listorganizationmembers",
+            "name": "list-organization-members",
+            "output": [
+                "ActionOutput_hubstaff_listorganizationmembers"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listorganizationmembers",
+                "ActionOutput_hubstaff_listorganizationmembers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listorganizationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of members to return per page.",
+                                "type": "number"
+                            },
+                            "include_removed": {
+                                "description": "Whether to include removed members in the results.",
+                                "type": "boolean"
+                            },
+                            "search_email": {
+                                "description": "Filter members by email address.",
+                                "type": "string"
+                            },
+                            "search_name": {
+                                "description": "Filter members by name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "organization_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listorganizationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "number"
+                                        },
+                                        "membership_role": {
+                                            "type": "string"
+                                        },
+                                        "membership_status": {
+                                            "type": "string"
+                                        },
+                                        "effective_role": {
+                                            "type": "string"
+                                        },
+                                        "bill_rate": {
+                                            "type": "number"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "fixed_pay_rate": {
+                                            "type": "number"
+                                        },
+                                        "pay_rate": {
+                                            "type": "number"
+                                        },
+                                        "pay_period": {
+                                            "type": "string"
+                                        },
+                                        "trackable": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "removed_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "user_id",
+                                        "membership_role",
+                                        "membership_status"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations this account belongs to.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listorganizations",
+            "name": "list-organizations",
+            "output": [
+                "ActionOutput_hubstaff_listorganizations"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listorganizations",
+                "ActionOutput_hubstaff_listorganizations"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listorganizations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "organizations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Organization ID. Example: 775646"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Organization name. Example: Nango'Dev Organization"
+                                        },
+                                        "status": {
+                                            "description": "Organization status. Example: active",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "description": "Creation timestamp. Example: 2024-01-01T00:00:00Z",
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "description": "Last update timestamp. Example: 2024-01-01T00:00:00Z",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "organizations"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List projects in an organization.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listprojects",
+            "name": "list-projects",
+            "output": [
+                "ActionOutput_hubstaff_listprojects"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listprojects",
+                "ActionOutput_hubstaff_listprojects"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "organization_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "projects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "projects"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List screenshots captured during tracked time, within a date range.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listscreenshots",
+            "name": "list-screenshots",
+            "output": [
+                "ActionOutput_hubstaff_listscreenshots"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listscreenshots",
+                "ActionOutput_hubstaff_listscreenshots"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listscreenshots": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "string",
+                                "description": "Organization ID. Example: \"775646\""
+                            },
+                            "start": {
+                                "type": "string",
+                                "description": "Start of the time range in ISO 8601 format. Example: \"2026-07-29T00:00:00Z\""
+                            },
+                            "stop": {
+                                "type": "string",
+                                "description": "End of the time range in ISO 8601 format. Example: \"2026-07-30T00:00:00Z\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "organization_id",
+                            "start",
+                            "stop"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listscreenshots": {
+                        "type": "object",
+                        "properties": {
+                            "screenshots": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "user_id": {
+                                            "type": "number"
+                                        },
+                                        "project_id": {
+                                            "type": "number"
+                                        },
+                                        "task_id": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "time_slot": {
+                                            "type": "string"
+                                        },
+                                        "recorded_at": {
+                                            "type": "string"
+                                        },
+                                        "full_url": {
+                                            "type": "string"
+                                        },
+                                        "small_url": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "screenshots"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tasks in a project.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listtasks",
+            "name": "list-tasks",
+            "output": [
+                "ActionOutput_hubstaff_listtasks"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listtasks",
+                "ActionOutput_hubstaff_listtasks"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "type": "string",
+                                "description": "Project ID. Example: \"4145631\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "projectId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "project_id": {
+                                            "type": "number"
+                                        },
+                                        "project_type": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "lock_version": {
+                                            "type": "number"
+                                        },
+                                        "assignee_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "project_id",
+                                        "summary"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "tasks"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List teams within an organization.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_listteams",
+            "name": "list-teams",
+            "output": [
+                "ActionOutput_hubstaff_listteams"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listteams",
+                "ActionOutput_hubstaff_listteams"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "type": "number",
+                                "description": "Organization ID. Example: 775646"
+                            }
+                        },
+                        "required": [
+                            "organization_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "teams"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a client's details, or archive it by setting status.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_updateclient",
+            "name": "update-client",
+            "output": [
+                "ActionOutput_hubstaff_updateclient"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updateclient",
+                "ActionOutput_hubstaff_updateclient"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_updateclient": {
+                        "type": "object",
+                        "properties": {
+                            "clientId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Client ID. Example: 458914"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Set to \"archived\" to retire the client",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "clientId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_updateclient": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "project_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "inherit_invoice_notes": {
+                                "type": "boolean"
+                            },
+                            "inherit_net_terms": {
+                                "type": "boolean"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a project's name, or archive it by setting status.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_updateproject",
+            "name": "update-project",
+            "output": [
+                "ActionOutput_hubstaff_updateproject"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updateproject",
+                "ActionOutput_hubstaff_updateproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_updateproject": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Project ID. Example: 4145631"
+                            },
+                            "name": {
+                                "description": "New project name.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Project status. Set to \"archived\" to archive the project.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "archived"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "project_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_updateproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "status": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "organization_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a task's summary or other fields.",
+            "endpoint": null,
+            "input": "ActionInput_hubstaff_updatetask",
+            "name": "update-task",
+            "output": [
+                "ActionOutput_hubstaff_updatetask"
+            ],
+            "scopes": [
+                "hubstaff:read",
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updatetask",
+                "ActionOutput_hubstaff_updatetask"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hubstaff_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "string",
+                                "description": "Task ID. Example: \"165909246\""
+                            },
+                            "summary": {
+                                "description": "Updated task summary.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Updated task status. Example: \"active\", \"done\", or \"deleted\".",
+                                "type": "string"
+                            },
+                            "assignee_id": {
+                                "description": "Updated assignee user ID.",
+                                "type": "number"
+                            },
+                            "billable": {
+                                "description": "Whether the task is billable.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "task_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hubstaff_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "lock_version": {
+                                "type": "number"
+                            },
+                            "assignee_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "billable": {
+                                "type": "boolean"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "lock_version"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync tracked-time activity records (10-minute slots) across all organizations this connection can access.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "activities",
+            "output": [
+                "Activity"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Activity"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Activity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "number"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "task_id": {
+                                "type": "number"
+                            },
+                            "organization_id": {
+                                "type": "number"
+                            },
+                            "time_slot_start": {
+                                "type": "string"
+                            },
+                            "time_slot_stop": {
+                                "type": "string"
+                            },
+                            "tracked": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync clients across all organizations.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "clients",
+            "output": [
+                "Client"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Client"
+            ],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Client": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync projects across all organizations this connection can access.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "projects",
+            "output": [
+                "Project"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Project"
+            ],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Project": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "organization_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync tasks across all projects",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "tasks",
+            "output": [
+                "Task"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Task"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Task": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "details": {
+                                "type": "string"
+                            },
+                            "assignee_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "lock_version": {
+                                "type": "number"
+                            },
+                            "completed_at": {
+                                "type": "string"
+                            },
+                            "due_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3509 @@
+{
+    "providerConfigKey": "zoom",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a meeting registrant in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_createmeetingregistrant",
+            "name": "create-meeting-registrant",
+            "output": [
+                "ActionOutput_zoom_createmeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write:admin",
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createmeetingregistrant",
+                "ActionOutput_zoom_createmeetingregistrant"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_createmeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The meeting ID or meeting number. Example: \"85746065\""
+                            },
+                            "occurrence_ids": {
+                                "description": "Occurrence IDs. You can find these with the meeting get API. Multiple values separated by comma.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "A valid email address of the registrant."
+                            },
+                            "first_name": {
+                                "type": "string",
+                                "maxLength": 64,
+                                "description": "The registrant's first name."
+                            },
+                            "last_name": {
+                                "description": "The registrant's last name.",
+                                "type": "string",
+                                "maxLength": 64
+                            },
+                            "address": {
+                                "description": "The registrant's address.",
+                                "type": "string"
+                            },
+                            "city": {
+                                "description": "The registrant's city.",
+                                "type": "string"
+                            },
+                            "country": {
+                                "description": "The registrant's country in two-letter abbreviated form.",
+                                "type": "string"
+                            },
+                            "zip": {
+                                "description": "The registrant's zip or postal code.",
+                                "type": "string"
+                            },
+                            "state": {
+                                "description": "The registrant's state or province.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "The registrant's phone number.",
+                                "type": "string"
+                            },
+                            "industry": {
+                                "description": "The registrant's industry.",
+                                "type": "string"
+                            },
+                            "org": {
+                                "description": "The registrant's organization.",
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "description": "The registrant's job title.",
+                                "type": "string"
+                            },
+                            "purchasing_time_frame": {
+                                "description": "The registrant's purchasing time frame.",
+                                "type": "string"
+                            },
+                            "role_in_purchase_process": {
+                                "description": "The registrant's role in the purchase process.",
+                                "type": "string"
+                            },
+                            "no_of_employees": {
+                                "description": "The registrant's number of employees.",
+                                "type": "string"
+                            },
+                            "comments": {
+                                "description": "Any questions or comments from the registrant.",
+                                "type": "string"
+                            },
+                            "custom_questions": {
+                                "description": "Custom questions and answers from the registrant.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "email",
+                            "first_name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_createmeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "registrant_id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a meeting in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_createmeeting",
+            "name": "create-meeting",
+            "output": [
+                "ActionOutput_zoom_createmeeting"
+            ],
+            "scopes": [
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createmeeting",
+                "ActionOutput_zoom_createmeeting"
+            ],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_createmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or email address of the user. For user-level apps, pass `me` as the value for userId."
+                            },
+                            "topic": {
+                                "description": "Meeting topic.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Meeting Type: 1 - Instant meeting, 2 - Scheduled meeting, 3 - Recurring meeting with no fixed time, 8 - Recurring meeting with fixed time.",
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "description": "Meeting start time in ISO 8601 format (yyyy-MM-ddTHH:mm:ssZ).",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Meeting duration in minutes. Used for scheduled meetings only.",
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "description": "Time zone to format start_time. For example, \"America/Los_Angeles\".",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "Passcode to join the meeting. Max 10 characters.",
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "description": "Meeting description.",
+                                "type": "string"
+                            },
+                            "settings": {
+                                "description": "Meeting settings.",
+                                "type": "object",
+                                "properties": {
+                                    "host_video": {
+                                        "type": "boolean"
+                                    },
+                                    "participant_video": {
+                                        "type": "boolean"
+                                    },
+                                    "join_before_host": {
+                                        "type": "boolean"
+                                    },
+                                    "mute_upon_entry": {
+                                        "type": "boolean"
+                                    },
+                                    "waiting_room": {
+                                        "type": "boolean"
+                                    },
+                                    "auto_recording": {
+                                        "type": "string",
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_createmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Meeting ID."
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "host_email": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "start_url": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "settings": {
+                                "type": "object",
+                                "properties": {
+                                    "host_video": {
+                                        "type": "boolean"
+                                    },
+                                    "participant_video": {
+                                        "type": "boolean"
+                                    },
+                                    "join_before_host": {
+                                        "type": "boolean"
+                                    },
+                                    "mute_upon_entry": {
+                                        "type": "boolean"
+                                    },
+                                    "waiting_room": {
+                                        "type": "boolean"
+                                    },
+                                    "auto_recording": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a user in Zoom",
+            "endpoint": null,
+            "input": "ActionInput_zoom_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_zoom_createuser"
+            ],
+            "scopes": [
+                "user:write:admin",
+                "user:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createuser",
+                "ActionOutput_zoom_createuser"
+            ],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "autoCreate",
+                                    "custCreate",
+                                    "ssoCreate"
+                                ]
+                            },
+                            "user_info": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "number",
+                                                "const": 1
+                                            },
+                                            {
+                                                "type": "number",
+                                                "const": 2
+                                            },
+                                            {
+                                                "type": "number",
+                                                "const": 3
+                                            },
+                                            {
+                                                "type": "number",
+                                                "const": 99
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "email",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "action",
+                            "user_info"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 1
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 2
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 3
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 99
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a webinar in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_createwebinar",
+            "name": "create-webinar",
+            "output": [
+                "ActionOutput_zoom_createwebinar"
+            ],
+            "scopes": [
+                "webinar:write",
+                "webinar:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createwebinar",
+                "ActionOutput_zoom_createwebinar"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_createwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "description": "The user ID or email address of the user. For user-level apps, pass \"me\". Defaults to \"me\".",
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string",
+                                "maxLength": 200,
+                                "description": "Webinar topic."
+                            },
+                            "type": {
+                                "description": "Webinar type: 5 (Webinar), 6 (Recurring no fixed time), 9 (Recurring fixed time). Defaults to 5.",
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 5
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 6
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 9
+                                    }
+                                ]
+                            },
+                            "start_time": {
+                                "description": "Webinar start time in ISO 8601 format. Required for type 5 and 9.",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Webinar duration in minutes.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "agenda": {
+                                "description": "Webinar agenda.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Time zone to format start_time.",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "Webinar passcode.",
+                                "type": "string",
+                                "maxLength": 10
+                            },
+                            "settings": {
+                                "description": "Webinar settings.",
+                                "type": "object",
+                                "properties": {
+                                    "host_video": {
+                                        "type": "boolean"
+                                    },
+                                    "panelists_video": {
+                                        "type": "boolean"
+                                    },
+                                    "practice_session": {
+                                        "type": "boolean"
+                                    },
+                                    "hd_video": {
+                                        "type": "boolean"
+                                    },
+                                    "auto_recording": {
+                                        "type": "string",
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
+                                    },
+                                    "approval_type": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "topic"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_createwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "host_email": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "occurrences": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "occurrence_id": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "recurrence": {
+                                "type": "object",
+                                "properties": {
+                                    "end_date_time": {
+                                        "type": "string"
+                                    },
+                                    "end_times": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "monthly_day": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "monthly_week": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "monthly_week_day": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "repeat_interval": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "type": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "weekly_days": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "settings": {
+                                "type": "object",
+                                "properties": {
+                                    "allow_multiple_devices": {
+                                        "type": "boolean"
+                                    },
+                                    "alternative_hosts": {
+                                        "type": "string"
+                                    },
+                                    "approval_type": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "audio": {
+                                        "type": "string"
+                                    },
+                                    "auto_recording": {
+                                        "type": "string"
+                                    },
+                                    "close_registration": {
+                                        "type": "boolean"
+                                    },
+                                    "contact_email": {
+                                        "type": "string"
+                                    },
+                                    "contact_name": {
+                                        "type": "string"
+                                    },
+                                    "email_language": {
+                                        "type": "string"
+                                    },
+                                    "enforce_login": {
+                                        "type": "boolean"
+                                    },
+                                    "enforce_login_domains": {
+                                        "type": "string"
+                                    },
+                                    "hd_video": {
+                                        "type": "boolean"
+                                    },
+                                    "host_video": {
+                                        "type": "boolean"
+                                    },
+                                    "meeting_authentication": {
+                                        "type": "boolean"
+                                    },
+                                    "on_demand": {
+                                        "type": "boolean"
+                                    },
+                                    "panelists_invitation_email_notification": {
+                                        "type": "boolean"
+                                    },
+                                    "panelists_video": {
+                                        "type": "boolean"
+                                    },
+                                    "practice_session": {
+                                        "type": "boolean"
+                                    },
+                                    "registrants_confirmation_email": {
+                                        "type": "boolean"
+                                    },
+                                    "registrants_email_notification": {
+                                        "type": "boolean"
+                                    },
+                                    "registrants_restrict_number": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "registration_type": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "show_share_button": {
+                                        "type": "boolean"
+                                    },
+                                    "survey_url": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "start_url": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "tracking_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "type": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a meeting registrant in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_deletemeetingregistrant",
+            "name": "delete-meeting-registrant",
+            "output": [
+                "ActionOutput_zoom_deletemeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write",
+                "meeting:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletemeetingregistrant",
+                "ActionOutput_zoom_deletemeetingregistrant"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_deletemeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "number",
+                                "description": "The meeting ID. Example: 123456789"
+                            },
+                            "registrantId": {
+                                "type": "string",
+                                "description": "The meeting registrant ID. Example: \"abc123\""
+                            },
+                            "occurrenceId": {
+                                "description": "The meeting occurrence ID. Example: \"def456\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meetingId",
+                            "registrantId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_deletemeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "number"
+                            },
+                            "registrantId": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "meetingId",
+                            "registrantId",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a meeting in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_deletemeeting",
+            "name": "delete-meeting",
+            "output": [
+                "ActionOutput_zoom_deletemeeting"
+            ],
+            "scopes": [
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletemeeting",
+                "ActionOutput_zoom_deletemeeting"
+            ],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_deletemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The meeting ID to delete. Example: \"123456789\""
+                            },
+                            "occurrenceId": {
+                                "description": "The meeting occurrence ID for recurring meetings. Example: \"abc123\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_deletemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "meetingId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "meetingId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a recording in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_deleterecording",
+            "name": "delete-recording",
+            "output": [
+                "ActionOutput_zoom_deleterecording"
+            ],
+            "scopes": [
+                "recording:write",
+                "recording:write:admin",
+                "cloud_recording:delete:meeting_recording",
+                "cloud_recording:delete:meeting_recording:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deleterecording",
+                "ActionOutput_zoom_deleterecording"
+            ],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_deleterecording": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The meeting ID or meeting UUID. Example: \"123456789\""
+                            },
+                            "action": {
+                                "description": "The recording delete action. \"trash\" moves the recording to trash (default), \"delete\" permanently deletes the recording.",
+                                "type": "string",
+                                "enum": [
+                                    "trash",
+                                    "delete"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "meeting_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_deleterecording": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string"
+                            },
+                            "action": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a user in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_zoom_deleteuser"
+            ],
+            "scopes": [
+                "user:write:admin",
+                "user:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deleteuser",
+                "ActionOutput_zoom_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or email address of the user to delete. Example: \"user@example.com\""
+                            },
+                            "action": {
+                                "description": "Delete action: disassociate (default) removes the user from the account; delete permanently removes the user.",
+                                "type": "string",
+                                "enum": [
+                                    "disassociate",
+                                    "delete"
+                                ]
+                            },
+                            "transfer_email": {
+                                "description": "Email address of the user to transfer meetings, webinars, and recordings to before deletion.",
+                                "type": "string"
+                            },
+                            "transfer_meeting": {
+                                "description": "Whether to transfer meetings to the transfer_email user. Default: true.",
+                                "type": "boolean"
+                            },
+                            "transfer_webinar": {
+                                "description": "Whether to transfer webinars to the transfer_email user. Default: true.",
+                                "type": "boolean"
+                            },
+                            "transfer_recording": {
+                                "description": "Whether to transfer cloud recordings to the transfer_email user. Default: true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The ID of the deleted or archived user."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a webinar in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_deletewebinar",
+            "name": "delete-webinar",
+            "output": [
+                "ActionOutput_zoom_deletewebinar"
+            ],
+            "scopes": [
+                "webinar:write:admin",
+                "webinar:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletewebinar",
+                "ActionOutput_zoom_deletewebinar"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_deletewebinar": {
+                        "type": "object",
+                        "properties": {
+                            "webinar_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the webinar to delete. Example: \"123456789\""
+                            }
+                        },
+                        "required": [
+                            "webinar_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_deletewebinar": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "webinar_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "webinar_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the authenticated Zoom user profile.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getcurrentuser",
+            "name": "get-current-user",
+            "output": [
+                "ActionOutput_zoom_getcurrentuser"
+            ],
+            "scopes": [
+                "user:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getcurrentuser",
+                "ActionOutput_zoom_getcurrentuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "pmi": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "dept": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "last_login_time": {
+                                "type": "string"
+                            },
+                            "last_client_version": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "pic_url": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "im_group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single meeting registrant from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getmeetingregistrant",
+            "name": "get-meeting-registrant",
+            "output": [
+                "ActionOutput_zoom_getmeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:read:registrant:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getmeetingregistrant",
+                "ActionOutput_zoom_getmeetingregistrant"
+            ],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getmeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "description": "The meeting ID. Example: \"88233737762\""
+                            },
+                            "registrantId": {
+                                "type": "string",
+                                "description": "The registrant ID. Example: \"ESJWWYqvTDWFGNUqJzB_bQ\""
+                            }
+                        },
+                        "required": [
+                            "meetingId",
+                            "registrantId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getmeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "industry": {
+                                "type": "string"
+                            },
+                            "org": {
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "purchasing_time_frame": {
+                                "type": "string"
+                            },
+                            "role_in_purchase_process": {
+                                "type": "string"
+                            },
+                            "no_of_employees": {
+                                "type": "string"
+                            },
+                            "comments": {
+                                "type": "string"
+                            },
+                            "custom_questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "create_time": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "first_name",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single meeting from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getmeeting",
+            "name": "get-meeting",
+            "output": [
+                "ActionOutput_zoom_getmeeting"
+            ],
+            "scopes": [
+                "meeting:read",
+                "meeting:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getmeeting",
+                "ActionOutput_zoom_getmeeting"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "number",
+                                "description": "The meeting ID in long format. Example: 1234555466"
+                            }
+                        },
+                        "required": [
+                            "meeting_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "assistant_id": {
+                                "type": "string"
+                            },
+                            "host_email": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "encrypted_password": {
+                                "type": "string"
+                            },
+                            "h323_password": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "occurrences": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "occurrence_id": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "pmi": {
+                                "type": "string"
+                            },
+                            "recurrence": {
+                                "type": "object",
+                                "properties": {
+                                    "end_date_time": {
+                                        "type": "string"
+                                    },
+                                    "end_times": {
+                                        "type": "number"
+                                    },
+                                    "monthly_day": {
+                                        "type": "number"
+                                    },
+                                    "monthly_week": {
+                                        "type": "number"
+                                    },
+                                    "monthly_week_day": {
+                                        "type": "number"
+                                    },
+                                    "repeat_interval": {
+                                        "type": "number"
+                                    },
+                                    "type": {
+                                        "type": "number"
+                                    },
+                                    "weekly_days": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "start_url": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "tracking_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "visible": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "type": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "host_id",
+                            "id",
+                            "uuid",
+                            "type"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single recording from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getrecording",
+            "name": "get-recording",
+            "output": [
+                "ActionOutput_zoom_getrecording"
+            ],
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getrecording",
+                "ActionOutput_zoom_getrecording"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getrecording": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The meeting ID or UUID. Example: \"123456789\""
+                            }
+                        },
+                        "required": [
+                            "meeting_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getrecording": {
+                        "type": "object",
+                        "properties": {
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "number"
+                            },
+                            "recording_count": {
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "total_size": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "recording_files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleted_time": {
+                                            "type": "string"
+                                        },
+                                        "download_url": {
+                                            "type": "string"
+                                        },
+                                        "file_extension": {
+                                            "type": "string"
+                                        },
+                                        "file_path": {
+                                            "type": "string"
+                                        },
+                                        "file_size": {
+                                            "type": "number"
+                                        },
+                                        "file_type": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "meeting_id": {
+                                            "type": "string"
+                                        },
+                                        "play_url": {
+                                            "type": "string"
+                                        },
+                                        "recording_end": {
+                                            "type": "string"
+                                        },
+                                        "recording_start": {
+                                            "type": "string"
+                                        },
+                                        "recording_type": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "participant_audio_files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleted_time": {
+                                            "type": "string"
+                                        },
+                                        "download_url": {
+                                            "type": "string"
+                                        },
+                                        "file_extension": {
+                                            "type": "string"
+                                        },
+                                        "file_path": {
+                                            "type": "string"
+                                        },
+                                        "file_size": {
+                                            "type": "number"
+                                        },
+                                        "file_type": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "meeting_id": {
+                                            "type": "string"
+                                        },
+                                        "play_url": {
+                                            "type": "string"
+                                        },
+                                        "recording_end": {
+                                            "type": "string"
+                                        },
+                                        "recording_start": {
+                                            "type": "string"
+                                        },
+                                        "recording_type": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "download_access_token": {
+                                "type": "string"
+                            },
+                            "recording_play_passcode": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_zoom_getuser"
+            ],
+            "scopes": [
+                "user:read:admin",
+                "user:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getuser",
+                "ActionOutput_zoom_getuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or email address of the user. For user-level apps, pass \"me\" as the value for userId."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "cms_user_id": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "custom_attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "dept": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "host_key": {
+                                "type": "string"
+                            },
+                            "im_group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "jid": {
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "last_client_version": {
+                                "type": "string"
+                            },
+                            "last_login_time": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "login_type": {
+                                "type": "number"
+                            },
+                            "manager": {
+                                "type": "string"
+                            },
+                            "personal_meeting_url": {
+                                "type": "string"
+                            },
+                            "phone_country": {
+                                "type": "string"
+                            },
+                            "phone_number": {
+                                "type": "string"
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        },
+                                        "verified": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "pic_url": {
+                                "type": "string"
+                            },
+                            "plan_united_type": {
+                                "type": "string"
+                            },
+                            "pmi": {
+                                "type": "number"
+                            },
+                            "role_id": {
+                                "type": "string"
+                            },
+                            "role_name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "use_pmi": {
+                                "type": "boolean"
+                            },
+                            "vanity_url": {
+                                "type": "string"
+                            },
+                            "verified": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single webinar from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_getwebinar",
+            "name": "get-webinar",
+            "output": [
+                "ActionOutput_zoom_getwebinar"
+            ],
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getwebinar",
+                "ActionOutput_zoom_getwebinar"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_getwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "number",
+                                "description": "The webinar ID in long format. Example: 123456789"
+                            }
+                        },
+                        "required": [
+                            "webinarId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_getwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "number"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "host_email": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "type": "string"
+                            },
+                            "start_url": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "occurrences": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "occurrence_id": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "recurrence": {
+                                "type": "object",
+                                "properties": {
+                                    "end_date_time": {
+                                        "type": "string"
+                                    },
+                                    "end_times": {
+                                        "type": "number"
+                                    },
+                                    "monthly_day": {
+                                        "type": "number"
+                                    },
+                                    "monthly_week": {
+                                        "type": "number"
+                                    },
+                                    "monthly_week_day": {
+                                        "type": "number"
+                                    },
+                                    "repeat_interval": {
+                                        "type": "number"
+                                    },
+                                    "type": {
+                                        "type": "number"
+                                    },
+                                    "weekly_days": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "tracking_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "id",
+                            "host_id",
+                            "topic",
+                            "type"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List meeting registrants from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_listmeetingregistrants",
+            "name": "list-meeting-registrants",
+            "output": [
+                "ActionOutput_zoom_listmeetingregistrants"
+            ],
+            "scopes": [
+                "meeting:read:list_registrants:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listmeetingregistrants",
+                "ActionOutput_zoom_listmeetingregistrants"
+            ],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_listmeetingregistrants": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "Meeting ID or UUID. Example: \"123456789\""
+                            },
+                            "status": {
+                                "description": "Registrant status filter. Values: approved, pending, denied",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of records per page. Default: 30, Max: 300",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (next_page_token) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meeting_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_listmeetingregistrants": {
+                        "type": "object",
+                        "properties": {
+                            "registrants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "comments": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "custom_questions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "industry": {
+                                            "type": "string"
+                                        },
+                                        "job_title": {
+                                            "type": "string"
+                                        },
+                                        "no_of_employees": {
+                                            "type": "string"
+                                        },
+                                        "org": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "purchasing_time_frame": {
+                                            "type": "string"
+                                        },
+                                        "role_in_purchase_process": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "zip": {
+                                            "type": "string"
+                                        },
+                                        "create_time": {
+                                            "type": "string"
+                                        },
+                                        "join_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email",
+                                        "first_name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "type": "number"
+                            },
+                            "total_records": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "registrants"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List meetings from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_listmeetings",
+            "name": "list-meetings",
+            "output": [
+                "ActionOutput_zoom_listmeetings"
+            ],
+            "scopes": [
+                "meeting:read:admin",
+                "meeting:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listmeetings",
+                "ActionOutput_zoom_listmeetings"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or email address of the user. For user-level apps, pass `me` as the value for userId."
+                            },
+                            "type": {
+                                "description": "The meeting types to query.",
+                                "type": "string",
+                                "enum": [
+                                    "scheduled",
+                                    "live",
+                                    "upcoming"
+                                ]
+                            },
+                            "page_size": {
+                                "description": "The number of records returned within a single API call. Max 300.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 300
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (next_page_token) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "meetings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "agenda": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "host_id": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "join_url": {
+                                            "type": "string"
+                                        },
+                                        "pmi": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "number"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "page_number": {
+                                "type": "number"
+                            },
+                            "page_size": {
+                                "type": "number"
+                            },
+                            "total_records": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "meetings"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List recordings from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_listrecordings",
+            "name": "list-recordings",
+            "output": [
+                "ActionOutput_zoom_listrecordings"
+            ],
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listrecordings",
+                "ActionOutput_zoom_listrecordings"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_listrecordings": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The user ID or email address of the user. For user-level apps, pass \"me\" as the value for userId."
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Maps to next_page_token.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "The number of records returned within a single API call. Max 300.",
+                                "type": "number"
+                            },
+                            "from": {
+                                "description": "The start date in 'yyyy-mm-dd' UTC format.",
+                                "type": "string"
+                            },
+                            "to": {
+                                "description": "The end date in 'yyyy-mm-dd' UTC format.",
+                                "type": "string"
+                            },
+                            "trash": {
+                                "description": "Query trash. true: List recordings from trash.",
+                                "type": "boolean"
+                            },
+                            "trash_type": {
+                                "description": "The type of Cloud recording to retrieve from the trash.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_listrecordings": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "meetings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "account_id": {
+                                            "type": "string"
+                                        },
+                                        "host_id": {
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "total_size": {
+                                            "type": "string"
+                                        },
+                                        "recording_count": {
+                                            "type": "string"
+                                        },
+                                        "share_url": {
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "recording_files": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "meeting_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "recording_start": {
+                                                        "type": "string"
+                                                    },
+                                                    "recording_end": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_type": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_size": {
+                                                        "type": "number"
+                                                    },
+                                                    "play_url": {
+                                                        "type": "string"
+                                                    },
+                                                    "download_url": {
+                                                        "type": "string"
+                                                    },
+                                                    "recording_type": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "deleted_time": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "page_size": {
+                                "type": "number"
+                            },
+                            "total_records": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "meetings"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_listusers",
+            "name": "list-users",
+            "output": [
+                "ActionOutput_zoom_listusers"
+            ],
+            "scopes": [
+                "user:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listusers",
+                "ActionOutput_zoom_listusers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (next_page_token) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "User status filter.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
+                            },
+                            "page_size": {
+                                "description": "Number of records per page. Default: 30, max: 300.",
+                                "type": "integer",
+                                "minimum": 30,
+                                "maximum": 300
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "pmi": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "dept": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "last_login_time": {
+                                            "type": "string"
+                                        },
+                                        "last_client_version": {
+                                            "type": "string"
+                                        },
+                                        "group_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "im_group_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "verified": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "pic_url": {
+                                            "type": "string"
+                                        },
+                                        "host_key": {
+                                            "type": "string"
+                                        },
+                                        "role_id": {
+                                            "type": "string"
+                                        },
+                                        "plan_united_type": {
+                                            "type": "string"
+                                        },
+                                        "custom_attributes": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "total_records": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "page_number": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "page_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "page_size": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "users"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webinars from Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_listwebinars",
+            "name": "list-webinars",
+            "output": [
+                "ActionOutput_zoom_listwebinars"
+            ],
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listwebinars",
+                "ActionOutput_zoom_listwebinars"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_listwebinars": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "description": "The user ID or email address of the user. For user-level apps, pass `me`.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "The number of records returned within a single API call.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 300
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_listwebinars": {
+                        "type": "object",
+                        "properties": {
+                            "webinars": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "host_id": {
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "agenda": {
+                                            "type": "string"
+                                        },
+                                        "join_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "uuid",
+                                        "host_id",
+                                        "topic"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "total_records": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "webinars"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a meeting registrant status in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_updatemeetingregistrant",
+            "name": "update-meeting-registrant",
+            "output": [
+                "ActionOutput_zoom_updatemeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write:admin",
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatemeetingregistrant",
+                "ActionOutput_zoom_updatemeetingregistrant"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_updatemeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The meeting ID in long format. Example: \"85746065\""
+                            },
+                            "registrant_id": {
+                                "type": "string",
+                                "description": "The registrant ID. Example: \"ESJWWYqvTDWFGNUqJzB_bQ\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "The registrant email address. Example: \"user@example.com\""
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "approve",
+                                    "cancel",
+                                    "deny"
+                                ],
+                                "description": "The status action to apply. Example: \"approve\""
+                            },
+                            "occurrence_id": {
+                                "description": "The meeting occurrence ID for recurring meetings.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "registrant_id",
+                            "email",
+                            "action"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_updatemeetingregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "meeting_id": {
+                                "type": "string"
+                            },
+                            "registrant_id": {
+                                "type": "string"
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "approve",
+                                    "cancel",
+                                    "deny"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "meeting_id",
+                            "registrant_id",
+                            "action"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a meeting in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_updatemeeting",
+            "name": "update-meeting",
+            "output": [
+                "ActionOutput_zoom_updatemeeting"
+            ],
+            "scopes": [
+                "meeting:write",
+                "meeting:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatemeeting",
+                "ActionOutput_zoom_updatemeeting"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_updatemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "number",
+                                "description": "The meeting ID in long format. Example: 1234567890"
+                            },
+                            "topic": {
+                                "description": "Meeting topic.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Meeting type: 1=Instant, 2=Scheduled, 3=Recurring no fixed time, 8=Recurring with fixed time.",
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "description": "Meeting start time in ISO 8601 format. Example: 2024-01-15T10:00:00Z",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Meeting duration in minutes.",
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "description": "Time zone for start_time. Example: America/Los_Angeles",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "Meeting password.",
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "description": "Meeting description/agenda.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_updatemeeting": {
+                        "type": "null"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_updateuser",
+            "name": "update-user",
+            "output": [
+                "ActionOutput_zoom_updateuser"
+            ],
+            "scopes": [
+                "user:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updateuser",
+                "ActionOutput_zoom_updateuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or \"me\" for the current user. Example: \"me\""
+                            },
+                            "first_name": {
+                                "description": "User's first name.",
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "description": "User's last name.",
+                                "type": "string"
+                            },
+                            "dept": {
+                                "description": "User's department.",
+                                "type": "string"
+                            },
+                            "company": {
+                                "description": "User's company.",
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "description": "User's job title.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "The time zone ID for the user profile.",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "User's language.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "User's location.",
+                                "type": "string"
+                            },
+                            "manager": {
+                                "description": "The manager for the user.",
+                                "type": "string"
+                            },
+                            "host_key": {
+                                "description": "Host key. It should be a 6-10 digit number.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string"
+                            },
+                            "updated": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "updated"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a webinar in Zoom.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_updatewebinar",
+            "name": "update-webinar",
+            "output": [
+                "ActionOutput_zoom_updatewebinar"
+            ],
+            "scopes": [
+                "webinar:write:admin",
+                "webinar:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatewebinar",
+                "ActionOutput_zoom_updatewebinar"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_updatewebinar": {
+                        "type": "object",
+                        "properties": {
+                            "webinar_id": {
+                                "type": "number",
+                                "description": "The webinar ID in long format. Example: 123456789"
+                            },
+                            "occurrence_id": {
+                                "description": "Webinar occurrence id. Support change of agenda, start_time, duration, settings.",
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "description": "Webinar description.",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Webinar duration in minutes. Used for scheduled webinars only.",
+                                "type": "number"
+                            },
+                            "password": {
+                                "description": "Webinar passcode. Maximum 10 characters.",
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "description": "Webinar start time in ISO 8601 format. Example: 2024-01-15T10:00:00Z",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Time zone for start_time. Example: America/Los_Angeles",
+                                "type": "string"
+                            },
+                            "topic": {
+                                "description": "Webinar topic.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Webinar type: 5 (webinar), 6 (recurring no fixed time), 9 (recurring fixed time).",
+                                "type": "number"
+                            },
+                            "settings": {
+                                "description": "Webinar settings.",
+                                "type": "object",
+                                "properties": {
+                                    "host_video": {
+                                        "type": "boolean"
+                                    },
+                                    "panelists_video": {
+                                        "type": "boolean"
+                                    },
+                                    "practice_session": {
+                                        "type": "boolean"
+                                    },
+                                    "hd_video": {
+                                        "type": "boolean"
+                                    },
+                                    "auto_recording": {
+                                        "type": "string",
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
+                                    },
+                                    "meeting_authentication": {
+                                        "type": "boolean"
+                                    },
+                                    "approval_type": {
+                                        "type": "number"
+                                    },
+                                    "registration_type": {
+                                        "type": "number"
+                                    },
+                                    "on_demand": {
+                                        "type": "boolean"
+                                    },
+                                    "close_registration": {
+                                        "type": "boolean"
+                                    },
+                                    "contact_email": {
+                                        "type": "string"
+                                    },
+                                    "contact_name": {
+                                        "type": "string"
+                                    },
+                                    "alternative_hosts": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "webinar_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_updatewebinar": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "webinar_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "webinar_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync meetings from Zoom.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/meetings"
+                }
+            ],
+            "input": null,
+            "name": "meetings",
+            "output": [
+                "Meeting"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "meeting:read:admin",
+                "meeting:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meeting"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync recordings from Zoom.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/recordings"
+                }
+            ],
+            "input": null,
+            "name": "recordings",
+            "output": [
+                "Recording"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Recording"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Recording": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "total_size": {
+                                "type": "number"
+                            },
+                            "recording_count": {
+                                "type": "number"
+                            },
+                            "share_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from Zoom.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/users",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "user:read:admin"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "2.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "pmi": {
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "dept": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "last_login_time": {
+                                "type": "string"
+                            },
+                            "last_client_version": {
+                                "type": "string"
+                            },
+                            "group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "im_group_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "role_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync webinars from Zoom.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/webinars"
+                }
+            ],
+            "input": null,
+            "name": "webinars",
+            "output": [
+                "Webinar"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Webinar"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Webinar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "host_id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "agenda": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -10,6 +10,7 @@ import { can, resolveEnvironment } from './authz/middleware.js';
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
 import { deleteAgentSession } from './controllers/agent/deleteSession.js';
+import { getAgentSessionTools } from './controllers/agent/getTools.js';
 import { getAgentSessionMcp, postAgentSessionMcp } from './controllers/agent/mcp/sessionMcp.js';
 import { postAgentSessions } from './controllers/agent/postSessions.js';
 import appAuthController from './controllers/appAuth.controller.js';
@@ -279,7 +280,7 @@ publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicUnauthenticated);
 
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook).get(webhookIngressRateLimit, postWebhook);
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
@@ -521,6 +522,7 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
 publicAPI.route('/sessions').post(envAuth, can('environment:agent_sessions:write'), postAgentSessions);
 publicAPI.route('/sessions/:sessionId').delete(envAuth, can('environment:agent_sessions:write'), deleteAgentSession);
+publicAPI.route('/sessions/:sessionId/tools').get(agentSessionAuth, getAgentSessionTools);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
 publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);

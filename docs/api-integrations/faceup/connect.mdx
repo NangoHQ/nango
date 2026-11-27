@@ -1,0 +1,48 @@
+---
+title: 'FaceUp - How do I link my account?'
+sidebarTitle: 'FaceUp'
+---
+
+## Overview
+
+To authenticate with FaceUp, you need:
+
+1. **API Key** — an API key created in your FaceUp admin.
+2. **Data Hosting Region** — the region where FaceUp stores your organization's data.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A FaceUp account with access to the admin at [admin.faceup.com](https://www.admin.faceup.com/).
+
+### Step 1: Create an API key
+
+1. Sign in to the [FaceUp admin](https://www.admin.faceup.com/).
+2. Click **Settings** (the gear icon) in the left sidebar, then under **Integrations** click **API keys**.
+3. Click the add (**+**) button next to the **API keys** heading.
+
+<img src="/api-integrations/faceup/api_keys_page.png" alt="FaceUp API keys page in Settings with the add button next to the API keys heading"/>
+
+4. Enter a name for the key and click **Add**.
+
+<img src="/api-integrations/faceup/create_api_key_dialog.png" alt="FaceUp dialog to name a new API key with the Add button"/>
+
+5. Copy the API key from the **Save your API key** dialog, then click **Finish**. The key is shown only once.
+
+<img src="/api-integrations/faceup/api_key_created.png" alt="FaceUp Save your API key dialog showing the new key"/>
+
+### Step 2: Find your data hosting region
+
+1. In the FaceUp admin, go to **Settings** -> **Account settings** -> **General**.
+2. Note the **Data hosting region** value: `eu-west-1` or `us-east-1`. You will select this region in the Connect UI.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with FaceUp.
+2. Enter your **API Key** from Step 1 and select your **Data Hosting Region** from Step 2.
+3. Submit the form.
+
+<img src="/api-integrations/faceup/form.png" alt="FaceUp Connect UI form with the API Key and Data Hosting Region fields" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key or region is wrong, the first API request returns an authentication error.

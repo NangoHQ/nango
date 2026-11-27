@@ -1,0 +1,49 @@
+---
+title: 'HourSquare - How do I link my account?'
+sidebarTitle: 'HourSquare'
+---
+
+## Overview
+
+To authenticate with HourSquare, you need:
+
+1. **Client ID** and **Client secret** — the two parts of a company API key created in the HourSquare Hub.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An HourSquare administrator account with the **Manage API keys** permission. The account creator has it.
+
+### Step 1: Create an API key
+
+1. Log in to the [HourSquare Hub](https://hub.hoursquare.com/).
+2. Open **Settings** in the left menu, then click **Sign-in & integrations**.
+
+<img src="/api-integrations/hoursquare/settings_integrations_entry.png" alt="HourSquare Hub Settings page with Sign-in & integrations highlighted"/>
+
+3. Under **For developers**, click **Set up** next to **API keys**, then click **Create key**.
+
+<img src="/api-integrations/hoursquare/api_keys_create.png" alt="HourSquare API keys panel with the Create key button"/>
+
+4. Enter a name for the key, tick only the scopes your integration needs (for example **Read employees**), optionally choose an expiry, then click **Create key**.
+
+<img src="/api-integrations/hoursquare/create_api_key_dialog.png" alt="HourSquare Create API key dialog with name, scopes and expiry fields"/>
+
+5. Copy the key value: this is your **Client secret** (it starts with `hsq_`). The key ID shown with it (`hsq_` followed by 8 characters) is your **Client ID**, and it stays visible in the key list.
+
+<img src="/api-integrations/hoursquare/copy_new_key.png" alt="HourSquare Copy your new key dialog with the Copy button"/>
+
+<Note>
+HourSquare shows the key value only once. Save it somewhere secure before closing the dialog. If you lose it, rotate the key.
+</Note>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with HourSquare.
+2. Enter your **Client ID** and **Client secret**.
+3. Submit the form. Nango requests an access token with them, so a wrong, expired or revoked key is rejected here.
+
+<img src="/api-integrations/hoursquare/form.png" alt="Nango Connect UI form with Client ID and Client secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to HourSquare.

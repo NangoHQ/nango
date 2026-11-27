@@ -1,0 +1,86 @@
+{
+    "providerConfigKey": "kustomer",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Retrieves a paginated list of conversations for the organization",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/kustomer/conversations"
+                }
+            ],
+            "input": "SyncMetadata_kustomer_conversations",
+            "name": "conversations",
+            "output": [
+                "KustomerConversation"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "org.user.conversation.read",
+                "org.permission.conversation.read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "KustomerConversation",
+                "SyncMetadata_kustomer_conversations"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "KustomerConversation": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "attributes": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "relationships": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "links": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "id",
+                            "attributes",
+                            "relationships",
+                            "links"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_kustomer_conversations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

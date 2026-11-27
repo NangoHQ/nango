@@ -1,13 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { productTracking } from '@nangohq/shared';
+import { connectionService, productTracking } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import * as agentSessionService from '../../../../services/agentSession.service.js';
-import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
+import { buildSessionTools } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { buildSessionTools } from '../sessionServer.js';
 import { createConnectionTool } from './createConnection.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
@@ -87,7 +86,7 @@ describe('createConnectionTool', () => {
 
     it('returns a connect link for an integration the session has no connection for', async () => {
         const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
         const result = await callCreateConnection({ integration: 'slack' });
 
@@ -103,7 +102,7 @@ describe('createConnectionTool', () => {
 
     it('tags the connect session with the agent session, so the connection can be found again', async () => {
         const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
         await callCreateConnection({ integration: 'slack' });
 
@@ -112,7 +111,7 @@ describe('createConnectionTool', () => {
 
     it('stamps the configured tags alongside the reserved one', async () => {
         const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
         await callCreateConnection({ integration: 'slack' }, { enabled: true, tags: { enduser: '74' } });
 
@@ -121,7 +120,7 @@ describe('createConnectionTool', () => {
 
     it('does not let a configured tag overwrite the reserved one', async () => {
         const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
         await callCreateConnection({ integration: 'slack' }, { enabled: true, tags: { 'nango/agent_session': 'someone-elses-session' } });
 
@@ -179,7 +178,7 @@ describe('createConnectionTool', () => {
 
         it('creates a new connection when the integration has none yet', async () => {
             const createConnectSession = vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(Ok(CONNECT_SESSION));
-            vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+            vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
             await callCreateConnection({ integration: 'slack', reconnect: true });
 
@@ -201,7 +200,7 @@ describe('createConnectionTool', () => {
     });
 
     it('tells the agent to retry when the connect link could not be created', async () => {
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
         vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(
             Err(new connectSessionService.CreateConnectSessionError({ code: 'session_creation_failed', message: 'nope' }))
         );
@@ -214,7 +213,7 @@ describe('createConnectionTool', () => {
     });
 
     it('tells the agent not to retry when the account is at its connection limit', async () => {
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
         vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(
             Err(new connectSessionService.CreateConnectSessionError({ code: 'resource_capped', message: 'Reached maximum number of allowed connections.' }))
         );
@@ -242,7 +241,21 @@ describe('createConnectionTool', () => {
 });
 
 function mockSlackCreatedInSession() {
-    vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(SLACK_CREATED_IN_SESSION);
+    vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([
+        {
+            integration_id: SLACK_CREATED_IN_SESSION.integrationId,
+            provider: SLACK_CREATED_IN_SESSION.provider,
+            match_count: 1,
+            candidates: [
+                {
+                    id: SLACK_CREATED_IN_SESSION.internalConnectionId,
+                    connection_id: SLACK_CREATED_IN_SESSION.connectionId,
+                    config_id: SLACK_CREATED_IN_SESSION.configId,
+                    tags: {}
+                }
+            ]
+        }
+    ]);
     vi.spyOn(agentSessionService, 'fillResolvedConnection').mockResolvedValue(
         Err(new agentSessionService.AgentSessionError({ code: 'not_found', message: 'ignored' }))
     );

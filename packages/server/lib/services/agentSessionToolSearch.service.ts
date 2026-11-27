@@ -5,9 +5,11 @@ import { functionLookupService } from '@nangohq/shared';
 import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
-import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+import { withConnectionsCreatedInSession } from './agentSessionConnections.service.js';
+import { clientToolTags, TAGS_META_KEY } from './agentSessionToolTags.js';
 
+import type { ClientToolTags } from './agentSessionToolTags.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
@@ -94,6 +96,7 @@ const LEADING_MATCH_SCORE = 0.65;
 const LEADING_MATCH_MARGIN = 0.1;
 
 const MAX_BEST_MATCHES = 5;
+const MAX_TIED_MATCHES = 3;
 const MAX_RELATED_WITH_MATCH = 3;
 const MAX_RELATED_WITHOUT_MATCH = 5;
 // Kept deeper than either cap, so a query that loses tools to another query in the same call still has some left.
@@ -108,6 +111,7 @@ interface SearchCandidate {
     connection: AgentSessionToolConnectionState;
     listed: boolean;
     input?: AgentSessionToolInput;
+    tags?: ClientToolTags;
 }
 
 /** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
@@ -126,7 +130,7 @@ export type ToolSlugLookup = (tool: { integration: string; action: string }) => 
  * A query that names a tool is that tool's match (toolNamed). Any other query is scored word by
  * word against every tool in the session (scoreCandidates), cut
  * into matches and related tools at a line that follows the top score (bestMatchScoreFor), with
- * a tie for the top broken or left unpromoted (breakLeadingTie). Related tools are then trimmed
+ * a tie for the top broken or capped (breakLeadingTie). Related tools are then trimmed
  * across the queries in the call, so each is listed once (trimRelated).
  */
 export async function searchSessionTools({
@@ -229,9 +233,12 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
         };
     }
 
-    const { scored, lead } = breakLeadingTie({ scored: scoreCandidates({ candidates, terms: queryTerms(query) }), query });
+    const { scored, lead, tiedCount } = breakLeadingTie({ scored: scoreCandidates({ candidates, terms: queryTerms(query) }), query });
+    const topScore = scored[0]?.score ?? 1;
     const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
-    const maxBest = lead === 'single' ? MAX_BEST_MATCHES : lead === 'tie_broken' ? 1 : 0;
+    // Tools tied on a weak fit each answer only part of the query, so none is worth a schema.
+    const tiedClosely = lead === 'tied' && topScore <= BEST_MATCH_SCORE;
+    const maxBest = lead === 'single' ? MAX_BEST_MATCHES : lead === 'tie_broken' ? 1 : tiedClosely ? Math.min(tiedCount, MAX_TIED_MATCHES) : 0;
 
     const best: ScoredCandidate[] = [];
     const related: ScoredCandidate[] = [];
@@ -244,13 +251,12 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
         }
     }
 
-    // A tie among tools too weak to match anyway is not worth telling the agent about.
-    return { best, related, tied: lead === 'tied' && (scored[0]?.score ?? 1) <= bestMatchScore };
+    return { best, related, tied: tiedClosely };
 }
 
 /**
  * A query that is a tool's slug names that tool, and so does an action name only one tool in the
- * session has. Scoring cannot be trusted here, since 'update-issue' ties with 'update-issue-label'.
+ * session has. Scoring is skipped, since a name already says which tool is meant.
  */
 function toolNamed({ candidates, query }: { candidates: SearchCandidate[]; query: string }): SearchCandidate | undefined {
     const name = query.trim().toLowerCase();
@@ -265,33 +271,62 @@ function toolNamed({ candidates, query }: { candidates: SearchCandidate[]; query
 
 /**
  * When several tools share the top score, the one whose name and description hold the most query
- * words, stopwords included, is the only match. If the words cannot tell them apart either, none is
- * a match. Words are compared exactly, since a fuzzy 'get' also hits 'delete'.
+ * words, stopwords included, is the only match. After that, a tool whose name holds every
+ * meaningful query word beats one whose name does not, and between those the name with the fewest
+ * words the query left out wins, so 'create board' is create-board and not create-board-section.
+ * Names missing a query word are not ranked on length, or 'create repository' would be
+ * create-label. Tools that still cannot be told apart are all matches, up to MAX_TIED_MATCHES, for
+ * the agent to pick between on their descriptions. Words are compared exactly, since a fuzzy 'get'
+ * also hits 'delete'.
  */
 function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandidate; score: number }[]; query: string }): {
     scored: { candidate: SearchCandidate; score: number }[];
     lead: 'single' | 'tie_broken' | 'tied';
+    tiedCount: number;
 } {
     const top = scored[0]?.score;
     const leaders = scored.filter(({ score }) => top !== undefined && sameScore(score, top));
     if (leaders.length < 2) {
-        return { scored, lead: 'single' };
+        return { scored, lead: 'single', tiedCount: 1 };
     }
 
     const words = new Set(queryWords(query).map(singular));
-    const wordsFound = new Map(
+    const terms = queryTerms(query).map(singular);
+    const fit = new Map(
         leaders.map(({ candidate }) => {
             const own = new Set(queryWords(`${candidate.action} ${candidate.description}`).map(singular));
-            return [candidate, [...words].filter((word) => own.has(word)).length];
+            const nameWords = new Set(queryWords(candidate.action).map(singular));
+            const namesEveryTerm = terms.every((term) => nameWords.has(term));
+            return [
+                candidate,
+                {
+                    wordsFound: [...words].filter((word) => own.has(word)).length,
+                    // Every name that misses a query word gets the same distance, so none of them is ranked on length.
+                    nameDistance: namesEveryTerm ? [...nameWords].filter((word) => !words.has(word)).length : Number.POSITIVE_INFINITY
+                }
+            ];
         })
     );
-    const tieBreak = ({ candidate }: { candidate: SearchCandidate }) => wordsFound.get(candidate) ?? 0;
-    const reordered = [...leaders].sort((a, b) => tieBreak(b) - tieBreak(a));
+    const compare = (a: { candidate: SearchCandidate }, b: { candidate: SearchCandidate }): number => {
+        const fitA = fit.get(a.candidate);
+        const fitB = fit.get(b.candidate);
+        if (!fitA || !fitB) {
+            return 0;
+        }
 
-    const [first, second] = reordered;
-    const broken = first !== undefined && second !== undefined && tieBreak(first) > tieBreak(second);
+        return ascending(fitB.wordsFound, fitA.wordsFound) || ascending(fitA.nameDistance, fitB.nameDistance);
+    };
+    const reordered = [...leaders].sort(compare);
 
-    return { scored: [...reordered, ...scored.slice(leaders.length)], lead: broken ? 'tie_broken' : 'tied' };
+    const [first] = reordered;
+    const tiedCount = first ? reordered.filter((leader) => compare(first, leader) === 0).length : 0;
+
+    return { scored: [...reordered, ...scored.slice(leaders.length)], lead: tiedCount > 1 ? 'tied' : 'tie_broken', tiedCount };
+}
+
+// Unlike a subtraction, this is safe on Infinity.
+function ascending(a: number, b: number): number {
+    return a === b ? 0 : a < b ? -1 : 1;
 }
 
 function sameScore(a: number, b: number): boolean {
@@ -405,6 +440,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
         return tools.flatMap(({ tool, listed }): SearchCandidate[] => {
             // Defensive: a tool the listing has no slug for cannot be called.
             const slug = slugOf({ integration, action: tool.name });
+            const tags = clientToolTags(tool.tags);
 
             return slug
                 ? [
@@ -416,6 +452,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           description: tool.description,
                           connection,
                           listed,
+                          ...(tags ? { tags } : {}),
                           ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
@@ -534,13 +571,14 @@ function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
 
 // The dialect URL would repeat on every match, and the guidance already says what the schemas are.
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
+    const meta = candidate.tags ? { _meta: { [TAGS_META_KEY]: candidate.tags } } : {};
     if (input.kind !== 'schema') {
-        return { ...toRelated(candidate), input };
+        return { ...toRelated(candidate), input, ...meta };
     }
 
     const schema = { ...input.schema };
     delete schema.$schema;
-    return { ...toRelated(candidate), input: { kind: 'schema', schema } };
+    return { ...toRelated(candidate), input: { kind: 'schema', schema }, ...meta };
 }
 
 function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {
@@ -607,11 +645,9 @@ function queryGuidance({
     const lines: string[] = [];
 
     if (matches.length === 0) {
-        lines.push(
-            tied
-                ? 'Several tools fit equally well, so none is a match. Search again with the `tool` of the one you want to get its schema.'
-                : 'No close match, only related tools.'
-        );
+        lines.push('No close match, only related tools.');
+    } else if (tied) {
+        lines.push('These matches fit the query equally well. Pick the one whose description fits the task.');
     }
 
     const takesNothing = matches.filter(({ input }) => input.kind === 'none').map(({ tool }) => tool);

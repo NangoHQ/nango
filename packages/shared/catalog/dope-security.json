@@ -1,0 +1,2449 @@
+{
+    "providerConfigKey": "dope-security",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add URLs to a custom category; rejects the entire request if any URL is invalid.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_addcustomcategoryurls",
+            "name": "add-custom-category-urls",
+            "output": [
+                "ActionOutput_dope_security_addcustomcategoryurls"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_addcustomcategoryurls",
+                "ActionOutput_dope_security_addcustomcategoryurls"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_addcustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Custom category name. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
+                            },
+                            "urls": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "URLs to add. Example: [\"*.example.com\"]"
+                            }
+                        },
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_addcustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string"
+                            },
+                            "addedUrls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "customCategoryName",
+                            "addedUrls"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a custom category.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_createcustomcategory",
+            "name": "create-custom-category",
+            "output": [
+                "ActionOutput_dope_security_createcustomcategory"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_createcustomcategory",
+                "ActionOutput_dope_security_createcustomcategory"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_createcustomcategory": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Custom category name. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"MyCategory\""
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_createcustomcategory": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a custom policy.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_createpolicy",
+            "name": "create-policy",
+            "output": [
+                "ActionOutput_dope_security_createpolicy"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_createpolicy",
+                "ActionOutput_dope_security_createpolicy"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_createpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "description": "The name of the policy to create. Max 32 characters, no special characters (#!@$%^*?./\\)."
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_createpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete one specific URL from a custom category",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletecustomcategoryurl",
+            "name": "delete-custom-category-url",
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategoryurl"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategoryurl",
+                "ActionOutput_dope_security_deletecustomcategoryurl"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletecustomcategoryurl": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Name of the custom category. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "URL to delete from the custom category. Example: \"*.registry-seed-test.example.com\""
+                            }
+                        },
+                        "required": [
+                            "customCategoryName",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletecustomcategoryurl": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "customCategoryName": {
+                                "type": "string"
+                            },
+                            "deletedUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "customCategoryName",
+                            "deletedUrl"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove all URLs from a custom category.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletecustomcategoryurls",
+            "name": "delete-custom-category-urls",
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategoryurls"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategoryurls",
+                "ActionOutput_dope_security_deletecustomcategoryurls"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletecustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Name of the custom category to clear URLs from. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
+                            }
+                        },
+                        "required": [
+                            "customCategoryName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletecustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the URLs were successfully removed from the custom category."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a custom category and its associated data.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletecustomcategory",
+            "name": "delete-custom-category",
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategory"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategory",
+                "ActionOutput_dope_security_deletecustomcategory"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletecustomcategory": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "The name of the custom category to delete. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory2\""
+                            }
+                        },
+                        "required": [
+                            "customCategoryName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletecustomcategory": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "customCategoryName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "customCategoryName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete custom application bypasses by name and platform.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletepolicyapplicationbypasses",
+            "name": "delete-policy-application-bypasses",
+            "output": [
+                "ActionOutput_dope_security_deletepolicyapplicationbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicyapplicationbypasses",
+                "ActionOutput_dope_security_deletepolicyapplicationbypasses"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletepolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "The name of the policy to delete application bypass entries from. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "mac": {
+                                "description": "List of macOS application names to delete. Example: [\"MyApp.app\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "windows": {
+                                "description": "List of Windows application names to delete. Example: [\"MyApp.exe\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletepolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove custom URL bypass entries from a policy by name.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletepolicyurlbypasses",
+            "name": "delete-policy-url-bypasses",
+            "output": [
+                "ActionOutput_dope_security_deletepolicyurlbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicyurlbypasses",
+                "ActionOutput_dope_security_deletepolicyurlbypasses"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletepolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "urls": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "Array of custom URL bypass entries to remove. Example: [\"*.example.com\"]"
+                            }
+                        },
+                        "required": [
+                            "policyName",
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletepolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "deletedUrls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName",
+                            "deletedUrls"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a custom policy.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_deletepolicy",
+            "name": "delete-policy",
+            "output": [
+                "ActionOutput_dope_security_deletepolicy"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicy",
+                "ActionOutput_dope_security_deletepolicy"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_deletepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The name of the custom policy to delete. Example: \"MyPolicy\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_deletepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "policyName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch a policy's application bypass entries, split by platform (mac/windows).",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_getpolicyapplicationbypasses",
+            "name": "get-policy-application-bypasses",
+            "output": [
+                "ActionOutput_dope_security_getpolicyapplicationbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyapplicationbypasses",
+                "ActionOutput_dope_security_getpolicyapplicationbypasses"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_getpolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_getpolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "inheritsFromBase": {
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "type": "object",
+                                "properties": {
+                                    "mac": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "note": {
+                                                    "type": "string"
+                                                },
+                                                "updatedBy": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "windows": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "note": {
+                                                    "type": "string"
+                                                },
+                                                "updatedBy": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "default": {
+                                "type": "object",
+                                "properties": {
+                                    "mac": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "windows": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "inheritsFromBase"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the users and groups a policy is assigned to.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_getpolicyassignments",
+            "name": "get-policy-assignments",
+            "output": [
+                "ActionOutput_dope_security_getpolicyassignments"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyassignments",
+                "ActionOutput_dope_security_getpolicyassignments"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_getpolicyassignments": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_getpolicyassignments": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "users": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "email",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "groups": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "membersCount": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "email",
+                                                "name",
+                                                "membersCount"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "users",
+                                    "groups"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a policy's category and custom-category restrictions, with inheritance state.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_getpolicycontent",
+            "name": "get-policy-content",
+            "output": [
+                "ActionOutput_dope_security_getpolicycontent"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicycontent",
+                "ActionOutput_dope_security_getpolicycontent"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_getpolicycontent": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "The name of the policy to retrieve content for. Example: \"Base Policy\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_getpolicycontent": {
+                        "type": "object",
+                        "properties": {
+                            "categories": {
+                                "type": "object",
+                                "properties": {
+                                    "inheritsFromBase": {
+                                        "type": "boolean"
+                                    },
+                                    "restrictions": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "restriction": {
+                                                    "type": "string"
+                                                },
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "exceptions": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "restriction": {
+                                                                "type": "string"
+                                                            },
+                                                            "page": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "restriction"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "restriction"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "inheritsFromBase",
+                                    "restrictions"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "customCategories": {
+                                "type": "object",
+                                "properties": {
+                                    "inheritsFromBase": {
+                                        "type": "boolean"
+                                    },
+                                    "restrictions": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "restriction": {
+                                                    "type": "string"
+                                                },
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "exceptions": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "restriction": {
+                                                                "type": "string"
+                                                            },
+                                                            "page": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "restriction"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "restriction"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "inheritsFromBase",
+                                    "restrictions"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "categories",
+                            "customCategories"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a policy's SSL inspection state and inheritance flag.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_getpolicysslinspection",
+            "name": "get-policy-ssl-inspection",
+            "output": [
+                "ActionOutput_dope_security_getpolicysslinspection"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicysslinspection",
+                "ActionOutput_dope_security_getpolicysslinspection"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_getpolicysslinspection": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_getpolicysslinspection": {
+                        "type": "object",
+                        "properties": {
+                            "sslInspection": {
+                                "type": "object",
+                                "properties": {
+                                    "inheritsFromBase": {
+                                        "type": "boolean"
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "inheritsFromBase",
+                                    "state"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "sslInspection"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a policy's URL bypass entries (custom and default, with toggle state).",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_getpolicyurlbypasses",
+            "name": "get-policy-url-bypasses",
+            "output": [
+                "ActionOutput_dope_security_getpolicyurlbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyurlbypasses",
+                "ActionOutput_dope_security_getpolicyurlbypasses"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_getpolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_getpolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "inheritsFromBase": {
+                                        "type": "boolean"
+                                    },
+                                    "custom": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "note": {
+                                                    "type": "string"
+                                                },
+                                                "updatedBy": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "default": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "inheritsFromBase",
+                                    "custom",
+                                    "default"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all custom categories.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_listcustomcategories",
+            "name": "list-custom-categories",
+            "output": [
+                "ActionOutput_dope_security_listcustomcategories"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_listcustomcategories",
+                "ActionOutput_dope_security_listcustomcategories"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_listcustomcategories": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_listcustomcategories": {
+                        "type": "object",
+                        "properties": {
+                            "categories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "categories"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all URLs in a custom category.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_listcustomcategoryurls",
+            "name": "list-custom-category-urls",
+            "output": [
+                "ActionOutput_dope_security_listcustomcategoryurls"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_listcustomcategoryurls",
+                "ActionOutput_dope_security_listcustomcategoryurls"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_listcustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Name of the custom category. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
+                            }
+                        },
+                        "required": [
+                            "customCategoryName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_listcustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List and search endpoints (managed devices) with filtering.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_listendpoints",
+            "name": "list-endpoints",
+            "output": [
+                "ActionOutput_dope_security_listendpoints"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_listendpoints",
+                "ActionOutput_dope_security_listendpoints"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_listendpoints": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Broad search query across endpoints by device, user and email identities that contain this string (case-insensitive).",
+                                "type": "string"
+                            },
+                            "emailId": {
+                                "description": "Search by email ids that contain this string (case-insensitive).",
+                                "type": "string"
+                            },
+                            "deviceName": {
+                                "description": "Search by device names that contain this string (case-insensitive).",
+                                "type": "string"
+                            },
+                            "userId": {
+                                "description": "Search by user ids that contain this string (case-insensitive).",
+                                "type": "string"
+                            },
+                            "osVersion": {
+                                "description": "Filter by this exact device OS version string.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Filter by this exact set of statuses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "healthy",
+                                        "error",
+                                        "dormant",
+                                        "disabled"
+                                    ]
+                                }
+                            },
+                            "debugState": {
+                                "description": "Filter by this exact set of debug states. 0 means not in debug, 1 means debug request sent to endpoint, 2 means debug request acknowledged by endpoint.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "0",
+                                        "1",
+                                        "2"
+                                    ]
+                                }
+                            },
+                            "fallbackMode": {
+                                "description": "Filter by the fallback mode.",
+                                "type": "string",
+                                "enum": [
+                                    "true",
+                                    "false"
+                                ]
+                            },
+                            "locationId": {
+                                "description": "Filter by this exact location id - with an underscore separating the case sensitive city and country values e.g. \"City_Country\".",
+                                "type": "string"
+                            },
+                            "agentVersion": {
+                                "description": "Filter by this exact agent version.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "first": {
+                                "description": "Number of records requested. The default value is 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_listendpoints": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "adminSetState": {
+                                            "type": "object",
+                                            "properties": {
+                                                "enabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "timestamp": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "agentUUID": {
+                                            "type": "string"
+                                        },
+                                        "userUUID": {
+                                            "type": "string"
+                                        },
+                                        "agentVersion": {
+                                            "type": "string"
+                                        },
+                                        "binaryType": {
+                                            "type": "string"
+                                        },
+                                        "cityName": {
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "type": "string"
+                                        },
+                                        "countryName": {
+                                            "type": "string"
+                                        },
+                                        "cpuFamily": {
+                                            "type": "string"
+                                        },
+                                        "debugState": {
+                                            "type": "string"
+                                        },
+                                        "deviceName": {
+                                            "type": "string"
+                                        },
+                                        "disableMode": {
+                                            "type": "boolean"
+                                        },
+                                        "errorMessage": {
+                                            "type": "string"
+                                        },
+                                        "fallbackMode": {
+                                            "type": "boolean"
+                                        },
+                                        "configurationLastUpdated": {
+                                            "type": "string"
+                                        },
+                                        "osVersion": {
+                                            "type": "string"
+                                        },
+                                        "policyName": {
+                                            "type": "string"
+                                        },
+                                        "realtimeConnection": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "lastSeen": {
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "type": "string"
+                                        },
+                                        "emailId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all policies, paginated by name.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_listpolicies",
+            "name": "list-policies",
+            "output": [
+                "ActionOutput_dope_security_listpolicies"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_listpolicies",
+                "ActionOutput_dope_security_listpolicies"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_listpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "first": {
+                                "description": "Number of records to request. Defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "order": {
+                                "description": "Sort order for policy names. Defaults to asc.",
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_listpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "policies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "policyName": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "sslInspection": {
+                                            "type": "string",
+                                            "enum": [
+                                                "enabled",
+                                                "disabled"
+                                            ]
+                                        },
+                                        "clashCount": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "policyName",
+                                        "updatedAt",
+                                        "sslInspection"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "policies"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace all URLs in a custom category",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_replacecustomcategoryurls",
+            "name": "replace-custom-category-urls",
+            "output": [
+                "ActionOutput_dope_security_replacecustomcategoryurls"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_replacecustomcategoryurls",
+                "ActionOutput_dope_security_replacecustomcategoryurls"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_replacecustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Custom category name. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
+                            },
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "URLs to replace in the category. Example: [\"*.example.com\", \"*.other.com\"]"
+                            }
+                        },
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_replacecustomcategoryurls": {
+                        "type": "object",
+                        "properties": {
+                            "customCategoryName": {
+                                "type": "string"
+                            },
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upsert custom application bypasses, or toggle defaults, per platform.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicyapplicationbypasses",
+            "name": "update-policy-application-bypasses",
+            "output": [
+                "ActionOutput_dope_security_updatepolicyapplicationbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyapplicationbypasses",
+                "ActionOutput_dope_security_updatepolicyapplicationbypasses"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "The name of the policy to update. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "inheritsFromBase": {
+                                "description": "Set to true to reset the policy to inherit all application bypass configuration from the base policy.",
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "description": "Custom application entries to upsert, keyed by platform.",
+                                "type": "object",
+                                "properties": {
+                                    "mac": {
+                                        "description": "Custom bypass applications on macOS.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "The name of the application to bypass. Example: \"MyApp.app\""
+                                                },
+                                                "note": {
+                                                    "description": "Optional note about this bypass entry.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "windows": {
+                                        "description": "Custom bypass applications on Windows.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "The name of the application to bypass. Example: \"MyApp.app\""
+                                                },
+                                                "note": {
+                                                    "description": "Optional note about this bypass entry.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "default": {
+                                "description": "Default application entries with updated toggle states, keyed by platform.",
+                                "type": "object",
+                                "properties": {
+                                    "mac": {
+                                        "description": "Default bypass applications on macOS.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "The name of the default bypass entry."
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ],
+                                                    "description": "Whether this default entry is applied or ignored."
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "windows": {
+                                        "description": "Default bypass applications on Windows.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "The name of the default bypass entry."
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ],
+                                                    "description": "Whether this default entry is applied or ignored."
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicyapplicationbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the users and groups a policy is assigned to (replaces lists; omit a list to preserve it).",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicyassignments",
+            "name": "update-policy-assignments",
+            "output": [
+                "ActionOutput_dope_security_updatepolicyassignments"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyassignments",
+                "ActionOutput_dope_security_updatepolicyassignments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicyassignments": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Name of the policy to update assignments for. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "users": {
+                                "description": "User emails to assign. Omit to leave unchanged, send [] to unassign all.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "groups": {
+                                "description": "Group emails to assign. Omit to leave unchanged, send [] to unassign all.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicyassignments": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "membersCount": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "email",
+                                        "name",
+                                        "membersCount"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName",
+                            "users",
+                            "groups"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add user/group-level restriction overrides per category; replaces all existing exceptions for the categories/customCategories supplied.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicyexceptions",
+            "name": "update-policy-exceptions",
+            "output": [
+                "ActionOutput_dope_security_updatepolicyexceptions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyexceptions",
+                "ActionOutput_dope_security_updatepolicyexceptions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicyexceptions": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Name of the policy to update exceptions for. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "categories": {
+                                "description": "Exception updates keyed by category name, then by user or group identifier. Pass an empty object `{}` for a category to remove all exceptions from that category.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "object",
+                                        "properties": {
+                                            "restriction": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "ALLOW",
+                                                    "BLOCK",
+                                                    "WARNING"
+                                                ]
+                                            },
+                                            "page": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "restriction"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "customCategories": {
+                                "description": "Exception updates keyed by custom category name, then by user or group identifier. Pass an empty object `{}` for a category to remove all exceptions from that category.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "object",
+                                        "properties": {
+                                            "restriction": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "ALLOW",
+                                                    "BLOCK",
+                                                    "WARNING"
+                                                ]
+                                            },
+                                            "page": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "restriction"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicyexceptions": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a policy's category restrictions (ALLOW/BLOCK/WARNING), or reset to base inheritance.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicyrestrictions",
+            "name": "update-policy-restrictions",
+            "output": [
+                "ActionOutput_dope_security_updatepolicyrestrictions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyrestrictions",
+                "ActionOutput_dope_security_updatepolicyrestrictions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicyrestrictions": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 32,
+                                "pattern": "^[^#!@$%^*?./\\\\]+$",
+                                "description": "Policy name. Max 32 characters, no special characters (#!@$%^*?./\\). Example: \"RegistrySeedPolicy1\""
+                            },
+                            "categories": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ALLOW",
+                                        "BLOCK",
+                                        "WARNING"
+                                    ]
+                                },
+                                "description": "Map of category names to restriction values."
+                            }
+                        },
+                        "required": [
+                            "policyName",
+                            "categories"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicyrestrictions": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "categories": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restriction": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "restriction"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set a custom SSL inspection state, or reset to inherit from the base policy (mutually exclusive).",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicysslinspection",
+            "name": "update-policy-ssl-inspection",
+            "output": [
+                "ActionOutput_dope_security_updatepolicysslinspection"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicysslinspection",
+                "ActionOutput_dope_security_updatepolicysslinspection"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicysslinspection": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "state": {
+                                "description": "Set a custom SSL inspection state. Mutually exclusive with inheritsFromBase.",
+                                "type": "string",
+                                "enum": [
+                                    "enabled",
+                                    "disabled"
+                                ]
+                            },
+                            "inheritsFromBase": {
+                                "description": "Reset to inherit from the base policy. Mutually exclusive with state.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicysslinspection": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "sslInspection": {
+                                "type": "object",
+                                "properties": {
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
+                                    },
+                                    "inheritsFromBase": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "policyName",
+                            "sslInspection"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update custom URL bypasses and toggle default URL bypass entries for a policy, or reset to base policy inheritance.",
+            "endpoint": null,
+            "input": "ActionInput_dope_security_updatepolicyurlbypasses",
+            "name": "update-policy-url-bypasses",
+            "output": [
+                "ActionOutput_dope_security_updatepolicyurlbypasses"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyurlbypasses",
+                "ActionOutput_dope_security_updatepolicyurlbypasses"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dope_security_updatepolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "policyName": {
+                                "type": "string",
+                                "description": "Name of the policy to update URL bypasses for. Example: \"RegistrySeedPolicy1\""
+                            },
+                            "inheritsFromBase": {
+                                "description": "Set to true to reset URL bypass configuration to inherit from the Base Policy",
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "description": "Custom URL bypass entries to upsert (matched by name)",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "maxLength": 256,
+                                            "description": "URL pattern or name to bypass. Example: \"*.example.com\""
+                                        },
+                                        "note": {
+                                            "description": "Optional note about this bypass entry",
+                                            "type": "string",
+                                            "maxLength": 256
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "default": {
+                                "description": "Default URL bypass entries to update toggle states",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the default bypass entry"
+                                        },
+                                        "state": {
+                                            "type": "string",
+                                            "enum": [
+                                                "applied",
+                                                "ignored"
+                                            ],
+                                            "description": "Toggle state for this default entry"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "state"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dope_security_updatepolicyurlbypasses": {
+                        "type": "object",
+                        "properties": {
+                            "inheritsFromBase": {
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "note": {
+                                            "type": "string"
+                                        },
+                                        "updatedBy": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "default": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string",
+                                            "enum": [
+                                                "applied",
+                                                "ignored"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "state"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "inheritsFromBase",
+                            "custom",
+                            "default"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync custom categories and their URLs",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "custom-categories",
+            "output": [
+                "CustomCategory"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CustomCategory"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CustomCategory": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "urls"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync endpoints (managed devices)",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "endpoints",
+            "output": [
+                "Endpoint"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Endpoint"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Endpoint": {
+                        "type": "object",
+                        "properties": {
+                            "adminSetState": {
+                                "type": "object",
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean"
+                                    },
+                                    "timestamp": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "agentUUID": {
+                                "type": "string"
+                            },
+                            "userUUID": {
+                                "type": "string"
+                            },
+                            "agentVersion": {
+                                "type": "string"
+                            },
+                            "binaryType": {
+                                "type": "string"
+                            },
+                            "cityName": {
+                                "type": "string"
+                            },
+                            "region": {
+                                "type": "string"
+                            },
+                            "countryName": {
+                                "type": "string"
+                            },
+                            "cpuFamily": {
+                                "type": "string"
+                            },
+                            "debugState": {
+                                "type": "string"
+                            },
+                            "deviceName": {
+                                "type": "string"
+                            },
+                            "disableMode": {
+                                "type": "boolean"
+                            },
+                            "errorMessage": {
+                                "type": "string"
+                            },
+                            "fallbackMode": {
+                                "type": "boolean"
+                            },
+                            "configurationLastUpdated": {
+                                "type": "string"
+                            },
+                            "osVersion": {
+                                "type": "string"
+                            },
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "realtimeConnection": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "lastSeen": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "emailId": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync policies.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "policies",
+            "output": [
+                "Policy"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Policy"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Policy": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "policyName": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "sslInspection": {
+                                "type": "string",
+                                "enum": [
+                                    "enabled",
+                                    "disabled"
+                                ]
+                            },
+                            "clashCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "policyName",
+                            "updatedAt",
+                            "sslInspection"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

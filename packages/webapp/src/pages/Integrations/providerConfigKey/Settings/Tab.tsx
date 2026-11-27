@@ -1,4 +1,4 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { ArrowUpRight, Info } from 'lucide-react';
 import { useLocalStorage } from 'react-use';
 
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
@@ -29,7 +29,8 @@ export const SettingsTab: React.FC<{ data: GetIntegration['Success']['data']; en
     const [dismissedGuides, setDismissedGuides] = useLocalStorage<Record<string, true>>(LocalStorageKeys.IntegrationSetupGuideDismissed, {});
     const guideDismissed = dismissedGuides?.[guideKey] === true;
     const isSharedCredentials = Boolean(data.integration.shared_credentials_id);
-    const showGuide = Boolean(docs) && showsCredentialsSection(data) && !isSharedCredentials && !guideDismissed;
+    const hasMissingCredentials = data.integration.missing_fields.length > 0;
+    const showGuide = Boolean(docs) && showsCredentialsSection(data) && !isSharedCredentials && hasMissingCredentials && !guideDismissed;
     const guideDescription = setupGuideDescription(displayName, data.template.auth_mode);
 
     return (
@@ -41,7 +42,7 @@ export const SettingsTab: React.FC<{ data: GetIntegration['Success']['data']; en
                     <AlertDescription>{guideDescription}</AlertDescription>
                     <AlertActions>
                         <AlertButtonLink to={docs} target="_blank">
-                            Setup guide <ExternalLink />
+                            Setup guide <ArrowUpRight />
                         </AlertButtonLink>
                     </AlertActions>
                 </Alert>

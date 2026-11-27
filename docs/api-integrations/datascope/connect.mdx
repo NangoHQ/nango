@@ -1,0 +1,41 @@
+---
+title: 'DataScope - How do I link my account?'
+sidebarTitle: 'DataScope'
+---
+
+## Overview
+
+To authenticate with DataScope, you need:
+
+1. **API Key** - a DataScope API key.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- A DataScope account. You can [sign up](https://app.mydatascope.com/sign_up) for free.
+
+### Step 1: Create your API key
+
+1. Sign in to [DataScope](https://app.mydatascope.com).
+2. Click **Integrations** in the left menu, then open the **API Key** tab.
+
+<img src="/api-integrations/datascope/integrations_api_key_tab.png" alt="DataScope Integrations page with the API Key tab highlighted"/>
+
+3. Click **Create Token** and confirm the prompt. If a key already exists, the button reads **Renew Token** instead, and renewing replaces the current key.
+
+<img src="/api-integrations/datascope/create_token.png" alt="DataScope API Key tab with the Create Token button"/>
+
+4. Copy the value from the **API Key** field and store it securely.
+
+<img src="/api-integrations/datascope/api_key_created.png" alt="DataScope API Key tab showing the API Key field and the Renew Token button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with DataScope.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with DataScope and rejects it if it is wrong.
+
+<img src="/api-integrations/datascope/form.png" alt="Nango Connect UI form for entering the DataScope API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to DataScope.

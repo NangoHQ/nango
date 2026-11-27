@@ -5,8 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { directCallInputSchema } from './directCallSchema.js';
-import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import {
+    actionInputSchemaOf,
+    buildSessionTools,
+    directCallInputSchema,
+    listSessionTools,
+    TOOLS_PAGE_SIZE
+} from '../../../services/agentSessionToolCatalog.service/index.js';
+import { createAgentSessionMcpServer } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput, DBSyncConfig } from '@nangohq/types';
@@ -535,6 +541,30 @@ describe('listSessionTools', () => {
         expect(listed.map((tool) => tool.name)).toContain('a_b__c');
         expect(callable.get('a_b__c')).toStrictEqual({ integrationId: 'a.b', name: 'c', description: 'c description', pinned: true });
         expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description', pinned: false });
+    });
+
+    it("lists a tool's tags in _meta, without its required scopes", () => {
+        const { listed } = buildSessionTools(
+            session({
+                compiledToolset: {
+                    notion: {
+                        provider: 'notion',
+                        pinned: [
+                            { ...tool('read_doc'), tags: { read_only_hint: 'true', labels: ['docs'], required_scopes: { all: ['documents:read'] } } },
+                            { ...tool('upsert_doc'), tags: { required_scopes: { all: ['documents:write'] } } }
+                        ],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        expect(listed.find((tool) => tool.name === 'notion__read_doc')?._meta).toStrictEqual({
+            'nango/integration': 'notion',
+            'nango/tool': 'read_doc',
+            'nango/tags': { read_only_hint: 'true', labels: ['docs'] }
+        });
+        expect(listed.find((tool) => tool.name === 'notion__upsert_doc')?._meta).toStrictEqual({ 'nango/integration': 'notion', 'nango/tool': 'upsert_doc' });
     });
 
     it('keeps a page worth of tools listable', () => {

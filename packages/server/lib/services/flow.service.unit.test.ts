@@ -1,187 +1,67 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
+import { catalogStore } from '@nangohq/shared';
 
 import flowService from './flow.service.js';
 
-describe('Flow service tests', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        // Reset the cache before each test
-        flowService.flowsStandard = undefined;
-    });
-
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
-
-    it('should get all available flows as standard config', () => {
-        const result = flowService.getAllAvailableFlowsAsStandardConfig();
-
-        expect(result).toBeDefined();
-        expect(Array.isArray(result)).toBe(true);
-        expect(result.length).toBeGreaterThan(0);
-
-        // Check that each integration has the required properties
-        for (const integration of result) {
-            expect(integration.providerConfigKey).toBeDefined();
-            expect(Array.isArray(integration.syncs)).toBe(true);
-            expect(Array.isArray(integration.actions)).toBe(true);
-            expect(Array.isArray(integration['on-events'])).toBe(true);
+function providerWithSyncsAndActions() {
+    for (const provider of catalogStore.listProviders()) {
+        const templates = flowService.getProviderTemplates(provider);
+        if (templates && templates.syncs.length > 0 && templates.actions.length > 0) {
+            return templates;
         }
+    }
+    throw new Error('expected a provider with both syncs and actions in the catalog');
+}
+
+describe('Flow service tests', () => {
+    it('should get a provider templates as standard config', () => {
+        const templates = providerWithSyncsAndActions();
+
+        expect(templates.providerConfigKey).toBeDefined();
+        expect(Array.isArray(templates['on-events'])).toBe(true);
+        for (const flow of [...templates.syncs, ...templates.actions]) {
+            expect(flow.source).toBe('catalog');
+            expect(flow.sdk_version).toMatch(/-zero$/);
+        }
+    });
+
+    it('should return null for a provider without templates', () => {
+        expect(flowService.getProviderTemplates('this-provider-does-not-exist')).toBeNull();
+    });
+
+    it('should return equal standard config for repeated calls', () => {
+        const templates = providerWithSyncsAndActions();
+
+        expect(flowService.getProviderTemplates(templates.providerConfigKey)).toStrictEqual(templates);
     });
 
     it('should get flow by integration and name', () => {
-        // Get all flows first to find a valid provider and flow
-        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-        expect(allFlows.length).toBeGreaterThan(0);
-
-        const firstIntegration = allFlows[0];
-        expect(firstIntegration).toBeDefined();
-
-        // Test with a sync if available
-        if (firstIntegration && firstIntegration?.syncs?.length > 0) {
-            const syncFlow = flowService.getFlowByIntegrationAndName({
-                provider: firstIntegration?.providerConfigKey || '',
-                type: 'sync',
-                scriptName: firstIntegration.syncs[0]?.name || ''
-            });
-
-            expect(syncFlow).not.toBeNull();
-            expect(syncFlow?.name).toBe(firstIntegration.syncs[0]?.name);
-            expect(syncFlow?.type).toBe('sync');
+        const templates = providerWithSyncsAndActions();
+        const provider = templates.providerConfigKey;
+        const [sync] = templates.syncs;
+        const [action] = templates.actions;
+        if (!sync || !action) {
+            throw new Error('expected a sync and an action');
         }
 
-        // Test with an action if available
-        if (firstIntegration && firstIntegration?.actions?.length > 0) {
-            const actionFlow = flowService.getFlowByIntegrationAndName({
-                provider: firstIntegration?.providerConfigKey || '',
-                type: 'action',
-                scriptName: firstIntegration.actions[0]?.name || ''
-            });
-
-            expect(actionFlow).not.toBeNull();
-            expect(actionFlow?.name).toBe(firstIntegration.actions[0]?.name);
-            expect(actionFlow?.type).toBe('action');
-        }
-    });
-
-    it('should get flow by name across all integrations', () => {
-        // Get all flows first to find a valid flow name
-        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-        expect(allFlows.length).toBeGreaterThan(0);
-
-        // Find a sync flow
-        let syncFlowName: string | null = null;
-        for (const integration of allFlows) {
-            if (integration.syncs?.length > 0) {
-                syncFlowName = integration.syncs[0]?.name || null;
-                break;
-            }
-        }
-
-        if (syncFlowName) {
-            const syncFlow = flowService.getFlow(syncFlowName);
-            expect(syncFlow).not.toBeNull();
-            expect(syncFlow?.name).toBe(syncFlowName);
-            expect(syncFlow?.type).toBe('sync');
-        }
-
-        // Find an action flow
-        let actionFlowName: string | null = null;
-        for (const integration of allFlows) {
-            if (integration.actions?.length > 0) {
-                actionFlowName = integration.actions[0]?.name || null;
-                break;
-            }
-        }
-
-        if (actionFlowName) {
-            const actionFlow = flowService.getFlow(actionFlowName);
-            expect(actionFlow).not.toBeNull();
-            expect(actionFlow?.name).toBe(actionFlowName);
-            expect(actionFlow?.type).toBe('action');
-        }
-    });
-
-    it('should get single flow as standard config', () => {
-        // Get all flows first to find valid flow names
-        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-        expect(allFlows.length).toBeGreaterThan(0);
-
-        // Find a sync flow
-        let syncFlowName: string | null = null;
-        for (const integration of allFlows) {
-            if (integration.syncs?.length > 0) {
-                syncFlowName = integration.syncs[0]?.name || null;
-                break;
-            }
-        }
-
-        if (syncFlowName) {
-            const syncConfig = flowService.getSingleFlowAsStandardConfig(syncFlowName);
-            expect(syncConfig).not.toBeNull();
-            expect(syncConfig?.syncs).toHaveLength(1);
-            expect(syncConfig?.syncs[0]?.name).toBe(syncFlowName);
-            expect(syncConfig?.actions).toHaveLength(0); // Should only contain the specific sync
-        }
-
-        // Find an action flow
-        let actionFlowName: string | null = null;
-        for (const integration of allFlows) {
-            if (integration.actions?.length > 0) {
-                actionFlowName = integration.actions[0]?.name || null;
-                break;
-            }
-        }
-
-        if (actionFlowName) {
-            const actionConfig = flowService.getSingleFlowAsStandardConfig(actionFlowName);
-            expect(actionConfig).not.toBeNull();
-            expect(actionConfig?.actions).toHaveLength(1);
-            expect(actionConfig?.actions[0]?.name).toBe(actionFlowName);
-            expect(actionConfig?.syncs).toHaveLength(0); // Should only contain the specific action
-        }
-    });
-
-    it('should not change the cached flows when getting a single flow', () => {
-        const integration = flowService.getAllAvailableFlowsAsStandardConfig().find((flow) => flow.syncs.length > 0 && flow.actions.length > 0);
-        const [sync] = integration?.syncs ?? [];
-        const [action] = integration?.actions ?? [];
-        if (!integration || !sync || !action) {
-            throw new Error('expected a provider with both syncs and actions in flows.zero.json');
-        }
-        const { syncs, actions } = integration;
-
-        flowService.getSingleFlowAsStandardConfig(sync.name);
-        flowService.getSingleFlowAsStandardConfig(action.name);
-
-        const cached = flowService.getAllAvailableFlowsAsStandardConfig().find((flow) => flow.providerConfigKey === integration.providerConfigKey);
-        expect(cached?.syncs).toEqual(syncs);
-        expect(cached?.actions).toEqual(actions);
+        expect(flowService.getFlowByIntegrationAndName({ provider, type: 'sync', scriptName: sync.name })).toStrictEqual(sync);
+        expect(flowService.getFlowByIntegrationAndName({ provider, type: 'action', scriptName: action.name })).toStrictEqual(action);
+        expect(flowService.getFlowByIntegrationAndName({ provider, type: 'sync', scriptName: 'does-not-exist' })).toBeNull();
+        expect(flowService.getFlowByIntegrationAndName({ provider: 'this-provider-does-not-exist', type: 'sync', scriptName: sync.name })).toBeNull();
     });
 
     it('should resolve the symlink target name for symlinked providers and return null otherwise', () => {
-        const symlinked = flowService.flowsJson.find((flow) => flow.symLinkTargetName);
-        expect(symlinked, 'expected at least one symlinked provider in flows.zero.json').toBeDefined();
+        const symlinked = catalogStore.listProviders().find((provider) => flowService.getSymLinkTargetName(provider));
+        const target = symlinked ? flowService.getSymLinkTargetName(symlinked) : null;
+        if (!symlinked || !target) {
+            throw new Error('expected at least one symlinked provider in the catalog');
+        }
 
-        const provider = symlinked!.providerConfigKey;
-        const target = symlinked!.symLinkTargetName!;
-
-        expect(flowService.getSymLinkTargetName(provider)).toBe(target);
         // The target folder is canonical, so it must not itself be a symlink.
         expect(flowService.getSymLinkTargetName(target)).toBeNull();
         expect(flowService.getSymLinkTargetName('this-provider-does-not-exist')).toBeNull();
-    });
-
-    it('should cache flows standard config after first call', () => {
-        // First call should populate cache
-        const result1 = flowService.getAllAvailableFlowsAsStandardConfig();
-        expect(result1).toBeDefined();
-
-        // Second call should use cached version
-        const result2 = flowService.getAllAvailableFlowsAsStandardConfig();
-        expect(result2).toBeDefined();
-
-        // Both should be the same reference due to caching
-        expect(result2).toBe(result1);
+        // A symlinked provider gets its target's templates under its own key.
+        expect(flowService.getProviderTemplates(symlinked)?.providerConfigKey).toBe(symlinked);
     });
 });

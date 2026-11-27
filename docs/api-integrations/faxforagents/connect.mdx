@@ -1,0 +1,43 @@
+---
+title: 'Fax for Agents - How do I link my account?'
+sidebarTitle: 'Fax for Agents'
+---
+
+## Overview
+
+To authenticate with Fax for Agents, you need:
+
+1. **API Key** — a Fax for Agents API key, test (starts with `ffa_test_`) or live (starts with `ffa_live_`).
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Fax for Agents account. [Sign in](https://app.faxforagents.com/sign-in) with a magic link, a passkey, GitHub or Google. Test mode is free.
+
+### Step 1: Create an API key
+
+1. Sign in at [app.faxforagents.com](https://app.faxforagents.com/sign-in).
+2. Click **API keys** in the left sidebar, then click **New key**.
+
+<img src="/api-integrations/faxforagents/api_keys_page.png" alt="Fax for Agents API keys page with the New key button"/>
+
+3. Enter a label and choose the environment: **test** for a test key (`ffa_test_...`) or **live** for a live key (`ffa_live_...`). Both kinds work with Nango.
+4. Optionally open **Advanced: choose the permissions** and keep only the permissions your integration needs. The key's permissions decide which calls it can make.
+5. Click **New key**.
+
+<img src="/api-integrations/faxforagents/new_key_dialog.png" alt="Fax for Agents New key dialog with the permission list and the New key button"/>
+
+6. Click **Copy key**, then **I stored it**. The key is shown only once.
+
+<img src="/api-integrations/faxforagents/api_key_created.png" alt="Fax for Agents Your new key dialog with the Copy key button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fax for Agents.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/faxforagents/form.png" alt="Fax for Agents Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fax for Agents.

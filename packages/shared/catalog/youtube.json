@@ -1,0 +1,2919 @@
+{
+    "providerConfigKey": "youtube",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a video to a YouTube playlist",
+            "endpoint": null,
+            "input": "ActionInput_youtube_addplaylistitem",
+            "name": "add-playlist-item",
+            "output": [
+                "ActionOutput_youtube_addplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_addplaylistitem",
+                "ActionOutput_youtube_addplaylistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_addplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "playlistId": {
+                                "type": "string",
+                                "description": "The ID of the playlist to add the video to. Example: \"PLxxxxxxxxxxxxxxxxxxx\""
+                            },
+                            "videoId": {
+                                "type": "string",
+                                "description": "The YouTube video ID to add to the playlist. Example: \"dQw4w9WgXcQ\""
+                            },
+                            "position": {
+                                "description": "The position to insert the video into the playlist (0-based). If not specified, the video is added to the end.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "playlistId",
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_addplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "playlistId": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reply to an existing YouTube comment",
+            "endpoint": null,
+            "input": "ActionInput_youtube_createcommentreply",
+            "name": "create-comment-reply",
+            "output": [
+                "ActionOutput_youtube_createcommentreply"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createcommentreply",
+                "ActionOutput_youtube_createcommentreply"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_createcommentreply": {
+                        "type": "object",
+                        "properties": {
+                            "parentId": {
+                                "type": "string",
+                                "description": "The ID of the parent comment to reply to. Example: \"UgyYYtDkvwfR2g4Y8HZ4AaABAg\""
+                            },
+                            "textOriginal": {
+                                "type": "string",
+                                "description": "The original text of the reply. Example: \"Thanks for watching!\""
+                            }
+                        },
+                        "required": [
+                            "parentId",
+                            "textOriginal"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_createcommentreply": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "textOriginal": {
+                                "type": "string"
+                            },
+                            "authorDisplayName": {
+                                "type": "string"
+                            },
+                            "authorProfileImageUrl": {
+                                "type": "string"
+                            },
+                            "authorChannelUrl": {
+                                "type": "string"
+                            },
+                            "authorChannelId": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a top-level comment on a YouTube video or channel thread.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_createcomment",
+            "name": "create-comment",
+            "output": [
+                "ActionOutput_youtube_createcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createcomment",
+                "ActionOutput_youtube_createcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "videoId": {
+                                "type": "string",
+                                "description": "The ID of the video to comment on. Example: \"dQw4w9WgXcQ\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The ID of the channel that owns the video. Example: \"UC_x5XG1OV2P6uZZ5FSM9Ttw\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The text content of the comment. Example: \"Great video!\""
+                            }
+                        },
+                        "required": [
+                            "videoId",
+                            "channelId",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentThreadId": {
+                                "type": "string"
+                            },
+                            "commentId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "textDisplay": {
+                                "type": "string"
+                            },
+                            "textOriginal": {
+                                "type": "string"
+                            },
+                            "authorDisplayName": {
+                                "type": "string"
+                            },
+                            "authorChannelId": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            },
+                            "canReply": {
+                                "type": "boolean"
+                            },
+                            "totalReplyCount": {
+                                "type": "number"
+                            },
+                            "isPublic": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "commentThreadId",
+                            "commentId",
+                            "channelId",
+                            "videoId",
+                            "textDisplay",
+                            "textOriginal",
+                            "authorDisplayName",
+                            "publishedAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a YouTube playlist for the authenticated channel.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_createplaylist",
+            "name": "create-playlist",
+            "output": [
+                "ActionOutput_youtube_createplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createplaylist",
+                "ActionOutput_youtube_createplaylist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_createplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "The title of the playlist."
+                            },
+                            "description": {
+                                "description": "The description of the playlist.",
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "description": "The privacy status of the playlist.",
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "title"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_createplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a YouTube comment by comment ID",
+            "endpoint": null,
+            "input": "ActionInput_youtube_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_youtube_deletecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deletecomment",
+                "ActionOutput_youtube_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to delete. Example: \"UgyR8T-2e8gRcv1o0zN4AaABAg\""
+                            }
+                        },
+                        "required": [
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an item from a YouTube playlist",
+            "endpoint": null,
+            "input": "ActionInput_youtube_deleteplaylistitem",
+            "name": "delete-playlist-item",
+            "output": [
+                "ActionOutput_youtube_deleteplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deleteplaylistitem",
+                "ActionOutput_youtube_deleteplaylistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_deleteplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "playlistItemId": {
+                                "type": "string",
+                                "description": "The ID of the playlist item to delete. Example: \"PL1234567890abcdefABCDEF1234567890abcdefAB\""
+                            }
+                        },
+                        "required": [
+                            "playlistItemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_deleteplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the playlist item was successfully deleted"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a YouTube playlist by playlist ID",
+            "endpoint": null,
+            "input": "ActionInput_youtube_deleteplaylist",
+            "name": "delete-playlist",
+            "output": [
+                "ActionOutput_youtube_deleteplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deleteplaylist",
+                "ActionOutput_youtube_deleteplaylist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_deleteplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "playlistId": {
+                                "type": "string",
+                                "description": "The YouTube playlist ID to delete. Example: \"PLxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
+                            }
+                        },
+                        "required": [
+                            "playlistId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_deleteplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "playlistId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "playlistId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a YouTube video owned by the authenticated channel.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_deletevideo",
+            "name": "delete-video",
+            "output": [
+                "ActionOutput_youtube_deletevideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deletevideo",
+                "ActionOutput_youtube_deletevideo"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_deletevideo": {
+                        "type": "object",
+                        "properties": {
+                            "videoId": {
+                                "type": "string",
+                                "description": "The ID of the video to delete. Example: \"dQw4w9WgXcQ\""
+                            }
+                        },
+                        "required": [
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_deletevideo": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve YouTube channel details by ID, handle, username, or mine",
+            "endpoint": null,
+            "input": "ActionInput_youtube_getchannel",
+            "name": "get-channel",
+            "output": [
+                "ActionOutput_youtube_getchannel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getchannel",
+                "ActionOutput_youtube_getchannel"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "forHandle": {
+                                "type": "string"
+                            },
+                            "forUsername": {
+                                "type": "string"
+                            },
+                            "mine": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "customUrl": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "thumbnails": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "viewCount": {
+                                "type": "string"
+                            },
+                            "subscriberCount": {
+                                "type": "string"
+                            },
+                            "hiddenSubscriberCount": {
+                                "type": "boolean"
+                            },
+                            "videoCount": {
+                                "type": "string"
+                            },
+                            "relatedPlaylists": {
+                                "type": "object",
+                                "properties": {
+                                    "likes": {
+                                        "type": "string"
+                                    },
+                                    "favorites": {
+                                        "type": "string"
+                                    },
+                                    "uploads": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "brandingSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "channel": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "keywords": {
+                                                "type": "string"
+                                            },
+                                            "defaultTab": {
+                                                "type": "string"
+                                            },
+                                            "trackingAnalyticsAccountId": {
+                                                "type": "string"
+                                            },
+                                            "moderateComments": {
+                                                "type": "boolean"
+                                            },
+                                            "showRelatedChannels": {
+                                                "type": "boolean"
+                                            },
+                                            "showBrowseView": {
+                                                "type": "boolean"
+                                            },
+                                            "featuredChannelsTitle": {
+                                                "type": "string"
+                                            },
+                                            "featuredChannelsUrls": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "unsubscribedTrailer": {
+                                                "type": "string"
+                                            },
+                                            "profileColor": {
+                                                "type": "string"
+                                            },
+                                            "defaultLanguage": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "image": {
+                                        "type": "object",
+                                        "properties": {
+                                            "bannerImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerMobileImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTabletLowImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTabletImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTabletHdImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTabletExtraHdImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerMobileLowImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerMobileMediumHdImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerMobileHdImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerMobileExtraHdImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTvImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTvLowImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTvMediumImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerTvHighImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "bannerExternalUrl": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "watch": {
+                                        "type": "object",
+                                        "properties": {
+                                            "textColor": {
+                                                "type": "string"
+                                            },
+                                            "backgroundColor": {
+                                                "type": "string"
+                                            },
+                                            "featuredPlaylistId": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a YouTube comment by comment ID.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_getcomment",
+            "name": "get-comment",
+            "output": [
+                "ActionOutput_youtube_getcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getcomment",
+                "ActionOutput_youtube_getcomment"
+            ],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to retrieve. Example: \"UgxT9K7pHq8QfC2z3t4\""
+                            }
+                        },
+                        "required": [
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "authorDisplayName": {
+                                "type": "string"
+                            },
+                            "authorProfileImageUrl": {
+                                "type": "string"
+                            },
+                            "authorChannelUrl": {
+                                "type": "string"
+                            },
+                            "authorChannelId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "textDisplay": {
+                                "type": "string"
+                            },
+                            "textOriginal": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "canRate": {
+                                "type": "boolean"
+                            },
+                            "viewerRating": {
+                                "type": "string"
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            },
+                            "moderationStatus": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a YouTube playlist by playlist ID.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_getplaylist",
+            "name": "get-playlist",
+            "output": [
+                "ActionOutput_youtube_getplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getplaylist",
+                "ActionOutput_youtube_getplaylist"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_getplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "playlistId": {
+                                "type": "string",
+                                "description": "The ID of the YouTube playlist to retrieve. Example: \"PLxxxxxxxxxxxxxxxxxxx\""
+                            }
+                        },
+                        "required": [
+                            "playlistId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_getplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "channelTitle": {
+                                "type": "string"
+                            },
+                            "itemCount": {
+                                "type": "number"
+                            },
+                            "privacyStatus": {
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
+                            },
+                            "thumbnails": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "url"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a YouTube video by video ID",
+            "endpoint": null,
+            "input": "ActionInput_youtube_getvideo",
+            "name": "get-video",
+            "output": [
+                "ActionOutput_youtube_getvideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getvideo",
+                "ActionOutput_youtube_getvideo"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_getvideo": {
+                        "type": "object",
+                        "properties": {
+                            "videoId": {
+                                "type": "string",
+                                "description": "YouTube video ID. Example: \"dQw4w9WgXcQ\""
+                            }
+                        },
+                        "required": [
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_getvideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "channelTitle": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "string"
+                            },
+                            "viewCount": {
+                                "type": "string"
+                            },
+                            "likeCount": {
+                                "type": "string"
+                            },
+                            "commentCount": {
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "type": "string"
+                            },
+                            "thumbnails": {},
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "categoryId": {
+                                "type": "string"
+                            },
+                            "definition": {
+                                "type": "string"
+                            },
+                            "caption": {
+                                "type": "string"
+                            },
+                            "embeddable": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List caption tracks for a YouTube video.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_listcaptions",
+            "name": "list-captions",
+            "output": [
+                "ActionOutput_youtube_listcaptions"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listcaptions",
+                "ActionOutput_youtube_listcaptions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_listcaptions": {
+                        "type": "object",
+                        "properties": {
+                            "videoId": {
+                                "type": "string",
+                                "description": "The YouTube video ID of the video for which to return caption tracks. Example: \"dQw4w9WgXcQ\""
+                            }
+                        },
+                        "required": [
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_listcaptions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "videoId": {
+                                            "type": "string"
+                                        },
+                                        "lastUpdated": {
+                                            "type": "string"
+                                        },
+                                        "trackKind": {
+                                            "type": "string"
+                                        },
+                                        "language": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "audioTrackType": {
+                                            "type": "string"
+                                        },
+                                        "isCC": {
+                                            "type": "boolean"
+                                        },
+                                        "isLarge": {
+                                            "type": "boolean"
+                                        },
+                                        "isEasyReader": {
+                                            "type": "boolean"
+                                        },
+                                        "isDraft": {
+                                            "type": "boolean"
+                                        },
+                                        "isAutoSynced": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "failureReason": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "description": "The token for the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List playlists for a YouTube channel",
+            "endpoint": null,
+            "input": "ActionInput_youtube_listchannelplaylists",
+            "name": "list-channel-playlists",
+            "output": [
+                "ActionOutput_youtube_listchannelplaylists"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listchannelplaylists",
+                "ActionOutput_youtube_listchannelplaylists"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_listchannelplaylists": {
+                        "type": "object",
+                        "properties": {
+                            "channelId": {
+                                "type": "string",
+                                "description": "The YouTube channel ID. Example: \"UC_x5XG1OV2P6uZZ5FSM9Ttw\""
+                            },
+                            "maxResults": {
+                                "description": "Maximum number of playlists to return (1-50). Default: 5",
+                                "type": "number"
+                            },
+                            "pageToken": {
+                                "description": "Pagination token for the next page of results",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "channelId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_listchannelplaylists": {
+                        "type": "object",
+                        "properties": {
+                            "playlists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "channelId": {
+                                            "type": "string"
+                                        },
+                                        "channelTitle": {
+                                            "type": "string"
+                                        },
+                                        "publishedAt": {
+                                            "type": "string"
+                                        },
+                                        "privacyStatus": {
+                                            "type": "string"
+                                        },
+                                        "itemCount": {
+                                            "type": "number"
+                                        },
+                                        "thumbnails": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "width": {
+                                                        "type": "number"
+                                                    },
+                                                    "height": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "url"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            },
+                            "prevPageToken": {
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "playlists",
+                            "totalResults"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List YouTube comment threads for a video or channel.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_listcommentthreads",
+            "name": "list-comment-threads",
+            "output": [
+                "ActionOutput_youtube_listcommentthreads"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listcommentthreads",
+                "ActionOutput_youtube_listcommentthreads"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_listcommentthreads": {
+                        "type": "object",
+                        "properties": {
+                            "videoId": {
+                                "description": "The video ID to retrieve comment threads for. Example: \"dQw4w9WgXcQ\"",
+                                "type": "string"
+                            },
+                            "allThreadsRelatedToChannelId": {
+                                "description": "The channel ID to retrieve all comment threads for.",
+                                "type": "string"
+                            },
+                            "pageToken": {
+                                "description": "The token for the next page of results.",
+                                "type": "string"
+                            },
+                            "maxResults": {
+                                "description": "Maximum number of results to return (1-100). Default: 20.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "order": {
+                                "description": "Order of comment threads. time (default) or relevance.",
+                                "type": "string",
+                                "enum": [
+                                    "time",
+                                    "relevance"
+                                ]
+                            },
+                            "searchTerms": {
+                                "description": "Search terms to filter comments.",
+                                "type": "string"
+                            },
+                            "textFormat": {
+                                "description": "Format of comments. html (default) or plainText.",
+                                "type": "string",
+                                "enum": [
+                                    "html",
+                                    "plainText"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_listcommentthreads": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "videoId": {
+                                            "type": "string"
+                                        },
+                                        "channelId": {
+                                            "type": "string"
+                                        },
+                                        "topLevelCommentId": {
+                                            "type": "string"
+                                        },
+                                        "topLevelCommentAuthor": {
+                                            "type": "string"
+                                        },
+                                        "topLevelCommentText": {
+                                            "type": "string"
+                                        },
+                                        "topLevelCommentPublishedAt": {
+                                            "type": "string"
+                                        },
+                                        "topLevelCommentLikeCount": {
+                                            "type": "number"
+                                        },
+                                        "totalReplyCount": {
+                                            "type": "number"
+                                        },
+                                        "canReply": {
+                                            "type": "boolean"
+                                        },
+                                        "isPublic": {
+                                            "type": "boolean"
+                                        },
+                                        "replies": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "author": {
+                                                        "type": "string"
+                                                    },
+                                                    "text": {
+                                                        "type": "string"
+                                                    },
+                                                    "publishedAt": {
+                                                        "type": "string"
+                                                    },
+                                                    "likeCount": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List items in a YouTube playlist",
+            "endpoint": null,
+            "input": "ActionInput_youtube_listplaylistitems",
+            "name": "list-playlist-items",
+            "output": [
+                "ActionOutput_youtube_listplaylistitems"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listplaylistitems",
+                "ActionOutput_youtube_listplaylistitems"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_listplaylistitems": {
+                        "type": "object",
+                        "properties": {
+                            "playlistId": {
+                                "type": "string",
+                                "description": "The ID of the YouTube playlist to list items from. Example: \"PLBCF2DAC6FFB574DE\""
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of items to return (1-50, default 50).",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination token from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "playlistId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_listplaylistitems": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The unique ID of the playlist item."
+                                        },
+                                        "playlistId": {
+                                            "description": "The ID of the playlist this item belongs to.",
+                                            "type": "string"
+                                        },
+                                        "videoId": {
+                                            "description": "The ID of the video in this playlist item.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "The position of the item in the playlist (0-indexed).",
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "description": "The title of the video.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "The description of the video.",
+                                            "type": "string"
+                                        },
+                                        "publishedAt": {
+                                            "description": "The date and time the item was added to the playlist.",
+                                            "type": "string"
+                                        },
+                                        "channelId": {
+                                            "description": "The ID of the channel that owns the playlist.",
+                                            "type": "string"
+                                        },
+                                        "channelTitle": {
+                                            "description": "The title of the channel that owns the playlist.",
+                                            "type": "string"
+                                        },
+                                        "videoOwnerChannelId": {
+                                            "description": "The ID of the channel that uploaded the video.",
+                                            "type": "string"
+                                        },
+                                        "videoOwnerChannelTitle": {
+                                            "description": "The title of the channel that uploaded the video.",
+                                            "type": "string"
+                                        },
+                                        "privacyStatus": {
+                                            "description": "The privacy status of the video (public, unlisted, private).",
+                                            "type": "string"
+                                        },
+                                        "videoPublishedAt": {
+                                            "description": "The date and time the video was published.",
+                                            "type": "string"
+                                        },
+                                        "thumbnails": {
+                                            "description": "Thumbnail images for the video.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "width": {
+                                                        "type": "number"
+                                                    },
+                                                    "height": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "The playlist items returned."
+                            },
+                            "nextCursor": {
+                                "description": "Token for the next page of results. Omit if no more results.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Total number of results available.",
+                                "type": "number"
+                            },
+                            "resultsPerPage": {
+                                "description": "Number of results returned per page.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List uploaded videos for a channel using its uploads playlist.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_listuploadedvideos",
+            "name": "list-uploaded-videos",
+            "output": [
+                "ActionOutput_youtube_listuploadedvideos"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listuploadedvideos",
+                "ActionOutput_youtube_listuploadedvideos"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_listuploadedvideos": {
+                        "type": "object",
+                        "properties": {
+                            "channel_id": {
+                                "description": "YouTube channel ID. If omitted, uses the authenticated user's channel (\"mine\"). Example: \"UC_x5XG1OV2P6uZZ5FSM9Ttw\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Page token from a previous response next_cursor to fetch the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_listuploadedvideos": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "published_at": {
+                                            "type": "string"
+                                        },
+                                        "channel_id": {
+                                            "type": "string"
+                                        },
+                                        "channel_title": {
+                                            "type": "string"
+                                        },
+                                        "video_id": {
+                                            "type": "string"
+                                        },
+                                        "thumbnail_url": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "published_at",
+                                        "channel_id",
+                                        "video_id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the text of a YouTube comment.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_updatecomment",
+            "name": "update-comment",
+            "output": [
+                "ActionOutput_youtube_updatecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updatecomment",
+                "ActionOutput_youtube_updatecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the comment to update. Example: \"UgzDE2pQ6kCHY1EaXcJ4AaABAg\""
+                            },
+                            "textOriginal": {
+                                "type": "string",
+                                "description": "The new text content for the comment."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "textOriginal"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "authorDisplayName": {
+                                "type": "string"
+                            },
+                            "authorChannelId": {
+                                "type": "string"
+                            },
+                            "textDisplay": {
+                                "type": "string"
+                            },
+                            "textOriginal": {
+                                "type": "string"
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "authorDisplayName",
+                            "textDisplay",
+                            "textOriginal",
+                            "publishedAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a playlist item's metadata or position.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_updateplaylistitem",
+            "name": "update-playlist-item",
+            "output": [
+                "ActionOutput_youtube_updateplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updateplaylistitem",
+                "ActionOutput_youtube_updateplaylistitem"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_updateplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "playlistId": {
+                                "type": "string"
+                            },
+                            "resourceId": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string"
+                                    },
+                                    "videoId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "videoId"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "note": {
+                                "type": "string"
+                            },
+                            "startAt": {
+                                "type": "string"
+                            },
+                            "endAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "resourceId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_updateplaylistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "playlistId": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "channelTitle": {
+                                "type": "string"
+                            },
+                            "thumbnails": {},
+                            "note": {
+                                "type": "string"
+                            },
+                            "startAt": {
+                                "type": "string"
+                            },
+                            "endAt": {
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "type": "string"
+                            },
+                            "videoPublishedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "videoId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a YouTube playlist's metadata or privacy state",
+            "endpoint": null,
+            "input": "ActionInput_youtube_updateplaylist",
+            "name": "update-playlist",
+            "output": [
+                "ActionOutput_youtube_updateplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updateplaylist",
+                "ActionOutput_youtube_updateplaylist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_updateplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the playlist to update. Example: \"PLBCF2DAC6FFB6DE8\""
+                            },
+                            "title": {
+                                "description": "The title of the playlist.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description of the playlist.",
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "description": "The privacy status of the playlist.",
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_updateplaylist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update YouTube video metadata for an owned video.",
+            "endpoint": null,
+            "input": "ActionInput_youtube_updatevideo",
+            "name": "update-video",
+            "output": [
+                "ActionOutput_youtube_updatevideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updatevideo",
+                "ActionOutput_youtube_updatevideo"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_youtube_updatevideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the video to update. Example: \"dQw4w9WgXcQ\""
+                            },
+                            "snippet": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "description": "The title of the video.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "The description of the video.",
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "description": "Tags associated with the video.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "categoryId": {
+                                        "description": "The category ID for the video.",
+                                        "type": "string"
+                                    },
+                                    "defaultLanguage": {
+                                        "description": "The default language of the video.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "object",
+                                "properties": {
+                                    "privacyStatus": {
+                                        "description": "The privacy status of the video.",
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "unlisted",
+                                            "private"
+                                        ]
+                                    },
+                                    "license": {
+                                        "description": "The license of the video.",
+                                        "type": "string",
+                                        "enum": [
+                                            "youtube",
+                                            "creativeCommon"
+                                        ]
+                                    },
+                                    "embeddable": {
+                                        "description": "Whether the video can be embedded.",
+                                        "type": "boolean"
+                                    },
+                                    "publicStatsViewable": {
+                                        "description": "Whether the public can view video statistics.",
+                                        "type": "boolean"
+                                    },
+                                    "publishAt": {
+                                        "description": "Scheduled publish time (ISO 8601). Requires privacyStatus to be private.",
+                                        "type": "string"
+                                    },
+                                    "selfDeclaredMadeForKids": {
+                                        "description": "Whether the video is self-declared as made for kids.",
+                                        "type": "boolean"
+                                    },
+                                    "containsSyntheticMedia": {
+                                        "description": "Whether the video contains synthetic media.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "localizations": {
+                                "description": "Localized titles and descriptions by language code.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "recordingDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "recordingDate": {
+                                        "description": "The date the video was recorded (ISO 8601).",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_youtube_updatevideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "snippet": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "categoryId": {
+                                        "type": "string"
+                                    },
+                                    "defaultLanguage": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "title"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "object",
+                                "properties": {
+                                    "privacyStatus": {
+                                        "type": "string"
+                                    },
+                                    "license": {
+                                        "type": "string"
+                                    },
+                                    "embeddable": {
+                                        "type": "boolean"
+                                    },
+                                    "publicStatsViewable": {
+                                        "type": "boolean"
+                                    },
+                                    "publishAt": {
+                                        "type": "string"
+                                    },
+                                    "selfDeclaredMadeForKids": {
+                                        "type": "boolean"
+                                    },
+                                    "containsSyntheticMedia": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "localizations": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "recordingDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "recordingDate": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync caption track metadata for YouTube videos in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/caption-tracks",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "caption-tracks",
+            "output": [
+                "CaptionTrack"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CaptionTrack"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CaptionTrack": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID that YouTube uses to uniquely identify the caption track"
+                            },
+                            "video_id": {
+                                "type": "string",
+                                "description": "The ID of the video associated with the caption track"
+                            },
+                            "last_updated": {
+                                "type": "string",
+                                "description": "The date and time when the caption track was last updated in ISO 8601 format"
+                            },
+                            "track_kind": {
+                                "description": "The caption track type: ASR, forced, or standard",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "The language of the caption track as a BCP-47 language tag",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "The name of the caption track visible to users during playback",
+                                "type": "string"
+                            },
+                            "audio_track_type": {
+                                "description": "The type of audio track: commentary, descriptive, primary, or unknown",
+                                "type": "string"
+                            },
+                            "is_cc": {
+                                "description": "Whether the track contains closed captions for the deaf and hard of hearing",
+                                "type": "boolean"
+                            },
+                            "is_large": {
+                                "description": "Whether the caption track uses large text for the vision-impaired",
+                                "type": "boolean"
+                            },
+                            "is_easy_reader": {
+                                "description": "Whether the caption track is formatted for easy reader at third-grade level",
+                                "type": "boolean"
+                            },
+                            "is_draft": {
+                                "description": "Whether the caption track is a draft and not publicly visible",
+                                "type": "boolean"
+                            },
+                            "is_auto_synced": {
+                                "description": "Whether YouTube synchronized the caption track to the audio track",
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "description": "The caption track status: failed, serving, or syncing",
+                                "type": "string"
+                            },
+                            "failure_reason": {
+                                "description": "The reason YouTube failed to process the caption track",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "video_id",
+                            "last_updated"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync playlists for YouTube channels in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/channel-playlists"
+                }
+            ],
+            "input": "SyncMetadata_youtube_channelplaylists",
+            "name": "channel-playlists",
+            "output": [
+                "ChannelPlaylist"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ChannelPlaylist",
+                "SyncMetadata_youtube_channelplaylists"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChannelPlaylist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID that YouTube uses to uniquely identify the playlist"
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The ID of the channel that owns the playlist"
+                            },
+                            "channelTitle": {
+                                "description": "The channel title of the channel that owns the playlist",
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The playlist title"
+                            },
+                            "description": {
+                                "description": "The playlist description",
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "description": "The playlist privacy status: private, public, or unlisted",
+                                "type": "string"
+                            },
+                            "itemCount": {
+                                "description": "The number of videos in the playlist",
+                                "type": "number"
+                            },
+                            "publishedAt": {
+                                "type": "string",
+                                "description": "The date and time that the playlist was created"
+                            },
+                            "thumbnailUrl": {
+                                "description": "URL of the default thumbnail for the playlist",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "channelId",
+                            "title",
+                            "publishedAt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_youtube_channelplaylists": {
+                        "type": "object",
+                        "properties": {
+                            "channelIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync one or more YouTube channels in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/channels"
+                }
+            ],
+            "input": null,
+            "name": "channels",
+            "output": [
+                "Channel"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Channel"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Channel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "customUrl": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "thumbnailDefaultUrl": {
+                                "type": "string"
+                            },
+                            "thumbnailMediumUrl": {
+                                "type": "string"
+                            },
+                            "thumbnailHighUrl": {
+                                "type": "string"
+                            },
+                            "viewCount": {
+                                "type": "number"
+                            },
+                            "subscriberCount": {
+                                "type": "number"
+                            },
+                            "hiddenSubscriberCount": {
+                                "type": "boolean"
+                            },
+                            "videoCount": {
+                                "type": "number"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "privacyStatus": {
+                                "type": "string"
+                            },
+                            "isLinked": {
+                                "type": "boolean"
+                            },
+                            "madeForKids": {
+                                "type": "boolean"
+                            },
+                            "selfDeclaredMadeForKids": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync comment threads for YouTube videos or channels in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/comment-threads"
+                }
+            ],
+            "input": null,
+            "name": "comment-threads",
+            "output": [
+                "CommentThread"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CommentThread"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CommentThread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "videoId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "topLevelComment": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "object",
+                                        "properties": {
+                                            "channelId": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            },
+                                            "profileImageUrl": {
+                                                "type": "string"
+                                            },
+                                            "channelUrl": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "displayName"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "textOriginal": {
+                                        "type": "string"
+                                    },
+                                    "textDisplay": {
+                                        "type": "string"
+                                    },
+                                    "likeCount": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "publishedAt": {
+                                        "type": "string"
+                                    },
+                                    "updatedAt": {
+                                        "type": "string"
+                                    },
+                                    "parentId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "author",
+                                    "textOriginal",
+                                    "textDisplay",
+                                    "likeCount",
+                                    "publishedAt",
+                                    "updatedAt"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "replies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "channelId": {
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "profileImageUrl": {
+                                                    "type": "string"
+                                                },
+                                                "channelUrl": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "displayName"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "textOriginal": {
+                                            "type": "string"
+                                        },
+                                        "textDisplay": {
+                                            "type": "string"
+                                        },
+                                        "likeCount": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "publishedAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "parentId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "author",
+                                        "textOriginal",
+                                        "textDisplay",
+                                        "likeCount",
+                                        "publishedAt",
+                                        "updatedAt"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totalReplyCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "canReply": {
+                                "type": "boolean"
+                            },
+                            "isPublic": {
+                                "type": "boolean"
+                            },
+                            "etag": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "videoId",
+                            "topLevelComment",
+                            "replies",
+                            "totalReplyCount",
+                            "etag"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync items from YouTube playlists in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/playlist-items"
+                }
+            ],
+            "input": "SyncMetadata_youtube_playlistitems",
+            "name": "playlist-items",
+            "output": [
+                "PlaylistItem"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PlaylistItem",
+                "SyncMetadata_youtube_playlistitems"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PlaylistItem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "playlist_id": {
+                                "type": "string"
+                            },
+                            "video_id": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "published_at": {
+                                "type": "string"
+                            },
+                            "channel_id": {
+                                "type": "string"
+                            },
+                            "channel_title": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "privacy_status": {
+                                "type": "string"
+                            },
+                            "video_owner_channel_id": {
+                                "type": "string"
+                            },
+                            "video_owner_channel_title": {
+                                "type": "string"
+                            },
+                            "video_published_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "playlist_id",
+                            "video_id",
+                            "position",
+                            "published_at"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_youtube_playlistitems": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync uploaded videos for YouTube channels in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/uploaded-videos"
+                }
+            ],
+            "input": null,
+            "name": "uploaded-videos",
+            "output": [
+                "UploadedVideo"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "UploadedVideo"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UploadedVideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "channelTitle": {
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "type": "string"
+                            },
+                            "playlistItemId": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "thumbnails": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "categoryId": {
+                                "type": "string"
+                            },
+                            "statistics": {
+                                "type": "object",
+                                "properties": {
+                                    "viewCount": {
+                                        "type": "string"
+                                    },
+                                    "likeCount": {
+                                        "type": "string"
+                                    },
+                                    "commentCount": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "object",
+                                "properties": {
+                                    "privacyStatus": {
+                                        "type": "string"
+                                    },
+                                    "uploadStatus": {
+                                        "type": "string"
+                                    },
+                                    "license": {
+                                        "type": "string"
+                                    },
+                                    "embeddable": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "description",
+                            "channelId",
+                            "publishedAt",
+                            "playlistItemId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

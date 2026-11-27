@@ -1,0 +1,3189 @@
+{
+    "providerConfigKey": "calendly",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Invite a user to the Calendly organization.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_calendly_createuser"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_createuser",
+                "ActionOutput_calendly_createuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address of the user to invite"
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Invitation UUID"
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email of the invited user"
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "First name (empty for pending invitations)"
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Last name (empty for pending invitations)"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a webhook subscription in Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_createwebhooksubscription",
+            "name": "create-webhook-subscription",
+            "output": [
+                "ActionOutput_calendly_createwebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_createwebhooksubscription",
+                "ActionOutput_calendly_createwebhooksubscription"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_createwebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The callback URL. Example: \"https://example.com/webhooks\""
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "The events to subscribe to. Example: [\"invitee.created\", \"invitee.canceled\"]"
+                            },
+                            "organization": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The organization URI. Example: \"https://api.calendly.com/organizations/ORG123\""
+                            },
+                            "scope": {
+                                "type": "string",
+                                "enum": [
+                                    "organization",
+                                    "user"
+                                ],
+                                "description": "The scope of the subscription."
+                            },
+                            "user": {
+                                "description": "The user URI. Required when scope is \"user\". Example: \"https://api.calendly.com/users/USER123\"",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "signing_key": {
+                                "description": "An optional secret key used to sign webhook payloads.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "url",
+                            "events",
+                            "organization",
+                            "scope"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_createwebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The webhook subscription URI."
+                            },
+                            "callback_url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The callback URL."
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "The moment the webhook subscription was created."
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "The moment the webhook subscription was last updated."
+                            },
+                            "retry_started_at": {
+                                "description": "The moment retries started for a failing webhook subscription.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "The state of the webhook subscription."
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "The events the webhook subscription is subscribed to."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "description": "The scope of the webhook subscription."
+                            },
+                            "organization": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The organization URI."
+                            },
+                            "user": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "The user URI."
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "callback_url",
+                            "created_at",
+                            "updated_at",
+                            "retry_started_at",
+                            "state",
+                            "events",
+                            "scope",
+                            "organization",
+                            "user"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a webhook subscription in Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_deletewebhooksubscription",
+            "name": "delete-webhook-subscription",
+            "output": [
+                "ActionOutput_calendly_deletewebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_deletewebhooksubscription",
+                "ActionOutput_calendly_deletewebhooksubscription"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_deletewebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier of the webhook subscription to delete. Example: \"ABCD1234...\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_deletewebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single event invitee from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_geteventinvitee",
+            "name": "get-event-invitee",
+            "output": [
+                "ActionOutput_calendly_geteventinvitee"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_geteventinvitee",
+                "ActionOutput_calendly_geteventinvitee"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_geteventinvitee": {
+                        "type": "object",
+                        "properties": {
+                            "event_uuid": {
+                                "type": "string",
+                                "description": "The UUID of the scheduled event. Example: \"AAAAAAAAAAAAAAAA\""
+                            },
+                            "invitee_uuid": {
+                                "type": "string",
+                                "description": "The UUID of the invitee. Example: \"BBBBBBBBBBBBBBBB\""
+                            }
+                        },
+                        "required": [
+                            "event_uuid",
+                            "invitee_uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_geteventinvitee": {
+                        "type": "object",
+                        "properties": {
+                            "cancel_url": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "event": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "new_invitee": {
+                                "type": "string"
+                            },
+                            "old_invitee": {
+                                "type": "string"
+                            },
+                            "questions_and_answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "answer": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "number"
+                                        },
+                                        "question": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "answer",
+                                        "position",
+                                        "question"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "reschedule_url": {
+                                "type": "string"
+                            },
+                            "rescheduled": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "text_reminder_number": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "tracking": {
+                                "type": "object",
+                                "properties": {
+                                    "utm_campaign": {
+                                        "type": "string"
+                                    },
+                                    "utm_source": {
+                                        "type": "string"
+                                    },
+                                    "utm_medium": {
+                                        "type": "string"
+                                    },
+                                    "utm_content": {
+                                        "type": "string"
+                                    },
+                                    "utm_term": {
+                                        "type": "string"
+                                    },
+                                    "salesforce_uuid": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "cancellation": {
+                                "type": "object",
+                                "properties": {
+                                    "canceled_by": {
+                                        "type": "string"
+                                    },
+                                    "reason": {
+                                        "type": "string"
+                                    },
+                                    "canceler_type": {
+                                        "type": "string"
+                                    },
+                                    "created_at": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "canceled_by",
+                                    "canceler_type",
+                                    "created_at"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "routing_form_submission": {
+                                "type": "string"
+                            },
+                            "payment": {
+                                "type": "object",
+                                "properties": {
+                                    "external_id": {
+                                        "type": "string"
+                                    },
+                                    "provider": {
+                                        "type": "string"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "terms": {
+                                        "type": "string"
+                                    },
+                                    "successful": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "external_id",
+                                    "provider",
+                                    "amount",
+                                    "currency",
+                                    "terms",
+                                    "successful"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "no_show": {
+                                "type": "string"
+                            },
+                            "reconfirmation": {
+                                "type": "object",
+                                "properties": {
+                                    "created_at": {
+                                        "type": "string"
+                                    },
+                                    "confirmed_at": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "created_at",
+                                    "confirmed_at"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "scheduling_method": {
+                                "type": "string"
+                            },
+                            "invitee_scheduled_by": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "cancel_url",
+                            "created_at",
+                            "email",
+                            "event",
+                            "name",
+                            "questions_and_answers",
+                            "reschedule_url",
+                            "rescheduled",
+                            "status",
+                            "timezone",
+                            "tracking",
+                            "updated_at",
+                            "uri"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single event type from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_geteventtype",
+            "name": "get-event-type",
+            "output": [
+                "ActionOutput_calendly_geteventtype"
+            ],
+            "scopes": [
+                "event_types:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_geteventtype",
+                "ActionOutput_calendly_geteventtype"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_geteventtype": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier (UUID) of the event type. Example: \"AAAAAAAAAAAAAAAA\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_geteventtype": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "scheduling_url": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "description_plain": {
+                                "type": "string"
+                            },
+                            "description_html": {
+                                "type": "string"
+                            },
+                            "internal_note": {
+                                "type": "string"
+                            },
+                            "secret": {
+                                "type": "boolean"
+                            },
+                            "booking_method": {
+                                "type": "string"
+                            },
+                            "admin_managed": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": "string"
+                            },
+                            "custom_questions": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "duration_options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "is_paid": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "locations": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "pooling_type": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "owner": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "name",
+                                    "owner"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "active",
+                            "scheduling_url",
+                            "duration",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single scheduled event from Calendly",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getscheduledevent",
+            "name": "get-scheduled-event",
+            "output": [
+                "ActionOutput_calendly_getscheduledevent"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getscheduledevent",
+                "ActionOutput_calendly_getscheduledevent"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getscheduledevent": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier for the scheduled event. Example: \"8pv58mskifkj5st9o6m2qqde74\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getscheduledevent": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string"
+                            },
+                            "event_type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "event_memberships": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user": {
+                                            "type": "string"
+                                        },
+                                        "user_email": {
+                                            "type": "string"
+                                        },
+                                        "user_name": {
+                                            "type": "string"
+                                        },
+                                        "buffered_start_time": {
+                                            "type": "string"
+                                        },
+                                        "buffered_end_time": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "user"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "event_guests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "invitees_counter": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "number"
+                                    },
+                                    "limit": {
+                                        "type": "number"
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "active",
+                                    "limit",
+                                    "total"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "join_url": {
+                                                "type": "string"
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "required": [
+                                            "type"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "calendar_event": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "external_id": {
+                                                "type": "string"
+                                            },
+                                            "kind": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "meeting_notes_html": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "meeting_notes_plain": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "event_type",
+                            "name",
+                            "status",
+                            "start_time",
+                            "end_time",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single webhook subscription from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getwebhooksubscription",
+            "name": "get-webhook-subscription",
+            "output": [
+                "ActionOutput_calendly_getwebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getwebhooksubscription",
+                "ActionOutput_calendly_getwebhooksubscription"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getwebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier of the webhook subscription. Example: \"AAAAAAAAAAAAAAAA\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getwebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string",
+                                "description": "Canonical reference (unique identifier) for the webhook subscription."
+                            },
+                            "callback_url": {
+                                "type": "string",
+                                "description": "The callback URL to use when the event is triggered."
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "The moment when the webhook subscription was created."
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "The moment when the webhook subscription was last updated."
+                            },
+                            "retry_started_at": {
+                                "description": "The date and time the webhook subscription retry started.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "Indicates if the webhook subscription is active or disabled."
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "A list of events to which the webhook is subscribed."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "description": "The scope of the webhook subscription."
+                            },
+                            "organization": {
+                                "type": "string",
+                                "description": "The organization associated with the webhook subscription."
+                            },
+                            "user": {
+                                "description": "The user associated with the webhook subscription.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "creator": {
+                                "description": "The user who created the webhook subscription.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "group": {
+                                "description": "The group associated with the webhook subscription.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "callback_url",
+                            "created_at",
+                            "updated_at",
+                            "state",
+                            "events",
+                            "scope",
+                            "organization"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List event invitees from Calendly",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listeventinvitees",
+            "name": "list-event-invitees",
+            "output": [
+                "ActionOutput_calendly_listeventinvitees"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listeventinvitees",
+                "ActionOutput_calendly_listeventinvitees"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listeventinvitees": {
+                        "type": "object",
+                        "properties": {
+                            "event_uuid": {
+                                "type": "string",
+                                "description": "The unique identifier for the scheduled event. Example: \"GBGBDCAADAEDCRZ2\""
+                            },
+                            "email": {
+                                "description": "Filter by invitee email address",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Filter by invitee status",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
+                            },
+                            "sort": {
+                                "description": "Sort order for results",
+                                "type": "string",
+                                "enum": [
+                                    "created_at:asc",
+                                    "created_at:desc",
+                                    "updated_at:asc",
+                                    "updated_at:desc"
+                                ]
+                            },
+                            "count": {
+                                "description": "Number of results per page (1-100)",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "event_uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listeventinvitees": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "Canonical reference for the invitee"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Invitee email address"
+                                        },
+                                        "name": {
+                                            "description": "Invitee display name",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "canceled"
+                                            ],
+                                            "description": "Status of the invitee"
+                                        },
+                                        "timezone": {
+                                            "description": "Invitee timezone",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "When the invitee was created"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "When the invitee was last updated"
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "description": "Reference to the scheduled event"
+                                        },
+                                        "questions_and_answers": {
+                                            "description": "Answers to custom questions",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "question": {
+                                                        "type": "string"
+                                                    },
+                                                    "answer": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "question",
+                                                    "answer"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "tracking": {
+                                            "description": "UTM tracking parameters",
+                                            "type": "object",
+                                            "properties": {
+                                                "utm_campaign": {
+                                                    "type": "string"
+                                                },
+                                                "utm_source": {
+                                                    "type": "string"
+                                                },
+                                                "utm_medium": {
+                                                    "type": "string"
+                                                },
+                                                "utm_content": {
+                                                    "type": "string"
+                                                },
+                                                "utm_term": {
+                                                    "type": "string"
+                                                },
+                                                "salesforce_uuid": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "text_reminder_number": {
+                                            "description": "Phone number for text reminders",
+                                            "type": "string"
+                                        },
+                                        "rescheduled": {
+                                            "description": "Whether the invitee rescheduled",
+                                            "type": "boolean"
+                                        },
+                                        "old_invitee": {
+                                            "description": "Reference to the previous invitee if rescheduled",
+                                            "type": "string"
+                                        },
+                                        "new_invitee": {
+                                            "description": "Reference to the new invitee if rescheduled",
+                                            "type": "string"
+                                        },
+                                        "cancel_url": {
+                                            "description": "URL to cancel the invitee",
+                                            "type": "string"
+                                        },
+                                        "reschedule_url": {
+                                            "description": "URL to reschedule the invitee",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "email",
+                                        "status",
+                                        "created_at",
+                                        "updated_at",
+                                        "event"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of event invitees"
+                            },
+                            "next_cursor": {
+                                "description": "Pagination cursor for the next page of results",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a user from the Calendly organization.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_calendly_deleteuser"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_deleteuser",
+                "ActionOutput_calendly_deleteuser"
+            ],
+            "version": "2.1.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Organization membership UUID to remove"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the deletion was successful"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the authenticated user organization",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getcurrentorganization",
+            "name": "get-current-organization",
+            "output": [
+                "ActionOutput_calendly_getcurrentorganization"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getcurrentorganization",
+                "ActionOutput_calendly_getcurrentorganization"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getcurrentorganization": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getcurrentorganization": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string",
+                                "description": "Organization URI. Example: \"https://api.calendly.com/organizations/12345678-1234-1234-1234-123456789012\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Organization name. Example: \"Acme Inc\""
+                            },
+                            "locale": {
+                                "description": "Organization locale. Example: \"en\"",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Organization creation timestamp. Example: \"2023-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Organization update timestamp. Example: \"2023-01-01T00:00:00Z\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the authenticated Calendly user.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getcurrentuser",
+            "name": "get-current-user",
+            "output": [
+                "ActionOutput_calendly_getcurrentuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getcurrentuser",
+                "ActionOutput_calendly_getcurrentuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string",
+                                "description": "User URI"
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "User email"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "User name"
+                            },
+                            "slug": {
+                                "type": "string",
+                                "description": "User slug"
+                            },
+                            "timezone": {
+                                "type": "string",
+                                "description": "User timezone"
+                            },
+                            "avatar_url": {
+                                "description": "User avatar URL",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "User creation timestamp"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "User update timestamp"
+                            },
+                            "scheduling_url": {
+                                "type": "string",
+                                "description": "User scheduling URL"
+                            },
+                            "current_organization": {
+                                "type": "string",
+                                "description": "Organization URI"
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "email",
+                            "name",
+                            "slug",
+                            "timezone",
+                            "created_at",
+                            "updated_at",
+                            "scheduling_url",
+                            "current_organization"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single organization membership from Calendly",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getorganizationmembership",
+            "name": "get-organization-membership",
+            "output": [
+                "ActionOutput_calendly_getorganizationmembership"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getorganizationmembership",
+                "ActionOutput_calendly_getorganizationmembership"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier (UUID) of the organization membership. Example: \"12345678-1234-1234-1234-123456789012\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getorganizationmembership": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string",
+                                "description": "Canonical reference (unique identifier) for the organization membership"
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Role of the user within the organization (e.g., owner, admin, user)"
+                            },
+                            "organization": {
+                                "type": "string",
+                                "description": "Canonical reference (unique identifier) for the organization"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "uri": {
+                                        "type": "string",
+                                        "description": "Canonical reference (unique identifier) for the user"
+                                    },
+                                    "name": {
+                                        "description": "Full name of the user",
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "description": "Unique slug of the user",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Email address of the user",
+                                        "type": "string"
+                                    },
+                                    "scheduling_url": {
+                                        "description": "Calendly URL for the user's scheduling page",
+                                        "type": "string"
+                                    },
+                                    "timezone": {
+                                        "description": "User's timezone",
+                                        "type": "string"
+                                    },
+                                    "created_at": {
+                                        "description": "Timestamp when the user was created",
+                                        "type": "string"
+                                    },
+                                    "updated_at": {
+                                        "description": "Timestamp when the user was last updated",
+                                        "type": "string"
+                                    },
+                                    "locale": {
+                                        "description": "User's locale",
+                                        "type": "string"
+                                    },
+                                    "time_notation": {
+                                        "description": "User's time notation preference (12h or 24h)",
+                                        "type": "string"
+                                    },
+                                    "avatar_url": {
+                                        "description": "URL of the user's avatar image",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "uri"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Primary account details of the user"
+                            },
+                            "created_at": {
+                                "description": "Timestamp when the organization membership was created",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp when the organization membership was last updated",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uri",
+                            "role",
+                            "organization",
+                            "user"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single routing form from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_getroutingform",
+            "name": "get-routing-form",
+            "output": [
+                "ActionOutput_calendly_getroutingform"
+            ],
+            "scopes": [
+                "routing_forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getroutingform",
+                "ActionOutput_calendly_getroutingform"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_getroutingform": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "description": "The unique identifier of the routing form in UUID format. Example: \"9f53ccd3-88e6-4c62-ad9e-91ea57d2187d\""
+                            }
+                        },
+                        "required": [
+                            "uuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_getroutingform": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "uri": {
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "unpublished"
+                                        ]
+                                    },
+                                    "questions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uuid": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "required": {
+                                                    "type": "boolean"
+                                                },
+                                                "answer_choices": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "uuid",
+                                                "name",
+                                                "type",
+                                                "required",
+                                                "answer_choices"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "created_at": {
+                                        "type": "string"
+                                    },
+                                    "updated_at": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "uri",
+                                    "organization",
+                                    "name",
+                                    "status",
+                                    "questions",
+                                    "created_at",
+                                    "updated_at"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List event types from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listeventtypes",
+            "name": "list-event-types",
+            "output": [
+                "ActionOutput_calendly_listeventtypes"
+            ],
+            "scopes": [
+                "event_types:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listeventtypes",
+                "ActionOutput_calendly_listeventtypes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listeventtypes": {
+                        "type": "object",
+                        "properties": {
+                            "user": {
+                                "description": "Filter by user URI. Example: \"https://api.calendly.com/users/ABC123\"",
+                                "type": "string"
+                            },
+                            "organization": {
+                                "description": "Filter by organization URI. Example: \"https://api.calendly.com/organizations/XYZ789\"",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Filter by active status. If true, returns only active event types. If false, returns only inactive event types.",
+                                "type": "boolean"
+                            },
+                            "count": {
+                                "description": "Number of results per page. Maximum 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "sort": {
+                                "description": "Sort order. Example: \"created_at:asc\" or \"created_at:desc\".",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listeventtypes": {
+                        "type": "object",
+                        "properties": {
+                            "event_types": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "booking_method": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "description_html": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "internal_note": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "pooling_type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "profile": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "owner": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "type",
+                                                "owner"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "scheduling_url": {
+                                            "type": "string"
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "active",
+                                        "booking_method",
+                                        "color",
+                                        "created_at",
+                                        "description_html",
+                                        "duration",
+                                        "internal_note",
+                                        "kind",
+                                        "name",
+                                        "pooling_type",
+                                        "profile",
+                                        "scheduling_url",
+                                        "slug",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "event_types"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organization memberships from Calendly.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listorganizationmemberships",
+            "name": "list-organization-memberships",
+            "output": [
+                "ActionOutput_calendly_listorganizationmemberships"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listorganizationmemberships",
+                "ActionOutput_calendly_listorganizationmemberships"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listorganizationmemberships": {
+                        "type": "object",
+                        "properties": {
+                            "organization": {
+                                "description": "Organization URI to filter memberships. Example: \"https://api.calendly.com/organizations/ABC123\"",
+                                "type": "string"
+                            },
+                            "user": {
+                                "description": "User URI to filter memberships. Example: \"https://api.calendly.com/users/XYZ789\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address to filter memberships. Example: \"user@example.com\"",
+                                "type": "string"
+                            },
+                            "count": {
+                                "description": "Number of results per page (max 100). Default varies by Calendly.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "page_token": {
+                                "description": "Pagination token from a previous response to fetch the next page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listorganizationmemberships": {
+                        "type": "object",
+                        "properties": {
+                            "collection": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "Unique membership URI. Example: \"https://api.calendly.com/organization_memberships/UUID\""
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "enum": [
+                                                "owner",
+                                                "admin",
+                                                "user"
+                                            ],
+                                            "description": "Role of the user in the organization."
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uri": {
+                                                    "type": "string",
+                                                    "description": "User URI. Example: \"https://api.calendly.com/users/XYZ789\""
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Full name of the user."
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "description": "Email address of the user."
+                                                },
+                                                "scheduling_url": {
+                                                    "type": "string",
+                                                    "description": "User scheduling URL."
+                                                },
+                                                "timezone": {
+                                                    "type": "string",
+                                                    "description": "User timezone."
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "description": "ISO 8601 timestamp when user was created."
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "description": "ISO 8601 timestamp when user was last updated."
+                                                }
+                                            },
+                                            "required": [
+                                                "uri",
+                                                "name",
+                                                "email",
+                                                "scheduling_url",
+                                                "timezone",
+                                                "created_at",
+                                                "updated_at"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "organization": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uri": {
+                                                    "type": "string",
+                                                    "description": "Organization URI. Example: \"https://api.calendly.com/organizations/ABC123\""
+                                                }
+                                            },
+                                            "required": [
+                                                "uri"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when membership was created."
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when membership was last updated."
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "role",
+                                        "user",
+                                        "organization",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of organization membership records."
+                            },
+                            "pagination": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Number of items in the current page."
+                                    },
+                                    "next_page_token": {
+                                        "description": "Token to fetch the next page of results.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "count"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Pagination metadata for navigating results."
+                            }
+                        },
+                        "required": [
+                            "collection",
+                            "pagination"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List routing forms from Calendly",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listroutingforms",
+            "name": "list-routing-forms",
+            "output": [
+                "ActionOutput_calendly_listroutingforms"
+            ],
+            "scopes": [
+                "routing_forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listroutingforms",
+                "ActionOutput_calendly_listroutingforms"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listroutingforms": {
+                        "type": "object",
+                        "properties": {
+                            "organization": {
+                                "description": "The URI of the organization to list routing forms for. If not provided, the action will fetch the current user's organization.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "count": {
+                                "description": "Number of results per page. Default is 20.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listroutingforms": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "Canonical reference (unique identifier) for the routing form."
+                                        },
+                                        "uuid": {
+                                            "type": "string",
+                                            "description": "Unique identifier for the routing form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The routing form name (in human-readable format)."
+                                        },
+                                        "organization": {
+                                            "type": "string",
+                                            "description": "The URI of the organization associated with the routing form."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "The status of the routing form (e.g., active, disabled)."
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the routing form was created."
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the routing form was last updated."
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "uuid",
+                                        "name",
+                                        "organization",
+                                        "status",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List scheduled events from Calendly. Returns a paginated list of events with optional filters for date range, status, and invitee email.",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listscheduledevents",
+            "name": "list-scheduled-events",
+            "output": [
+                "ActionOutput_calendly_listscheduledevents"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listscheduledevents",
+                "ActionOutput_calendly_listscheduledevents"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listscheduledevents": {
+                        "type": "object",
+                        "properties": {
+                            "min_start_time": {
+                                "description": "Minimum start time for events in ISO 8601 format. Example: \"2024-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "max_start_time": {
+                                "description": "Maximum start time for events in ISO 8601 format. Example: \"2024-12-31T23:59:59Z\"",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Filter events by status: \"active\" or \"canceled\"",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
+                            },
+                            "invitee_email": {
+                                "description": "Filter events by invitee email address",
+                                "type": "string"
+                            },
+                            "sort": {
+                                "description": "Sort order for events. Default is \"start_time:asc\"",
+                                "type": "string",
+                                "enum": [
+                                    "start_time:asc",
+                                    "start_time:desc"
+                                ]
+                            },
+                            "count": {
+                                "description": "Number of events to return per page (max 100)",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listscheduledevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "canceled"
+                                            ]
+                                        },
+                                        "start_time": {
+                                            "type": "string"
+                                        },
+                                        "end_time": {
+                                            "type": "string"
+                                        },
+                                        "event_type": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string"
+                                                        },
+                                                        "status": {
+                                                            "type": "string"
+                                                        },
+                                                        "location": {
+                                                            "type": "string"
+                                                        },
+                                                        "join_url": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "type"
+                                                    ],
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "invitees_counter": {
+                                            "type": "object",
+                                            "properties": {
+                                                "active": {
+                                                    "type": "number"
+                                                },
+                                                "limit": {
+                                                    "type": "number"
+                                                },
+                                                "total": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "active",
+                                                "limit",
+                                                "total"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "status",
+                                        "start_time",
+                                        "end_time",
+                                        "event_type",
+                                        "location",
+                                        "invitees_counter",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "events"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhook subscriptions from Calendly",
+            "endpoint": null,
+            "input": "ActionInput_calendly_listwebhooksubscriptions",
+            "name": "list-webhook-subscriptions",
+            "output": [
+                "ActionOutput_calendly_listwebhooksubscriptions"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listwebhooksubscriptions",
+                "ActionOutput_calendly_listwebhooksubscriptions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_calendly_listwebhooksubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "organization_url": {
+                                "description": "Filter by organization URL. Example: \"https://api.calendly.com/organizations/ABC123\"",
+                                "type": "string"
+                            },
+                            "user_url": {
+                                "description": "Filter by user URL. Example: \"https://api.calendly.com/users/ABC123\"",
+                                "type": "string"
+                            },
+                            "scope": {
+                                "description": "Scope of webhook subscriptions to return. Required when filtering by organization or user",
+                                "type": "string",
+                                "enum": [
+                                    "organization",
+                                    "user"
+                                ]
+                            },
+                            "sort": {
+                                "description": "Sort order for results. Default: created_at:desc",
+                                "type": "string",
+                                "enum": [
+                                    "created_at:asc",
+                                    "created_at:desc"
+                                ]
+                            },
+                            "count": {
+                                "description": "Number of results per page. Max: 100, Default: 20",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "page_token": {
+                                "description": "Pagination token from a previous response",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_calendly_listwebhooksubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "collection": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "Canonical reference for the webhook subscription"
+                                        },
+                                        "callback_url": {
+                                            "type": "string",
+                                            "description": "URL where webhook events are sent"
+                                        },
+                                        "events": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "List of event types subscribed to"
+                                        },
+                                        "organization": {
+                                            "type": "string",
+                                            "description": "URL of the associated organization"
+                                        },
+                                        "user": {
+                                            "description": "URL of the associated user, if scoped to user",
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "string",
+                                            "enum": [
+                                                "organization",
+                                                "user"
+                                            ],
+                                            "description": "Scope of the webhook subscription"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the subscription was created"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "ISO 8601 timestamp when the subscription was last updated"
+                                        },
+                                        "creator": {
+                                            "type": "string",
+                                            "description": "URL of the user who created the subscription"
+                                        },
+                                        "retry_started_at": {
+                                            "description": "When retry attempts started, if applicable",
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string",
+                                            "description": "Current state of the webhook subscription"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "description": "Version of the webhook subscription"
+                                        }
+                                    },
+                                    "required": [
+                                        "uri",
+                                        "callback_url",
+                                        "events",
+                                        "organization",
+                                        "scope",
+                                        "created_at",
+                                        "updated_at",
+                                        "creator",
+                                        "state",
+                                        "version"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of webhook subscriptions"
+                            },
+                            "pagination": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "next_page_token": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "previous_page_token": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "collection"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync event invitees from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/event-invitees"
+                }
+            ],
+            "input": null,
+            "name": "event-invitees",
+            "output": [
+                "Invitee"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Invitee"
+            ],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Invitee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The URI of the invitee (used as unique identifier)"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "event": {
+                                "type": "string"
+                            },
+                            "canceled": {
+                                "type": "boolean"
+                            },
+                            "rescheduled": {
+                                "type": "boolean"
+                            },
+                            "cancel_url": {
+                                "type": "string"
+                            },
+                            "reschedule_url": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "text_reminder_number": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "questions_and_answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "question": {
+                                            "type": "string"
+                                        },
+                                        "answer": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "question",
+                                        "answer",
+                                        "position"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tracking": {
+                                "type": "object",
+                                "properties": {
+                                    "utm_campaign": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "utm_source": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "utm_medium": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "utm_content": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "utm_term": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "salesforce_uuid": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "payment": {
+                                "type": "object",
+                                "properties": {
+                                    "external_id": {
+                                        "type": "string"
+                                    },
+                                    "provider": {
+                                        "type": "string"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "terms": {
+                                        "type": "string"
+                                    },
+                                    "successful": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "external_id",
+                                    "provider",
+                                    "amount",
+                                    "currency",
+                                    "successful"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "name",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "event"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync event types from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/event-types"
+                }
+            ],
+            "input": null,
+            "name": "event-types",
+            "output": [
+                "EventType"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "event_types:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "EventType"
+            ],
+            "version": "4.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "EventType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the event type"
+                            },
+                            "uri": {
+                                "type": "string",
+                                "description": "Canonical reference for the event type"
+                            },
+                            "name": {
+                                "description": "Event type name",
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Indicates if the event type is active"
+                            },
+                            "booking_method": {
+                                "description": "Booking method",
+                                "type": "string",
+                                "enum": [
+                                    "instant",
+                                    "poll"
+                                ]
+                            },
+                            "color": {
+                                "description": "Hex color value",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "Creation timestamp"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "Last update timestamp"
+                            },
+                            "deleted_at": {
+                                "description": "Deletion timestamp if deleted",
+                                "type": "string"
+                            },
+                            "description_plain": {
+                                "description": "Plain text description",
+                                "type": "string"
+                            },
+                            "description_html": {
+                                "description": "HTML description",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Session duration in minutes",
+                                "type": "number"
+                            },
+                            "kind": {
+                                "description": "Event type kind",
+                                "type": "string",
+                                "enum": [
+                                    "solo"
+                                ]
+                            },
+                            "pooling_type": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "round_robin",
+                                            "collective",
+                                            "multi_pool"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Pooling type for team event types"
+                            },
+                            "position": {
+                                "description": "Display position",
+                                "type": "number"
+                            },
+                            "scheduling_url": {
+                                "description": "Booking URL",
+                                "type": "string"
+                            },
+                            "slug": {
+                                "description": "URL slug",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Event type category",
+                                "type": "string",
+                                "enum": [
+                                    "StandardEventType",
+                                    "AdhocEventType"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uri",
+                            "active",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync organization memberships from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/organization-memberships"
+                }
+            ],
+            "input": null,
+            "name": "organization-memberships",
+            "output": [
+                "OrganizationMembership"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "organizations:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "OrganizationMembership"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "OrganizationMembership": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "organizationUri": {
+                                "type": "string"
+                            },
+                            "userUri": {
+                                "type": "string"
+                            },
+                            "userEmail": {
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uri",
+                            "role",
+                            "organizationUri",
+                            "userUri"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync routing forms from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/routing-forms"
+                }
+            ],
+            "input": null,
+            "name": "routing-forms",
+            "output": [
+                "RoutingForm"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "routing_forms:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "RoutingForm"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RoutingForm": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "organization": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "answer_choices": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "type",
+                                        "required",
+                                        "answer_choices"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uri",
+                            "organization",
+                            "name",
+                            "status",
+                            "questions",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync scheduled events from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/scheduled-events",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "scheduled-events",
+            "output": [
+                "ScheduledEvent"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ScheduledEvent"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ScheduledEvent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "type": "string"
+                            },
+                            "event_type": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "invitees_counter": {
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "active": {
+                                        "type": "number"
+                                    },
+                                    "limit_reached": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "event_type_name": {
+                                "type": "string"
+                            },
+                            "event_guests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "calendar_event": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string"
+                                    },
+                                    "external_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "cancellation": {
+                                "type": "object",
+                                "properties": {
+                                    "canceled_by": {
+                                        "type": "string"
+                                    },
+                                    "reason": {
+                                        "type": "string"
+                                    },
+                                    "canceler_type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uri",
+                            "start_time",
+                            "end_time",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync webhook subscriptions from Calendly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/webhook-subscriptions"
+                }
+            ],
+            "input": null,
+            "name": "webhook-subscriptions",
+            "output": [
+                "WebhookSubscription"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "webhooks:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "WebhookSubscription"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "WebhookSubscription": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier (extracted from URI)"
+                            },
+                            "uri": {
+                                "type": "string",
+                                "description": "Full URI of the webhook subscription"
+                            },
+                            "callback_url": {
+                                "type": "string",
+                                "description": "URL that receives webhook events"
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of event types subscribed to"
+                            },
+                            "scope": {
+                                "type": "string",
+                                "enum": [
+                                    "organization",
+                                    "user",
+                                    "group"
+                                ],
+                                "description": "Scope of the webhook subscription"
+                            },
+                            "organization": {
+                                "type": "string",
+                                "description": "URI of the organization"
+                            },
+                            "user": {
+                                "description": "URI of the user (when scope is user)",
+                                "type": "string"
+                            },
+                            "group": {
+                                "description": "URI of the group (when scope is group)",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "When the subscription was created"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "When the subscription was last updated"
+                            },
+                            "retry_started_at": {
+                                "description": "When retries started for failed deliveries",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Current status of the webhook",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "disabled"
+                                ]
+                            },
+                            "state": {
+                                "description": "Additional state information",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uri",
+                            "callback_url",
+                            "events",
+                            "scope",
+                            "organization",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

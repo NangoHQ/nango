@@ -8,9 +8,8 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Spinner } from '@/components/ui/Spinner';
-import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { isUnfinished } from '../replyOutcome';
+import { isFailed, isInterrupted, isUnfinished } from '../replyOutcome';
 import { describeTool, labelFor, searchSummary, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
@@ -34,23 +33,29 @@ interface ToolCallCardProps {
 
 type PayloadView = 'table' | 'json';
 
-function useRunDuration(running: boolean, awaitingApproval: boolean, done: boolean): number | null {
-    const startedAt = useRef<number | null>(null);
-    const [duration, setDuration] = useState<number | null>(null);
+// Kept outside the card, because a card remounts when its call joins a group.
+const runStarts = new Map<string, number>();
+const runDurations = new Map<string, number>();
+
+function useRunDuration(toolCallId: string, running: boolean, awaitingApproval: boolean, done: boolean): number | null {
+    const [duration, setDuration] = useState<number | null>(() => runDurations.get(toolCallId) ?? null);
 
     useEffect(() => {
         // The input streams in before the approval card appears, so restart the clock once the user answers.
         if (awaitingApproval) {
-            startedAt.current = null;
+            runStarts.delete(toolCallId);
             return;
         }
-        if (running && startedAt.current === null) {
-            startedAt.current = Date.now();
+        if (running && !runStarts.has(toolCallId)) {
+            runStarts.set(toolCallId, Date.now());
         }
-        if (done && duration === null && startedAt.current !== null) {
-            setDuration(Date.now() - startedAt.current);
+        const startedAt = runStarts.get(toolCallId);
+        if (done && duration === null && startedAt !== undefined) {
+            const elapsed = Date.now() - startedAt;
+            runDurations.set(toolCallId, elapsed);
+            setDuration(elapsed);
         }
-    }, [running, awaitingApproval, done, duration]);
+    }, [toolCallId, running, awaitingApproval, done, duration]);
 
     return duration;
 }
@@ -92,7 +97,18 @@ const ToolIcon: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     );
 };
 
-const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean }> = ({ running, stopped, failed }) => {
+export const RowLogo: React.FC<{ provider: string | undefined }> = ({ provider }) => (
+    <span className="flex size-4 shrink-0 items-center justify-center">
+        {provider ? (
+            // Larger than its 16px slot, because integration logo artwork has built-in padding.
+            <IntegrationLogo key={provider} provider={provider} className="size-5.5 shrink-0 border-0 bg-transparent p-0" />
+        ) : (
+            <Wrench className="size-4 text-icon-secondary" />
+        )}
+    </span>
+);
+
+export const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean }> = ({ running, stopped, failed }) => {
     if (running) {
         return <Spinner />;
     }
@@ -124,8 +140,8 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     const stopped = unfinished && !chatActive && !(part.state === 'approval-responded' && approvalSending);
     const running = unfinished && !stopped;
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
-    const failed = part.state === 'output-error' || part.state === 'output-denied';
-    const duration = useRunDuration(running, awaitingApproval, done);
+    const failed = isFailed(part);
+    const duration = useRunDuration(part.toolCallId, running, awaitingApproval, done);
 
     if (display.kind === 'connect' && part.state === 'output-available') {
         const output = part.output as { connect_url?: string; expires_at?: string; integration?: string; provider?: string };
@@ -146,7 +162,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         }
     }
 
-    if (part.state === 'output-error' && part.errorText === INTERRUPTED_CALL) {
+    if (isInterrupted(part)) {
         return <InterruptedCard display={display} onRetry={onRetryInterrupted} />;
     }
 
@@ -175,51 +191,46 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
             Try again
         </Button>
     );
-    const chevron = (
-        <CollapsibleTrigger tabIndex={-1} aria-hidden className="cursor-pointer self-stretch">
-            <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
-        </CollapsibleTrigger>
+
+    const status = (
+        <>
+            {searchOutput && <span>{searchSummary(searchOutput)}</span>}
+            {meta}
+        </>
     );
 
+    const source = display.kind === 'search' ? 'Session' : display.integration?.integrationName;
+
+    let rowSubtitle: React.ReactNode = null;
     if (display.kind === 'search') {
-        return (
-            <Collapsible className="group/card">
-                <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary hover:text-text-default">
-                    <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left">
-                        <LogoInverted className="size-4 shrink-0 text-text-strong" />
-                        <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
-                        {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
-                        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                            {searchOutput && <span>{searchSummary(searchOutput)}</span>}
-                            {meta}
-                        </span>
-                    </CollapsibleTrigger>
-                    {tryAgain}
-                    {chevron}
-                </div>
-                <CollapsibleContent className="pt-3">
-                    <div className="rounded-ds-xs border border-border-muted bg-surface-panel p-3">{payload}</div>
-                </CollapsibleContent>
-            </Collapsible>
-        );
+        rowSubtitle = display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>;
+    } else if (display.method || display.path) {
+        rowSubtitle = <Subtitle display={display} />;
     }
 
     return (
-        <Collapsible className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
-            <div className="flex items-center gap-2 pr-4 text-text-secondary">
-                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left">
-                    <ToolIcon display={display} />
-                    <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
-                        <Subtitle display={display} />
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2 text-body-small-regular">{meta}</div>
+        <Collapsible className="group/card">
+            <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary hover:text-text-default group-data-[state=open]/card:text-text-default">
+                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 rounded-ds-xs py-1 text-left focus-visible:outline-offset-4">
+                    {display.kind === 'search' ? (
+                        <LogoInverted className="size-4 shrink-0 text-text-strong" />
+                    ) : (
+                        <RowLogo provider={display.integration?.provider} />
+                    )}
+                    <span className="shrink-0">
+                        {source && <span className="text-body-medium-medium text-text-default">{source} </span>}
+                        <span className={cn(running && 'animate-pulse')}>{display.title}</span>
+                    </span>
+                    {rowSubtitle}
+                    <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
+                        {status}
+                        <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
+                    </span>
                 </CollapsibleTrigger>
                 {tryAgain}
-                {chevron}
             </div>
-            <CollapsibleContent className="border-t border-border-muted">
-                <div className="p-3">{payload}</div>
+            <CollapsibleContent className="pt-3">
+                <div className="mr-[41px] ml-6 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">{payload}</div>
             </CollapsibleContent>
         </Collapsible>
     );
@@ -323,7 +334,7 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
     const [view, setView] = useState<PayloadView>('table');
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-[fit-content(40%)_minmax(0,1fr)] gap-x-6 gap-y-4">
             <Section
                 title="Parameters"
                 value={input}
@@ -339,11 +350,11 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
                     </SegmentedControl>
                 }
             />
-            {error !== undefined ? (
-                <Section title="Error" value={error} view="json" />
-            ) : output !== undefined ? (
-                <Section title="Response" value={output} view={view} />
-            ) : null}
+            {(error !== undefined || output !== undefined) && (
+                <div className="col-span-2 grid grid-cols-subgrid border-t border-border-muted pt-3">
+                    {error !== undefined ? <Section title="Error" value={error} view="json" /> : <Section title="Response" value={output} view={view} />}
+                </div>
+            )}
         </div>
     );
 };
@@ -361,7 +372,7 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
         if (Object.keys(value).length === 0) {
             return <span className="text-body-small-regular text-text-muted">None</span>;
         }
-        return <CollapsibleCode language="json" code={JSON.stringify(value, null, 2)} title={sizeLabel(value)} />;
+        return <CollapsibleCode language="json" code={JSON.stringify(value, null, 2)} />;
     }
     if (typeof value === 'string' && /\s/.test(value)) {
         return <p className="whitespace-pre-wrap wrap-anywhere text-body-small-regular text-text-default">{value}</p>;
@@ -373,20 +384,7 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
     );
 };
 
-function sizeLabel(value: object): string {
-    if (Array.isArray(value)) {
-        return value.length === 1 ? '1 item' : `${value.length} items`;
-    }
-    const count = Object.keys(value).length;
-    return count === 1 ? '1 field' : `${count} fields`;
-}
-
-const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapLines?: boolean; title?: string }> = ({
-    code,
-    language,
-    wrapLines = false,
-    title
-}) => {
+const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapLines?: boolean }> = ({ code, language, wrapLines = false }) => {
     const [expanded, setExpanded] = useState(false);
     const lines = code.split('\n');
     const long = lines.length > COLLAPSED_LINES || code.length > COLLAPSED_LENGTH;
@@ -398,7 +396,7 @@ const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapL
         <div className="flex flex-col items-start gap-2">
             <div className="w-full">
                 <CodeBlock
-                    title={title}
+                    bare
                     language={language}
                     code={shown}
                     copyValue={code}
@@ -421,29 +419,31 @@ const Section: React.FC<{ title: string; value: unknown; view: PayloadView; acti
     const rows = view === 'table' && value && typeof value === 'object' && !Array.isArray(value) ? Object.entries(value as Record<string, unknown>) : null;
 
     return (
-        <div className="flex flex-col gap-1.5">
-            <div className="flex min-h-7 items-center justify-between gap-2">
+        <div className="col-span-2 grid grid-cols-subgrid gap-y-1.5">
+            <div className="col-span-2 flex min-h-7 items-center justify-between gap-2">
                 <span className="text-body-small-medium text-text-strong">{title}</span>
                 {action}
             </div>
             {rows ? (
-                <div className="overflow-hidden rounded-ds-xs border border-border-muted">
-                    {rows.length === 0 && <div className="px-3 py-2 text-body-small-regular text-text-secondary">Empty</div>}
+                <div className="col-span-2 grid grid-cols-subgrid">
+                    {rows.length === 0 && <div className="col-span-2 py-2 text-body-small-regular text-text-secondary">Empty</div>}
                     {rows.map(([key, entry]) => (
-                        <div key={key} className="grid grid-cols-[minmax(120px,25%)_1fr] border-b border-border-muted last:border-b-0">
-                            <span className="border-r border-border-muted px-3 py-2 text-body-small-regular text-text-secondary">{key}</span>
-                            <div className="min-w-0 px-3 py-2 text-body-small-regular">
+                        <div key={key} className="col-span-2 grid grid-cols-subgrid border-b border-border-muted py-2 last:border-b-0">
+                            <span className="text-body-small-regular text-text-muted">{key}</span>
+                            <div className="min-w-0 text-body-small-regular">
                                 <Value value={entry} />
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <CollapsibleCode
-                    language={typeof value === 'string' ? 'bash' : 'json'}
-                    code={typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2)}
-                    wrapLines={typeof value === 'string'}
-                />
+                <div className="col-span-2 min-w-0">
+                    <CollapsibleCode
+                        language={typeof value === 'string' ? 'bash' : 'json'}
+                        code={typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2)}
+                        wrapLines={typeof value === 'string'}
+                    />
+                </div>
             )}
         </div>
     );

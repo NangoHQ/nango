@@ -1,0 +1,3655 @@
+{
+    "providerConfigKey": "recruitee",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make candidate-linked notes visible to the connection available as replicated records, with readable content, audience and pin state.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-candidate-notes",
+            "output": [
+                "CandidateNotes"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CandidateNotes"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CandidateNotes": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Company note ID."
+                            },
+                            "html": {
+                                "description": "Provider-rendered HTML; not sanitized for browser insertion.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Readable note content extracted from the editor document when provider text is null."
+                            },
+                            "pinnedAt": {
+                                "description": "Pin instant in UTC or null when unpinned.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC retaining source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Update instant in UTC retaining source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "visibility": {
+                                "description": "Effective provider note audience.",
+                                "type": "object",
+                                "properties": {
+                                    "level": {
+                                        "type": "string",
+                                        "description": "Provider visibility level; public does not imply public-internet visibility."
+                                    },
+                                    "roleIds": {
+                                        "description": "Effective role audience IDs, including provider additions.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "adminIds": {
+                                        "description": "Effective admin audience IDs.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "level"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "candidateId": {
+                                "description": "Candidate linked to the note, preserving explicit null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "authorAdminId": {
+                                "description": "Company admin author ID when returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "text"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate-linked company notes with readable content, effective audience and pin state."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make company candidate tag definitions and provider usage counts available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-candidate-tags",
+            "output": [
+                "CandidateTags"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CandidateTags"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CandidateTags": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Company candidate tag ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Tag display name."
+                            },
+                            "status": {
+                                "description": "Provider status, preserving null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "context": {
+                                "description": "Provider tag context, such as tags.",
+                                "type": "string"
+                            },
+                            "taggingsCount": {
+                                "description": "Provider tagging usage count, not assumed to count distinct candidates.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company candidate tag definition and provider tagging usage count."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make company candidate identities, contact information, hiring and privacy state, and document references available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-candidates",
+            "output": [
+                "Candidates"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Candidates"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Candidates": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Candidate ID within the connected company."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Candidate display name."
+                            },
+                            "cvUrl": {
+                                "description": "Provider CV link, possibly relative, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Professional title or null when unset.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "emails": {
+                                "description": "Stored candidate email addresses, retaining empty collections.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phones": {
+                                "description": "Stored phone numbers without numeric coercion.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "isHired": {
+                                "description": "Provider hired state.",
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC with all source fractional digits.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Update instant normalized to UTC with all source fractional digits.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "gdprStatus": {
+                                "description": "Provider privacy-consent state, without collapsing distinct values.",
+                                "type": "string"
+                            },
+                            "coverLetterFileUrl": {
+                                "description": "Provider cover-letter file link, possibly relative, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Replicated company candidate identities, contact information, hiring and privacy state, and document references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make company departments, localized names and association counts available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-departments",
+            "output": [
+                "Departments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Departments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Departments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Company department ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Department display name."
+                            },
+                            "status": {
+                                "description": "Provider status, preserving null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "offersCount": {
+                                "description": "Provider count of associated job offers.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "translations": {
+                                "description": "Locale-to-department-name map, retaining null translations.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Department name for this locale, preserving null.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "talentPoolsCount": {
+                                "description": "Provider count of associated talent pools.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company department with localized names and association counts."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make company billing invoices, credit notes and legacy invoices available as replicated records, preserving document-type identity and monetary precision.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-invoices",
+            "output": [
+                "Invoices"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Invoices"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Invoices": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Collision-free record key composed of resourceType and provider document ID, each percent-encoded and joined by a colon."
+                            },
+                            "number": {
+                                "description": "Human-facing document number, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "paidAt": {
+                                "description": "Payment instant in UTC or null when not recorded.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider billing status."
+                            },
+                            "fileUrl": {
+                                "description": "Provider document link, possibly relative, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "currency": {
+                                "type": "string",
+                                "description": "Currency code associated with the amount."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC with source precision retained.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "documentId": {
+                                "type": "string",
+                                "description": "Original provider document ID, scoped by resourceType."
+                            },
+                            "totalAmount": {
+                                "type": "string",
+                                "description": "Exact reported decimal amount without rounding or invented minor-unit conversion."
+                            },
+                            "resourceType": {
+                                "type": "string",
+                                "description": "Provider document type such as invoice, credit_note or legacy_invoice."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "currency",
+                            "documentId",
+                            "totalAmount",
+                            "resourceType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company billing invoice, credit note or legacy invoice with document-scoped identity and exact monetary text."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make company work locations, addresses, archive instants and localized labels available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-locations",
+            "output": [
+                "Locations"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Locations"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Locations": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Company location ID."
+                            },
+                            "city": {
+                                "description": "Location city or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Location display name."
+                            },
+                            "street": {
+                                "description": "Street address or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC retaining source precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "stateCode": {
+                                "description": "Region code as text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "description": "Update instant in UTC retaining source precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "archivedAt": {
+                                "description": "Archive instant in UTC or null when not archived.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "postalCode": {
+                                "description": "Postal code as text, preserving leading zeros.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "countryCode": {
+                                "description": "Country region code or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "fullAddress": {
+                                "description": "Provider-composed full address.",
+                                "type": "string"
+                            },
+                            "translations": {
+                                "description": "Localized location labels and full addresses when returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Localized location name.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "note": {
+                                            "description": "Localized note.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "locale": {
+                                            "type": "string",
+                                            "description": "Translation locale code."
+                                        },
+                                        "isDefault": {
+                                            "description": "Provider default-translation flag.",
+                                            "type": "boolean"
+                                        },
+                                        "fullAddress": {
+                                            "description": "Localized full address.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "locale"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A localized location label and address."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company work location, address, archive instant and localized labels."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-delete-candidate-tags",
+            "integrationId": "recruitee",
+            "description": "Request company-wide deletion of up to 100 candidate tags using the native multiple-ID operation. The result acknowledges the aggregate request, not individual tag outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_batchdeletecandidatetags",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_batchdeletecandidatetags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_batchdeletecandidatetags": {
+                        "type": "object",
+                        "properties": {
+                            "tagIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Company candidate tag ID to delete."
+                                },
+                                "uniqueItems": true,
+                                "description": "Company candidate tag IDs to delete, maximum 100 unique targets."
+                            }
+                        },
+                        "required": [
+                            "tagIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One bounded request to delete company candidate tags."
+                    },
+                    "FunctionOutput_recruitee_batchdeletecandidatetags": {
+                        "type": "object",
+                        "properties": {
+                            "requestedTagIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Target ID included in the acknowledged aggregate request."
+                                },
+                                "description": "Target IDs in input order for the acknowledged aggregate request; not a per-tag success list."
+                            }
+                        },
+                        "required": [
+                            "requestedTagIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate deletion acknowledgement without individual tag outcomes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get tagIds from `list-candidate-tags`. This removes company tags, not just their association with selected candidates. Maximum 100 unique IDs per call under a provisional cap. Use `delete-candidate-tag` for one tag. Reversibility and all-or-nothing behavior are not documented."
+            },
+            "filePath": "./recruitee/tools/batch-delete-candidate-tags.ts",
+            "version": "8e178074e521f8060d4ecfa85a9c370643b192135a48b22f0c31ec30f4876b03",
+            "location": {
+                "js": "templates-zero/recruitee/tools/batch-delete-candidate-tags/8e178074e521f8060d4ecfa85a9c370643b192135a48b22f0c31ec30f4876b03.cjs",
+                "ts": "templates-zero/recruitee/tools/batch-delete-candidate-tags/8e178074e521f8060d4ecfa85a9c370643b192135a48b22f0c31ec30f4876b03.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-candidate",
+            "integrationId": "recruitee",
+            "description": "Create a candidate, optionally associating the candidate with job offers.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_createcandidate",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_createcandidate",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Candidate's display name, supplied as ordinary Unicode text."
+                            },
+                            "emails": {
+                                "description": "Candidate email addresses; omitted means no addresses supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Candidate email address."
+                                }
+                            },
+                            "phones": {
+                                "description": "Candidate phone numbers, preserving international prefixes and formatting.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Candidate phone number, preserving international prefixes and formatting."
+                                }
+                            },
+                            "offerIds": {
+                                "description": "Known job offer IDs to associate with the candidate; omitted or empty creates without requested offer associations.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Known job offer ID."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate details and optional job offer associations for creation."
+                    },
+                    "FunctionOutput_recruitee_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Created candidate ID within the connected company."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Candidate name returned by Recruitee."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The created candidate ID and name returned by Recruitee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use to create a new candidate, not to modify an existing one; use `update-candidate` for that. Search with `list-candidates` first when duplicates matter. Offer IDs must already be known. Repeating a successful call can create another candidate."
+            },
+            "filePath": "./recruitee/tools/create-candidate.ts",
+            "version": "ceb6ee2b2d6d07395094984b148c9f038b55b651abefabaac72bdf9cef116c0c",
+            "location": {
+                "js": "templates-zero/recruitee/tools/create-candidate/ceb6ee2b2d6d07395094984b148c9f038b55b651abefabaac72bdf9cef116c0c.cjs",
+                "ts": "templates-zero/recruitee/tools/create-candidate/ceb6ee2b2d6d07395094984b148c9f038b55b651abefabaac72bdf9cef116c0c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-candidate-note",
+            "integrationId": "recruitee",
+            "description": "Create a candidate note from ordinary text with optional attachment associations and explicit visibility.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_createcandidatenote",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_createcandidatenote",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_createcandidatenote": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Ordinary Unicode note text; newlines are preserved, not interpreted as HTML."
+                            },
+                            "visibility": {
+                                "description": "Explicit audience; omission delegates to provider defaults.",
+                                "type": "object",
+                                "properties": {
+                                    "level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "protected"
+                                        ],
+                                        "description": "Provider visibility level; public does not imply internet-public access."
+                                    },
+                                    "roleIds": {
+                                        "description": "Explicit allowed company role IDs; provider may normalize or augment these.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "An explicitly allowed company role ID."
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "adminIds": {
+                                        "description": "Explicit allowed company admin IDs; defaults to an empty list within a supplied visibility object.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "An explicitly allowed company admin ID."
+                                        },
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": [
+                                    "level"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped candidate ID receiving the note."
+                            },
+                            "attachmentIds": {
+                                "description": "Existing attachment IDs to associate; omitted or [] requests no attachments.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "An existing attachment ID to associate."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create one candidate note from ordinary text, with optional existing attachments and visibility."
+                    },
+                    "FunctionOutput_recruitee_createcandidatenote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New company note ID."
+                            },
+                            "html": {
+                                "description": "Rendered note HTML returned by Recruitee; not sanitized for direct browser insertion.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Plain text derived from the returned document, not merely an echo when provider text is null."
+                            },
+                            "candidateId": {
+                                "description": "Candidate linked to the returned note, preserving provider null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "text"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The created note identity and readable provider-returned content."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get candidateId from `list-candidates`. Use `update-note` to change an existing note. This creates a new note each time. Attachment IDs must already exist; this tool does not upload attachments. Omitted visibility uses Recruitee's default; use explicit visibility when confidentiality matters."
+            },
+            "filePath": "./recruitee/tools/create-candidate-note.ts",
+            "version": "c8f71f29f3c0e6ca5230e8771587a237b83f19020b2f9b55c70cf6da71d9bdf4",
+            "location": {
+                "js": "templates-zero/recruitee/tools/create-candidate-note/c8f71f29f3c0e6ca5230e8771587a237b83f19020b2f9b55c70cf6da71d9bdf4.cjs",
+                "ts": "templates-zero/recruitee/tools/create-candidate-note/c8f71f29f3c0e6ca5230e8771587a237b83f19020b2f9b55c70cf6da71d9bdf4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-offer",
+            "integrationId": "recruitee",
+            "description": "Create a Recruitee job offer from a requisition. This is a recruiting job resource, not an employment offer letter.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_createoffer",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_createoffer",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_createoffer": {
+                        "type": "object",
+                        "properties": {
+                            "requisitionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing company requisition from which the job offer is created."
+                            }
+                        },
+                        "required": [
+                            "requisitionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create a company job offer from an existing requisition."
+                    },
+                    "FunctionOutput_recruitee_createoffer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New company job offer ID."
+                            },
+                            "url": {
+                                "description": "Provider job URL, preserving null when unavailable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "slug": {
+                                "description": "Provider slug usable for supported offer lookups.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Job title returned by Recruitee."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider lifecycle state; creation is not a promise of publication."
+                            },
+                            "createdAt": {
+                                "description": "Job creation instant in UTC retaining source precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity and lifecycle state of the newly created Recruitee job offer."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use with a known company requisition ID. The tool creates a new job offer; repeating it may create another. It does not promise publication. Use `update-offer` to edit an existing offer's salary."
+            },
+            "filePath": "./recruitee/tools/create-offer.ts",
+            "version": "4ff001db9baba499d01fadeabd9415f98d2cf2f3960fb00175c8643c494a9ab3",
+            "location": {
+                "js": "templates-zero/recruitee/tools/create-offer/4ff001db9baba499d01fadeabd9415f98d2cf2f3960fb00175c8643c494a9ab3.cjs",
+                "ts": "templates-zero/recruitee/tools/create-offer/4ff001db9baba499d01fadeabd9415f98d2cf2f3960fb00175c8643c494a9ab3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-candidate",
+            "integrationId": "recruitee",
+            "description": "Delete a candidate from the connected company. The documentation does not establish whether this is reversible.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_deletecandidate",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_deletecandidate",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_deletecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped ID of the candidate to delete."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target candidate to delete from the connected company."
+                    },
+                    "FunctionOutput_recruitee_deletecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "Candidate ID targeted by the acknowledged deletion."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target of an acknowledged candidate deletion, without a guarantee of physical erasure."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a candidateId from `list-candidates` or `get-candidate`. This deletes the candidate, not just a job association. Do not assume recovery is possible. There is no restore tool in this integration."
+            },
+            "filePath": "./recruitee/tools/delete-candidate.ts",
+            "version": "7562e46e6fd1dde3dbd9f209f069fa46a6fb0775beec9e99a52f56b142962378",
+            "location": {
+                "js": "templates-zero/recruitee/tools/delete-candidate/7562e46e6fd1dde3dbd9f209f069fa46a6fb0775beec9e99a52f56b142962378.cjs",
+                "ts": "templates-zero/recruitee/tools/delete-candidate/7562e46e6fd1dde3dbd9f209f069fa46a6fb0775beec9e99a52f56b142962378.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-candidate-tag",
+            "integrationId": "recruitee",
+            "description": "Delete a candidate tag from the company, not merely remove it from one candidate. Reversibility is not documented.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_deletecandidatetag",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_deletecandidatetag",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_deletecandidatetag": {
+                        "type": "object",
+                        "properties": {
+                            "tagId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company candidate tag ID to delete."
+                            }
+                        },
+                        "required": [
+                            "tagId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The company candidate tag to delete."
+                    },
+                    "FunctionOutput_recruitee_deletecandidatetag": {
+                        "type": "object",
+                        "properties": {
+                            "tagId": {
+                                "type": "string",
+                                "description": "Target tag ID whose deletion request was acknowledged."
+                            }
+                        },
+                        "required": [
+                            "tagId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the company candidate tag deletion request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get tagId from `list-candidate-tags`. This is company-wide tag removal, not a candidate-specific association change. Use `batch-delete-candidate-tags` for up to 100 tags. Do not assume undo is available."
+            },
+            "filePath": "./recruitee/tools/delete-candidate-tag.ts",
+            "version": "05f5ebd1c4bbb9c2790b9671361f8f1ce0b92da5b936f0140228fe7b3e0971e8",
+            "location": {
+                "js": "templates-zero/recruitee/tools/delete-candidate-tag/05f5ebd1c4bbb9c2790b9671361f8f1ce0b92da5b936f0140228fe7b3e0971e8.cjs",
+                "ts": "templates-zero/recruitee/tools/delete-candidate-tag/05f5ebd1c4bbb9c2790b9671361f8f1ce0b92da5b936f0140228fe7b3e0971e8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-candidate",
+            "integrationId": "recruitee",
+            "description": "Get a candidate's identity, contact details, document links, hiring and privacy state.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_getcandidate",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_getcandidate",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_getcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Candidate ID within the connected company."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies a candidate within the connected company."
+                    },
+                    "FunctionOutput_recruitee_getcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Candidate's company-scoped ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Candidate display name."
+                            },
+                            "cvUrl": {
+                                "description": "Provider CV link, or null if none; relative links remain relative.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Candidate's professional title, or null when unset.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "emails": {
+                                "description": "Stored email addresses, including values not yet validated by Recruitee.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A stored email address."
+                                }
+                            },
+                            "phones": {
+                                "description": "Stored phone numbers without numeric coercion.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A stored phone number."
+                                }
+                            },
+                            "isHired": {
+                                "description": "Whether Recruitee marks the candidate as hired.",
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC, preserving source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Last update instant in UTC, preserving source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "gdprStatus": {
+                                "description": "Provider privacy-consent state, preserved without collapsing distinct states.",
+                                "type": "string"
+                            },
+                            "coverLetter": {
+                                "description": "Stored cover-letter text, or null if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "coverLetterFileUrl": {
+                                "description": "Provider cover-letter file link, or null if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A candidate's identity, contact details, document links, hiring and privacy state."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a candidate ID from `list-candidates`. Use `list-candidate-notes` for notes or `list-candidates` to find candidates without a known ID."
+            },
+            "filePath": "./recruitee/tools/get-candidate.ts",
+            "version": "82c31b3dc35dbc3e0954de3601f1923c47bfa7cb836467228ed39e48824bf15a",
+            "location": {
+                "js": "templates-zero/recruitee/tools/get-candidate/82c31b3dc35dbc3e0954de3601f1923c47bfa7cb836467228ed39e48824bf15a.cjs",
+                "ts": "templates-zero/recruitee/tools/get-candidate/82c31b3dc35dbc3e0954de3601f1923c47bfa7cb836467228ed39e48824bf15a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-localization-settings",
+            "integrationId": "recruitee",
+            "description": "Get Recruitee's proposed time format and first day of the week; this does not modify stored preferences.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_getlocalizationsettings",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_getlocalizationsettings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_getlocalizationsettings": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No inputs are required to retrieve proposed localization settings."
+                    },
+                    "FunctionOutput_recruitee_getlocalizationsettings": {
+                        "type": "object",
+                        "properties": {
+                            "weekStartDay": {
+                                "type": "string",
+                                "description": "Provider's named proposed first weekday, normalized to lowercase English if that mapping is established; otherwise preserve the provider value."
+                            },
+                            "use24HourTime": {
+                                "type": "boolean",
+                                "description": "Whether Recruitee proposes a 24-hour time display."
+                            }
+                        },
+                        "required": [
+                            "weekStartDay",
+                            "use24HourTime"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Proposed localization defaults from Recruitee, not stored user preferences."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to initialize presentation defaults. The result is a proposal from Recruitee, not a guarantee about the user's saved preferences. There are no caller locale inputs documented for this endpoint."
+            },
+            "filePath": "./recruitee/tools/get-localization-settings.ts",
+            "version": "895e99de0da1f776cece744efce52d6735d34e24acf8fe0fc9950ddb6f3e3ffe",
+            "location": {
+                "js": "templates-zero/recruitee/tools/get-localization-settings/895e99de0da1f776cece744efce52d6735d34e24acf8fe0fc9950ddb6f3e3ffe.cjs",
+                "ts": "templates-zero/recruitee/tools/get-localization-settings/895e99de0da1f776cece744efce52d6735d34e24acf8fe0fc9950ddb6f3e3ffe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-candidate-notes",
+            "integrationId": "recruitee",
+            "description": "List notes visible to the connected user for one candidate, including readable content, audience and pin state.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listcandidatenotes",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listcandidatenotes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listcandidatenotes": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped candidate ID whose visible notes to list."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the candidate whose visible notes to list."
+                    },
+                    "FunctionOutput_recruitee_listcandidatenotes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company note ID."
+                                        },
+                                        "html": {
+                                            "description": "Provider-rendered HTML, not sanitized for browser insertion.",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Readable visible text, extracted from document content when provider text is null."
+                                        },
+                                        "pinnedAt": {
+                                            "description": "Pin instant in UTC or null when unpinned.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant in UTC retaining fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant in UTC retaining fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "visibility": {
+                                            "description": "Effective provider audience, including any normalized additions.",
+                                            "type": "object",
+                                            "properties": {
+                                                "level": {
+                                                    "type": "string",
+                                                    "description": "Provider audience level, not a claim of internet-public access."
+                                                },
+                                                "roleIds": {
+                                                    "description": "Effective role audience IDs.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Effective role audience ID."
+                                                    }
+                                                },
+                                                "adminIds": {
+                                                    "description": "Effective admin audience IDs.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Effective admin audience ID."
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "level"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "candidateId": {
+                                            "description": "Linked candidate ID, preserving null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "authorAdminId": {
+                                            "description": "Company admin author ID if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "text"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A candidate note visible to the connected user."
+                                },
+                                "description": "Candidate notes visible to the connection, in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The single collection of candidate notes visible to the connected user."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain candidateId from `list-candidates`. Use returned note IDs with `update-note`, `pin-note` or `unpin-note`. This endpoint documents no pagination parameters; the tool returns its single collection response."
+            },
+            "filePath": "./recruitee/tools/list-candidate-notes.ts",
+            "version": "0b3e65a0165270c8363ce665dde5f6dec014a330cd4a374d92d90a07c1f69327",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-candidate-notes/0b3e65a0165270c8363ce665dde5f6dec014a330cd4a374d92d90a07c1f69327.cjs",
+                "ts": "templates-zero/recruitee/tools/list-candidate-notes/0b3e65a0165270c8363ce665dde5f6dec014a330cd4a374d92d90a07c1f69327.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-candidate-tags",
+            "integrationId": "recruitee",
+            "description": "List one page of company candidate tags, optionally matching text and sorting by name or usage count.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listcandidatetags",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listcandidatetags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listcandidatetags": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Provider tag search text; omitted or empty applies no search.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same company, query and sort choices.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "description": "Sort by tag name or provider usage count; omitted uses provider default.",
+                                "type": "string",
+                                "enum": [
+                                    "name",
+                                    "taggingsCount"
+                                ]
+                            },
+                            "sortOrder": {
+                                "description": "Ascending or descending order; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Search and sorting choices for one page of company candidate tags."
+                    },
+                    "FunctionOutput_recruitee_listcandidatetags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company candidate tag ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag display name."
+                                        },
+                                        "status": {
+                                            "description": "Provider status, preserving null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "context": {
+                                            "description": "Provider tag context, such as tags.",
+                                            "type": "string"
+                                        },
+                                        "taggingsCount": {
+                                            "description": "Provider usage count; not interpreted as a guaranteed count of distinct candidates.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company candidate tag."
+                                },
+                                "description": "One provider page of candidate tags."
+                            },
+                            "nextCursor": {
+                                "description": "Next page continuation, omitted when the filtered collection is exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of company candidate tags and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to obtain tag IDs for `delete-candidate-tag` or `batch-delete-candidate-tags`. Pass nextCursor as cursor with unchanged query and sort choices. The provider page size is not caller-configurable in the reviewed interface."
+            },
+            "filePath": "./recruitee/tools/list-candidate-tags.ts",
+            "version": "9d25ee4358b6f3d7f70ec291531fc900dc7cc22b8b53e0b2542bc485e7d78a52",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-candidate-tags/9d25ee4358b6f3d7f70ec291531fc900dc7cc22b8b53e0b2542bc485e7d78a52.cjs",
+                "ts": "templates-zero/recruitee/tools/list-candidate-tags/9d25ee4358b6f3d7f70ec291531fc900dc7cc22b8b53e0b2542bc485e7d78a52.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-candidates",
+            "integrationId": "recruitee",
+            "description": "List one page of candidates, optionally matching names or offers and filtering qualification, deletion state, IDs or creation time.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listcandidates",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listcandidates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listcandidates": {
+                        "type": "object",
+                        "properties": {
+                            "sort": {
+                                "description": "Provider candidate ordering by date or last message; direction remains provider-defined.",
+                                "default": "byDate",
+                                "type": "string",
+                                "enum": [
+                                    "byDate",
+                                    "byLastMessage"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Maximum candidates in this page.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "query": {
+                                "description": "Provider search text matching candidate name or offer; omitted or empty applies no search.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same company, filters, sort and page size.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "offerId": {
+                                "description": "Restrict results to a known job offer ID.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "deletedOnly": {
+                                "description": "True requests only deleted candidates; false or omitted does not request the deleted-only filter.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "candidateIds": {
+                                "description": "Restrict results to these candidate IDs; comma characters are not allowed in an individual ID.",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "pattern": "^[^,]+$",
+                                    "description": "Candidate ID without comma characters."
+                                }
+                            },
+                            "createdAfter": {
+                                "description": "Exclusive candidate creation-time lower bound with explicit UTC marker or offset; up to six fractional digits.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "qualification": {
+                                "description": "Include only this qualification state; omitted does not request either filter.",
+                                "type": "string",
+                                "enum": [
+                                    "qualified",
+                                    "disqualified"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation for one page of company candidates."
+                    },
+                    "FunctionOutput_recruitee_listcandidates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Candidate ID within the company."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Candidate display name."
+                                        },
+                                        "emails": {
+                                            "description": "Stored candidate email addresses; omitted if not supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Stored email address."
+                                            }
+                                        },
+                                        "phones": {
+                                            "description": "Stored candidate phone numbers; omitted if not supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Stored phone number."
+                                            }
+                                        },
+                                        "isHired": {
+                                            "description": "Provider's candidate hired flag.",
+                                            "type": "boolean"
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant normalized to UTC without losing source precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant normalized to UTC without losing source precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Candidate summary from the listing."
+                                },
+                                "description": "Candidates from one provider page in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when exhausted, possibly after a final empty page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of candidate summaries and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find candidate IDs or browse candidates. Use `get-candidate` for document and privacy details. Pass nextCursor as cursor with the same filters and limit. Default page size is 100; maximum is 1000. The query matches candidate names or offers, not arbitrary profile text."
+            },
+            "filePath": "./recruitee/tools/list-candidates.ts",
+            "version": "48d55a26f617fa392772abd056a36e830f53676bc84aafed0e66c8051ac0b219",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-candidates/48d55a26f617fa392772abd056a36e830f53676bc84aafed0e66c8051ac0b219.cjs",
+                "ts": "templates-zero/recruitee/tools/list-candidates/48d55a26f617fa392772abd056a36e830f53676bc84aafed0e66c8051ac0b219.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-countries",
+            "integrationId": "recruitee",
+            "description": "List country region codes, localized names and telephone calling codes for requested locales.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listcountries",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listcountries",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listcountries": {
+                        "type": "object",
+                        "properties": {
+                            "locales": {
+                                "description": "Requested provider locale codes, for example en or de; omitted leaves locale selection to Recruitee.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Provider locale code, for example en or de."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Optional locale selection for country reference data."
+                    },
+                    "FunctionOutput_recruitee_listcountries": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "locale": {
+                                            "type": "string",
+                                            "description": "Locale key under which this country was returned."
+                                        },
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Country region code, such as DE; not a telephone calling code."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Country name in the returned locale."
+                                        },
+                                        "callingCode": {
+                                            "type": "string",
+                                            "description": "Provider telephone calling code as digits without a plus sign; preserves the provider's 0 sentinel."
+                                        }
+                                    },
+                                    "required": [
+                                        "locale",
+                                        "code",
+                                        "name",
+                                        "callingCode"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A country and its telephone calling code in one returned locale."
+                                },
+                                "description": "One country entry per returned locale and region code."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete country reference response flattened across returned locales."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for country and telephone-code pickers. Supply locales when localized names are needed; omission retains the provider's behavior and can produce no countries. This returns the provider's complete single response, without a continuation token."
+            },
+            "filePath": "./recruitee/tools/list-countries.ts",
+            "version": "414436542b85793b777f1c6e9dc1fb463a5fb9b7fe377e0cc4c2cc2a840ad637",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-countries/414436542b85793b777f1c6e9dc1fb463a5fb9b7fe377e0cc4c2cc2a840ad637.cjs",
+                "ts": "templates-zero/recruitee/tools/list-countries/414436542b85793b777f1c6e9dc1fb463a5fb9b7fe377e0cc4c2cc2a840ad637.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-departments",
+            "integrationId": "recruitee",
+            "description": "List company departments with localized names and job and talent-pool counts.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listdepartments",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listdepartments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listdepartments": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required; departments belong to the company selected on the connection."
+                    },
+                    "FunctionOutput_recruitee_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company department ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Department display name."
+                                        },
+                                        "status": {
+                                            "description": "Provider status, preserving null when no status is supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "offersCount": {
+                                            "description": "Provider count of associated job offers.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "translations": {
+                                            "description": "Locale-to-name map; null localized names are preserved.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string",
+                                                "description": "Locale code."
+                                            },
+                                            "additionalProperties": {
+                                                "description": "Localized department name, preserving null.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "talentPoolsCount": {
+                                            "description": "Provider count of associated talent pools.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company department with its localized names and associated counts."
+                                },
+                                "description": "Departments returned for the connected company."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company departments without the provider transport envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to obtain department IDs and localized department names. The endpoint returns one unpaginated collection; no cursor is required."
+            },
+            "filePath": "./recruitee/tools/list-departments.ts",
+            "version": "cab027f6b53dd6cb661bcefa11a555edc2d0f7f258a28d10988f8994a7e17980",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-departments/cab027f6b53dd6cb661bcefa11a555edc2d0f7f258a28d10988f8994a7e17980.cjs",
+                "ts": "templates-zero/recruitee/tools/list-departments/cab027f6b53dd6cb661bcefa11a555edc2d0f7f258a28d10988f8994a7e17980.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-eeo-answers",
+            "integrationId": "recruitee",
+            "description": "List the available EEO answer choices grouped by question category, not candidate responses.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listeeoanswers",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listeeoanswers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listeeoanswers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required to list available EEO answer choices."
+                    },
+                    "FunctionOutput_recruitee_listeeoanswers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "category": {
+                                            "type": "string",
+                                            "enum": [
+                                                "race",
+                                                "gender",
+                                                "veteranStatus",
+                                                "disabilityStatus"
+                                            ],
+                                            "description": "EEO question category for these choices."
+                                        },
+                                        "choices": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "An available provider answer string."
+                                            },
+                                            "description": "Provider answer strings in their original order and wording."
+                                        }
+                                    },
+                                    "required": [
+                                        "category",
+                                        "choices"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An EEO question category and its available answer choices."
+                                },
+                                "description": "Question categories and their available answer strings."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available EEO reference choices grouped by question category, not candidate responses."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to populate EEO questionnaires. These are reference choices, not any candidate's sensitive answers. The response is a single unpaginated collection."
+            },
+            "filePath": "./recruitee/tools/list-eeo-answers.ts",
+            "version": "4b2b0b7a42f409660beed36318244df8e67f8dffeee2ff810f2c2ae5eb9ff4ee",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-eeo-answers/4b2b0b7a42f409660beed36318244df8e67f8dffeee2ff810f2c2ae5eb9ff4ee.cjs",
+                "ts": "templates-zero/recruitee/tools/list-eeo-answers/4b2b0b7a42f409660beed36318244df8e67f8dffeee2ff810f2c2ae5eb9ff4ee.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-eeo-job-categories",
+            "integrationId": "recruitee",
+            "description": "List available EEO job-category labels.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listeeojobcategories",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listeeojobcategories",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listeeojobcategories": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are required."
+                    },
+                    "FunctionOutput_recruitee_listeeojobcategories": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An EEO job-category label with its exact provider wording."
+                                },
+                                "description": "EEO job-category strings in provider order, preserving exact wording."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of available EEO job-category labels."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for EEO job classification choices, not department IDs or candidate answers. Returns one unpaginated collection."
+            },
+            "filePath": "./recruitee/tools/list-eeo-job-categories.ts",
+            "version": "47608f352fc96c81d31c4a2a1bc5e1f69d3f040331e98d44625b050bc2376832",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-eeo-job-categories/47608f352fc96c81d31c4a2a1bc5e1f69d3f040331e98d44625b050bc2376832.cjs",
+                "ts": "templates-zero/recruitee/tools/list-eeo-job-categories/47608f352fc96c81d31c4a2a1bc5e1f69d3f040331e98d44625b050bc2376832.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-invoices",
+            "integrationId": "recruitee",
+            "description": "List one page of company invoices and credit notes, retaining document type, monetary precision and billing status. Requires access to company billing records.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listinvoices",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listinvoices",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested billing records per page; 100 is a provisional safety cap.",
+                                "default": 30,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same connection and limit, including both invoice and credit-note offsets.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of company billing documents."
+                    },
+                    "FunctionOutput_recruitee_listinvoices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Provider document ID; unique only in conjunction with resourceType."
+                                        },
+                                        "number": {
+                                            "description": "Human-facing document number, or null when absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "paidAt": {
+                                            "description": "Payment instant in UTC or null for no recorded payment.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Provider billing status without collapsing states."
+                                        },
+                                        "fileUrl": {
+                                            "description": "Provider file link, possibly relative, or null if unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "description": "Currency code attached to the amount."
+                                        },
+                                        "createdAt": {
+                                            "description": "Document creation instant in UTC, preserving source precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "totalAmount": {
+                                            "type": "string",
+                                            "description": "Exact decimal amount as reported by Recruitee, without rounding or invented minor-unit conversion."
+                                        },
+                                        "resourceType": {
+                                            "type": "string",
+                                            "description": "Provider document type, such as invoice, credit_note or legacy_invoice."
+                                        },
+                                        "translatedStatus": {
+                                            "description": "Provider-localized status label when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "currency",
+                                        "totalAmount",
+                                        "resourceType"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A billing document retaining its provider type, status and exact amount."
+                                },
+                                "description": "One combined provider page of billing documents."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for the combined billing stream; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One combined billing page and its continuation when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for billing documents, including credit notes and legacy invoices. Pass nextCursor as cursor with the same limit. Default limit is 30 and this tool caps it at 100. Document IDs are scoped by resourceType; retain both. File links may be absent or relative."
+            },
+            "filePath": "./recruitee/tools/list-invoices.ts",
+            "version": "20cafb8e9d253e8be6226da1bc7ac3edd549b83f39c16ef98978284c35e3e6ba",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-invoices/20cafb8e9d253e8be6226da1bc7ac3edd549b83f39c16ef98978284c35e3e6ba.cjs",
+                "ts": "templates-zero/recruitee/tools/list-invoices/20cafb8e9d253e8be6226da1bc7ac3edd549b83f39c16ef98978284c35e3e6ba.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-locations",
+            "integrationId": "recruitee",
+            "description": "List one page of company work locations, with optional name/address matching and archive-state filtering.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listlocations",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listlocations",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listlocations": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 100,
+                                "description": "Locations requested for one page; maximum 1000 is provisional.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "query": {
+                                "description": "Provider search text matching location name and full address; empty or omitted applies no search.",
+                                "type": "string"
+                            },
+                            "scope": {
+                                "default": "all",
+                                "description": "Include active locations, archived locations or both.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "archived",
+                                    "all"
+                                ]
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this company, filters and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation for one page of company work locations."
+                    },
+                    "FunctionOutput_recruitee_listlocations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company-scoped location ID."
+                                        },
+                                        "city": {
+                                            "description": "City name, preserving null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Location display name."
+                                        },
+                                        "note": {
+                                            "description": "Location notes as returned by the provider.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "street": {
+                                            "description": "Street address, preserving null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "stateCode": {
+                                            "description": "Provider region/state code, not a numeric quantity.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "stateName": {
+                                            "description": "Provider region/state name.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "archivedAt": {
+                                            "description": "Archive instant normalized to UTC, or null for no archive instant.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "postalCode": {
+                                            "description": "Postal code as text, preserving leading zeros.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "countryCode": {
+                                            "description": "Country region code, preserving null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "fullAddress": {
+                                            "description": "Provider-composed full address.",
+                                            "type": "string"
+                                        },
+                                        "translations": {
+                                            "description": "Localized location values when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Localized location name.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "note": {
+                                                        "description": "Localized location note.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "locale": {
+                                                        "type": "string",
+                                                        "description": "Translation locale code."
+                                                    },
+                                                    "isDefault": {
+                                                        "description": "Whether this is the provider's default translation.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "fullAddress": {
+                                                        "description": "Localized full address.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "locale"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "Localized values for one location locale."
+                                            }
+                                        },
+                                        "activeOffersCount": {
+                                            "description": "Provider count of active job offers at this location.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company work location with provider-supplied address and translations."
+                                },
+                                "description": "One page of locations in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Next page continuation, omitted at exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of company work locations and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find location IDs and addresses. Pass nextCursor as cursor with unchanged filters and limit. The tool returns full location information, including translations when supplied. Default limit is 100, with a provisional maximum of 1000."
+            },
+            "filePath": "./recruitee/tools/list-locations.ts",
+            "version": "d62f7895b9a1fada9f8d941d890ffa91cabb6dc9cf7bb1fca1e3882fcd0ca630",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-locations/d62f7895b9a1fada9f8d941d890ffa91cabb6dc9cf7bb1fca1e3882fcd0ca630.cjs",
+                "ts": "templates-zero/recruitee/tools/list-locations/d62f7895b9a1fada9f8d941d890ffa91cabb6dc9cf7bb1fca1e3882fcd0ca630.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-offer-pipeline-templates",
+            "integrationId": "recruitee",
+            "description": "List the hiring pipeline templates available for one job offer, optionally filtered by title.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_listofferpipelinetemplates",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_listofferpipelinetemplates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_listofferpipelinetemplates": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "Provider title filter; omitted or empty applies no title filter.",
+                                "type": "string"
+                            },
+                            "offerId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing job offer ID or slug, as documented by Recruitee."
+                            }
+                        },
+                        "required": [
+                            "offerId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Job offer whose available hiring pipeline templates to list, with an optional title filter."
+                    },
+                    "FunctionOutput_recruitee_listofferpipelinetemplates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Company pipeline template ID."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Template title."
+                                        },
+                                        "category": {
+                                            "description": "Provider category label; null is retained if returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isCustom": {
+                                            "description": "Whether this is a custom template.",
+                                            "type": "boolean"
+                                        },
+                                        "position": {
+                                            "description": "Provider position value; no independent ordering guarantee is inferred.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "isDefault": {
+                                            "description": "Whether the provider marks this template as default.",
+                                            "type": "boolean"
+                                        },
+                                        "requiresAdjustment": {
+                                            "description": "Whether the provider flags this template as requiring adjustment.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A hiring pipeline template available for the specified job offer."
+                                },
+                                "description": "Templates available for this offer in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available hiring pipeline templates for the job offer."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Supply an existing job offer ID or slug, such as one returned by `create-offer` or known from Recruitee. These are hiring pipelines, not employment offer letters. This endpoint returns one collection and documents no paging inputs."
+            },
+            "filePath": "./recruitee/tools/list-offer-pipeline-templates.ts",
+            "version": "d9dce3bc6c5053c9a10bd28a1c375b85422a4d14e10083b65a08ae9ea327d2b4",
+            "location": {
+                "js": "templates-zero/recruitee/tools/list-offer-pipeline-templates/d9dce3bc6c5053c9a10bd28a1c375b85422a4d14e10083b65a08ae9ea327d2b4.cjs",
+                "ts": "templates-zero/recruitee/tools/list-offer-pipeline-templates/d9dce3bc6c5053c9a10bd28a1c375b85422a4d14e10083b65a08ae9ea327d2b4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "pin-note",
+            "integrationId": "recruitee",
+            "description": "Pin an existing note without replacing its content or associations.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_pinnote",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_pinnote",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_pinnote": {
+                        "type": "object",
+                        "properties": {
+                            "noteId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped ID of the note to pin."
+                            }
+                        },
+                        "required": [
+                            "noteId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing note to pin in the connected company."
+                    },
+                    "FunctionOutput_recruitee_pinnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Pinned note ID."
+                            },
+                            "pinnedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider pin instant normalized to UTC without losing fractional precision."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "pinnedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The pinned note identity and provider pin instant."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a noteId from `list-candidate-notes`. Pinning changes prominence, not note text or audience. Use `unpin-note` to reverse the pin."
+            },
+            "filePath": "./recruitee/tools/pin-note.ts",
+            "version": "0f75523ed844603b46ba5c6141667b40e317e7c3efaed6a1241fa2aaad571abe",
+            "location": {
+                "js": "templates-zero/recruitee/tools/pin-note/0f75523ed844603b46ba5c6141667b40e317e7c3efaed6a1241fa2aaad571abe.cjs",
+                "ts": "templates-zero/recruitee/tools/pin-note/0f75523ed844603b46ba5c6141667b40e317e7c3efaed6a1241fa2aaad571abe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "unpin-note",
+            "integrationId": "recruitee",
+            "description": "Remove an existing note's pin without deleting the note.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_unpinnote",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_unpinnote",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_unpinnote": {
+                        "type": "object",
+                        "properties": {
+                            "noteId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped ID of the note to unpin."
+                            }
+                        },
+                        "required": [
+                            "noteId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the existing note whose pin should be removed."
+                    },
+                    "FunctionOutput_recruitee_unpinnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unpinned note ID."
+                            },
+                            "pinnedAt": {
+                                "type": "null",
+                                "description": "Null establishes the returned note has no pin instant."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "pinnedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The note identity and verified absence of a pin instant."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use noteId from `list-candidate-notes`. This removes only the pin; the note content and audience remain. Use `pin-note` to pin it again."
+            },
+            "filePath": "./recruitee/tools/unpin-note.ts",
+            "version": "8a260ba443e07e1e6d8c74d4c9342b5553d75cd48a2bb2e5848eb63801ac5205",
+            "location": {
+                "js": "templates-zero/recruitee/tools/unpin-note/8a260ba443e07e1e6d8c74d4c9342b5553d75cd48a2bb2e5848eb63801ac5205.cjs",
+                "ts": "templates-zero/recruitee/tools/unpin-note/8a260ba443e07e1e6d8c74d4c9342b5553d75cd48a2bb2e5848eb63801ac5205.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-candidate",
+            "integrationId": "recruitee",
+            "description": "Partially update candidate contact information or request reparsing of the current CV, which can replace previously extracted profile data.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_updatecandidate",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_updatecandidate",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_updatecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Replacement display name; omission leaves it unchanged and null is not accepted.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "emails": {
+                                "description": "Complete replacement email collection; [] clears, omission preserves.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Candidate email address."
+                                }
+                            },
+                            "phones": {
+                                "description": "Complete replacement phone collection; [] clears, omission preserves.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Candidate phone number."
+                                }
+                            },
+                            "parseCv": {
+                                "description": "True reparses the current CV and replaces previously extracted data; false requests no parsing.",
+                                "type": "boolean"
+                            },
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Candidate ID within the connected company."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate identifier and at least one contact change or a request to reparse the current CV.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "emails"
+                                ],
+                                "properties": {
+                                    "emails": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "phones"
+                                ],
+                                "properties": {
+                                    "phones": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "parseCv"
+                                ],
+                                "properties": {
+                                    "parseCv": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "const": true,
+                                        "description": "Reparse the current CV and replace previously extracted data."
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_recruitee_updatecandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Updated candidate ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name returned after the update; parsing may affect profile data."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate identity returned after the update, without a guarantee that CV parsing has completed."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get candidateId from `list-candidates` or `get-candidate`. Omitted fields are unchanged; supplied contact arrays replace their collections and [] clears them. parseCv can overwrite data previously extracted from the CV. Use `upload-candidate-cv` to replace the file itself."
+            },
+            "filePath": "./recruitee/tools/update-candidate.ts",
+            "version": "13e6108736695e9ef93feec5e5bf14a6ec2765aadd5fe4448737be3c8c004ca2",
+            "location": {
+                "js": "templates-zero/recruitee/tools/update-candidate/13e6108736695e9ef93feec5e5bf14a6ec2765aadd5fe4448737be3c8c004ca2.cjs",
+                "ts": "templates-zero/recruitee/tools/update-candidate/13e6108736695e9ef93feec5e5bf14a6ec2765aadd5fe4448737be3c8c004ca2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-note",
+            "integrationId": "recruitee",
+            "description": "Partially update an existing note's text or audience; replacing text replaces its current rich content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_updatenote",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_updatenote",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_updatenote": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "Complete replacement plain text; empty string clears the body, omission preserves it; null is not accepted."
+                            },
+                            "noteId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped note ID."
+                            },
+                            "visibility": {
+                                "type": "object",
+                                "properties": {
+                                    "level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "protected"
+                                        ],
+                                        "description": "Provider visibility level; public is not internet-public."
+                                    },
+                                    "roleIds": {
+                                        "description": "Requested role audience IDs; omitted list means empty; provider can augment effective roles.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Requested role audience ID."
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "adminIds": {
+                                        "description": "Requested admin audience IDs; omitted list means empty within this replacement.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Requested admin audience ID."
+                                        },
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": [
+                                    "level"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Complete replacement audience request; omission preserves the current audience."
+                            }
+                        },
+                        "required": [
+                            "noteId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "properties": {
+                                    "text": {
+                                        "description": "Complete replacement plain text; empty string clears the body, omission preserves it; null is not accepted."
+                                    }
+                                },
+                                "required": [
+                                    "text"
+                                ]
+                            },
+                            {
+                                "properties": {
+                                    "visibility": {
+                                        "description": "Complete replacement audience request; omission preserves the current audience."
+                                    }
+                                },
+                                "required": [
+                                    "visibility"
+                                ]
+                            }
+                        ],
+                        "description": "An existing note ID and at least one replacement for its text or audience."
+                    },
+                    "FunctionOutput_recruitee_updatenote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Updated note ID."
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Readable text from the returned document, including provider normalization."
+                            },
+                            "visibility": {
+                                "description": "Effective audience returned after the update.",
+                                "type": "object",
+                                "properties": {
+                                    "level": {
+                                        "type": "string",
+                                        "description": "Effective provider visibility level."
+                                    },
+                                    "roleIds": {
+                                        "description": "Effective role audience IDs, including provider additions.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Effective role audience ID."
+                                        }
+                                    },
+                                    "adminIds": {
+                                        "description": "Effective admin audience IDs.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Effective admin audience ID."
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "level"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "text"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The updated note text and effective audience returned by Recruitee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use noteId from `list-candidate-notes`. Omitted text or visibility stays unchanged. Supplying text replaces the whole note body and can remove formatting or mentions. Supplying visibility replaces its audience request; Recruitee may add effective roles. Use `create-candidate-note` for a new note."
+            },
+            "filePath": "./recruitee/tools/update-note.ts",
+            "version": "a13a105d03f94f42f8ecb25a04534c29e40f245f203a3a41db22bdcf9e401798",
+            "location": {
+                "js": "templates-zero/recruitee/tools/update-note/a13a105d03f94f42f8ecb25a04534c29e40f245f203a3a41db22bdcf9e401798.cjs",
+                "ts": "templates-zero/recruitee/tools/update-note/a13a105d03f94f42f8ecb25a04534c29e40f245f203a3a41db22bdcf9e401798.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-offer",
+            "integrationId": "recruitee",
+            "description": "Replace the salary configuration of an existing Recruitee job offer without requesting changes to other job fields.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_updateoffer",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_updateoffer",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_updateoffer": {
+                        "type": "object",
+                        "properties": {
+                            "offerId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped job offer ID to update."
+                            },
+                            "salary": {
+                                "type": "object",
+                                "properties": {
+                                    "min": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Minimum salary amount in the provider's stated currency units, not converted to minor units."
+                                    },
+                                    "max": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum salary amount in the same provider units; must be at least min."
+                                    },
+                                    "period": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Provider salary period, for example month; vocabulary is provider-defined."
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Provider currency code, for example EUR."
+                                    }
+                                },
+                                "required": [
+                                    "min",
+                                    "max",
+                                    "period",
+                                    "currency"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Complete replacement salary configuration; omission and null are not accepted."
+                            }
+                        },
+                        "required": [
+                            "offerId",
+                            "salary"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Existing job offer and complete replacement salary configuration."
+                    },
+                    "FunctionOutput_recruitee_updateoffer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Updated job offer ID."
+                            },
+                            "salary": {
+                                "type": "object",
+                                "properties": {
+                                    "min": {
+                                        "description": "Provider minimum salary as exact decimal text, or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "max": {
+                                        "description": "Provider maximum salary as exact decimal text, or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "period": {
+                                        "description": "Provider salary period or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "currency": {
+                                        "description": "Provider salary currency code or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Effective salary returned by Recruitee, preserving unset components."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "salary"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Updated job offer identifier and effective salary returned by Recruitee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Supply an existing job offer ID. This tool currently edits salary, not job publication or employment offer letters. Supply the complete salary object; no partial salary merge or clearing is promised. Use `create-offer` for a new requisition-derived job."
+            },
+            "filePath": "./recruitee/tools/update-offer.ts",
+            "version": "3f02a5ee0116b4ccf5c439a7a6e2950747c43680cec9f0b7eb086501bd890671",
+            "location": {
+                "js": "templates-zero/recruitee/tools/update-offer/3f02a5ee0116b4ccf5c439a7a6e2950747c43680cec9f0b7eb086501bd890671.cjs",
+                "ts": "templates-zero/recruitee/tools/update-offer/3f02a5ee0116b4ccf5c439a7a6e2950747c43680cec9f0b7eb086501bd890671.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upload-candidate-cover-letter",
+            "integrationId": "recruitee",
+            "description": "Replace a candidate's cover-letter file without treating its binary contents as ordinary cover-letter text.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_uploadcandidatecoverletter",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_uploadcandidatecoverletter",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_uploadcandidatecoverletter": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Replacement cover-letter filename including extension."
+                            },
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company-scoped candidate ID."
+                            },
+                            "contentType": {
+                                "description": "Optional MIME type; omission permits provider detection.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 6990508,
+                                "contentEncoding": "base64",
+                                "description": "Exact file bytes in standard base64; decoded size must not exceed 5 MiB."
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "candidateId",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate and exact replacement cover-letter file bytes with filename and optional MIME type."
+                    },
+                    "FunctionOutput_recruitee_uploadcandidatecoverletter": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "Candidate whose cover-letter file replacement was acknowledged."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the replacement request, not completion of file processing."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use candidateId from `list-candidates`. This replaces the cover-letter file; it is not an additional attachment and does not promise to update the text cover letter. Use `upload-candidate-cv` for a CV. Maximum file size is a provisional 5 MiB."
+            },
+            "filePath": "./recruitee/tools/upload-candidate-cover-letter.ts",
+            "version": "32dcfd50d70ef1dc31beae0aa1c8818f16b2be02188337ffb9b8cd370ec4378c",
+            "location": {
+                "js": "templates-zero/recruitee/tools/upload-candidate-cover-letter/32dcfd50d70ef1dc31beae0aa1c8818f16b2be02188337ffb9b8cd370ec4378c.cjs",
+                "ts": "templates-zero/recruitee/tools/upload-candidate-cover-letter/32dcfd50d70ef1dc31beae0aa1c8818f16b2be02188337ffb9b8cd370ec4378c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upload-candidate-cv",
+            "integrationId": "recruitee",
+            "description": "Replace a candidate's CV file, optionally reparsing it to replace previously extracted profile data.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_recruitee_uploadcandidatecv",
+            "output_schema_ref": "#/definitions/FunctionOutput_recruitee_uploadcandidatecv",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_recruitee_uploadcandidatecv": {
+                        "type": "object",
+                        "properties": {
+                            "parseCv": {
+                                "description": "Whether to parse the new CV and replace previously extracted data; defaults to no requested parsing.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "filename": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Filename for the replacement CV, including its extension."
+                            },
+                            "candidateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Candidate ID within the connected company."
+                            },
+                            "contentType": {
+                                "description": "File MIME type, such as application/pdf; omitted permits provider detection.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 6990508,
+                                "description": "Exact CV file bytes in standard base64; decoded size must not exceed 5 MiB.",
+                                "contentEncoding": "base64"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "candidateId",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Candidate and exact replacement CV file bytes, with an optional parsing request."
+                    },
+                    "FunctionOutput_recruitee_uploadcandidatecv": {
+                        "type": "object",
+                        "properties": {
+                            "candidateId": {
+                                "type": "string",
+                                "description": "Candidate whose replacement CV request was acknowledged."
+                            }
+                        },
+                        "required": [
+                            "candidateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the CV replacement request, not completion of CV processing or parsing."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain candidateId from `list-candidates`. This replaces the existing CV, not an additional attachment. parseCv may overwrite extracted profile data. Use `update-candidate` to reparse the current CV without replacing its file. Maximum file size is 5 MiB under this tool's provisional safety cap."
+            },
+            "filePath": "./recruitee/tools/upload-candidate-cv.ts",
+            "version": "56543627025a99961520d67a4269fc1eb8714d53c81cef9f3eb4b2dd7d1afd4e",
+            "location": {
+                "js": "templates-zero/recruitee/tools/upload-candidate-cv/56543627025a99961520d67a4269fc1eb8714d53c81cef9f3eb4b2dd7d1afd4e.cjs",
+                "ts": "templates-zero/recruitee/tools/upload-candidate-cv/56543627025a99961520d67a4269fc1eb8714d53c81cef9f3eb4b2dd7d1afd4e.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

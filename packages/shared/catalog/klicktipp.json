@@ -1,0 +1,284 @@
+{
+    "providerConfigKey": "klicktipp",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "remove-api-key-tag-from-contact",
+            "integrationId": "klicktipp",
+            "description": "Remove the contact's association with the tag configured for the connection's listbuilding API key.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_klicktipp_removeapikeytagfromcontact",
+            "output_schema_ref": "#/definitions/FunctionOutput_klicktipp_removeapikeytagfromcontact",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_klicktipp_removeapikeytagfromcontact": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address of the contact losing the configured key-linked tag association."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Contact whose configured listbuilding API-key tag association will be removed."
+                    },
+                    "FunctionOutput_klicktipp_removeapikeytagfromcontact": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider aggregate tag-removal acknowledgement, not an unsubscribe acknowledgement."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgement of the configured tag association removal."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use when removing the configured listbuilding tag rather than unsubscribing. You need the contact email, not a tag ID or secret key. Use `remove-tag-from-contact` to select a specific manual tag, or `unsubscribe-contact-via-api-key` to prevent communication."
+            },
+            "filePath": "./klicktipp/tools/remove-api-key-tag-from-contact.ts",
+            "version": "f4a102e952d7a6e32939dcd3138b595c0ee86e685ed25538ff156d3d97ad6798",
+            "location": {
+                "js": "templates-zero/klicktipp/tools/remove-api-key-tag-from-contact/f4a102e952d7a6e32939dcd3138b595c0ee86e685ed25538ff156d3d97ad6798.cjs",
+                "ts": "templates-zero/klicktipp/tools/remove-api-key-tag-from-contact/f4a102e952d7a6e32939dcd3138b595c0ee86e685ed25538ff156d3d97ad6798.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "unsubscribe-contact-via-api-key",
+            "integrationId": "klicktipp",
+            "description": "Unsubscribe a contact using the connection's listbuilding API key to prevent further communication.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_klicktipp_unsubscribecontactviaapikey",
+            "output_schema_ref": "#/definitions/FunctionOutput_klicktipp_unsubscribecontactviaapikey",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_klicktipp_unsubscribecontactviaapikey": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address identifying the contact to unsubscribe."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Contact to unsubscribe using the configured listbuilding API key."
+                    },
+                    "FunctionOutput_klicktipp_unsubscribecontactviaapikey": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider aggregate unsubscribe acknowledgement; does not imply contact deletion."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgement returned by KlickTipp for the unsubscribe operation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for the listbuilding-key context; use `unsubscribe-contact` for a management connection. The configured API key remains secret. This unsubscribes the contact, unlike `remove-api-key-tag-from-contact`, which removes only the key-linked tag. No automatic undo is promised."
+            },
+            "filePath": "./klicktipp/tools/unsubscribe-contact-via-api-key.ts",
+            "version": "3dfd11d9049ca72265be58ed0b602ec9eb4a69da6d65a5dcaa20f1884147aeed",
+            "location": {
+                "js": "templates-zero/klicktipp/tools/unsubscribe-contact-via-api-key/3dfd11d9049ca72265be58ed0b602ec9eb4a69da6d65a5dcaa20f1884147aeed.cjs",
+                "ts": "templates-zero/klicktipp/tools/unsubscribe-contact-via-api-key/3dfd11d9049ca72265be58ed0b602ec9eb4a69da6d65a5dcaa20f1884147aeed.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upsert-contact-via-api-key",
+            "integrationId": "klicktipp",
+            "description": "Create or update a contact and associate the tag configured for the connection's listbuilding API key, returning the opt-in redirect URL.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_klicktipp_upsertcontactviaapikey",
+            "output_schema_ref": "#/definitions/FunctionOutput_klicktipp_upsertcontactviaapikey",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_klicktipp_upsertcontactviaapikey": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Email identity for enrollment; provide email, smsNumber or both.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "fields": {
+                                "description": "Partial values keyed by unprefixed field ID: text, integers, exact decimal strings, ISO dates, HH:mm:ss times or whole-second offset RFC 3339 instants according to metadata. Empty string requests a supported clear; null is rejected. Using fields also requires management access to discover types.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    ],
+                                    "description": "A field value in the public format appropriate to its metadata type."
+                                }
+                            },
+                            "smsNumber": {
+                                "description": "International SMS identity in + or 00 form; omitted for email-only enrollment.",
+                                "type": "string",
+                                "pattern": "^(\\+|00)[0-9]+$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Enroll a contact using the connection-selected tag and opt-in configuration, with optional typed field edits.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "smsNumber"
+                                ],
+                                "properties": {
+                                    "smsNumber": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_klicktipp_upsertcontactviaapikey": {
+                        "type": "object",
+                        "properties": {
+                            "redirectUrl": {
+                                "type": "string",
+                                "description": "Provider-generated pending or thank-you page URL for this enrollment; returned as data, not followed, and not proof of confirmed subscription."
+                            }
+                        },
+                        "required": [
+                            "redirectUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The enrollment redirect URL, returned without visiting it or asserting opt-in confirmation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for form/listbuilding enrollment through the connection's configured API key. The key selects the tag and opt-in configuration; do not supply a key in the call. Use `upsert-contact` when you need explicit tag and opt-in process choices. Returned redirectUrl can be shown to the user but is not fetched automatically. Enrollment may send confirmation email and is not safe to replay blindly."
+            },
+            "filePath": "./klicktipp/tools/upsert-contact-via-api-key.ts",
+            "version": "f75778c2bc9085b2758951b1b7bf88e3a85bd6d28329fc08622692a58a6f34df",
+            "location": {
+                "js": "templates-zero/klicktipp/tools/upsert-contact-via-api-key/f75778c2bc9085b2758951b1b7bf88e3a85bd6d28329fc08622692a58a6f34df.cjs",
+                "ts": "templates-zero/klicktipp/tools/upsert-contact-via-api-key/f75778c2bc9085b2758951b1b7bf88e3a85bd6d28329fc08622692a58a6f34df.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

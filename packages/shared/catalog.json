@@ -1,0 +1,4992 @@
+{
+    "formatVersion": 1,
+    "providers": {
+        "1password-events": {
+            "file": "catalog/1password-events.json",
+            "sha256": "7c6bef9ced8f3e2b3958def82ccae1bcf23999f30c3ff8d56a958f3e0129a89c",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 4,
+                "tools": 4
+            }
+        },
+        "1password-scim": {
+            "file": "catalog/1password-scim.json",
+            "sha256": "9a3e56c48ba94ddaff3b2ca1759addcec99a5a37d04d2ac7650b53f9f103ecf6",
+            "counts": {
+                "actions": 15,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "3cx": {
+            "file": "catalog/3cx.json",
+            "sha256": "a085d4badd5029a40939bdac3f974e9de77cd40d4396f5913a13a370db2ebf78",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 58,
+                "tools": 58
+            }
+        },
+        "8x8": {
+            "file": "catalog/8x8.json",
+            "sha256": "18b75ded396fdadc6e7791177471679b3bd712c3875b07ac985c8489cd091b62",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 29,
+                "tools": 29
+            }
+        },
+        "a-leads": {
+            "file": "catalog/a-leads.json",
+            "sha256": "b92521c3d0be85ef8dfb810169bfa9dd5228e776c868805b4841b442b8ad1bb3",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 12,
+                "tools": 12
+            }
+        },
+        "accelo": {
+            "file": "catalog/accelo.json",
+            "sha256": "ac9ea7e7a73798361d0616d5d4fab7f5d4adcceea8e22d417adacda5d1e8ea5b",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 76,
+                "tools": 76
+            }
+        },
+        "active-campaign": {
+            "file": "catalog/active-campaign.json",
+            "sha256": "56863478d209b2022a99d5c9f3ce023a5efe166de6c6cf24abe6689c3d74e972",
+            "counts": {
+                "actions": 56,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "acuity-scheduling": {
+            "file": "catalog/acuity-scheduling.json",
+            "sha256": "345919a6aa223dfe0318b904a561bcff035b7c14cfa7c3cebe89fa68ae06faff",
+            "counts": {
+                "actions": 33,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "adobe": {
+            "file": "catalog/adobe.json",
+            "sha256": "dbefe65cf785c0b6e2ff11d20ab663b4fcd0d2f69dc243c0b2cc4b343adbf9f7",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 4,
+                "tools": 4
+            }
+        },
+        "adobe-commerce": {
+            "file": "catalog/adobe-commerce.json",
+            "sha256": "c4aa336fd52046091a20f9c6132bfab8526d185a259c4d4cbfde687c2d8ae8cf",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 88,
+                "tools": 88
+            }
+        },
+        "adobe-umapi": {
+            "file": "catalog/adobe-umapi.json",
+            "sha256": "6304cad15d6cc76d97ee4a74f7f97ba7a35a1b9ba26f737bb08054fb7894c00c",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "adp": {
+            "file": "catalog/adp.json",
+            "sha256": "e039fd78bb589926db208a0299f7474b54e05912c5eea7d49acf726b2f8e221d",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "adyen": {
+            "file": "catalog/adyen.json",
+            "sha256": "68d0845f1a87f971239f5d7e8301fec6e4339a2919601a969aaada649f3a203a",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "adyntel": {
+            "file": "catalog/adyntel.json",
+            "sha256": "9fa66598119ebdb2a855c151ecf38cfb5f3401e1e3229d0c5ec658e37e9a390a",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 13,
+                "tools": 13
+            }
+        },
+        "affinity": {
+            "file": "catalog/affinity.json",
+            "sha256": "c1f1f4db56ec79256daef84e0375e53bcb32397eb641bd0be4772e34b92d05f4",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 60,
+                "tools": 60
+            }
+        },
+        "affinity-v2": {
+            "file": "catalog/affinity-v2.json",
+            "sha256": "caed1a5c0b298db3e07c0e213c3a4355f67ae03be5d2f7b5fb149a3738f0bada",
+            "counts": {
+                "actions": 0,
+                "syncs": 29,
+                "functions": 114,
+                "tools": 114
+            }
+        },
+        "agencyzoom": {
+            "file": "catalog/agencyzoom.json",
+            "sha256": "7dd1e476260622dc5735e910f234778d4d61cbbf3939c3fe4415a1a449b7a890",
+            "counts": {
+                "actions": 0,
+                "syncs": 35,
+                "functions": 114,
+                "tools": 114
+            }
+        },
+        "agentcard": {
+            "file": "catalog/agentcard.json",
+            "sha256": "264601209cd5759fa4df148edb6b3aef0a6796f4bc847b5850d7cd457b0f51af",
+            "counts": {
+                "actions": 16,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "agentline": {
+            "file": "catalog/agentline.json",
+            "sha256": "db3456763ba5c8b1fd728180e0dd50ddf9cd3da86829b2e18f6eda40d2ed3d9a",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 43,
+                "tools": 43
+            }
+        },
+        "agiloft-cc": {
+            "file": "catalog/agiloft-cc.json",
+            "sha256": "e1729c2e22b1269ad62e28eda1e3d7c1795f16f9777d6b7a7a32d7db4888b11e",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "aimfox": {
+            "file": "catalog/aimfox.json",
+            "sha256": "fb754d71000b4ce225dac70e972548eacb16e6cfee363a11b18370ddeee5a863",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 90,
+                "tools": 90
+            }
+        },
+        "aircall": {
+            "file": "catalog/aircall.json",
+            "sha256": "a315fa7ba20d8e91f6baed4a0cb894e6f0f0d88eb965d051c4f96a1e9caaef87",
+            "counts": {
+                "actions": 33,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "aircall-basic": {
+            "aliasOf": "aircall"
+        },
+        "airtable": {
+            "file": "catalog/airtable.json",
+            "sha256": "c70aa53f9c405b12311b402c0d32482e32a117e55f4feb392f04e359631c8912",
+            "counts": {
+                "actions": 32,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "airtable-pat": {
+            "aliasOf": "airtable"
+        },
+        "algolia": {
+            "file": "catalog/algolia.json",
+            "sha256": "5115febe55a3bf2a951c7123fe4ae3a09c25f9da7968333f7de25885835f9b1d",
+            "counts": {
+                "actions": 32,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "amazon": {
+            "file": "catalog/amazon.json",
+            "sha256": "bba140338ce61d0658004dbb64fee9c5a8f9a70d32278fece750987e5bf27ef7",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 1,
+                "tools": 1
+            }
+        },
+        "amazon-selling-partner": {
+            "file": "catalog/amazon-selling-partner.json",
+            "sha256": "9012aabf4bb843687bd31c59a65653fa175bf621fa33145aed65346de810d3b0",
+            "counts": {
+                "actions": 0,
+                "syncs": 43,
+                "functions": 308,
+                "tools": 308
+            }
+        },
+        "amplemarket": {
+            "file": "catalog/amplemarket.json",
+            "sha256": "b9ecb4d7f3568bd27bf09301ea848d952e19d1e7d441219337ffcfa76767f42d",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 56,
+                "tools": 56
+            }
+        },
+        "amplitude": {
+            "file": "catalog/amplitude.json",
+            "sha256": "66dc79f37f3005791ea18a184258cd038f21f1d2fdfae011eef8fd6e0717d124",
+            "counts": {
+                "actions": 63,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "anrok": {
+            "file": "catalog/anrok.json",
+            "sha256": "ada0110209f6977d416b240fa98964e45d07939e210ba7f2e59d6a224c7e8552",
+            "counts": {
+                "actions": 4,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "anthropic": {
+            "file": "catalog/anthropic.json",
+            "sha256": "b42b129b67d6facff9f0ed3b408e104c0fb99cd381aee4cd485db1bd3ad77086",
+            "counts": {
+                "actions": 12,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "anvil": {
+            "file": "catalog/anvil.json",
+            "sha256": "cde4a5f0115711feb3c474d3b78c6979cb569638dffcfa00e195e825b683d7a4",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 8,
+                "tools": 8
+            }
+        },
+        "apollo": {
+            "file": "catalog/apollo.json",
+            "sha256": "1c8bb8d8c51e28a46201d151b5ca6e489e825703e9a97bcf3ff0600c00e68cda",
+            "counts": {
+                "actions": 26,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "apollo-oauth": {
+            "aliasOf": "apollo"
+        },
+        "apple-business-manager": {
+            "file": "catalog/apple-business-manager.json",
+            "sha256": "4cb4b88bcbac4607cd434d4b5cb7fb5a922300abfa87c2dba5b9afef1e5e282f",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 77,
+                "tools": 77
+            }
+        },
+        "appstle-subscriptions": {
+            "file": "catalog/appstle-subscriptions.json",
+            "sha256": "176a5973be3c40f5cc03e8a1a29fa4c81cd06f3ce5ac5d64da2726465f082300",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 109,
+                "tools": 109
+            }
+        },
+        "asana": {
+            "file": "catalog/asana.json",
+            "sha256": "32eac13ac1cecb9df80f50cb84b571d04924dbaefe17fd047d879fe2f8dbe400",
+            "counts": {
+                "actions": 42,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "asana-scim": {
+            "file": "catalog/asana-scim.json",
+            "sha256": "877c26e9ff78ca9053de59e7578dc5c67394334db8267cb53109361738232b7c",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "ashby": {
+            "file": "catalog/ashby.json",
+            "sha256": "42e5a5b2643066e618fcb43642e7a3b2fe4533204cd12450902ada0aa7082338",
+            "counts": {
+                "actions": 23,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "atlas-so": {
+            "file": "catalog/atlas-so.json",
+            "sha256": "4ef926bd6fb6eec95735bb175facc083a6e9ebeb1d0724673c06610811a2d44c",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 63,
+                "tools": 63
+            }
+        },
+        "atlassian-admin": {
+            "file": "catalog/atlassian-admin.json",
+            "sha256": "eecc2a06efd90a6cba394877dac5b7244890ec8bd0ad912cc0c8a68e510d6be3",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 118,
+                "tools": 118
+            }
+        },
+        "attention": {
+            "file": "catalog/attention.json",
+            "sha256": "cfe3a81623e27487d4b99cc17493b8bcb6a089f523b7e71196df1d628c26f42f",
+            "counts": {
+                "actions": 0,
+                "syncs": 24,
+                "functions": 92,
+                "tools": 92
+            }
+        },
+        "attentive-api-key": {
+            "file": "catalog/attentive-api-key.json",
+            "sha256": "3146ffe20bce46bfdd388afe0cb6db150e39c96101065fefdee045a9ff2785c1",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 33,
+                "tools": 33
+            }
+        },
+        "attio": {
+            "file": "catalog/attio.json",
+            "sha256": "847141c6711699d7a820a10461ad8ac8d63e4faea3a7939c40d833090318f530",
+            "counts": {
+                "actions": 39,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "auth0": {
+            "aliasOf": "auth0-cc"
+        },
+        "auth0-cc": {
+            "file": "catalog/auth0-cc.json",
+            "sha256": "5fcf919df56f66408b630665e633835b879eea1b72262115c3e11bddb887556e",
+            "counts": {
+                "actions": 72,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "autodesk": {
+            "file": "catalog/autodesk.json",
+            "sha256": "e7460eb7ef85009e68ba54be97049f8025e1dc73d8f8e163f52a4bbf59694e0c",
+            "counts": {
+                "actions": 0,
+                "syncs": 28,
+                "functions": 114,
+                "tools": 114
+            }
+        },
+        "autosana": {
+            "file": "catalog/autosana.json",
+            "sha256": "97f2f68c87ff7463011dd0671bdae51632bf61b4f055bee99efa642ede3d92c4",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 53,
+                "tools": 53
+            }
+        },
+        "auvik": {
+            "file": "catalog/auvik.json",
+            "sha256": "e902e680e7aff5d2f1002b2ef64276bbe8548d7c7a07e232b0943e1e4a01f81c",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 44,
+                "tools": 44
+            }
+        },
+        "avalara": {
+            "file": "catalog/avalara.json",
+            "sha256": "34c0cc694d00958aa76b5c9e86fb9884c34dbfda5e9caf63650c06dee7e99066",
+            "counts": {
+                "actions": 3,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "avalara-sandbox": {
+            "aliasOf": "avalara"
+        },
+        "avoma": {
+            "file": "catalog/avoma.json",
+            "sha256": "3bed04c9577fb5ba5e410d39bcfca4d4183cd27d7587f46e8ca6d957056e2bd7",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 46,
+                "tools": 46
+            }
+        },
+        "aws-iam": {
+            "file": "catalog/aws-iam.json",
+            "sha256": "5b6e9d058177e8ca890f4c0e2427d7c851ca79d89fcacf696c1c22aabb12e6ad",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "aws-inspector2": {
+            "file": "catalog/aws-inspector2.json",
+            "sha256": "ab205fc559cc7f42d05e51a2c66a793f7d62093d1b705b6a5c58b560ab29eb9b",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 91,
+                "tools": 91
+            }
+        },
+        "aws-scim": {
+            "file": "catalog/aws-scim.json",
+            "sha256": "2f6783d46933dffdf8433b7bfd75c3c1a5d3f8547c52c5a33dadfb8eb16a886b",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "axiom": {
+            "file": "catalog/axiom.json",
+            "sha256": "be9ccb336676cc1ce8f10823c0fa1a2c35a96958c693528fd9866c77c1054960",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 90,
+                "tools": 90
+            }
+        },
+        "azure-devops": {
+            "file": "catalog/azure-devops.json",
+            "sha256": "dcbffd502c30fa40601636ef8c544638debb33e96817a1f0cb4aa0c34686048a",
+            "counts": {
+                "actions": 29,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "back-market": {
+            "file": "catalog/back-market.json",
+            "sha256": "6471d39e97949b1006fb212a18345e9f2a125871f13df65cb286ed851b5186c6",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 42,
+                "tools": 42
+            }
+        },
+        "bamboohr": {
+            "aliasOf": "bamboohr-basic"
+        },
+        "bamboohr-basic": {
+            "file": "catalog/bamboohr-basic.json",
+            "sha256": "b4661838bc2dc45d06636b9d45a4e9de245d2240be3c1e58bdbb411f048a3748",
+            "counts": {
+                "actions": 50,
+                "syncs": 15,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bandwidth": {
+            "file": "catalog/bandwidth.json",
+            "sha256": "499f443b3a6a2a278cce5a4e044cb5c6c8e250df19a60300b0b731cb3e3e98e9",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 65,
+                "tools": 65
+            }
+        },
+        "basecamp": {
+            "file": "catalog/basecamp.json",
+            "sha256": "8fc448d6bab63708696a8de853416d6700f78b8d4cd2acb6cb15dd8dd9533803",
+            "counts": {
+                "actions": 102,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "baserow": {
+            "file": "catalog/baserow.json",
+            "sha256": "164b09cb2ebc6486191844a0c20ff76de3aa1092f344111fb9c96342b4157fdb",
+            "counts": {
+                "actions": 14,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "basin": {
+            "file": "catalog/basin.json",
+            "sha256": "08f3fd0507479f91e66c56c5efc91cabf00eb09e3dde0cf9db9246e6c21bcbe1",
+            "counts": {
+                "actions": 22,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bettercontact": {
+            "file": "catalog/bettercontact.json",
+            "sha256": "cd3d6a899b973bfb59cfca2df6e8721c88f45ce958aef561f03052dc02dd3e3f",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 9,
+                "tools": 9
+            }
+        },
+        "bigcommerce": {
+            "file": "catalog/bigcommerce.json",
+            "sha256": "b9fe8199b614f3afc8fc0ad061fd6d7e254890c7fa1a4a0e98c805c7fa0e8249",
+            "counts": {
+                "actions": 46,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bill": {
+            "file": "catalog/bill.json",
+            "sha256": "d8a04df2a0ef81c33782fffd4e54a69dea3764b447fe12d51e8df08f33c5b7ff",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bill-sandbox": {
+            "aliasOf": "bill"
+        },
+        "bing-webmasters": {
+            "file": "catalog/bing-webmasters.json",
+            "sha256": "37117ceadf0a85b4d1a76adc1bc264f0ae7e1c39b779110802669326914029ff",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 37,
+                "tools": 37
+            }
+        },
+        "bitbucket": {
+            "file": "catalog/bitbucket.json",
+            "sha256": "897407d8f9e7b6e2cd4c3ccd84b65f335afb691dd11e81f267afd511edd0e993",
+            "counts": {
+                "actions": 34,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bitdefender": {
+            "file": "catalog/bitdefender.json",
+            "sha256": "e5aa8fadbdc4971398880d7192dd0ac0b602866dc81fbe8f7b6ffcbbecbe1ad4",
+            "counts": {
+                "actions": 1,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "bitly": {
+            "file": "catalog/bitly.json",
+            "sha256": "05840846dc9b1777fa74b3ba5466f85f90a22a33b4e7b7813cbc6b53b8d6fb39",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 117,
+                "tools": 117
+            }
+        },
+        "bliro": {
+            "file": "catalog/bliro.json",
+            "sha256": "a4ffccc9ac2a20f180a01238b3d6e4cf5315c49b1449127924b42118d0023215",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 92,
+                "tools": 92
+            }
+        },
+        "bol-com": {
+            "file": "catalog/bol-com.json",
+            "sha256": "5419f29dd658216943775299512eff5455743253b8cd6614e5c0e1a8cd26004b",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 81,
+                "tools": 81
+            }
+        },
+        "boldsign": {
+            "file": "catalog/boldsign.json",
+            "sha256": "a58e2c5ba1e0581b175a597fd3c3de674184c01c755c4b5ad751a41b066b0f0f",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 93,
+                "tools": 93
+            }
+        },
+        "boondmanager": {
+            "file": "catalog/boondmanager.json",
+            "sha256": "2a5cdb60d1905d94abafa13b38bdaf602fe119c78251b73e35a6c73d69d1cde7",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 127,
+                "tools": 127
+            }
+        },
+        "box": {
+            "file": "catalog/box.json",
+            "sha256": "e0e62f0e516fdbe23b0a44c6fa91fc6859ca0bdb7629bd1cd22c06a604b44371",
+            "counts": {
+                "actions": 28,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "breezy-hr": {
+            "file": "catalog/breezy-hr.json",
+            "sha256": "c3426a0f3f22f4e7b5753827f38f541b78431eb4c5eb6a393005baa7aae1b839",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 59,
+                "tools": 59
+            }
+        },
+        "brevo-api-key": {
+            "file": "catalog/brevo-api-key.json",
+            "sha256": "084b20a468cf3c00878c263acfbd2fef00dfef10a87cd813a97dc7509dfdd49f",
+            "counts": {
+                "actions": 59,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "brex-api-key": {
+            "file": "catalog/brex-api-key.json",
+            "sha256": "ba79b53903f01496552c465d7480e625aa00e131abf018f1e4330f0d3590056a",
+            "counts": {
+                "actions": 0,
+                "syncs": 27,
+                "functions": 116,
+                "tools": 116
+            }
+        },
+        "brightcrowd": {
+            "file": "catalog/brightcrowd.json",
+            "sha256": "8de510a4cb10a6419f807045adc4dfaa903d0bcd1ca7a7187af082ea11245883",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "cal-com-oauth": {
+            "aliasOf": "cal-com-v2"
+        },
+        "cal-com-v2": {
+            "file": "catalog/cal-com-v2.json",
+            "sha256": "f7fe985f3a8495c9707cc82cfc62f0bc9c435368b9ee97cf686b3938984eba3f",
+            "counts": {
+                "actions": 28,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "calendly": {
+            "file": "catalog/calendly.json",
+            "sha256": "e1daec93ddf539a72b2b0d7b1cf303c760b74d4dfa99e5964e9ef9f450290a87",
+            "counts": {
+                "actions": 18,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "callrail": {
+            "file": "catalog/callrail.json",
+            "sha256": "1f5020709ea58a74e92287dc4d6f043d942afae76ee90618749426ea9bdf5f0b",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 63,
+                "tools": 63
+            }
+        },
+        "candis": {
+            "file": "catalog/candis.json",
+            "sha256": "7df43a7f11fe60ff40f961138992fb23e309035e05fa6096c28a1b069fe67c00",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 35,
+                "tools": 35
+            }
+        },
+        "canny": {
+            "file": "catalog/canny.json",
+            "sha256": "c1119ac6313af83ea59f30ccfe2ef5555f65d7586992ce5b9716261f133e112d",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "canva": {
+            "file": "catalog/canva.json",
+            "sha256": "06b7ff251f202f209454b1709f4f6c39e547be33a05fc682c541c537ad8535d2",
+            "counts": {
+                "actions": 36,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "canva-scim": {
+            "file": "catalog/canva-scim.json",
+            "sha256": "38025f6d09c9d59f457b8f6ebf52e18b80f675cea51f40f4e135a9b6a1862d7e",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "cerby": {
+            "file": "catalog/cerby.json",
+            "sha256": "289405eb95b191f845295c0630655c358c5dbe69261ec088e5ed28f5994dc6ae",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 79,
+                "tools": 79
+            }
+        },
+        "chameleoni": {
+            "file": "catalog/chameleoni.json",
+            "sha256": "d7d0c0d30aab499d2ca362b576b5958a74868da42c7a1fb982da766b3f20dab3",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 43,
+                "tools": 43
+            }
+        },
+        "chargebee": {
+            "file": "catalog/chargebee.json",
+            "sha256": "f8d6432c2903b21f0556e77bbe9f73669eab2e39628818337c470b8aeb36b0b6",
+            "counts": {
+                "actions": 32,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "chattermill": {
+            "file": "catalog/chattermill.json",
+            "sha256": "1a6233146dde7d6e88f549367d49f691f9f200ae6ef43508738ed1b348622c96",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 21,
+                "tools": 21
+            }
+        },
+        "checkr-partner": {
+            "file": "catalog/checkr-partner.json",
+            "sha256": "23f09258303b05269ea002c087b1e7bb350d6634bd377b7d23fbdb098f3eaa97",
+            "counts": {
+                "actions": 4,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "checkr-partner-staging": {
+            "file": "catalog/checkr-partner-staging.json",
+            "sha256": "b421a80c5db6707436134229379040ab831c0db89147003b8907d70cef4ebc1b",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "chorus": {
+            "file": "catalog/chorus.json",
+            "sha256": "6a47778dc8469b8cff55168b351951286ea3dc28aad6e79c5f3c0c111ad0ef39",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 66,
+                "tools": 66
+            }
+        },
+        "circleback": {
+            "file": "catalog/circleback.json",
+            "sha256": "3ca698c0bab29482a46ee1db67d135e51353b9bb471f77fc1c550565528273fa",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "clari-copilot": {
+            "file": "catalog/clari-copilot.json",
+            "sha256": "4bf8229faf7fdbe0151783e27fd4aa609141b55825f7bdb78415d01d2b6a01e2",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "clarify": {
+            "file": "catalog/clarify.json",
+            "sha256": "c4dfa828e375c511a41f943056b69e09a6ee3cb6725e14f0602a1a28034c7906",
+            "counts": {
+                "actions": 3,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "clerk": {
+            "file": "catalog/clerk.json",
+            "sha256": "d889eb593f64fee3361d569b2b8edd534a548d84ed80fecd720bb69b586fe15e",
+            "counts": {
+                "actions": 42,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "cleverreach": {
+            "file": "catalog/cleverreach.json",
+            "sha256": "57487739a028ab861f8ec7b27eab20ff325af73f0b1254cd56fe9c66a7c8c1b7",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 114,
+                "tools": 114
+            }
+        },
+        "clicksend": {
+            "file": "catalog/clicksend.json",
+            "sha256": "aee3d5f72988c5dc56c61293f5af9c480146c29dfc5d6c127cf72dffe7c51e79",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "clickup": {
+            "file": "catalog/clickup.json",
+            "sha256": "3accb88db8cbdc7f3dee4e51fe2234039e50e263594e770349b9dfa099b36158",
+            "counts": {
+                "actions": 36,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "clio": {
+            "file": "catalog/clio.json",
+            "sha256": "2db5f01729e2834fd7f86c0809b693a6ca80394595608fc9673a1e326acfa32a",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 87,
+                "tools": 87
+            }
+        },
+        "close": {
+            "file": "catalog/close.json",
+            "sha256": "8debba4fa12f3d1237cdee5ee1c90fba111c4559a86080b7071628bf54b1e18d",
+            "counts": {
+                "actions": 30,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "cloudtalk": {
+            "file": "catalog/cloudtalk.json",
+            "sha256": "c4f61c2ec1e281545231b255a45ece290a2ea992ace6b4953758bc270bd03394",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 126,
+                "tools": 126
+            }
+        },
+        "coda": {
+            "file": "catalog/coda.json",
+            "sha256": "780a6a1c706bcc6770ca7ed913f401ad1302a65b900c249ee8e0f32b305d63d6",
+            "counts": {
+                "actions": 30,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "codegen": {
+            "file": "catalog/codegen.json",
+            "sha256": "02a22ed7b1917a47a11a0874a06186ee63b4fc8a2160ae017c856f2cb21850cc",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "companycam": {
+            "file": "catalog/companycam.json",
+            "sha256": "caa66dbe2fd3552fa4b533d8d00d5a90c85df2ab58dcd2f3dcf72e39ff181b9d",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 58,
+                "tools": 58
+            }
+        },
+        "conductorone": {
+            "file": "catalog/conductorone.json",
+            "sha256": "d7a6ad64ba7343438af4239ca8afe575d3b0f8c99dac28543238c463afc2a9f4",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 75,
+                "tools": 75
+            }
+        },
+        "confluence": {
+            "file": "catalog/confluence.json",
+            "sha256": "d5855c77d96a0c8c4f025ced3aecf6dd9ebb3d99dd278e06c4adb4dd2a8bbce9",
+            "counts": {
+                "actions": 36,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "connectsecure": {
+            "file": "catalog/connectsecure.json",
+            "sha256": "87bb25b3fafa427f8b9479700dd61cc9001e19b2f35bad5fbb1502079d7aff19",
+            "counts": {
+                "actions": 20,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "constant-contact": {
+            "file": "catalog/constant-contact.json",
+            "sha256": "ed8b5d99ae8c0bdfc5eb47d01ec3393b66b6660a1142789bf719e1622f713da6",
+            "counts": {
+                "actions": 38,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "conta-azul": {
+            "file": "catalog/conta-azul.json",
+            "sha256": "6071e3cd1b11fcb93d0de4506d4bc5b398eb94e205f44db7906e827e3f9e4b1b",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 94,
+                "tools": 94
+            }
+        },
+        "contactout": {
+            "file": "catalog/contactout.json",
+            "sha256": "ac79943432ed83101987a56898af228a4b0b19c27cebdf43214f560ce94278a7",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 30,
+                "tools": 30
+            }
+        },
+        "coupa-compass": {
+            "file": "catalog/coupa-compass.json",
+            "sha256": "6fb595ccef2ab72c8672f3ec66ee5566611dcac00d7a818f9274f36eb9717aaf",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 82,
+                "tools": 82
+            }
+        },
+        "customer-io": {
+            "file": "catalog/customer-io.json",
+            "sha256": "579eeb2d147d098b34e92d0de3cb64dbacaaaa17dca6bac7a8dbfae776d4509e",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 3,
+                "tools": 3
+            }
+        },
+        "cyberimpact": {
+            "file": "catalog/cyberimpact.json",
+            "sha256": "778e84598c0e32fdbcbf0cbf2610b9a775ffa2296f1b00a207def27e8512b1cf",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 44,
+                "tools": 44
+            }
+        },
+        "databricks-workspace": {
+            "file": "catalog/databricks-workspace.json",
+            "sha256": "59b186a792be3746e90a5d722f031d9ec4556b03122f9f2db83fd2f4baa7c294",
+            "counts": {
+                "actions": 1,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "datadog": {
+            "file": "catalog/datadog.json",
+            "sha256": "e75cb6bf9b151dd196b41df2cb4496d8b8e8f48d7e7869d5ab692d22258040d6",
+            "counts": {
+                "actions": 122,
+                "syncs": 13,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "datadog-oauth": {
+            "aliasOf": "datadog"
+        },
+        "datto-rmm-password-grant": {
+            "file": "catalog/datto-rmm-password-grant.json",
+            "sha256": "27f855758213e26e6ec5b8087d5b55559ebd44b79a9dcf0b570aaf49605fb5f3",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 52,
+                "tools": 52
+            }
+        },
+        "demodesk": {
+            "file": "catalog/demodesk.json",
+            "sha256": "e4dd26bfaf4e9ed225c76e64fed84e368d8c90bab6bd5e20dd32514e2068e641",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 35,
+                "tools": 35
+            }
+        },
+        "dialpad": {
+            "file": "catalog/dialpad.json",
+            "sha256": "0bafadcf592b6d25442fd9be7b07691dd1303093c4413f72169395e0fa34a3aa",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "dialpad-sandbox": {
+            "aliasOf": "dialpad"
+        },
+        "dialpad-wfm": {
+            "file": "catalog/dialpad-wfm.json",
+            "sha256": "d87faa91870da4923060be877e3841be9133dc003b975e1d8016dee82027c250",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 5,
+                "tools": 5
+            }
+        },
+        "diffbot": {
+            "file": "catalog/diffbot.json",
+            "sha256": "91410270ac1cb1811320f88a1542d53b618173422abc9f4624abf4a3a70f6cee",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "digitalocean": {
+            "file": "catalog/digitalocean.json",
+            "sha256": "8442b773e43bc8bd9951a76dad0dfc355cd2bccdeb63c8628a9b2e122d164dbe",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 60,
+                "tools": 60
+            }
+        },
+        "discogs": {
+            "file": "catalog/discogs.json",
+            "sha256": "38961b98fe43a7c0ff8667941265c65424a3968586854877f8ad6a6e3147fa9b",
+            "counts": {
+                "actions": 26,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "discogs-token": {
+            "file": "catalog/discogs-token.json",
+            "sha256": "4cf0e516afba0055a8cb55b0eb99416580edd29cccb99785449164fe42b68326",
+            "counts": {
+                "actions": 26,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "discolike": {
+            "file": "catalog/discolike.json",
+            "sha256": "ff655852719ff6f03dd1e66efc55845b8a4ba23b5305f0736382bdf443c70ea3",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 53,
+                "tools": 53
+            }
+        },
+        "discord": {
+            "file": "catalog/discord.json",
+            "sha256": "d82a01e781035f91cc8c132e3a0c0a81f042277a895c802fd5e91ea369476412",
+            "counts": {
+                "actions": 33,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "discourse": {
+            "file": "catalog/discourse.json",
+            "sha256": "ab29b87e3dce625aac017b21e7f073cbc514d640bcb2d4c1e4fe01f036a3a5be",
+            "counts": {
+                "actions": 3,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "document360": {
+            "file": "catalog/document360.json",
+            "sha256": "2293cc244cfc87c03496c29c25087d2e3e68d5da1fb62fad0d916359ad54790f",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 6,
+                "tools": 6
+            }
+        },
+        "docusign": {
+            "file": "catalog/docusign.json",
+            "sha256": "b4e1b2fa5fd9aa029ba8138b5031a8be040842928b17f070068364ef0c53bfa4",
+            "counts": {
+                "actions": 47,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "docusign-sandbox": {
+            "aliasOf": "docusign"
+        },
+        "domo": {
+            "file": "catalog/domo.json",
+            "sha256": "70448a7c179017a339b0dc023e050eefb0e00f01631bc370db4e240c9f805ef9",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 88,
+                "tools": 88
+            }
+        },
+        "dope-security": {
+            "file": "catalog/dope-security.json",
+            "sha256": "3ef87c92495f247f5eb1379ce7e73f416fe82708a56290e782310dfc3db0c6ac",
+            "counts": {
+                "actions": 25,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "dropbox": {
+            "file": "catalog/dropbox.json",
+            "sha256": "bd1f3d83eb36900f89eba7eca54dccf63cc131c9a7c7ae8c077d0841a74135f3",
+            "counts": {
+                "actions": 32,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "dropbox-sign": {
+            "file": "catalog/dropbox-sign.json",
+            "sha256": "e057930a05d520e94f9230a5827e69d1824b444eb88aee87a2a2164413c08ca4",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 67,
+                "tools": 67
+            }
+        },
+        "dynamic-mockups": {
+            "file": "catalog/dynamic-mockups.json",
+            "sha256": "8040ea0c02664717124f2c05695e9dd3fa806791496b5487b5348e1a60dfeb0f",
+            "counts": {
+                "actions": 13,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "dynatrace": {
+            "file": "catalog/dynatrace.json",
+            "sha256": "99cc7be1dc8b187b7f22017516dacc25988a940f2ae70171d74b9cb002d04857",
+            "counts": {
+                "actions": 23,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "dynatrace-oauth": {
+            "file": "catalog/dynatrace-oauth.json",
+            "sha256": "bfdecf9ccacaadb497bd32adbeb5ae138716dea4ab0852b7a5387ad846d71877",
+            "counts": {
+                "actions": 42,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ebay": {
+            "file": "catalog/ebay.json",
+            "sha256": "1f8f3b4e4bd028c7d3e87d18f95ccf2a97a69279ee66da887686ce82b14553e5",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 27,
+                "tools": 27
+            }
+        },
+        "elevenlabs": {
+            "file": "catalog/elevenlabs.json",
+            "sha256": "f50365623f02d96ebf3f40e31222fdeae3d3a91cca97af83d3766e83077debd4",
+            "counts": {
+                "actions": 29,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "embat": {
+            "file": "catalog/embat.json",
+            "sha256": "4a177cd434d630d9511fcf360f42184f2e686c5b35a02c7bbb4e42b9c3c417e4",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 108,
+                "tools": 108
+            }
+        },
+        "etsy": {
+            "file": "catalog/etsy.json",
+            "sha256": "8063c830861b08b8a5ae361957c6ebe2c5217c2fca575f0c60adb7d6648a9698",
+            "counts": {
+                "actions": 0,
+                "syncs": 27,
+                "functions": 106,
+                "tools": 106
+            }
+        },
+        "evaluagent": {
+            "file": "catalog/evaluagent.json",
+            "sha256": "58cc707b440de9a41e4a1acfe1327e0bce1c833a8c58fd274286380474e84479",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "eventbrite": {
+            "file": "catalog/eventbrite.json",
+            "sha256": "47b5c454c30a53592057ab6b8487f22eff3c7373d3992daa64ffda823cbdfabd",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 95,
+                "tools": 95
+            }
+        },
+        "everflow": {
+            "file": "catalog/everflow.json",
+            "sha256": "81f755ceb8a63c2c4c3c38afb94f283f5fe70062dd2f3d13ff6fec095d6df3cd",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 112,
+                "tools": 112
+            }
+        },
+        "exa": {
+            "file": "catalog/exa.json",
+            "sha256": "63a9c3c33f597f0e3722eefbc495703e72920f4c43811474e0af9d9f6426edcd",
+            "counts": {
+                "actions": 4,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "exact-online": {
+            "file": "catalog/exact-online.json",
+            "sha256": "b62846359903991788ef2085e162fbb652e17d3d7f9be26c4c741581ca1fb6e4",
+            "counts": {
+                "actions": 34,
+                "syncs": 16,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "exist": {
+            "file": "catalog/exist.json",
+            "sha256": "ae9bee4118da0f3509370f9eb00eea3c6ad40045f51dce4689e6da21edcf8d90",
+            "counts": {
+                "actions": 17,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "expensify": {
+            "file": "catalog/expensify.json",
+            "sha256": "0bb6eeb901f9ad8a263011a077db3188e44c717c3e2a10fbca0c758f5a0e79ff",
+            "counts": {
+                "actions": 3,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "facebook": {
+            "file": "catalog/facebook.json",
+            "sha256": "0852d97c1635e5f56ac3b1266123947c6fe3cd21ba5f90319f45fd604bf6bfcf",
+            "counts": {
+                "actions": 19,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "factorial-api-key": {
+            "file": "catalog/factorial-api-key.json",
+            "sha256": "8c4ea6235f084387186421d0ae9b4ce7844f40905a85001ee7ec6cce1ca22d17",
+            "counts": {
+                "actions": 0,
+                "syncs": 23,
+                "functions": 92,
+                "tools": 92
+            }
+        },
+        "fairing": {
+            "file": "catalog/fairing.json",
+            "sha256": "cf3bcc42722096b50a5a6f1b8562ae6eed15508a5cb0384e3abb3c37ca295ef3",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 4,
+                "tools": 4
+            }
+        },
+        "falai": {
+            "file": "catalog/falai.json",
+            "sha256": "c0f069f9d03d3d4112a11a03bb5d908036017c9f17f6654ffeacaa275bc7f42d",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 6,
+                "tools": 6
+            }
+        },
+        "fathom": {
+            "file": "catalog/fathom.json",
+            "sha256": "f7de2391fde08cd2258c082c6f6032babbbafa942303e20c7e13e76062473bcd",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 12,
+                "tools": 12
+            }
+        },
+        "fellow": {
+            "file": "catalog/fellow.json",
+            "sha256": "6255a3534e10d53cf43aae9ca53b2934d4836ba1a9cd3773de528a6c71ce17c5",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 21,
+                "tools": 21
+            }
+        },
+        "figma": {
+            "file": "catalog/figma.json",
+            "sha256": "bf09fcee34710b61d1c33e0f18644691d5bff0744aac837823952095b3a71a58",
+            "counts": {
+                "actions": 36,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "fillout": {
+            "file": "catalog/fillout.json",
+            "sha256": "29a859e6ce06dbf6858ad4ac2380c24b40be1f0be2fa0aa3c5bdb7b245b9cb9d",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 8,
+                "tools": 8
+            }
+        },
+        "findymail": {
+            "file": "catalog/findymail.json",
+            "sha256": "f123bdf664b5673a6847ec6733b94000dd0b07ad8d8afb23e1113bd58491a09e",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 37,
+                "tools": 37
+            }
+        },
+        "finta": {
+            "file": "catalog/finta.json",
+            "sha256": "5f850ca22761917a90515bbeeb71b3632cd1d92412b2ee41a29d9607e546282d",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 30,
+                "tools": 30
+            }
+        },
+        "firecrawl": {
+            "file": "catalog/firecrawl.json",
+            "sha256": "cbf16e742f3f366d3b9072126eb0adf7940d1e9fafdf38cadc0d7e404731f6b5",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 61,
+                "tools": 61
+            }
+        },
+        "fireflies": {
+            "file": "catalog/fireflies.json",
+            "sha256": "99a196e442d4afab9304a02e4ae978baae1e9ef7c955f9b22240c7d58dbea339",
+            "counts": {
+                "actions": 29,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "firstbase": {
+            "file": "catalog/firstbase.json",
+            "sha256": "4be49a027a7f0843cf9618ec5e3819847cd6af2b694584d50ae98f2341a06247",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 79,
+                "tools": 79
+            }
+        },
+        "fiserv-api-key": {
+            "file": "catalog/fiserv-api-key.json",
+            "sha256": "e99173b2f080b35ed0aa9895df480c6803a049cf12802b3f6f4b1f112eaf3c9b",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 62,
+                "tools": 62
+            }
+        },
+        "folk": {
+            "file": "catalog/folk.json",
+            "sha256": "41c4428c6cdfb88ed64b431d0c9a0187b0b8f6f49fabe4751a87bbece6a10fdf",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 75,
+                "tools": 75
+            }
+        },
+        "freepik": {
+            "file": "catalog/freepik.json",
+            "sha256": "c7b9e7489611f1e8067fc4be968ddc235ca355d2986f6fbdbacaa049af37a116",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 60,
+                "tools": 60
+            }
+        },
+        "freshbooks": {
+            "file": "catalog/freshbooks.json",
+            "sha256": "e203eac8f0cee429074f43e81ed5c43f1e85be96f0422a348c878153d7a0a063",
+            "counts": {
+                "actions": 35,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "freshdesk": {
+            "file": "catalog/freshdesk.json",
+            "sha256": "b32f40c496ab241513a790985d9640516342fd10ad88417b24decffdaf2b57d7",
+            "counts": {
+                "actions": 80,
+                "syncs": 16,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "freshteam": {
+            "file": "catalog/freshteam.json",
+            "sha256": "9f137c28f5aada7ba5f4af2a1ea149eb44d6752ee5defd8f62c2fc05c506006d",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 32,
+                "tools": 32
+            }
+        },
+        "front": {
+            "file": "catalog/front.json",
+            "sha256": "0afab10e7b83c9953039a626a0d889ffdf08e92bb452fa3242ab064798a97465",
+            "counts": {
+                "actions": 1,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "fullenrich": {
+            "file": "catalog/fullenrich.json",
+            "sha256": "a534e34a4d5de9aefa76efec072fd4e857474239438c7a77c71ef43ad99f85b9",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 14,
+                "tools": 14
+            }
+        },
+        "gainsight-cc": {
+            "file": "catalog/gainsight-cc.json",
+            "sha256": "d488aae5f5d9c113961f5125cd57fe7d7247d31cc2b92a75177ff23f46de31ab",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 49,
+                "tools": 49
+            }
+        },
+        "gamma": {
+            "file": "catalog/gamma.json",
+            "sha256": "ed6582759ad8d8f20f4f631788e8219a6db91a35b4fbb97f6b2d8c07e97bab30",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 14,
+                "tools": 14
+            }
+        },
+        "gem": {
+            "file": "catalog/gem.json",
+            "sha256": "95a8dcfb88ff5fc9e7002be2ee53810f6463681133a8241c7c3a08f81eb529c0",
+            "counts": {
+                "actions": 4,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "gerrit": {
+            "file": "catalog/gerrit.json",
+            "sha256": "2479d712f8d936fc4bb05693e0115318a59c6df1d530cf8f60d5a14dbdcb45c1",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 71,
+                "tools": 71
+            }
+        },
+        "getty-images": {
+            "file": "catalog/getty-images.json",
+            "sha256": "96f354daf782cd47a74c31da7b933d3ff334b7d2e34d5490d31d72d0f8219f19",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 73,
+                "tools": 73
+            }
+        },
+        "ghost-content": {
+            "file": "catalog/ghost-content.json",
+            "sha256": "8cf98cb448918375310cdbe0e919dd1d1d6c4ab932b677690050464bb59cde68",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 10,
+                "tools": 10
+            }
+        },
+        "github": {
+            "file": "catalog/github.json",
+            "sha256": "7f3fbf391fbabd00fbd9e84fefe07cbc91e42a94d603f1b72374ad33887c4026",
+            "counts": {
+                "actions": 53,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "github-app": {
+            "file": "catalog/github-app.json",
+            "sha256": "77bc518a2dfb606d13f1c2e008201b4bc2646228a05045dbe6f129803d9b9f6f",
+            "counts": {
+                "actions": 8,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "github-app-oauth": {
+            "file": "catalog/github-app-oauth.json",
+            "sha256": "67e3016a9fd1ff7c4a5c4be7927ddf1d66ac043e18bdbe0f7e4cc2b1966938fd",
+            "counts": {
+                "actions": 74,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "github-pat": {
+            "aliasOf": "github"
+        },
+        "gitlab": {
+            "file": "catalog/gitlab.json",
+            "sha256": "7682927da7cf765560ba332d2bce4e02b1bd0f0828b7797e0cd88bf0a797229b",
+            "counts": {
+                "actions": 44,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "glyphic": {
+            "file": "catalog/glyphic.json",
+            "sha256": "1f0023af36cdffb67366d4f1c7de749fbf9fd3fc3c048b4e1fe5c9ffcfbb9f2e",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 13,
+                "tools": 13
+            }
+        },
+        "gong": {
+            "file": "catalog/gong.json",
+            "sha256": "4a87ce65f2752fdcbdfa014c8071ec1da1515534903ebac030bb3be79413bc7f",
+            "counts": {
+                "actions": 66,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "gong-oauth": {
+            "aliasOf": "gong"
+        },
+        "google": {
+            "file": "catalog/google.json",
+            "sha256": "454f9085323dcbcc76c5320f04e0a593b06421e742b3716acd9f52061ffc7dd7",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-ads": {
+            "file": "catalog/google-ads.json",
+            "sha256": "4ec87c34ea0f443977ef3f5510dd70d3927dc40fd449f160089d01394946e2e1",
+            "counts": {
+                "actions": 28,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-analytics": {
+            "file": "catalog/google-analytics.json",
+            "sha256": "7699dd4550b7b7d713928f2fe699c418b36d42054617ebab66e1d8c37a35ad1a",
+            "counts": {
+                "actions": 11,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-bigquery": {
+            "file": "catalog/google-bigquery.json",
+            "sha256": "9f5ebdccca18de09f0babd038052c2fda9746ea693c57b168dcffacae18c8652",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 51,
+                "tools": 51
+            }
+        },
+        "google-calendar": {
+            "file": "catalog/google-calendar.json",
+            "sha256": "f09f3745d81c170414fa46abbc59c7c188501321338cf6e905e8eae7e3e8ecd6",
+            "counts": {
+                "actions": 43,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-chat": {
+            "file": "catalog/google-chat.json",
+            "sha256": "706ef75bd40179a683ddc60011302bc29b053e043929a24a098c57bb638d02c0",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 57,
+                "tools": 57
+            }
+        },
+        "google-cloud-storage": {
+            "file": "catalog/google-cloud-storage.json",
+            "sha256": "ee24cb180dd6901b9298ed5c94522ebf3e8ae57d2274ed2b735b28595c2f2fd4",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 82,
+                "tools": 82
+            }
+        },
+        "google-docs": {
+            "file": "catalog/google-docs.json",
+            "sha256": "5d97d1332e30f615439d7229ab1a60f9c2b9835c6f66a8b4f75f3532704538a7",
+            "counts": {
+                "actions": 38,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-drive": {
+            "file": "catalog/google-drive.json",
+            "sha256": "4e2f10a9f7e47409f212703f531b5de06795fafe1351a243901464127e8439d9",
+            "counts": {
+                "actions": 30,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-forms": {
+            "file": "catalog/google-forms.json",
+            "sha256": "bd2d63371f06fcab7f32cd87af000469fb923594816351d41a17ba83eaa2da20",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 14,
+                "tools": 14
+            }
+        },
+        "google-gemini": {
+            "file": "catalog/google-gemini.json",
+            "sha256": "af8d43fb08e0e22de5163eb65a60eb2e1588dcb00f3063fb4a1dc9a5b8071317",
+            "counts": {
+                "actions": 10,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-health": {
+            "file": "catalog/google-health.json",
+            "sha256": "5bfa0201e0b33995bb17c5d85c19ee6a87f12fed9fb6a4b28bd22c1867b290da",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "google-mail": {
+            "file": "catalog/google-mail.json",
+            "sha256": "f93d94bd811e5a76654ae8e0ed5494ab4dc9632d578dff4e10a805db64461284",
+            "counts": {
+                "actions": 54,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-maps": {
+            "file": "catalog/google-maps.json",
+            "sha256": "3859e1aff33f02701e9ef7bc9d75608ec3fda3f77b138418d6d1b5c291fade8e",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 51,
+                "tools": 51
+            }
+        },
+        "google-meet": {
+            "file": "catalog/google-meet.json",
+            "sha256": "734b40dc9639b03acf0a5cec43a3773d93f62d6380c1802c28602cf3134885f5",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "google-search-console": {
+            "file": "catalog/google-search-console.json",
+            "sha256": "5e10f17598ae64fc99ba95763dfaaa2c2af2d57edbd91b182fcb15eba198f610",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 10,
+                "tools": 10
+            }
+        },
+        "google-sheet": {
+            "file": "catalog/google-sheet.json",
+            "sha256": "5688988fb7c2c4ed0c7dac215372fb63141000e9a6e420703e4ab96665634eed",
+            "counts": {
+                "actions": 18,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-slides": {
+            "file": "catalog/google-slides.json",
+            "sha256": "eb41eefb8acfd57df4152e8aed1705bc74775fff123ffaef686721a3b35848c6",
+            "counts": {
+                "actions": 27,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-tasks": {
+            "file": "catalog/google-tasks.json",
+            "sha256": "3f3c229276e572d9a6ee7ad517daaf219eef546916e9fc94446b75c135f62a67",
+            "counts": {
+                "actions": 17,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "google-workspace-admin": {
+            "file": "catalog/google-workspace-admin.json",
+            "sha256": "485a33f7a485dab5ca766109c9ae4cf8f101baaf4c1448664fa09642fade4a31",
+            "counts": {
+                "actions": 0,
+                "syncs": 25,
+                "functions": 122,
+                "tools": 122
+            }
+        },
+        "gorgias": {
+            "file": "catalog/gorgias.json",
+            "sha256": "fbe0f17ee3e149eb1a064105efc638596636a46b074dad19a5b0377ddc9c899d",
+            "counts": {
+                "actions": 84,
+                "syncs": 13,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "gorgias-basic": {
+            "aliasOf": "gorgias"
+        },
+        "grain-api-key": {
+            "file": "catalog/grain-api-key.json",
+            "sha256": "20caec3abda0d143e8dde315d5bcaea813ab867c7cf2e9773f64425924528b48",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 22,
+                "tools": 22
+            }
+        },
+        "grammarly": {
+            "file": "catalog/grammarly.json",
+            "sha256": "5815e7ad8fb3cade082d88fa5a7ec791e87fb7ae80c7ab8e12ded6f6562675cf",
+            "counts": {
+                "actions": 1,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "granola": {
+            "file": "catalog/granola.json",
+            "sha256": "ca61b0d34f849bfff501b2994bb855f3b1a7709ff43ad13e90b9729ae9fd6dbc",
+            "counts": {
+                "actions": 4,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "greenhouse": {
+            "aliasOf": "greenhouse-basic"
+        },
+        "greenhouse-basic": {
+            "file": "catalog/greenhouse-basic.json",
+            "sha256": "0c0605d636b96e8bef0c2a21df1fda7cc8875628859a4b6bf3821116b66530f1",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "greenhouse-job-board": {
+            "file": "catalog/greenhouse-job-board.json",
+            "sha256": "3fcd6c300209c90d03ad405c68a4a8067e2df6e915648e3ef1cd3ee7814ed5b2",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 9,
+                "tools": 9
+            }
+        },
+        "greenhouse-onboarding": {
+            "file": "catalog/greenhouse-onboarding.json",
+            "sha256": "96bf69e32ffd1501584206dfc6440a87f063f4ea8ca6a9233cca3055e9d86b31",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 45,
+                "tools": 45
+            }
+        },
+        "gumroad": {
+            "file": "catalog/gumroad.json",
+            "sha256": "e764f1bb36c16c2c05d64b6973356b0eaccd1a50cc13e89f637e10bb5cea3420",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 84,
+                "tools": 84
+            }
+        },
+        "gusto": {
+            "file": "catalog/gusto.json",
+            "sha256": "5208d73871de29792e5e70d1ab30b32598cc3a880a444d84d7c2b6eee8f3c247",
+            "counts": {
+                "actions": 3,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "gusto-demo": {
+            "aliasOf": "gusto"
+        },
+        "hackerrank-work": {
+            "file": "catalog/hackerrank-work.json",
+            "sha256": "45c090216214042610594a7b9d1ec78083f053af7337da04347e5393cb2e9d5c",
+            "counts": {
+                "actions": 2,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "hail": {
+            "file": "catalog/hail.json",
+            "sha256": "0d9c1a2ed79c1c63dc33ed005c94da09936b2e0f7f2bad4d707fbee42d683638",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 68,
+                "tools": 68
+            }
+        },
+        "haileyhr": {
+            "file": "catalog/haileyhr.json",
+            "sha256": "1503a3bebecafd3b710c3089fc7072d0bb610aaffe87db7ed9124794888c8e0c",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "harvest": {
+            "file": "catalog/harvest.json",
+            "sha256": "1ef7ae881ddf4d3b59ffdef5a2665cedd574fb2c846df491ad0e4ebe4b17f12b",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "helpscout-docs": {
+            "file": "catalog/helpscout-docs.json",
+            "sha256": "d85794252dc4ecb1a69e12d1cdd57e4c13ef4ade21fad1626687cec48dc3287f",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 40,
+                "tools": 40
+            }
+        },
+        "hex": {
+            "file": "catalog/hex.json",
+            "sha256": "0af7a19792c7de1a5b6b4a1e209d995c06211e27400937471df31ed1984081ba",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 78,
+                "tools": 78
+            }
+        },
+        "heymarket": {
+            "file": "catalog/heymarket.json",
+            "sha256": "7c375c4bcd5b1e2547802183b4ad4e713ba1fe14ce13f6eb3283460f69181e22",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 86,
+                "tools": 86
+            }
+        },
+        "heyreach": {
+            "file": "catalog/heyreach.json",
+            "sha256": "5b348bda37c0fd5a1c2a531bb57e12bfd0c1e0f8d8f2c8d041cad2f863fb06a1",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 90,
+                "tools": 90
+            }
+        },
+        "hibob-service-user": {
+            "file": "catalog/hibob-service-user.json",
+            "sha256": "7ce154ad7e28b20edc9583790693aa6803b17bfecf63c4bd21ac794545f381e4",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "highlevel": {
+            "file": "catalog/highlevel.json",
+            "sha256": "e1629766577f2e0c92b3df5f3a77cc1ff55306f1c93986bec628a200adcd2520",
+            "counts": {
+                "actions": 54,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "highq": {
+            "file": "catalog/highq.json",
+            "sha256": "23191bb2631bfb0691296077a5ad716f9f3ff4e09cedebdb6bbb8eb415b3c203",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 22,
+                "tools": 22
+            }
+        },
+        "holded-v2": {
+            "file": "catalog/holded-v2.json",
+            "sha256": "6c177473d1040d3a4bb45553febfd1b53ef51f3ea9061b32c637531da04ba08e",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 12,
+                "tools": 12
+            }
+        },
+        "hubspot": {
+            "file": "catalog/hubspot.json",
+            "sha256": "258b5a328799757d20e5b9526621aa3fd41e911d029566f1afc3e78ea02fbc56",
+            "counts": {
+                "actions": 49,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "hubstaff": {
+            "file": "catalog/hubstaff.json",
+            "sha256": "5820cb87aed7e17f73d07de17d00fd1d3ea2014ce7bd693795ce15fca0fea875",
+            "counts": {
+                "actions": 21,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "huntress": {
+            "file": "catalog/huntress.json",
+            "sha256": "82b4068fed32fdbc5529531075199e6dbba5308d9b819658e45a2d281498cb63",
+            "counts": {
+                "actions": 0,
+                "syncs": 31,
+                "functions": 102,
+                "tools": 102
+            }
+        },
+        "icypeas": {
+            "file": "catalog/icypeas.json",
+            "sha256": "55fe5313c4d8c12384918ce58e67093f4674a2d2778f0a1e387c59e496c56c9b",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "ids-fulfillment": {
+            "file": "catalog/ids-fulfillment.json",
+            "sha256": "16cf8b4350f52ed432a5918f543ac5da861c6b147fcb476a02913fcbc17a7293",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 22,
+                "tools": 22
+            }
+        },
+        "incident-io": {
+            "file": "catalog/incident-io.json",
+            "sha256": "8d3eaff0a9854043fd2aad660ff26b39a91f9c6a9e2e2e80ffcea414df0ed29b",
+            "counts": {
+                "actions": 66,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ingenious-build": {
+            "file": "catalog/ingenious-build.json",
+            "sha256": "8bf9b32e37a49341ade0a7d704316591479767a483c8648bf12be6841cd61528",
+            "counts": {
+                "actions": 54,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ingenious-build-pat": {
+            "aliasOf": "ingenious-build"
+        },
+        "insightly": {
+            "file": "catalog/insightly.json",
+            "sha256": "040877736e566eef4b37397c8d7fa72874349afc49d7bee7b830f6487c34dd54",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 75,
+                "tools": 75
+            }
+        },
+        "instagram": {
+            "file": "catalog/instagram.json",
+            "sha256": "50b19ebf2dce991bb8f5b0b79d0e9bb5aeb54545909c846a248faf1e21901304",
+            "counts": {
+                "actions": 15,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "instantly": {
+            "file": "catalog/instantly.json",
+            "sha256": "7f937a76772fda83016944e61277933565b75c10240e2c6ebcf0f50e90d38a67",
+            "counts": {
+                "actions": 77,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "intercom": {
+            "file": "catalog/intercom.json",
+            "sha256": "b7005a72f157daa8c93a69af5e2782bedacc219de2aed5d84c10637b0dfdceaf",
+            "counts": {
+                "actions": 42,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ironclad": {
+            "file": "catalog/ironclad.json",
+            "sha256": "fdc0ccf342448b4a2804f5fe9cd0091bef0b358af067c939a9f0989157ed697b",
+            "counts": {
+                "actions": 46,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "jamie": {
+            "file": "catalog/jamie.json",
+            "sha256": "12cb5d7ee3818eaea06064af54ba997ac7d6f5062818cd4f9c663bc9252f66fd",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 9,
+                "tools": 9
+            }
+        },
+        "jiminny": {
+            "file": "catalog/jiminny.json",
+            "sha256": "47eb12117958c098ca4d64d844b8c4c84476d5c70843af0a60108ae6a057cb16",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 25,
+                "tools": 25
+            }
+        },
+        "jira": {
+            "file": "catalog/jira.json",
+            "sha256": "f61dc0c4fa7a19c7238971b9aff1d7aa1a596af380b9c1ac8cfe7472be3e447a",
+            "counts": {
+                "actions": 40,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "jira-basic": {
+            "file": "catalog/jira-basic.json",
+            "sha256": "f0cc245368690378b355953dd1380adb6688ca1dba1b1f708e40615f8520da37",
+            "counts": {
+                "actions": 3,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "jira-data-center-api-key": {
+            "file": "catalog/jira-data-center-api-key.json",
+            "sha256": "c6976081f5e7e2b0a8ce4d9051445fa4f77eef3b4de0121bd2277565f9744e5a",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 88,
+                "tools": 88
+            }
+        },
+        "jobdiva": {
+            "file": "catalog/jobdiva.json",
+            "sha256": "720d541a39c0420e97e2b84aa1810a8bc3ce428fd2d36ba700c1ab785400ba36",
+            "counts": {
+                "actions": 0,
+                "syncs": 23,
+                "functions": 92,
+                "tools": 92
+            }
+        },
+        "jobnimbus": {
+            "file": "catalog/jobnimbus.json",
+            "sha256": "c8e385b6b6b6da1140505d29b61d5100cec0650e5078cb3575ffd351c1b1d03b",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 83,
+                "tools": 83
+            }
+        },
+        "jotform": {
+            "file": "catalog/jotform.json",
+            "sha256": "6a87e8b353495bfc7e1d3fd882b33d73b53678a4a88d604aad99a8e35d6f1587",
+            "counts": {
+                "actions": 27,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "judgeme-oauth": {
+            "file": "catalog/judgeme-oauth.json",
+            "sha256": "39bd5133463628458299c2ed59c50ddca9599a20b1a93dd426c590b40cea6e74",
+            "counts": {
+                "actions": 18,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "juniper-mist": {
+            "file": "catalog/juniper-mist.json",
+            "sha256": "2517050f8d017cd977b3b233e5af0ea941c61719d74901a97dc3845cf18c4ce5",
+            "counts": {
+                "actions": 0,
+                "syncs": 24,
+                "functions": 64,
+                "tools": 64
+            }
+        },
+        "justworks": {
+            "file": "catalog/justworks.json",
+            "sha256": "92937b9e5e3adcb965cda40ac21f5bbeafa9b1190d4a3481a18672440d937276",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 26,
+                "tools": 26
+            }
+        },
+        "keeper-scim": {
+            "file": "catalog/keeper-scim.json",
+            "sha256": "062c734a25645c7ba99ec8bbfc5164c6b06d624a50a48bd7f8ef6fa328e94540",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "klaviyo": {
+            "file": "catalog/klaviyo.json",
+            "sha256": "909182d3411cb4c78f9a8f27389d7d61d677eb322316ffb26446373d5d8d2434",
+            "counts": {
+                "actions": 69,
+                "syncs": 16,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "klaviyo-oauth": {
+            "aliasOf": "klaviyo"
+        },
+        "klicktipp": {
+            "file": "catalog/klicktipp.json",
+            "sha256": "69736e97d584ff3d03c27359ef6d2071194ed86de461e1aaef5d4e9d0f82898f",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 3,
+                "tools": 3
+            }
+        },
+        "kno-commerce": {
+            "file": "catalog/kno-commerce.json",
+            "sha256": "25c12f1fa64c9804e6ba65292b28a16900c4caecaaa70aac691bad4daa3860bc",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 7,
+                "tools": 7
+            }
+        },
+        "knowbe4": {
+            "file": "catalog/knowbe4.json",
+            "sha256": "d31aa85faf1491e5d71460d75e6e42fc3fcacb4d0dd67e782dd8de0205770fd3",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "kustomer": {
+            "file": "catalog/kustomer.json",
+            "sha256": "0250dee5a91026878161738e565738c8496c025752c65d7f1b552ae22777ede0",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "lagrowthmachine": {
+            "file": "catalog/lagrowthmachine.json",
+            "sha256": "5f6502804b4012144ad113fa0efa41a98c8b922065413d3cc0782ae73d8871ca",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 60,
+                "tools": 60
+            }
+        },
+        "lastpass": {
+            "file": "catalog/lastpass.json",
+            "sha256": "42406c0f2c40500cf79f4669b20ee4882c23e3b9557d955b85c2b7ea940f67aa",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "lattice": {
+            "file": "catalog/lattice.json",
+            "sha256": "f52eec0b353af687988078800290f09ebc72af417102bc86350933b9941b1cf7",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "leadfeeder": {
+            "file": "catalog/leadfeeder.json",
+            "sha256": "7672e0c4d510035f1a592a9b094f6d759eb7b96ff8a6c6370fdc5c1703008a05",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 101,
+                "tools": 101
+            }
+        },
+        "leadmagic": {
+            "file": "catalog/leadmagic.json",
+            "sha256": "dbb1e93afecfe21bdc1faaef6391939b52a6c1f0302a9abdc1317410ee218373",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 92,
+                "tools": 92
+            }
+        },
+        "leapsome": {
+            "file": "catalog/leapsome.json",
+            "sha256": "c557df916df21de33040522d0e83d979843a2717f878851db9d9377271e64f03",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "lemlist": {
+            "file": "catalog/lemlist.json",
+            "sha256": "786a0e16cb1e76b0beffd6f2b4f8511e606378932d88eb5294d5d475a06a34a7",
+            "counts": {
+                "actions": 21,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "lessonly": {
+            "file": "catalog/lessonly.json",
+            "sha256": "86f3168ffb4b87510e5b296c801ce1488eec8858dcb5e177bd0957eb89bf6217",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 44,
+                "tools": 44
+            }
+        },
+        "lever": {
+            "file": "catalog/lever.json",
+            "sha256": "1ae0228b27f5490908240da351731379e307b8195298f5692d305cedbc2d331a",
+            "counts": {
+                "actions": 13,
+                "syncs": 17,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "lever-basic": {
+            "aliasOf": "lever"
+        },
+        "lever-basic-sandbox": {
+            "aliasOf": "lever"
+        },
+        "lever-sandbox": {
+            "aliasOf": "lever"
+        },
+        "lightfield": {
+            "file": "catalog/lightfield.json",
+            "sha256": "4cc563f297f9f2e4ce1ffacf39f7e08bc7831b836979a524c2dff51f764fd59f",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 116,
+                "tools": 116
+            }
+        },
+        "linear": {
+            "file": "catalog/linear.json",
+            "sha256": "2aaba65c237990ceccbc65fee2e29c24322fe907cb539666fe9bd6f7a21bdcfb",
+            "counts": {
+                "actions": 46,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "linkedin": {
+            "file": "catalog/linkedin.json",
+            "sha256": "def8fdab5419eed29141461a7d7081eb8f75b3af4fe5a4f2e40d9853f8faa39f",
+            "counts": {
+                "actions": 10,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "linkly": {
+            "file": "catalog/linkly.json",
+            "sha256": "62183cd10d97deb14c65881f80d82448e8f6c712d9f8223c70ffdfbb40758307",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "listmonk": {
+            "file": "catalog/listmonk.json",
+            "sha256": "a19bdd77779f7baffd02f70178a8145693343a44dd20ca0a5c616279a955c6d4",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 75,
+                "tools": 75
+            }
+        },
+        "listrak": {
+            "file": "catalog/listrak.json",
+            "sha256": "421db2360e273af9356dcc4a4032f1e370fee59a621f88daccb5703d79c3c1c2",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 86,
+                "tools": 86
+            }
+        },
+        "liveswitch": {
+            "file": "catalog/liveswitch.json",
+            "sha256": "12a25f3b2fe3b13eef8477a93351af7248a00b01dc841ff6365f33e4e46837e4",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 61,
+                "tools": 61
+            }
+        },
+        "livetennisapi": {
+            "file": "catalog/livetennisapi.json",
+            "sha256": "966bb9d08a7aee6c7cef1b2cdcb9b5607a6ffd9404bda1627ca74b3ff4fdc66f",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 51,
+                "tools": 51
+            }
+        },
+        "lob": {
+            "file": "catalog/lob.json",
+            "sha256": "19fc8b722112766fb6c5652d9eacb58cb806a6d50a6f215c1c8bd8ecfb26563c",
+            "counts": {
+                "actions": 0,
+                "syncs": 23,
+                "functions": 106,
+                "tools": 106
+            }
+        },
+        "looker": {
+            "file": "catalog/looker.json",
+            "sha256": "9a4cf8d2beb90db800537ab62e84c7efbc703c43d566fb990efce3681e7b1bc5",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 85,
+                "tools": 85
+            }
+        },
+        "loops-so": {
+            "file": "catalog/loops-so.json",
+            "sha256": "fb0e64b0ef042cea612ba78dc19d35dabeaf73352dd868235b93d61cd2381830",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 73,
+                "tools": 73
+            }
+        },
+        "lucid-scim": {
+            "file": "catalog/lucid-scim.json",
+            "sha256": "89f4d225a93c2a42705b7459b4d7489bebc04a5567b39d9ef81b8db2bf8cf953",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 17,
+                "tools": 17
+            }
+        },
+        "luma": {
+            "file": "catalog/luma.json",
+            "sha256": "e4b692bc8bd63666d8c23434852eb9002616ed4189f6a64f4697d067b03f8613",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "lumos": {
+            "file": "catalog/lumos.json",
+            "sha256": "586e3329f602973507f84f357db025aa06f42d77b6db54b79b19e1d741f0d0e9",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 93,
+                "tools": 93
+            }
+        },
+        "mailchimp": {
+            "file": "catalog/mailchimp.json",
+            "sha256": "c8e0fa75ac5b33bbd85ceea5c27a42981874af7cb6d71ba9fc60515420667655",
+            "counts": {
+                "actions": 34,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "mailgun": {
+            "file": "catalog/mailgun.json",
+            "sha256": "03ce095476aba780c5689d96f5755f97705d4b5b179b5e8c7f41bac2e56a7047",
+            "counts": {
+                "actions": 37,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "make": {
+            "file": "catalog/make.json",
+            "sha256": "b60d8752474fc1bfdf2d293bb23a7ab3ae2e6daee83041fd1d5e5f33947e1da9",
+            "counts": {
+                "actions": 52,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "malwarebytes": {
+            "file": "catalog/malwarebytes.json",
+            "sha256": "f22d1be9b324e8578a9c7031468df67013d69c4a5491ed7b43e4d74a1e939cf9",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 82,
+                "tools": 82
+            }
+        },
+        "mandrill": {
+            "file": "catalog/mandrill.json",
+            "sha256": "78f059f9d46ce3c48a5e2732b28708389c45742383a94c739e58f761c7920cac",
+            "counts": {
+                "actions": 71,
+                "syncs": 17,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "meilisearch": {
+            "file": "catalog/meilisearch.json",
+            "sha256": "b59f0356f15fd7cf334199d5cb662f01f88a6af2fd8f1bc6ca8143b00dfb2464",
+            "counts": {
+                "actions": 7,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "metabase": {
+            "file": "catalog/metabase.json",
+            "sha256": "8e1babca227ff5c7e17915827f9c46c1fbe0fe4db1247774d463ffba3f4421c4",
+            "counts": {
+                "actions": 5,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft": {
+            "file": "catalog/microsoft.json",
+            "sha256": "e9e78e0dcd294abc9ff7cc453098d1d220feb10cbd0570a8b8ba6e280f5896b3",
+            "counts": {
+                "actions": 31,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-dataverse": {
+            "file": "catalog/microsoft-dataverse.json",
+            "sha256": "d3e781329628ee84fdb8ed37dbfca7eb61171d3a9a4e21066ef8e394214bcbb5",
+            "counts": {
+                "actions": 55,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-dynamics-365-finance-and-operations": {
+            "aliasOf": "microsoft-dynamics-365-finance-and-operations-cc"
+        },
+        "microsoft-dynamics-365-finance-and-operations-cc": {
+            "file": "catalog/microsoft-dynamics-365-finance-and-operations-cc.json",
+            "sha256": "7c888eb3de8d774eb52cf02d018a4e1cc6a860a1364c0f4324edf29b9ee12fdf",
+            "counts": {
+                "actions": 53,
+                "syncs": 16,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-excel": {
+            "aliasOf": "microsoft-excel-oauth2-cc"
+        },
+        "microsoft-excel-oauth2-cc": {
+            "file": "catalog/microsoft-excel-oauth2-cc.json",
+            "sha256": "d1fb8ac9a0cc7029f381f181ba80316f667a75178068802b0581c46602bb51da",
+            "counts": {
+                "actions": 27,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-intune": {
+            "file": "catalog/microsoft-intune.json",
+            "sha256": "fb67e285392b53bc7504a532317450ea4c96d935ac4cc504ee698d6a41da9729",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "microsoft-planner": {
+            "file": "catalog/microsoft-planner.json",
+            "sha256": "08135d99ce26dd112473277f8fb47fdb3deeb90a885e3619a3491607ba31ef02",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 52,
+                "tools": 52
+            }
+        },
+        "microsoft-power-bi-oauth2-cc": {
+            "file": "catalog/microsoft-power-bi-oauth2-cc.json",
+            "sha256": "45652ee6ec22049f77346e68fb72b3e7c03a00efbe79d8052bb36f93324b975d",
+            "counts": {
+                "actions": 28,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-powerpoint-oauth2-cc": {
+            "file": "catalog/microsoft-powerpoint-oauth2-cc.json",
+            "sha256": "8598bb72b9ef2d5d621d7e0077d9ed9c8869f6a4c1ec1ae36df4537595fa6507",
+            "counts": {
+                "actions": 18,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-teams": {
+            "file": "catalog/microsoft-teams.json",
+            "sha256": "d26503cd6d63ebac80f076d48f4ba0ab813999010bd2d972edcfac35a57fd623",
+            "counts": {
+                "actions": 25,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "microsoft-teams-bot": {
+            "file": "catalog/microsoft-teams-bot.json",
+            "sha256": "25740e4db705e0320dadcac83d6da1fe7ce041800e09d03dab053847305363d2",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 17,
+                "tools": 17
+            }
+        },
+        "microsoft-word": {
+            "aliasOf": "microsoft-word-oauth2-cc"
+        },
+        "microsoft-word-oauth2-cc": {
+            "file": "catalog/microsoft-word-oauth2-cc.json",
+            "sha256": "61c4347b3cc59b87dc786faeb76267d850ddc7df494a822cd12033627bae039b",
+            "counts": {
+                "actions": 18,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "millionverifier": {
+            "file": "catalog/millionverifier.json",
+            "sha256": "d0ac32e3733fe18fe83f763dcb1973911ad92fbe76454e7ccb5666c5a4b334a3",
+            "counts": {
+                "actions": 7,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "miro-scim": {
+            "file": "catalog/miro-scim.json",
+            "sha256": "9d38b5658414e602a658f3f62398623bd836d7e76fca03a29ff34e920af116c3",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "missive": {
+            "file": "catalog/missive.json",
+            "sha256": "c2db8e98baae606762e31c080907a0d51cee0001ff52582468900a0a5fa7162b",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 52,
+                "tools": 52
+            }
+        },
+        "mixpanel": {
+            "file": "catalog/mixpanel.json",
+            "sha256": "63ea5f01e7573e137fcc467d2963d1ce1776427564d2b9ef4c5c7b8e0308ad4d",
+            "counts": {
+                "actions": 34,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "modmed": {
+            "file": "catalog/modmed.json",
+            "sha256": "dc8ee7b8d5eaba2706431da8e246ca01279ac2a7950479a7ac1046514960f4e2",
+            "counts": {
+                "actions": 0,
+                "syncs": 22,
+                "functions": 65,
+                "tools": 65
+            }
+        },
+        "modmed-fhir": {
+            "file": "catalog/modmed-fhir.json",
+            "sha256": "657ebb46ca5d63bbb4543e3a540a340c72d376cf06a6d93361d15c280c067ed6",
+            "counts": {
+                "actions": 0,
+                "syncs": 28,
+                "functions": 62,
+                "tools": 62
+            }
+        },
+        "momentum-io": {
+            "file": "catalog/momentum-io.json",
+            "sha256": "8e9b94eea2520d997709b9ef8b6c2523ffb03731bc32ec52c0aeac96a4c5b8f7",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 8,
+                "tools": 8
+            }
+        },
+        "monday": {
+            "file": "catalog/monday.json",
+            "sha256": "952ecb091e8267ca31dc271f54221500391c8d7e077f02dc68cf57ff7bc8d13c",
+            "counts": {
+                "actions": 38,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "mural": {
+            "file": "catalog/mural.json",
+            "sha256": "e395d19893f27136feb6aa432031deb6dac091f70dccc2ddfae078b9874d932f",
+            "counts": {
+                "actions": 51,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "nable-ncentral": {
+            "file": "catalog/nable-ncentral.json",
+            "sha256": "3af1adfc9c6ab353f12b35fe5d35d3a0989dc131f0ce45bf6883079d157bd4c0",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 65,
+                "tools": 65
+            }
+        },
+        "namely-pat": {
+            "file": "catalog/namely-pat.json",
+            "sha256": "f5d36b4823702024fb79f90dbdbcac0fc08f62c547d1c4f2f1ecb8369ee68d0e",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "netsuite-tba": {
+            "file": "catalog/netsuite-tba.json",
+            "sha256": "7aa6ab5e83fbae481d8f11901b32f0dd3dbea756184391ff5faadb63c5cdc4fd",
+            "counts": {
+                "actions": 13,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "next-cloud-ocs": {
+            "file": "catalog/next-cloud-ocs.json",
+            "sha256": "ad0a3857e71242949070f38f8a00a4e53fa0d8213462b53e09af3e13b4c68a3d",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "nexthink": {
+            "file": "catalog/nexthink.json",
+            "sha256": "6169cc61b541b51e9940bca63694fa0020d1a083ed44b6dd3e69aca08bc24c88",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 18,
+                "tools": 18
+            }
+        },
+        "ninety-io": {
+            "file": "catalog/ninety-io.json",
+            "sha256": "0b0364164f6318e868b38bd2d2059df8177be98692a87bcc8a11bbad7aef16c0",
+            "counts": {
+                "actions": 25,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ninjaone-rmm-oauth2": {
+            "file": "catalog/ninjaone-rmm-oauth2.json",
+            "sha256": "c750db7ba92b65ed2870b0cd9470586ffd154bb4072cb75cf5edb638f87b9c0f",
+            "counts": {
+                "actions": 0,
+                "syncs": 27,
+                "functions": 71,
+                "tools": 71
+            }
+        },
+        "nooks": {
+            "file": "catalog/nooks.json",
+            "sha256": "0b577db70c0e07a250edda9c1b3b5f93b7712c55249a3327f777e97aa1182afc",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 52,
+                "tools": 52
+            }
+        },
+        "notion": {
+            "file": "catalog/notion.json",
+            "sha256": "58b1b3e35bfed9d5990a55c43ecb4413a6487c6b00634a9d6543868dc8bb2f8c",
+            "counts": {
+                "actions": 44,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "notion-scim": {
+            "file": "catalog/notion-scim.json",
+            "sha256": "6dcf6beb490874f2928e7804fc568ffbcbf9f5758bf8ed2fadbefebb20410446",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 14,
+                "tools": 14
+            }
+        },
+        "nyne-ai": {
+            "file": "catalog/nyne-ai.json",
+            "sha256": "52c1a7659501ea795ee4b200b5c9b29d166634e54f1a0cf94fff36a690d8f191",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 68,
+                "tools": 68
+            }
+        },
+        "ocean-io": {
+            "file": "catalog/ocean-io.json",
+            "sha256": "f7866425cb56cec43510b435a9eee3d6d76d130983293d3330c22445203e63ab",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "odoo-api-key": {
+            "file": "catalog/odoo-api-key.json",
+            "sha256": "b207a2884b0d6613cfc72bd8646e87c5113bce94a96d1b6030065425b5f3a07a",
+            "counts": {
+                "actions": 11,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "odoo-cc": {
+            "file": "catalog/odoo-cc.json",
+            "sha256": "f7cbae9e9e3d7904d7d3d68e5a7332d2f540299dee870b83b64fa003c4191f20",
+            "counts": {
+                "actions": 6,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "okta": {
+            "file": "catalog/okta.json",
+            "sha256": "fa0326acd631285049a0248507563f3d93b1d5beb77ae785f82109f7720abdb3",
+            "counts": {
+                "actions": 64,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "okta-cc": {
+            "aliasOf": "okta"
+        },
+        "okta-preview": {
+            "aliasOf": "okta"
+        },
+        "omnisend": {
+            "file": "catalog/omnisend.json",
+            "sha256": "2a0fd9f729d66d9a41aee07423d81296ab57f74d690f290f168ba7d285e0e005",
+            "counts": {
+                "actions": 82,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "one-drive": {
+            "file": "catalog/one-drive.json",
+            "sha256": "703923c998bfc72ab2481295d5b6c48d924019da67bc90be843802e286277325",
+            "counts": {
+                "actions": 20,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "one-drive-personal": {
+            "file": "catalog/one-drive-personal.json",
+            "sha256": "3f184c5feb15827b4a338845dafa02babae43bd8c9e2e9bcff80707e6c750887",
+            "counts": {
+                "actions": 17,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "onlogist": {
+            "file": "catalog/onlogist.json",
+            "sha256": "611db938736bd20858ae626c3a02b6c783e7e16c53bdbaf8ee88efbb849f1482",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "onshape": {
+            "file": "catalog/onshape.json",
+            "sha256": "4c48404ab77ceec8a07956ecc4403da53bdcb768addedfedeec7f748759b27d8",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 77,
+                "tools": 77
+            }
+        },
+        "openai": {
+            "file": "catalog/openai.json",
+            "sha256": "9d74f658bd34d472399583f0f916641cc8a7bbe9e2311baf956e9ed42c489ecb",
+            "counts": {
+                "actions": 29,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "optum-real": {
+            "file": "catalog/optum-real.json",
+            "sha256": "ea1571e8b594dc8dea14ca15ba924bde5611defb83a07e9333427fbb7a3c722a",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 27,
+                "tools": 27
+            }
+        },
+        "oracle-cloud-identity": {
+            "file": "catalog/oracle-cloud-identity.json",
+            "sha256": "b8e1a3475469155a103ffb6cce2e8475d43e3eed09327510c68355374676df4d",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 44,
+                "tools": 44
+            }
+        },
+        "oracle-hcm": {
+            "file": "catalog/oracle-hcm.json",
+            "sha256": "eae1a69387ef16c1292ab6b0f3e4c7cac587f40e9beb3279f02226d229ef165b",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ordinal": {
+            "file": "catalog/ordinal.json",
+            "sha256": "70c1d9eee445928b37533910fbd4a8b539ffcba0d56af84a15703e42cfa1e0d2",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 68,
+                "tools": 68
+            }
+        },
+        "oura": {
+            "file": "catalog/oura.json",
+            "sha256": "03c1a4894d6153e5868eb8e3d6c055d479b5f1241d07190168b2bfa50f0d7288",
+            "counts": {
+                "actions": 0,
+                "syncs": 30,
+                "functions": 67,
+                "tools": 67
+            }
+        },
+        "outlook": {
+            "file": "catalog/outlook.json",
+            "sha256": "e625844e58c079e3d5391ac50880991a7219d3a6daeb689aec052501dcf53f42",
+            "counts": {
+                "actions": 30,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "pagerduty": {
+            "file": "catalog/pagerduty.json",
+            "sha256": "faaf191f77a5ec6a50d973603c4a2e40c10ce36c08ff87dbcbef0f9cab5376cb",
+            "counts": {
+                "actions": 91,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "paligo": {
+            "file": "catalog/paligo.json",
+            "sha256": "f7c6b161893c63c63a3d922ad5b286664ca9c298607db701495643be575706f2",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 68,
+                "tools": 68
+            }
+        },
+        "pave": {
+            "file": "catalog/pave.json",
+            "sha256": "d976f5fc9c33629702d8e9e63faef716681e030f0b4a2ce15e50d30d1939194a",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 5,
+                "tools": 5
+            }
+        },
+        "pax8": {
+            "file": "catalog/pax8.json",
+            "sha256": "6fa36c4e5d3839349f8d1c6a6a15ebdae5f3d2bb8f84fe38f453b22ebd05f865",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 110,
+                "tools": 110
+            }
+        },
+        "paycom": {
+            "file": "catalog/paycom.json",
+            "sha256": "13c843fa501bcdefd6bf2034b869efe5ed9fe19f3fed0dcf46e6d0affbeb7355",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "payfit": {
+            "file": "catalog/payfit.json",
+            "sha256": "6b73863cfc160feb1e350a40fe93bb93574eb4bb332218f9ffbd7faec4c10a2e",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 29,
+                "tools": 29
+            }
+        },
+        "paylocity": {
+            "file": "catalog/paylocity.json",
+            "sha256": "206a0ea8579c7961a3471331a9d032995c9c6f92db3db9788244aabc7d203433",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "paypal": {
+            "file": "catalog/paypal.json",
+            "sha256": "46c73db6dece81d26d4eb853494f191bcf6ded609bdfe6e86601071bf2fd1324",
+            "counts": {
+                "actions": 34,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "paypal-sandbox": {
+            "aliasOf": "paypal"
+        },
+        "pennylane": {
+            "file": "catalog/pennylane.json",
+            "sha256": "8bef90b93e65c85edee600a50940f35c1d663cc88757f57f44bec45c0482dcfb",
+            "counts": {
+                "actions": 127,
+                "syncs": 25,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "peopledatalabs": {
+            "file": "catalog/peopledatalabs.json",
+            "sha256": "e1eee3853b6dc2e243a148251c30a7ed86619be06b93ad8c170f94c0d2efd06b",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 22,
+                "tools": 22
+            }
+        },
+        "perimeter81": {
+            "file": "catalog/perimeter81.json",
+            "sha256": "18677a14505d98fd045116a442f3eae1f0d4850531a6bc96245353331c21a52d",
+            "counts": {
+                "actions": 2,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "perplexity": {
+            "file": "catalog/perplexity.json",
+            "sha256": "ff2fb8b634c0363c023d4e5a844222bdfb8bc0da6188b7f6aeb7c3c957e7e34d",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 36,
+                "tools": 36
+            }
+        },
+        "personio-v2": {
+            "file": "catalog/personio-v2.json",
+            "sha256": "f99d629db3360c176e4a06d9f67013ed4bb0d9007b1e95ccbd2fe1d9db9b5156",
+            "counts": {
+                "actions": 0,
+                "syncs": 23,
+                "functions": 75,
+                "tools": 75
+            }
+        },
+        "phrase": {
+            "file": "catalog/phrase.json",
+            "sha256": "6c3a172f6141ab38f8b0c4e8b935399411dded545a881a8dd52ffb2b0579baf0",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 71,
+                "tools": 71
+            }
+        },
+        "pinterest": {
+            "file": "catalog/pinterest.json",
+            "sha256": "d59393fd61ef86deaecfc0fa1ba45af9000f0e79285d2300457a469d00875d0b",
+            "counts": {
+                "actions": 106,
+                "syncs": 21,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "pipedrive": {
+            "file": "catalog/pipedrive.json",
+            "sha256": "fd4ad3406343d007cab160898900155669df041b14f6ee3beea53407abc04139",
+            "counts": {
+                "actions": 47,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "pipelinecrm": {
+            "file": "catalog/pipelinecrm.json",
+            "sha256": "7218f1a6e8a02ab7c5d28a56f88adc6f713166c6666f43ca5981f219af9cce17",
+            "counts": {
+                "actions": 78,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "podscribe": {
+            "file": "catalog/podscribe.json",
+            "sha256": "9062211439c460f7a7700b68e5cc0f5466779faa5004587729d7a0e4867b069e",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 32,
+                "tools": 32
+            }
+        },
+        "posthog": {
+            "file": "catalog/posthog.json",
+            "sha256": "13e032dc7dbc04082af8dc46853a0a6c6607d41cbfa779dfb3c7406e140d927f",
+            "counts": {
+                "actions": 66,
+                "syncs": 14,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "posthog-capture": {
+            "file": "catalog/posthog-capture.json",
+            "sha256": "5d8746a1e7aeed54a03c85fb5df3e831c5464dcc9f5d8ac969bd74f5b83af64d",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 8,
+                "tools": 8
+            }
+        },
+        "prive": {
+            "file": "catalog/prive.json",
+            "sha256": "e0d635aaae5abb815faca694fcd45dd774451831bf31c6a2f08873b2dd4aa4f7",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "productboard": {
+            "file": "catalog/productboard.json",
+            "sha256": "d00cae33545e6981983afcca3e654ba342c6c0cd2924352833ca8c2cfe640191",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 64,
+                "tools": 64
+            }
+        },
+        "prospeo": {
+            "file": "catalog/prospeo.json",
+            "sha256": "8f7a98ad00ebb1d936fdc25f82b84b136a1e4f8ee082fcc3014786e460b3d821",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 8,
+                "tools": 8
+            }
+        },
+        "provenexpert": {
+            "file": "catalog/provenexpert.json",
+            "sha256": "29b2ea43b8ba1219031233441eddb35c37aab08f9d6b89655bb896444bdb8f0a",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "prtg-classic": {
+            "file": "catalog/prtg-classic.json",
+            "sha256": "ed13c3d4797a04ce9c31c712b4799085be2ed697a4a1f0246c2d4ce8a7138490",
+            "counts": {
+                "actions": 0,
+                "syncs": 7,
+                "functions": 41,
+                "tools": 41
+            }
+        },
+        "pverify": {
+            "file": "catalog/pverify.json",
+            "sha256": "77c18c4316f8b583acdac49ed370d38ad339277e10bb4201a1bc9f0fe92de0c0",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 23,
+                "tools": 23
+            }
+        },
+        "quentn": {
+            "file": "catalog/quentn.json",
+            "sha256": "378a620c11fd951efa68401fb9f2ca8cef836f630ccc56e0d902befbf9acaf8d",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 26,
+                "tools": 26
+            }
+        },
+        "quickbase": {
+            "file": "catalog/quickbase.json",
+            "sha256": "87a42e33493a3ca4e427da559d5772f908812e3613458c968be18c22b2800b2f",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 74,
+                "tools": 74
+            }
+        },
+        "quickbooks": {
+            "file": "catalog/quickbooks.json",
+            "sha256": "6afc105d1687fe69fa463e4dd91b0e9cb6dd8a60877e1900a736dadc8d5cecd8",
+            "counts": {
+                "actions": 50,
+                "syncs": 14,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "quickbooks-sandbox": {
+            "aliasOf": "quickbooks"
+        },
+        "quipteams": {
+            "file": "catalog/quipteams.json",
+            "sha256": "cab93815e8c57160535756c2b4513beb5649abfd86a81f46856ba2089c922181",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 26,
+                "tools": 26
+            }
+        },
+        "ramp": {
+            "file": "catalog/ramp.json",
+            "sha256": "3d9966cf0d62f9975abb33f4bf96f34e2147678bae2afea60ce8438f5773bd39",
+            "counts": {
+                "actions": 91,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ramp-sandbox": {
+            "aliasOf": "ramp"
+        },
+        "razorpay": {
+            "file": "catalog/razorpay.json",
+            "sha256": "2e626766c801512e73f45742ae177d2fd321f7249c7ecd8c601161d9bf1309b3",
+            "counts": {
+                "actions": 0,
+                "syncs": 29,
+                "functions": 211,
+                "tools": 211
+            }
+        },
+        "read-ai": {
+            "file": "catalog/read-ai.json",
+            "sha256": "5f285026954ad7ac04639e0f52eaaa8cbbef021a630298cbcf086c7636514dfe",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 3,
+                "tools": 3
+            }
+        },
+        "readwise-reader": {
+            "file": "catalog/readwise-reader.json",
+            "sha256": "f7a375134e6bac8fa227e82bb23b73ec366339a5d4848fd2cf30b26f0be4c16e",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 11,
+                "tools": 11
+            }
+        },
+        "recall-ai": {
+            "file": "catalog/recall-ai.json",
+            "sha256": "9fd44f9c2935e1a68f459570402b413103b15ffb707d697583779cfdbb9da03a",
+            "counts": {
+                "actions": 0,
+                "syncs": 18,
+                "functions": 99,
+                "tools": 99
+            }
+        },
+        "recharge": {
+            "file": "catalog/recharge.json",
+            "sha256": "ca357fac2bedfc95d2b9d22db6e208900fad0ea5d25b7da96eeab7deced9c5bf",
+            "counts": {
+                "actions": 1,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "recruitee": {
+            "file": "catalog/recruitee.json",
+            "sha256": "84f85eef0357a7fc0514b0fdb4a2566308a04fa8c5d13ef2a14b1183dd7d6ff4",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 25,
+                "tools": 25
+            }
+        },
+        "recruiterflow": {
+            "file": "catalog/recruiterflow.json",
+            "sha256": "da002f8495c5958c7e1d04808e161973c7b4cf9ecdf3d013fba4408efced8e44",
+            "counts": {
+                "actions": 4,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "redo": {
+            "file": "catalog/redo.json",
+            "sha256": "e2bd64af084ae93b4367218e0a874a536af0140e0e4ee724df564808e59745ca",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 61,
+                "tools": 61
+            }
+        },
+        "replicate": {
+            "file": "catalog/replicate.json",
+            "sha256": "42e40abd48384f9519f2aaf3cfe8fa5607ca6f344530b9c93c04ff35898187e7",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 35,
+                "tools": 35
+            }
+        },
+        "resend": {
+            "file": "catalog/resend.json",
+            "sha256": "ad5df1071654f67f1187a09bbc2e06730f1bcd25e6eddd46f2e240b9030fd3cf",
+            "counts": {
+                "actions": 80,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "resova": {
+            "file": "catalog/resova.json",
+            "sha256": "1523b3d8f832b05d5123941a3c870e84197619c15211e6b363d16f574ac9b985",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 51,
+                "tools": 51
+            }
+        },
+        "retell-ai": {
+            "file": "catalog/retell-ai.json",
+            "sha256": "c1f5854e09ba8246fb64000c9d9e911ee88b6bdf185b46311ba3e96a39a2500e",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 109,
+                "tools": 109
+            }
+        },
+        "ring-central": {
+            "file": "catalog/ring-central.json",
+            "sha256": "6ac027de56109b8c42d8c30f7ff795dd4d6740acce8a02299222144eb63f0989",
+            "counts": {
+                "actions": 4,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ring-central-sandbox": {
+            "aliasOf": "ring-central"
+        },
+        "roam-scim": {
+            "file": "catalog/roam-scim.json",
+            "sha256": "3bbb19d094824400f3e0d0765faeb4d8bb3eff17fac512b65665a58b0990b859",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 21,
+                "tools": 21
+            }
+        },
+        "rock-gym-pro": {
+            "file": "catalog/rock-gym-pro.json",
+            "sha256": "3344aa8182ff3d62b70ba8e2da826338acd87fcc1870b1361b7985b5d405f51a",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "rocketreach": {
+            "file": "catalog/rocketreach.json",
+            "sha256": "dcd863f8209419604fac244d34f92da0e9a9f84c1ca5c7952c992590b20cad93",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 11,
+                "tools": 11
+            }
+        },
+        "sage-hr": {
+            "file": "catalog/sage-hr.json",
+            "sha256": "28f15150b1a72dff74544f693a5d1dc74e45421c1a185d7943d7b87dff4b6972",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "sage-intacct-oauth": {
+            "file": "catalog/sage-intacct-oauth.json",
+            "sha256": "b13f1d55fc9423525e530748e87553f5e6ced707717ec4298332659f62ea1c94",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "salescaptain": {
+            "file": "catalog/salescaptain.json",
+            "sha256": "57f23e6a7c48ae6727fe8955b1f362d185ea55b82696721db9693073b82c83c8",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 27,
+                "tools": 27
+            }
+        },
+        "salesforce": {
+            "file": "catalog/salesforce.json",
+            "sha256": "4c0161f3635c950631ed3129f24342246603231905384c4797dfac4dc9471849",
+            "counts": {
+                "actions": 28,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "salesforce-sandbox": {
+            "aliasOf": "salesforce"
+        },
+        "salesmsg": {
+            "file": "catalog/salesmsg.json",
+            "sha256": "22699c0926abe81449579ba4dae4771e957acdbc3c8f6d1897e017c2e4c878c5",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 70,
+                "tools": 70
+            }
+        },
+        "sap-concur": {
+            "file": "catalog/sap-concur.json",
+            "sha256": "f7d5fcdf7eff8d097b8c00da14572f399ac053865f64e7615822928632a5c038",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 87,
+                "tools": 87
+            }
+        },
+        "sap-success-factors": {
+            "file": "catalog/sap-success-factors.json",
+            "sha256": "76e04802280a27d1158c7a0894f243804c36d284b7343dda5e17dc124a4eb4c4",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "scrapedo": {
+            "file": "catalog/scrapedo.json",
+            "sha256": "ab96d3329f000029d213f4b2a5ac660eb48ded0bbd3ebf6f9115c499983002ae",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 43,
+                "tools": 43
+            }
+        },
+        "sellsy": {
+            "file": "catalog/sellsy.json",
+            "sha256": "4819307a2c551e5b327e0f46cf374ea9a522c54db13cb81460a8fcde10229165",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 97,
+                "tools": 97
+            }
+        },
+        "sendgrid": {
+            "file": "catalog/sendgrid.json",
+            "sha256": "9aae7f4567f6418f51c03d1eeafd42dff0029931d798141a233da9c25f472554",
+            "counts": {
+                "actions": 53,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "sentry": {
+            "file": "catalog/sentry.json",
+            "sha256": "8143430acf04571792dda89b58625558c4c62b233a0b8a24f73631075a8b0c07",
+            "counts": {
+                "actions": 69,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "sentry-oauth": {
+            "aliasOf": "sentry"
+        },
+        "servicenow": {
+            "file": "catalog/servicenow.json",
+            "sha256": "3c791af8a039e78a84019b4a60a3c28de47016d8607401f6914fadeff4b622d1",
+            "counts": {
+                "actions": 40,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "setmore": {
+            "file": "catalog/setmore.json",
+            "sha256": "c305ce2a36ea4edb8b6a27bd30125270f5658e755c75f6efe7da3781dcd372fe",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 9,
+                "tools": 9
+            }
+        },
+        "sharepoint-online": {
+            "file": "catalog/sharepoint-online.json",
+            "sha256": "9a12d64d932533aaceaf9065ccade927d2b2cf8070931cff681b2982f891df80",
+            "counts": {
+                "actions": 53,
+                "syncs": 15,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "shipbob-pat": {
+            "file": "catalog/shipbob-pat.json",
+            "sha256": "bc20db0cf3867f4fbd012b00f91a14db548a79c8e08084974adebdc4f5833637",
+            "counts": {
+                "actions": 0,
+                "syncs": 16,
+                "functions": 90,
+                "tools": 90
+            }
+        },
+        "shippo": {
+            "file": "catalog/shippo.json",
+            "sha256": "92434974b1af0d2e034486c057813cd7381a235c0a9a32b0d0c757907dd58d31",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 86,
+                "tools": 86
+            }
+        },
+        "shipstation": {
+            "file": "catalog/shipstation.json",
+            "sha256": "a5c478087dca30ba378197fac2872c6a0531e60a84052d433fe1f8e65805dc88",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 52,
+                "tools": 52
+            }
+        },
+        "shopify": {
+            "file": "catalog/shopify.json",
+            "sha256": "1df34c79dcc78e82c5383a823b6111e82173070282ea967b012bb4eeb38f4e6c",
+            "counts": {
+                "actions": 133,
+                "syncs": 17,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "shopify-partner": {
+            "file": "catalog/shopify-partner.json",
+            "sha256": "fb4f855637612d016968c62c64fd823d9c2eae507ced1694ed5944dc379aadc1",
+            "counts": {
+                "actions": 6,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "shopline-oauth": {
+            "file": "catalog/shopline-oauth.json",
+            "sha256": "c3599e9fb0aa6e09ddab25b9f4fedc3fba3db6e52b9bd0fe1194fdab6b2f036e",
+            "counts": {
+                "actions": 82,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "shopvox": {
+            "file": "catalog/shopvox.json",
+            "sha256": "b2b89470d3b3b661618aaf6359ef43cf8363a98f4504635438065c52e4717496",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 40,
+                "tools": 40
+            }
+        },
+        "shopware": {
+            "file": "catalog/shopware.json",
+            "sha256": "a087eaf63d0eebb28310207b36d0ac897e94bebf43d4d8eb0f96e9aa016b3933",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 81,
+                "tools": 81
+            }
+        },
+        "shortcut": {
+            "file": "catalog/shortcut.json",
+            "sha256": "822b1952a833a8654a9d487efd2fad8c702275a50aba140c8797ca4c5d417740",
+            "counts": {
+                "actions": 45,
+                "syncs": 11,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "simpplr": {
+            "file": "catalog/simpplr.json",
+            "sha256": "96152c307fbb56d84cdf6924bb8fe902916f483b249faea2db4fb65efa645093",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 83,
+                "tools": 83
+            }
+        },
+        "slack": {
+            "file": "catalog/slack.json",
+            "sha256": "542670040fb8944475010919d96e8b8f7434671f8b3eee6ab327480ac11f8dbf",
+            "counts": {
+                "actions": 53,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "slack-app-configuration": {
+            "file": "catalog/slack-app-configuration.json",
+            "sha256": "d843af25ee32c7a5474d9262d375c5828689e37c543631e08741c60313630f10",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 12,
+                "tools": 12
+            }
+        },
+        "smartrecruiters-api-key": {
+            "file": "catalog/smartrecruiters-api-key.json",
+            "sha256": "c704ec7bf00ad62878a2aabf2a2c4850db6d63501a2b7ad7c50597aa2a1c447e",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 49,
+                "tools": 49
+            }
+        },
+        "smartsheet": {
+            "file": "catalog/smartsheet.json",
+            "sha256": "0b224b31cd6807f35b85c9bf95ff44bb3002f260bc392e04fb995da86ab77d19",
+            "counts": {
+                "actions": 3,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "snowflake-jwt": {
+            "file": "catalog/snowflake-jwt.json",
+            "sha256": "4f5eba88e152be66c2da1573f32203a9536774ab50845a074329ad6c72542502",
+            "counts": {
+                "actions": 15,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "splitwise": {
+            "file": "catalog/splitwise.json",
+            "sha256": "c7223f7ef59aab3ca55b4704d5983727ea2fd11b9b8b656b883036c1aabd5464",
+            "counts": {
+                "actions": 19,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "spotify": {
+            "file": "catalog/spotify.json",
+            "sha256": "c30b9312832d691b238eda13fbb100ec0268c2fc22957aa1f770107a476f90bb",
+            "counts": {
+                "actions": 41,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "squarespace": {
+            "file": "catalog/squarespace.json",
+            "sha256": "fee948b3e96ea23c39d0a082a2d14ea5309d4a874599f87e778d3a51ac3f7913",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 58,
+                "tools": 58
+            }
+        },
+        "squareup": {
+            "file": "catalog/squareup.json",
+            "sha256": "9954eb543227de536b0cb631be0f4a70b3517b13c2357d9f211510d111165ba3",
+            "counts": {
+                "actions": 42,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "squareup-sandbox": {
+            "aliasOf": "squareup"
+        },
+        "statamic": {
+            "file": "catalog/statamic.json",
+            "sha256": "d43d9a40c0305c510500b036ca0ef977048487070cf62f7b6570273a39094612",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 24,
+                "tools": 24
+            }
+        },
+        "statista": {
+            "file": "catalog/statista.json",
+            "sha256": "234ab164ef2bbb55a692525df365af17f662113b37e9e95d0f4218a2b23f89d3",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 13,
+                "tools": 13
+            }
+        },
+        "statsig": {
+            "file": "catalog/statsig.json",
+            "sha256": "d651d65fd178d664a3582ca2db426426f5c9cf2eecac54653d8d6f9400645264",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 76,
+                "tools": 76
+            }
+        },
+        "stedi": {
+            "file": "catalog/stedi.json",
+            "sha256": "86121bdae2c2e6835dac0122cfd1c7664a39078bfa9c3130fdcf120271e67aa2",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "store-census": {
+            "file": "catalog/store-census.json",
+            "sha256": "fe39786f1117b8b103643a67af5ba107184723a51c468e85f96f7cee17391987",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 7,
+                "tools": 7
+            }
+        },
+        "strava-web": {
+            "file": "catalog/strava-web.json",
+            "sha256": "ad17fa96534f29186bdd79e695371eaf9740a5ef6257b4e56e83dc22409d3be2",
+            "counts": {
+                "actions": 27,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "stripe": {
+            "file": "catalog/stripe.json",
+            "sha256": "b0c8d0733e7cfd95bc7f319fef0911dc9d297d976cbcc6f36fbb29e1419556d5",
+            "counts": {
+                "actions": 59,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "stripe-api-key": {
+            "aliasOf": "stripe"
+        },
+        "stripe-app": {
+            "aliasOf": "stripe"
+        },
+        "stripe-app-sandbox": {
+            "aliasOf": "stripe"
+        },
+        "stripe-express": {
+            "aliasOf": "stripe"
+        },
+        "supabase": {
+            "file": "catalog/supabase.json",
+            "sha256": "f35c7eb6813a67bbdcbc4ac5889a34fc7ca7691e67aa57993466ac138ac4c715",
+            "counts": {
+                "actions": 27,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "tailscale": {
+            "file": "catalog/tailscale.json",
+            "sha256": "3466b7ded97d4b2ca9310aee8514511d211c1a4168a615e412624c6baa4cfede",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 91,
+                "tools": 91
+            }
+        },
+        "tally": {
+            "file": "catalog/tally.json",
+            "sha256": "60a092455faa50880afafbe593e2d421833a5595e85e2e3ae0e71f0b5ca34573",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 35,
+                "tools": 35
+            }
+        },
+        "tapclicks": {
+            "file": "catalog/tapclicks.json",
+            "sha256": "b5d21cf3e544f79bc2d3d5a86c45c6ac299b1a63c3c175849924f7d547b4652f",
+            "counts": {
+                "actions": 0,
+                "syncs": 12,
+                "functions": 54,
+                "tools": 54
+            }
+        },
+        "teamtailor": {
+            "file": "catalog/teamtailor.json",
+            "sha256": "347e9ec050c85aaf3612522fa2fba1ddc770eb47a0fa1beaa136a3fdacb1da3e",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "teamwork": {
+            "file": "catalog/teamwork.json",
+            "sha256": "25e429abd0c6d20589a666694fc4e8430974421d68da1bb0bcf828282882aaa0",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 20,
+                "tools": 20
+            }
+        },
+        "the-swarm": {
+            "file": "catalog/the-swarm.json",
+            "sha256": "d4979633ca69e28363ed6fb526a620f5db141e33378dd560e3b761ae0aaf879a",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 22,
+                "tools": 22
+            }
+        },
+        "theirstack": {
+            "file": "catalog/theirstack.json",
+            "sha256": "eb0915659c4e0017906662d78875384665b4f76c9ca51f24ca40d4847146e21c",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 65,
+                "tools": 65
+            }
+        },
+        "ticktick": {
+            "file": "catalog/ticktick.json",
+            "sha256": "2565ea32888ad5dfd3e1ac848da846adb8077bb9652d402c31344c567bd81186",
+            "counts": {
+                "actions": 34,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "tiktok-accounts": {
+            "file": "catalog/tiktok-accounts.json",
+            "sha256": "08813ae234f06ec202741d3a6bccbd1c96f703f5d107e6ca1ffe2e355dab0cf0",
+            "counts": {
+                "actions": 6,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "tiktok-ads": {
+            "file": "catalog/tiktok-ads.json",
+            "sha256": "84f8cfd5d2a89d6275743cc112cb339796e543e7a196ffc5082e8cfe5c4f8f0e",
+            "counts": {
+                "actions": 57,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "tiktok-personal": {
+            "file": "catalog/tiktok-personal.json",
+            "sha256": "243a30ad8926e961af810ee6fb3492def07048649943b3c21f25b816ecdb36b4",
+            "counts": {
+                "actions": 11,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "timely": {
+            "file": "catalog/timely.json",
+            "sha256": "e6ab50e250fd05e2e16440020d7b6279b33ef9420061909d56f487692d1a4413",
+            "counts": {
+                "actions": 26,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "timetastic": {
+            "file": "catalog/timetastic.json",
+            "sha256": "37ddeb63a93efbbe51ae3849b06f763b323ad082d89f0d7d807917d3c7981779",
+            "counts": {
+                "actions": 40,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "tldv": {
+            "file": "catalog/tldv.json",
+            "sha256": "6c842c63eb65f411c1c64e3b32bcae47be987dae41e9bf76f118c5b8cee2292a",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 11,
+                "tools": 11
+            }
+        },
+        "todoist": {
+            "file": "catalog/todoist.json",
+            "sha256": "8700c9743b0667152e1befcff426cdad7d05582b0bd82ea07062da0a469e51a5",
+            "counts": {
+                "actions": 37,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "toggl": {
+            "file": "catalog/toggl.json",
+            "sha256": "b9e178de9f40a294d386acfaa06b0d3defeb21fc4726b8bc2de401da88dc76dd",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 55,
+                "tools": 55
+            }
+        },
+        "tracify": {
+            "file": "catalog/tracify.json",
+            "sha256": "ccbd2e45a1c42c818fa918c779f93dd2fba69434601e296f2d85da107ec25ab9",
+            "counts": {
+                "actions": 8,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "trading-economics": {
+            "file": "catalog/trading-economics.json",
+            "sha256": "e3b789c4960874739160c03519dd166715b33d85daee97457b6d6570432ed909",
+            "counts": {
+                "actions": 0,
+                "syncs": 21,
+                "functions": 76,
+                "tools": 76
+            }
+        },
+        "transporeon-carrier-basic": {
+            "file": "catalog/transporeon-carrier-basic.json",
+            "sha256": "8ff56de1c7d216443f8f14143acfbd77badc43e6c5a6f31d081bccdac2f29745",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "trello": {
+            "file": "catalog/trello.json",
+            "sha256": "ce909cbce01da8d6773abb961e175a8e4171b36e6cdfd1d31c4393e70f5bcb1e",
+            "counts": {
+                "actions": 42,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "trigger-dev": {
+            "file": "catalog/trigger-dev.json",
+            "sha256": "451969d4ef310e954326844242894526e60659761edecf3b2f79700f092abb9e",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 86,
+                "tools": 86
+            }
+        },
+        "tripletex": {
+            "file": "catalog/tripletex.json",
+            "sha256": "cf72fa7ae8f495add12622ed36c64d9d2faf297519563429bc11aefd93063373",
+            "counts": {
+                "actions": 45,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "twilio": {
+            "file": "catalog/twilio.json",
+            "sha256": "f478566a66270d5fde1e79715aa2985faf9d8336a96ca35dab920607b3b5b030",
+            "counts": {
+                "actions": 52,
+                "syncs": 14,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "twitter-v2": {
+            "file": "catalog/twitter-v2.json",
+            "sha256": "6a496a3465ae4372f0dd5ce548306ad82b85486e6ae820b0224daf855ba71714",
+            "counts": {
+                "actions": 25,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "typeform": {
+            "file": "catalog/typeform.json",
+            "sha256": "900873f047854e6d678e451334602fdfa95ba84a03492c54c648a0eb9867285f",
+            "counts": {
+                "actions": 26,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "typefully-v2": {
+            "file": "catalog/typefully-v2.json",
+            "sha256": "d2abd4bf1eacc910d6a576d12d60464cb14b4bcc1fa5b0392f35b18407631b7b",
+            "counts": {
+                "actions": 0,
+                "syncs": 4,
+                "functions": 27,
+                "tools": 27
+            }
+        },
+        "ukg-pro": {
+            "file": "catalog/ukg-pro.json",
+            "sha256": "d2c5f9ef763cb9d7998c698638b0c215361d25be04d01542449ed446f91e1108",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "ukg-ready": {
+            "file": "catalog/ukg-ready.json",
+            "sha256": "691e107acf6a1a6389766af262b70216ad507e6038e669a6f3fd38923d2737e9",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "unanet": {
+            "file": "catalog/unanet.json",
+            "sha256": "8f9b44d1680c3b778102d120e7a1e37a830f4a09b1098969cf54d47670fb7fbd",
+            "counts": {
+                "actions": 9,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "unipile": {
+            "file": "catalog/unipile.json",
+            "sha256": "aa008af64706389b8c477f1346b43ab1b8e4c37b70ac188207b89890d24041d1",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 124,
+                "tools": 124
+            }
+        },
+        "valley-api-key": {
+            "file": "catalog/valley-api-key.json",
+            "sha256": "9bf15227d16b101c1e593ac22a50fd15b2e4a3b9616a2ab17ca7438e32dd9638",
+            "counts": {
+                "actions": 0,
+                "syncs": 17,
+                "functions": 83,
+                "tools": 83
+            }
+        },
+        "vanta": {
+            "file": "catalog/vanta.json",
+            "sha256": "f6230d768e0d0a134319bc9df942dd9644c7553637f9ada4f60a5731368a2c84",
+            "counts": {
+                "actions": 0,
+                "syncs": 28,
+                "functions": 82,
+                "tools": 82
+            }
+        },
+        "veed": {
+            "file": "catalog/veed.json",
+            "sha256": "59b4fd43449faa647d95475d012f60dbdee38cd99dfb16611b7bc9ea5554c5ac",
+            "counts": {
+                "actions": 0,
+                "syncs": 0,
+                "functions": 20,
+                "tools": 20
+            }
+        },
+        "veeva-vault": {
+            "file": "catalog/veeva-vault.json",
+            "sha256": "9d21f93063233cf883db1c87c1e670b40ffbebff1ddacac759ffa8484a0b29cd",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 84,
+                "tools": 84
+            }
+        },
+        "vimeo": {
+            "file": "catalog/vimeo.json",
+            "sha256": "15c2a842c518c92c341abd80263fe57bcdcb63d7c99e7db3431110268fea8a41",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 37,
+                "tools": 37
+            }
+        },
+        "vtex": {
+            "file": "catalog/vtex.json",
+            "sha256": "7661f417bb2a53c3ad0d642112fbb3458d3b689f74980bf267fbf14878d509ba",
+            "counts": {
+                "actions": 0,
+                "syncs": 14,
+                "functions": 90,
+                "tools": 90
+            }
+        },
+        "wakatime": {
+            "file": "catalog/wakatime.json",
+            "sha256": "8aac226bad20442584af920d7a1c68763227dc22a4f75455b3de134626eee50e",
+            "counts": {
+                "actions": 19,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "wappalyzer": {
+            "file": "catalog/wappalyzer.json",
+            "sha256": "c2f3f6a1f652a33679075376b5eb9a07a6aa0975748dbb635e75753fa8688020",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 15,
+                "tools": 15
+            }
+        },
+        "wealthbox": {
+            "file": "catalog/wealthbox.json",
+            "sha256": "b8516aa21c6d6d07441adafe468e84cdca1749e2ea17cdf844d722d1a2601947",
+            "counts": {
+                "actions": 0,
+                "syncs": 13,
+                "functions": 50,
+                "tools": 50
+            }
+        },
+        "webinarjam": {
+            "file": "catalog/webinarjam.json",
+            "sha256": "9fe0ba1d14e82640ce981ceaa4e4e6d15461d2efa4feea5b1ed48a45c91f5ef7",
+            "counts": {
+                "actions": 0,
+                "syncs": 3,
+                "functions": 6,
+                "tools": 6
+            }
+        },
+        "weflow": {
+            "file": "catalog/weflow.json",
+            "sha256": "f2571ec1b48298f1eb685ce543ec327fc9f43a2aad8be01ed3f08a0a385e26f2",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 11,
+                "tools": 11
+            }
+        },
+        "wejam": {
+            "file": "catalog/wejam.json",
+            "sha256": "8f53028afc6e0b0222ecc65959189a842b17363a1417e121f0238545259d7661",
+            "counts": {
+                "actions": 0,
+                "syncs": 10,
+                "functions": 13,
+                "tools": 13
+            }
+        },
+        "whatsapp-business": {
+            "file": "catalog/whatsapp-business.json",
+            "sha256": "0e3e995644ea3bd4cec4dc59a2f8188caf81d0c1a497ce624568f42f46ceb378",
+            "counts": {
+                "actions": 0,
+                "syncs": 28,
+                "functions": 188,
+                "tools": 188
+            }
+        },
+        "whoop": {
+            "file": "catalog/whoop.json",
+            "sha256": "4c1e58fc6140a7ddb320fde46894aa7da9aba3d8802c182265822a9669938db9",
+            "counts": {
+                "actions": 0,
+                "syncs": 6,
+                "functions": 12,
+                "tools": 12
+            }
+        },
+        "wildix-pbx": {
+            "file": "catalog/wildix-pbx.json",
+            "sha256": "5504e4a0ad8512573c27ac9affb9a6874c13512846bab63e9776b60ec74c9ee7",
+            "counts": {
+                "actions": 0,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "wiza": {
+            "file": "catalog/wiza.json",
+            "sha256": "9aea98297813ef516f3b10c914cb39e2af738a5521c1ca74f00904b9af025586",
+            "counts": {
+                "actions": 0,
+                "syncs": 2,
+                "functions": 14,
+                "tools": 14
+            }
+        },
+        "woocommerce": {
+            "file": "catalog/woocommerce.json",
+            "sha256": "9e4b9b980ccd6b4f8bebd0615140070ee495b600df422386014dcab69c43bdad",
+            "counts": {
+                "actions": 54,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "workable": {
+            "file": "catalog/workable.json",
+            "sha256": "c34bfa648e9ef81cc3bbf85ea4a9b7c056923d96e8b3c4c8079782aa432ec389",
+            "counts": {
+                "actions": 69,
+                "syncs": 24,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "workday": {
+            "file": "catalog/workday.json",
+            "sha256": "75c1406f6ff801b2f85b2d20819284fd7ca16d2427192a869b9a2590c29d318d",
+            "counts": {
+                "actions": 10,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "workday-cc": {
+            "aliasOf": "workday-refresh-token"
+        },
+        "workday-oauth": {
+            "aliasOf": "workday-refresh-token"
+        },
+        "workday-refresh-token": {
+            "file": "catalog/workday-refresh-token.json",
+            "sha256": "af8cb97d26c1c569118b97f6c785d0f29b9d07a38fbbf139993af5ff9cb69d1a",
+            "counts": {
+                "actions": 15,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "workos": {
+            "file": "catalog/workos.json",
+            "sha256": "d876907e5fbead73cbf3b230b9b74d581fe606ecf8252990c121effe0d0aace1",
+            "counts": {
+                "actions": 40,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "workpath": {
+            "file": "catalog/workpath.json",
+            "sha256": "fe41dc50276185291a02f3b5b9a9b9db941082c8551b87581cbc18023d03dc79",
+            "counts": {
+                "actions": 0,
+                "syncs": 15,
+                "functions": 40,
+                "tools": 40
+            }
+        },
+        "wrike": {
+            "file": "catalog/wrike.json",
+            "sha256": "f4cd1c509ead2b7fab6c64992081863893940d2b6919625bd8d8e5d3eb3f2700",
+            "counts": {
+                "actions": 39,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "xero": {
+            "file": "catalog/xero.json",
+            "sha256": "496fa65c9bb812829dcc1eac0442309776e5b422bac9855f8e50ad57c20673c5",
+            "counts": {
+                "actions": 33,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "yotpo": {
+            "file": "catalog/yotpo.json",
+            "sha256": "6283f152812adf8ac03981197d0e2ca8c5873eeb8641fa5395c309e01839e0fd",
+            "counts": {
+                "actions": 0,
+                "syncs": 19,
+                "functions": 99,
+                "tools": 99
+            }
+        },
+        "youcanbook-me": {
+            "file": "catalog/youcanbook-me.json",
+            "sha256": "9578d1a687c381afef83f02aeb3de1b73ddf0aeeb21f7a57931194aec8a40629",
+            "counts": {
+                "actions": 8,
+                "syncs": 1,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "youcanbook-me-public": {
+            "file": "catalog/youcanbook-me-public.json",
+            "sha256": "635c8e80ee1cfcebd18ffa2ee2ae6d9aaf2ce1604f0b367fcd2ba06c48139d30",
+            "counts": {
+                "actions": 5,
+                "syncs": 0,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "youtube": {
+            "file": "catalog/youtube.json",
+            "sha256": "15c36afc4675c25a72960f1965164db330c11e3ebfcbf1286bf615eb329acf5e",
+            "counts": {
+                "actions": 21,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zendesk": {
+            "file": "catalog/zendesk.json",
+            "sha256": "e0d61ff1a7a82c1c18adc228530ea46d9055b418d3caefb28732f22a61e269ab",
+            "counts": {
+                "actions": 27,
+                "syncs": 12,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zigpoll": {
+            "file": "catalog/zigpoll.json",
+            "sha256": "5715df68f5af08f2413a9576e7d7b02524b14b46c3816b20925ba13f1739417d",
+            "counts": {
+                "actions": 0,
+                "syncs": 8,
+                "functions": 39,
+                "tools": 39
+            }
+        },
+        "zoho-bigin": {
+            "file": "catalog/zoho-bigin.json",
+            "sha256": "157f29077ef59c5303f16038f3a88789a142a472f27c76b58580b499fc764f01",
+            "counts": {
+                "actions": 36,
+                "syncs": 3,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-books": {
+            "file": "catalog/zoho-books.json",
+            "sha256": "c0b72bc8970d91fb7dde8f24e97dbd2083257410f48aae867b9ab5a944d1d53c",
+            "counts": {
+                "actions": 71,
+                "syncs": 14,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-calendar": {
+            "file": "catalog/zoho-calendar.json",
+            "sha256": "c36be1feb77f2e63a439a8a7b7f9ee2b93f2fbfee93f384381148c789a544e5b",
+            "counts": {
+                "actions": 0,
+                "syncs": 9,
+                "functions": 73,
+                "tools": 73
+            }
+        },
+        "zoho-crm": {
+            "file": "catalog/zoho-crm.json",
+            "sha256": "23195bed0c5fd07882efa03bf067ee9b2ed80ff4e667e97270acac59cd136cfe",
+            "counts": {
+                "actions": 50,
+                "syncs": 10,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-desk": {
+            "file": "catalog/zoho-desk.json",
+            "sha256": "7be2fdeaee516f9815d2e3580ab6fba9395e229051c12ae7c7c77c55f17fe8e5",
+            "counts": {
+                "actions": 14,
+                "syncs": 6,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-inventory": {
+            "file": "catalog/zoho-inventory.json",
+            "sha256": "1f2c8ad29b3e8f3745bf7def8cacbf19d4f0b38d0a1d1082afb3d83b11ae1380",
+            "counts": {
+                "actions": 61,
+                "syncs": 8,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-invoice": {
+            "file": "catalog/zoho-invoice.json",
+            "sha256": "c5de2266f131bafe656a01ba2c09bb09c4e1c09059337e36976b82a0189256ca",
+            "counts": {
+                "actions": 51,
+                "syncs": 7,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-mail": {
+            "file": "catalog/zoho-mail.json",
+            "sha256": "22552b8ec21367bf352ea20f5c23e9e54a60d93de5112c1b4a5f496c9a4954bf",
+            "counts": {
+                "actions": 36,
+                "syncs": 5,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-people": {
+            "file": "catalog/zoho-people.json",
+            "sha256": "1116688604a3216de25688e584d17dcdfd0fee75fbab8387ecd5b437f35ebe2a",
+            "counts": {
+                "actions": 20,
+                "syncs": 9,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoho-recruit": {
+            "file": "catalog/zoho-recruit.json",
+            "sha256": "febf7a59c4aa6cc73f58b5f4a6f2f79bc58eb6d811b914253afae3e3c2607f9b",
+            "counts": {
+                "actions": 0,
+                "syncs": 11,
+                "functions": 88,
+                "tools": 88
+            }
+        },
+        "zoom": {
+            "file": "catalog/zoom.json",
+            "sha256": "1aabca57f003ed16ad96601cd6784f52010ed741ca7aba052345589f41dd795c",
+            "counts": {
+                "actions": 24,
+                "syncs": 4,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoom-cc": {
+            "file": "catalog/zoom-cc.json",
+            "sha256": "18d40c3ff91c9d0410247d67b1997179f31c1f9349099eb86185d24069694ea5",
+            "counts": {
+                "actions": 13,
+                "syncs": 2,
+                "functions": 0,
+                "tools": 0
+            }
+        },
+        "zoominfo": {
+            "file": "catalog/zoominfo.json",
+            "sha256": "edd45745a294c9e3c5fb6d6a19a353dd7daceab553bc85ed9996b7f27e4e09f9",
+            "counts": {
+                "actions": 0,
+                "syncs": 27,
+                "functions": 76,
+                "tools": 76
+            }
+        },
+        "zorus": {
+            "file": "catalog/zorus.json",
+            "sha256": "a337598f59979b4cc1eeeb824e9f2f0930ba87480a631bbb131b3aa416956ad0",
+            "counts": {
+                "actions": 0,
+                "syncs": 5,
+                "functions": 17,
+                "tools": 17
+            }
+        },
+        "zuora": {
+            "file": "catalog/zuora.json",
+            "sha256": "3880b755d05e53371fb6efdca1926426226710472b4fff669198d296e8630551",
+            "counts": {
+                "actions": 0,
+                "syncs": 20,
+                "functions": 73,
+                "tools": 73
+            }
+        }
+    }
+}

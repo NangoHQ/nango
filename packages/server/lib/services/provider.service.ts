@@ -1,4 +1,4 @@
-import { functionConfigService, getProvider, listCatalogEntries } from '@nangohq/shared';
+import { catalogStore, functionConfigService, getProvider, listCatalogEntries } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import flowService from './flow.service.js';
@@ -77,11 +77,11 @@ export class ProviderService {
     countTemplatesByProvider(): Result<Map<string, ApiProviderFunctionCounts>, ListProviderTemplatesServiceError> {
         try {
             const counts = new Map<string, ApiProviderFunctionCounts>();
-            for (const entry of flowService.getAllAvailableFlowsAsStandardConfig()) {
-                counts.set(entry.providerConfigKey, {
-                    tools: entry.actions.length + catalogToolTemplates(entry.providerConfigKey).length,
-                    syncs: entry.syncs.length
-                });
+            for (const provider of catalogStore.listProviders()) {
+                const providerCounts = catalogStore.getCounts(provider);
+                if (providerCounts) {
+                    counts.set(provider, { tools: providerCounts.actions + providerCounts.tools, syncs: providerCounts.syncs });
+                }
             }
             return Ok(counts);
         } catch (err) {
@@ -97,7 +97,7 @@ export class ProviderService {
 
     listTemplates({ providerName }: { providerName: string }): Result<ProviderTemplateConfig[], ListProviderTemplatesServiceError> {
         try {
-            const entry = flowService.getAllAvailableFlowsAsStandardConfig().find((value) => value.providerConfigKey === providerName);
+            const entry = flowService.getProviderTemplates(providerName);
             return Ok([...(entry ? [...entry.actions, ...entry.syncs] : []), ...catalogToolTemplates(providerName)]);
         } catch (err) {
             return Err(

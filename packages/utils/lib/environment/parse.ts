@@ -288,8 +288,7 @@ const ENVS_SHAPE = z.object({
 
     // License configuration options
     NANGO_LICENSE: z.string().optional(),
-    // Experimental, disabled by default for now
-    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(true),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -683,6 +682,16 @@ const ENVS_SHAPE = z.object({
     AWS_TEMPLATES_BUCKET_NAME: z.string().trim().min(1).optional(),
     AWS_TEMPLATES_REGION: z.string().trim().min(1).optional(),
 
+    // Catalog (packages/shared/catalog.json): how many providers' definitions stay in memory, by count and by total
+    // size of their (pretty-printed) files. Parsed, a provider takes ~0.8x its file size, so 150 MiB ≈ 115 MiB of heap.
+    NANGO_CATALOG_CACHE_MAX_PROVIDERS: z.coerce.number().int().positive().optional().default(200),
+    NANGO_CATALOG_CACHE_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(150 * 1024 * 1024),
+
     GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
@@ -889,6 +898,20 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
+    // Agent session tool results over the inline size are stored as records and returned as a reference. Results over the stored size are returned in full.
+    AGENT_SESSION_RESULT_INLINE_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(8 * 1024),
+    AGENT_SESSION_RESULT_STORED_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(2 * 1024 * 1024),
+
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     // Without it the Agent Playground answers from a mock model.
     OPENAI_API_KEY: z.string().optional(),
@@ -1029,7 +1052,8 @@ const ENVS_SHAPE = z.object({
 
     // Lambda
     LAMBDA_KEEP_WARM_ENABLED: z.stringbool().optional().default(false),
-    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
     LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY: z.coerce.number().min(1).max(10).optional().default(1),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),

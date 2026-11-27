@@ -5,7 +5,7 @@ import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } 
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
-import { getOtlpRoutes } from '@nangohq/shared';
+import { getOtlpRoutes, startCatalogFlagRefresh, stopCatalogFlagRefresh } from '@nangohq/shared';
 import { getLogger, metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
@@ -36,6 +36,8 @@ process.on('uncaughtException', (err) => {
 
 try {
     await initializeFeatureFlags();
+    // Decides whether the template catalog is read from catalog.json; read before running any task.
+    await startCatalogFlagRefresh();
     assertInternalTlsCompatibleWithLambda();
     assertRunnerAuthMaterial();
 
@@ -118,6 +120,7 @@ try {
         void (async () => {
             await Promise.all([consumersStopped, serverClosed]);
             otlp.stop();
+            stopCatalogFlagRefresh();
             await destroyFeatureFlags();
             await destroyLogs();
             await stopFleets();

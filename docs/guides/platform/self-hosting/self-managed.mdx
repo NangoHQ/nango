@@ -26,7 +26,7 @@ Custom deployments (e.g., ECS instead of Kubernetes) are possible with our guida
 
 ## What leaves your account
 
-**Anonymous usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): anonymous usage metrics, such as how many functions run at the same time. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
+**Usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): usage metrics, such as how many functions run at the same time, sent under your installation ID. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
 
 ## Where your data lives
 
@@ -47,6 +47,7 @@ See [Data storage](/guides/platform/self-hosting#data-storage) on the overview p
 | --- | --- | --- |
 | Managed image releases | Publishes them, on a two-week cadence plus hotfixes | Pull and apply them |
 | Helm chart | Maintains it | Deploy and configure it |
+| License | Issues and renews it | Install it and keep usage reporting on |
 | Infrastructure provisioning | — | Provision it — VPC, database, cache, cluster, on any cloud or on-prem |
 | Application deployment & updates | — | Deploy and update it yourself |
 | Scaling | Advises on request | Handle it |
@@ -122,6 +123,117 @@ Each managed release maps to a specific source commit, and published image tags 
 
 Self-Managed supports all major cloud providers (AWS, GCP, Azure) and on-prem Kubernetes, since you're the one operating it.
 
+## License and usage reporting
+
+Install the license Nango sends you and configure your instance to send usage metrics each day. If your installation can't reach Nango, you can export the metrics as a file instead.
+
+### What Nango gives you
+
+When Nango registers your instance, you'll receive three things.
+
+| Value | What it is | Secret |
+| --- | --- | --- |
+| License | A signed document that identifies your installation and lists its expiration date and entitlements | Keep it private |
+| Installation key | The private key your instance uses to sign reports. Save it when you receive it. Nango keeps only the public key and can't resend the private key | Yes |
+| Installations URL | The endpoint that receives your reports. Nango also gives you its static IP addresses | No |
+
+### Requirements
+
+- Nango managed image `managed-1.7.4` or later.
+- [Helm chart](https://github.com/NangoHQ/nango-helm-charts) `2.6.0` or later, which adds the `selfHosting` workload.
+- For automatic reporting, allow outbound HTTPS on port 443 to the installations URL. Use the static IP addresses from Nango if you restrict egress. For clusters without outbound access, see [Report without outbound access](#report-without-outbound-access).
+
+### Set it up
+
+<Steps>
+  <Step id="store-license-and-key" title="Store the license and the installation key">
+    Create a Kubernetes secret in the namespace where Nango runs. The example uses the `nango` namespace and assumes you saved the license as `license.txt` and the key as `installation-key.pem`.
+
+    ```bash
+    kubectl create secret generic nango-installation -n nango \
+      --from-file=NANGO_LICENSE=./license.txt \
+      --from-file=NANGO_INSTALLATION_PRIVATE_KEY=./installation-key.pem
+    ```
+
+    If you sync Kubernetes secrets from a secret manager, add both entries there.
+  </Step>
+  <Step id="check-license-on-server" title="Give the license to the server">
+    The server checks the license every time it starts. Add this to your Helm values so it can read it.
+
+    ```yaml
+    server:
+      extraEnvVars:
+        - name: NANGO_LICENSE
+          valueFrom:
+            secretKeyRef:
+              name: nango-installation
+              key: NANGO_LICENSE
+    ```
+  </Step>
+  <Step id="enable-self-hosting-workload" title="Configure the reporting workload">
+    The `selfHosting` workload reads metrics from your database. Add the settings below to your Helm values and replace the URL placeholder with the installations URL Nango gave you. If you're exporting metrics manually, you can omit `FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED` and `NANGO_INSTALLATIONS_API_URL`.
+
+    ```yaml
+    selfHosting:
+      enabled: true
+      extraEnvVarsSecrets:
+        - nango-installation
+      extraEnvVars:
+        - name: FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED
+          value: "true"
+        - name: NANGO_INSTALLATIONS_API_URL
+          value: "<the installations URL from Nango>"
+    ```
+
+    Give `selfHosting` the same database settings as your other services. Set `NANGO_DATABASE_URL` or the `NANGO_DB_*` variables, along with `NANGO_DB_SSL` if your main database requires TLS. If you store metrics in a separate database, use the same telemetry database URL and TLS settings on `selfHosting` as on the services that write the metrics. See [Hosted telemetry](#hosted-telemetry).
+  </Step>
+  <Step id="check-it-works" title="Verify the rollout">
+    After you deploy the updated Helm values, open the dashboard, click your name at the bottom of the sidebar and select **Installation info**. It shows the managed release you run and the status, expiration date and grace period of your license.
+  </Step>
+</Steps>
+
+### What Nango receives and when
+
+Each report covers one metric for one UTC day. Its header carries your installation ID, so Nango knows which installation it comes from. Each row contains a timestamp, a metric name, a value, and a random ID for the process that recorded it. See [Hosted telemetry](#hosted-telemetry).
+
+A report is a gzip-compressed file with one JSON object per line: a header, then the rows.
+
+```json
+{"kind":"header","installation_id":"9b2f6c1e-4d3a-4f7b-8a51-0c2e7d9f4b16","metric":"nango.hosted_metric.active_concurrency.max","from":"2026-11-18T00:00:00.000Z","to":"2026-11-19T00:00:00.000Z"}
+{"kind":"row","ts":"2026-11-18T00:00:25.255Z","metric":"nango.hosted_metric.active_concurrency.max","attributes":{"producer_id":"5f2a9c1e"},"value":3}
+{"kind":"row","ts":"2026-11-18T00:01:25.255Z","metric":"nango.hosted_metric.active_concurrency.max","attributes":{"producer_id":"5f2a9c1e"},"value":2}
+```
+
+- A day is sent once it has ended, within an hour after 00:15 UTC.
+- The first time it runs, the uploader sends the last 30 days.
+- If an upload fails, the uploader tries again every hour.
+
+### Report without outbound access
+
+If your instance cannot call the installations URL, export the metrics as a file and send it to Nango.
+
+The export is protected by a key that you create and that stays with you. Generate one, for example with `openssl rand -hex 32`, store it as `NANGO_HOSTED_TELEMETRY_MANUAL_EXPORT_KEY` in the `nango-installation` secret, and restart the `selfHosting` workload.
+
+The `selfHosting` service then serves the export on port `3010`. Call it from wherever you reach your internal services:
+
+```bash
+curl -fsS -o nango-telemetry.ndjson.gz \
+  -H "Authorization: Bearer <export key>" \
+  "http://<selfHosting service>:3010/v1/telemetry/export?from=2026-11-01&to=2026-12-01"
+```
+
+`from` and `to` are UTC dates. The export includes `from` and excludes `to`, so the example covers November. A file holds at most 31 days.
+
+The export is a gzip-compressed NDJSON file. Its last line is a signature made with your installation key, which Nango uses to verify that the file came from your installation and is intact.
+
+Send the file to Nango through your support channel.
+
+### Renew the license or replace the key
+
+When Nango sends you a new license, replace `NANGO_LICENSE` in the secret and restart the server and the `selfHosting` workload. Both read it at startup.
+
+To replace the installation key, ask Nango for a new one, replace `NANGO_INSTALLATION_PRIVATE_KEY` in the secret and restart the `selfHosting` workload.
+
 ## Configuration reference
 
 Everything below is what you configure directly to run a production instance — env vars, secrets, and the hardening options available to you.
@@ -154,6 +266,8 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_CLOUD` | `false` | Marks this as a self-hosted instance |
 | `NANGO_ENTERPRISE` | `true` | Enables Enterprise features |
 | `NANGO_DB_SSL` | `true` | Require SSL to Postgres |
+| `NANGO_INSTALLATIONS_API_URL` | *(the installations URL from Nango)* | Where usage metrics are sent. Only the `selfHosting` workload needs it. See [License and usage reporting](#license-and-usage-reporting) |
+| `FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED` | `true` | Turns on the daily upload of usage metrics. Only the `selfHosting` workload needs it |
 
 ### Minimum secrets
 
@@ -175,6 +289,8 @@ Everything below is what you configure directly to run a production instance —
 | `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
 | `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
 | `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
+| `NANGO_LICENSE` | *(the license from Nango)* | Your license. The server and the `selfHosting` workload read it |
+| `NANGO_INSTALLATION_PRIVATE_KEY` | *(the installation key from Nango)* | Signs the usage reports. Only the `selfHosting` workload needs it |
 
 <Note>
 Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Cloud Storage, set `GCS_INTEGRATIONS_BUCKET_NAME`; Nango authenticates with Application Default Credentials, so the workload needs permission to read and write objects in that bucket. On Azure Blob Storage, set `AZURE_INTEGRATIONS_ACCOUNT_NAME` and `AZURE_INTEGRATIONS_CONTAINER_NAME` together. Set `AZURE_INTEGRATIONS_ACCOUNT_KEY` to authenticate with a shared key, or omit it to use `DefaultAzureCredential`. S3, GCS, and Azure cannot be configured together.
@@ -386,7 +502,7 @@ See [Auth](/guides/auth/overview) for the end-user connection flow.
 
 ### Hosted telemetry
 
-Nango records anonymous usage metrics, such as how many functions run at the same time and how many connections ran one this month, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
+Nango records usage metrics, such as how many functions run at the same time and how many connections ran one this month, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
 
 Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
 
@@ -396,6 +512,8 @@ To keep the metrics in a separate database, set `NANGO_HOSTED_TELEMETRY_POSTGRES
 NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
 NANGO_HOSTED_TELEMETRY_POSTGRES_SSL=true
 ```
+
+To set up automatic uploads or export the metrics as a file, see [License and usage reporting](#license-and-usage-reporting).
 
 Contact us if this telemetry is an issue for your organization.
 
@@ -745,6 +863,6 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
   </Accordion>
   <Accordion title="Does Nango have any visibility into our instance?">
-    Only [hosted telemetry](#hosted-telemetry), which is anonymous usage metrics. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
+    Only [hosted telemetry](#hosted-telemetry), which is usage metrics sent under your installation ID. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
   </Accordion>
 </AccordionGroup>

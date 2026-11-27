@@ -1,0 +1,648 @@
+{
+    "providerConfigKey": "ring-central",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a new external contact in RingCentral.",
+            "endpoint": null,
+            "input": "ActionInput_ring_central_createcontact",
+            "name": "create-contact",
+            "output": [
+                "ActionOutput_ring_central_createcontact"
+            ],
+            "scopes": [
+                "Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_createcontact",
+                "ActionOutput_ring_central_createcontact"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ring_central_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "mobile"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "other"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "phoneNumbers"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ring_central_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "mobile"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "other"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a user in RingCentral",
+            "endpoint": null,
+            "input": "ActionInput_ring_central_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_ring_central_createuser"
+            ],
+            "scopes": [
+                "EditAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_createuser",
+                "ActionOutput_ring_central_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ring_central_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "mobile"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "other"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "photos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "photo"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "work"
+                                        },
+                                        "streetAddress": {
+                                            "type": "string"
+                                        },
+                                        "locality": {
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+                                "type": "object",
+                                "properties": {
+                                    "department": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "department"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumbers",
+                            "photos",
+                            "addresses"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ring_central_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in RingCentral",
+            "endpoint": null,
+            "input": "ActionInput_ring_central_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_ring_central_deleteuser"
+            ],
+            "scopes": [
+                "EditAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_deleteuser",
+                "ActionOutput_ring_central_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ring_central_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ring_central_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieves information about the current RingCentral account/company.",
+            "endpoint": null,
+            "input": "ActionInput_ring_central_getcompanyinfo",
+            "name": "get-company-info",
+            "output": [
+                "ActionOutput_ring_central_getcompanyinfo"
+            ],
+            "scopes": [
+                "ReadAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_getcompanyinfo",
+                "ActionOutput_ring_central_getcompanyinfo"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ring_central_getcompanyinfo": {
+                        "type": "null"
+                    },
+                    "ActionOutput_ring_central_getcompanyinfo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "serviceInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "brand": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "servicePlan": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "brand",
+                                    "servicePlan"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "mainNumber": {
+                                "type": "string"
+                            },
+                            "operator": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "extensionNumber": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "serviceInfo",
+                            "operator"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches the list of external contacts from RingCentral",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/contacts",
+                    "group": "Contacts"
+                }
+            ],
+            "input": "SyncMetadata_ring_central_contacts",
+            "name": "contacts",
+            "output": [
+                "Contact"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "ReadContacts"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Contact",
+                "SyncMetadata_ring_central_contacts"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "mobile"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "other"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_ring_central_contacts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches the list of users from RingCentral",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_ring_central_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "ReadAccounts"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_ring_central_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_ring_central_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

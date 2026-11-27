@@ -1,0 +1,484 @@
+{
+    "providerConfigKey": "teamtailor",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of all candidates from your teamtailor account.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/teamtailor/candidates"
+                }
+            ],
+            "input": "SyncMetadata_teamtailor_candidates",
+            "name": "candidates",
+            "output": [
+                "TeamtailorCandidate"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "Admin"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "TeamtailorCandidate",
+                "SyncMetadata_teamtailor_candidates"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TeamtailorCandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "links": {
+                                "type": "object",
+                                "properties": {
+                                    "self": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "self"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "attributes": {
+                                "type": "object",
+                                "properties": {
+                                    "connected": {
+                                        "type": "boolean"
+                                    },
+                                    "consent_future_jobs_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "updated_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "facebook_id": {
+                                        "type": "string"
+                                    },
+                                    "facebook_profile": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "internal": {
+                                        "type": "boolean"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "linkedin_profile": {
+                                        "type": "string"
+                                    },
+                                    "linkedin_uid": {
+                                        "type": "string"
+                                    },
+                                    "linkedin_url": {
+                                        "type": "string"
+                                    },
+                                    "original_resume": {
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "picture": {
+                                        "type": "string"
+                                    },
+                                    "pitch": {
+                                        "type": "string"
+                                    },
+                                    "referring_site": {
+                                        "type": "string"
+                                    },
+                                    "referring_url": {
+                                        "type": "string"
+                                    },
+                                    "referred": {
+                                        "type": "boolean"
+                                    },
+                                    "resume": {
+                                        "type": "string"
+                                    },
+                                    "sourced": {
+                                        "type": "boolean"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "unsubscribed": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "connected",
+                                    "consent_future_jobs_at",
+                                    "created_at",
+                                    "updated_at",
+                                    "email",
+                                    "facebook_id",
+                                    "facebook_profile",
+                                    "first_name",
+                                    "internal",
+                                    "last_name",
+                                    "linkedin_profile",
+                                    "linkedin_uid",
+                                    "linkedin_url",
+                                    "original_resume",
+                                    "phone",
+                                    "picture",
+                                    "pitch",
+                                    "referring_site",
+                                    "referring_url",
+                                    "referred",
+                                    "resume",
+                                    "sourced",
+                                    "tags",
+                                    "unsubscribed"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "relationships": {
+                                "type": "object",
+                                "properties": {
+                                    "activities": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "department": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "role": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "regions": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "job_applications": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "questions": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "answers": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "locations": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "uploads": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "custom_field_values": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "partner_results": {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "self": {
+                                                        "type": "string"
+                                                    },
+                                                    "related": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "links"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "activities",
+                                    "department",
+                                    "role",
+                                    "regions",
+                                    "job_applications",
+                                    "questions",
+                                    "answers",
+                                    "locations",
+                                    "uploads",
+                                    "custom_field_values",
+                                    "partner_results"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "links",
+                            "attributes",
+                            "relationships"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_teamtailor_candidates": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

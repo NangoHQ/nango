@@ -1,0 +1,1332 @@
+{
+    "providerConfigKey": "anvil",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-fill-pdf-templates",
+            "integrationId": "anvil",
+            "description": "Fill the same PDF template with up to 10 data objects in one native request and return a single merged PDF. This is repeated filling of one template, not a batch of different template IDs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_batchfillpdftemplates",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_batchfillpdftemplates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_batchfillpdftemplates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "minItems": 1,
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "description": "Template-defined field value, including null, arrays, and compound or styled objects."
+                                    },
+                                    "description": "Fill-data object keyed by template field IDs or aliases."
+                                },
+                                "description": "Ordered fill-data objects for repeated copies of the same template; maximum 10 per call. Each object's keys are template field IDs or aliases. Null and absent fields are ignored; empty strings and complex JSON values are preserved."
+                            },
+                            "title": {
+                                "description": "Title embedded in the merged PDF metadata; an empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "fontSize": {
+                                "description": "Shared integer font-size override in points, pending unit validation; omit to retain template styles.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "alignment": {
+                                "description": "Shared document-level field alignment override.",
+                                "type": "string",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right"
+                                ]
+                            },
+                            "textColor": {
+                                "description": "Shared six-digit hexadecimal text-color override.",
+                                "type": "string",
+                                "pattern": "^#[0-9a-fA-F]{6}$"
+                            },
+                            "fontFamily": {
+                                "description": "Case-sensitive document font-family override shared by all copies; omit to retain template styles.",
+                                "type": "string"
+                            },
+                            "fontWeight": {
+                                "description": "Shared document-level field font weight override.",
+                                "type": "string",
+                                "enum": [
+                                    "normal",
+                                    "bold",
+                                    "italic",
+                                    "boldItalic"
+                                ]
+                            },
+                            "pdfTemplateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque PDF Template ID / Cast EID to fill for every item."
+                            },
+                            "defaultReadOnly": {
+                                "description": "Default read-only setting for interactive filled fields, overridable within individual field values. Provider default is false.",
+                                "type": "boolean"
+                            },
+                            "templateVersion": {
+                                "description": "Use published template behavior by default or preview unpublished changes for all copies.",
+                                "type": "string",
+                                "enum": [
+                                    "published",
+                                    "draft"
+                                ]
+                            },
+                            "useInteractiveFields": {
+                                "description": "Whether filled copies contain interactive fields; provider default is false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "pdfTemplateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One PDF template and up to 10 ordered fill-data objects, with optional shared styling and interactivity."
+                    },
+                    "FunctionOutput_anvil_batchfillpdftemplates": {
+                        "type": "object",
+                        "properties": {
+                            "mediaType": {
+                                "type": "string",
+                                "const": "application/pdf",
+                                "description": "Media type of the merged file."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/pdf",
+                                "description": "Standard base64 encoding of the exact single merged PDF returned by Anvil; no per-item success is implied."
+                            }
+                        },
+                        "required": [
+                            "mediaType",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The single merged PDF returned by Anvil, encoded without changing its binary bytes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to produce several filled copies of one template as a single merged PDF. You need its PDF Template ID and field aliases from Anvil or `upload-pdf`. Send at most 10 data objects per call. Use `fill-pdf-template` for one fill. The result is aggregate PDF content, not separate item successes, and this does not save fill data or send signatures."
+            },
+            "filePath": "./anvil/tools/batch-fill-pdf-templates.ts",
+            "version": "e408418a97c6fcf971dee4b2ca311399eb7a82bcd5d7e9f7c3789e02b2c60c33",
+            "location": {
+                "js": "templates-zero/anvil/tools/batch-fill-pdf-templates/e408418a97c6fcf971dee4b2ca311399eb7a82bcd5d7e9f7c3789e02b2c60c33.cjs",
+                "ts": "templates-zero/anvil/tools/batch-fill-pdf-templates/e408418a97c6fcf971dee4b2ca311399eb7a82bcd5d7e9f7c3789e02b2c60c33.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "download-document-group-document",
+            "integrationId": "anvil",
+            "description": "Download one completed document from a signing document group using its exact filename.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_downloaddocumentgroupdocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_downloaddocumentgroupdocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_downloaddocumentgroupdocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentGroupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque EID of the signing document group containing the completed document."
+                            },
+                            "filename": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/\\\\]+$",
+                                "not": {
+                                    "enum": [
+                                        ".",
+                                        ".."
+                                    ]
+                                },
+                                "description": "Exact filename within the group, including extension; supply ordinary Unicode text, not an encoded URL or filesystem path."
+                            }
+                        },
+                        "required": [
+                            "documentGroupId",
+                            "filename"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The signing document group and exact ordinary-text filename to download."
+                    },
+                    "FunctionOutput_anvil_downloaddocumentgroupdocument": {
+                        "type": "object",
+                        "properties": {
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "description": "Standard base64 encoding of the exact downloaded document bytes, without a data-URL prefix."
+                            },
+                            "filename": {
+                                "type": "string",
+                                "description": "Exact requested document filename, preserved as ordinary text."
+                            },
+                            "mediaType": {
+                                "description": "Response media type when supplied, without charset parameters; omitted when absent rather than inferred from the extension.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "contentBase64",
+                            "filename"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested completed document as byte-preserving base64 with optional response media type."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you know the document group EID and the exact filename from Anvil's document group file listing or your signing integration. All parties should have signed. This tool does not discover filenames. Use `download-document-group-documents` to download the entire completed group as ZIP, or `download-workflow-submission-file` for a Workflow submission file. Pass ordinary Unicode filenames, not URL-encoded strings."
+            },
+            "filePath": "./anvil/tools/download-document-group-document.ts",
+            "version": "b2897edaf7cb062382190b5da655bbb59bfc1b0255359215f9cb281a86076a08",
+            "location": {
+                "js": "templates-zero/anvil/tools/download-document-group-document/b2897edaf7cb062382190b5da655bbb59bfc1b0255359215f9cb281a86076a08.cjs",
+                "ts": "templates-zero/anvil/tools/download-document-group-document/b2897edaf7cb062382190b5da655bbb59bfc1b0255359215f9cb281a86076a08.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "download-document-group-documents",
+            "integrationId": "anvil",
+            "description": "Download all completed documents in one document group as an exact ZIP archive after all parties have signed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_downloaddocumentgroupdocuments",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_downloaddocumentgroupdocuments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_downloaddocumentgroupdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "documentGroupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque document group EID associated with the completed signing packet."
+                            }
+                        },
+                        "required": [
+                            "documentGroupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The completed signing packet document group to download."
+                    },
+                    "FunctionOutput_anvil_downloaddocumentgroupdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {
+                                "description": "Suggested archive filename from the response, when available; omitted if not supplied.",
+                                "type": "string"
+                            },
+                            "mediaType": {
+                                "type": "string",
+                                "const": "application/zip",
+                                "description": "Archive media type."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/zip",
+                                "description": "Standard base64 encoding of the exact downloaded ZIP archive, without a data-URL prefix."
+                            }
+                        },
+                        "required": [
+                            "mediaType",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One intact completed-document ZIP archive encoded in standard base64."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you already know the document group EID and all parties have signed. Obtain the EID from the signing packet or Anvil; this tool does not discover packets or check signer status. Use `download-document-group-document` when you know a specific filename. For Workflow submission documents, use `download-workflow-submission-documents`, which also supports in-progress submissions. The result is ZIP bytes, not an unauthenticated URL."
+            },
+            "filePath": "./anvil/tools/download-document-group-documents.ts",
+            "version": "8795b432bcbe9a5eaf3794fc4c1d9864c1c93d5f6ac4a140f31728d15014eb8d",
+            "location": {
+                "js": "templates-zero/anvil/tools/download-document-group-documents/8795b432bcbe9a5eaf3794fc4c1d9864c1c93d5f6ac4a140f31728d15014eb8d.cjs",
+                "ts": "templates-zero/anvil/tools/download-document-group-documents/8795b432bcbe9a5eaf3794fc4c1d9864c1c93d5f6ac4a140f31728d15014eb8d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "download-workflow-submission-documents",
+            "integrationId": "anvil",
+            "description": "Download a Workflow submission's documents as an exact ZIP archive, including an in-progress snapshot filled with available data and existing signatures.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_downloadworkflowsubmissiondocuments",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_downloadworkflowsubmissiondocuments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_downloadworkflowsubmissiondocuments": {
+                        "type": "object",
+                        "properties": {
+                            "workflowSubmissionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque WeldData EID identifying one Workflow submission, not the Workflow definition or an individual Webform submission."
+                            }
+                        },
+                        "required": [
+                            "workflowSubmissionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the Workflow submission whose documents should be downloaded."
+                    },
+                    "FunctionOutput_anvil_downloadworkflowsubmissiondocuments": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {
+                                "description": "Suggested archive filename from the response, when available; otherwise omitted.",
+                                "type": "string"
+                            },
+                            "mediaType": {
+                                "type": "string",
+                                "const": "application/zip",
+                                "description": "Media type of the archive."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "description": "Standard base64 encoding of the exact ZIP response bytes, without a data-URL prefix. In-progress content reflects data and signatures available when downloaded.",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/zip"
+                            }
+                        },
+                        "required": [
+                            "mediaType",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One intact Workflow document archive encoded for JSON transport, with an optional suggested filename."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you know the Workflow submission EID, called WeldData EID in Anvil. Obtain it from Anvil or your existing Workflow integration; this tool does not list submissions. In-progress downloads are allowed and contain only data and signatures available at that time. Use `download-workflow-submission-file` for one known filename or `download-document-group-documents` for a completed signing document group. The result is ZIP bytes, not a public URL."
+            },
+            "filePath": "./anvil/tools/download-workflow-submission-documents.ts",
+            "version": "2070b7882eaadebfd8cdaa63ff6e3d0da53c26b1f21cc613fdb0bb0336a5a845",
+            "location": {
+                "js": "templates-zero/anvil/tools/download-workflow-submission-documents/2070b7882eaadebfd8cdaa63ff6e3d0da53c26b1f21cc613fdb0bb0336a5a845.cjs",
+                "ts": "templates-zero/anvil/tools/download-workflow-submission-documents/2070b7882eaadebfd8cdaa63ff6e3d0da53c26b1f21cc613fdb0bb0336a5a845.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "download-workflow-submission-file",
+            "integrationId": "anvil",
+            "description": "Download one file from a Workflow submission by exact filename, including available in-progress content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_downloadworkflowsubmissionfile",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_downloadworkflowsubmissionfile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_downloadworkflowsubmissionfile": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/\\\\]+$",
+                                "not": {
+                                    "enum": [
+                                        ".",
+                                        ".."
+                                    ]
+                                },
+                                "description": "Exact available filename including extension; provide ordinary Unicode text, not a URL-encoded string or filesystem path."
+                            },
+                            "workflowSubmissionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque WeldData EID identifying one Workflow submission, not a Workflow definition or individual Webform submission."
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "workflowSubmissionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies one Workflow submission and its exact available filename."
+                    },
+                    "FunctionOutput_anvil_downloadworkflowsubmissionfile": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {
+                                "type": "string",
+                                "description": "Exact requested filename, preserved as ordinary text."
+                            },
+                            "mediaType": {
+                                "description": "Response media type without parameters when provided; omitted if absent rather than inferred from the filename.",
+                                "type": "string"
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "description": "Standard base64 encoding of the exact downloaded file bytes, without a data-URL prefix. In-progress documents reflect current data and existing signatures."
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Exact downloaded file bytes encoded as base64, with the requested filename and available response media type."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this with a WeldData EID and the exact filename from Anvil or your existing Workflow file listing. This tool does not discover filenames. Pass ordinary Unicode filenames, not URL-encoded strings. Use `download-workflow-submission-documents` for the entire ZIP without choosing filenames. In-progress files can reflect incomplete form data and only signatures already supplied; downloading does not complete the Workflow."
+            },
+            "filePath": "./anvil/tools/download-workflow-submission-file.ts",
+            "version": "f5214b2a6a47ddab81dc0d4021e5fa8289ec88e2e1482821af5ea13c197b9b63",
+            "location": {
+                "js": "templates-zero/anvil/tools/download-workflow-submission-file/f5214b2a6a47ddab81dc0d4021e5fa8289ec88e2e1482821af5ea13c197b9b63.cjs",
+                "ts": "templates-zero/anvil/tools/download-workflow-submission-file/f5214b2a6a47ddab81dc0d4021e5fa8289ec88e2e1482821af5ea13c197b9b63.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "fill-pdf-template",
+            "integrationId": "anvil",
+            "description": "Fill an Anvil PDF template with field values and return a PDF without saving the submitted data. Supports draft previews, field styling, and interactive fields.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_fillpdftemplate",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_fillpdftemplate",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_fillpdftemplate": {
+                        "type": "object",
+                        "properties": {
+                            "pdfTemplateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque PDF Template ID / Cast EID from Anvil or upload-pdf."
+                            },
+                            "data": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Map from template field IDs or aliases to typed JSON values. Complex fields use objects, repeating fields use arrays, and field-level style or readOnly overrides use an object containing value. Missing or null values and unknown aliases are ignored; empty strings are preserved and can create blank interactive fields."
+                            },
+                            "title": {
+                                "description": "Optional title embedded in PDF metadata; an empty string is preserved.",
+                                "type": "string"
+                            },
+                            "fontSize": {
+                                "description": "Integer font size override in points, pending unit validation; omit to retain template styles and provider defaults.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "alignment": {
+                                "description": "Document-level field alignment override.",
+                                "type": "string",
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right"
+                                ]
+                            },
+                            "textColor": {
+                                "description": "Six-digit hexadecimal text-color override.",
+                                "type": "string",
+                                "pattern": "^#[0-9a-fA-F]{6}$"
+                            },
+                            "fontFamily": {
+                                "description": "Case-sensitive font family override; omit to retain template styles and provider defaults.",
+                                "type": "string"
+                            },
+                            "fontWeight": {
+                                "description": "Document-level normal, bold, italic, or combined weight override.",
+                                "type": "string",
+                                "enum": [
+                                    "normal",
+                                    "bold",
+                                    "italic",
+                                    "boldItalic"
+                                ]
+                            },
+                            "defaultReadOnly": {
+                                "description": "Whether filled fields default to read-only when using interactive fields; field-level readOnly can override. Provider default is false.",
+                                "type": "boolean"
+                            },
+                            "templateVersion": {
+                                "description": "Use the published template by default, or preview its unpublished changes.",
+                                "default": "published",
+                                "type": "string",
+                                "enum": [
+                                    "published",
+                                    "draft"
+                                ]
+                            },
+                            "useInteractiveFields": {
+                                "description": "Whether the result uses interactive PDF fields; provider default is false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "pdfTemplateId",
+                            "data"
+                        ],
+                        "additionalProperties": false,
+                        "description": "PDF template, typed field values, and optional styling or interactive-field controls for one fill."
+                    },
+                    "FunctionOutput_anvil_fillpdftemplate": {
+                        "type": "object",
+                        "properties": {
+                            "contentBase64": {
+                                "type": "string",
+                                "description": "Standard base64 encoding of the exact filled PDF bytes, without a data-URL prefix.",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/pdf"
+                            },
+                            "mediaType": {
+                                "type": "string",
+                                "const": "application/pdf",
+                                "description": "Media type of the filled file."
+                            }
+                        },
+                        "required": [
+                            "contentBase64",
+                            "mediaType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The filled PDF as exact binary content encoded in standard base64."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this when you know a PDF template ID and its field aliases. Obtain the template ID from Anvil or `upload-pdf`; newly uploaded templates may need editing and publishing in Anvil. Use `batch-fill-pdf-templates` to repeat the same template with multiple data objects and receive one merged PDF. Use `generate-pdf` for HTML or Markdown without a template. This does not request signatures or save your fill data."
+            },
+            "filePath": "./anvil/tools/fill-pdf-template.ts",
+            "version": "5307d80e786a24376d512853605ef336770dac3fdb8ad40d4e0967827196d5cb",
+            "location": {
+                "js": "templates-zero/anvil/tools/fill-pdf-template/5307d80e786a24376d512853605ef336770dac3fdb8ad40d4e0967827196d5cb.cjs",
+                "ts": "templates-zero/anvil/tools/fill-pdf-template/5307d80e786a24376d512853605ef336770dac3fdb8ad40d4e0967827196d5cb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "generate-pdf",
+            "integrationId": "anvil",
+            "description": "Generate a PDF from ordinary HTML and CSS or structured Markdown content, with page layout options, and return its exact bytes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_generatepdf",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_generatepdf",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_generatepdf": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Optional page dimensions, margins, and page-counter placement. Omitted properties use provider defaults.",
+                                "type": "object",
+                                "properties": {
+                                    "width": {
+                                        "description": "Page width with an explicit CSS length unit.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    },
+                                    "height": {
+                                        "description": "Page height with an explicit CSS length unit.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    },
+                                    "margin": {
+                                        "description": "CSS margin shorthand of one to four nonnegative lengths with supported units; specific-side margins override it.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)(?: +(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)){0,3}$"
+                                    },
+                                    "marginTop": {
+                                        "description": "Top margin, overriding the shorthand top margin.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    },
+                                    "pageCount": {
+                                        "description": "Location of an optional page counter.",
+                                        "type": "string",
+                                        "enum": [
+                                            "topLeft",
+                                            "topCenter",
+                                            "topRight",
+                                            "bottomLeft",
+                                            "bottomCenter",
+                                            "bottomRight"
+                                        ]
+                                    },
+                                    "marginLeft": {
+                                        "description": "Left margin, overriding the shorthand left margin.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    },
+                                    "marginRight": {
+                                        "description": "Right margin, overriding the shorthand right margin.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    },
+                                    "marginBottom": {
+                                        "description": "Bottom margin, overriding the shorthand bottom margin.",
+                                        "type": "string",
+                                        "pattern": "^(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)(?:mm|cm|in|px|em|rem|pt|pc)$"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Optional title embedded in PDF metadata; an empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "content": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "css": {
+                                                "description": "CSS stylesheet; omitted means no additional stylesheet.",
+                                                "type": "string"
+                                            },
+                                            "html": {
+                                                "type": "string",
+                                                "description": "HTML source, including Unicode text."
+                                            },
+                                            "format": {
+                                                "type": "string",
+                                                "const": "html",
+                                                "description": "Render HTML and CSS."
+                                            }
+                                        },
+                                        "required": [
+                                            "html",
+                                            "format"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "HTML and optional CSS source."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "logo": {
+                                                "description": "Optional logo placed in the upper-right corner of the first page.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "src": {
+                                                        "type": "string",
+                                                        "format": "uri",
+                                                        "description": "Image URL accessible to Anvil."
+                                                    },
+                                                    "maxWidth": {
+                                                        "description": "Maximum logo width in pixels; units require implementation validation.",
+                                                        "type": "integer",
+                                                        "minimum": 1,
+                                                        "maximum": 9007199254740991
+                                                    },
+                                                    "maxHeight": {
+                                                        "description": "Maximum logo height in pixels; units require implementation validation.",
+                                                        "type": "integer",
+                                                        "minimum": 1,
+                                                        "maximum": 9007199254740991
+                                                    }
+                                                },
+                                                "required": [
+                                                    "src"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "blocks": {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "label": {
+                                                            "description": "Bold label text for this block.",
+                                                            "type": "string"
+                                                        },
+                                                        "table": {
+                                                            "description": "Structured table rendered without requiring Markdown table construction.",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "rows": {
+                                                                    "minItems": 1,
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "minItems": 1,
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string",
+                                                                            "description": "Text cell content."
+                                                                        },
+                                                                        "description": "One row of text cells."
+                                                                    },
+                                                                    "description": "Rows of text cells in display order; each row should have the same number of cells."
+                                                                },
+                                                                "rowGridlines": {
+                                                                    "description": "Whether to show gridlines between rows; provider default is false.",
+                                                                    "type": "boolean"
+                                                                },
+                                                                "columnOptions": {
+                                                                    "description": "Positional column overrides; an empty object preserves defaults for that column.",
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "align": {
+                                                                                "description": "Horizontal cell alignment; provider default is left.",
+                                                                                "type": "string",
+                                                                                "enum": [
+                                                                                    "left",
+                                                                                    "center",
+                                                                                    "right"
+                                                                                ]
+                                                                            },
+                                                                            "width": {
+                                                                                "description": "Column width in pixels or as a percentage of table width.",
+                                                                                "type": "string",
+                                                                                "pattern": "^[0-9]+(?:\\.[0-9]+)?(?:px|%)$"
+                                                                            }
+                                                                        },
+                                                                        "additionalProperties": false,
+                                                                        "description": "Overrides for one positional column."
+                                                                    }
+                                                                },
+                                                                "verticalAlign": {
+                                                                    "description": "Vertical cell alignment; provider default is top.",
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "top",
+                                                                        "center",
+                                                                        "bottom"
+                                                                    ]
+                                                                },
+                                                                "columnGridlines": {
+                                                                    "description": "Whether to show gridlines between columns; provider default is false.",
+                                                                    "type": "boolean"
+                                                                },
+                                                                "firstRowHeaders": {
+                                                                    "description": "Whether the first row is a header; provider default is true.",
+                                                                    "type": "boolean"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "rows"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        },
+                                                        "content": {
+                                                            "description": "Ordinary multiline Markdown text, including links, images, lists, and Markdown tables.",
+                                                            "type": "string"
+                                                        },
+                                                        "heading": {
+                                                            "description": "Larger bold heading used to separate sections.",
+                                                            "type": "string"
+                                                        },
+                                                        "fontSize": {
+                                                            "description": "Font size override in points; point units are provisional pending validation.",
+                                                            "type": "integer",
+                                                            "minimum": 5,
+                                                            "maximum": 30
+                                                        },
+                                                        "textColor": {
+                                                            "description": "Block text color as a six-digit hexadecimal CSS color.",
+                                                            "type": "string",
+                                                            "pattern": "^#[0-9a-fA-F]{6}$"
+                                                        },
+                                                        "fontFamily": {
+                                                            "description": "Case-sensitive font family override for this block.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "minProperties": 1,
+                                                    "description": "One structured Markdown block."
+                                                },
+                                                "description": "Content blocks in document order; a block can combine headings, text, labels, and a table."
+                                            },
+                                            "format": {
+                                                "type": "string",
+                                                "const": "markdown",
+                                                "description": "Render structured Markdown blocks."
+                                            },
+                                            "fontSize": {
+                                                "description": "Document font size in points; omitted uses the provider default. Point units are provisional pending validation.",
+                                                "type": "integer",
+                                                "minimum": 5,
+                                                "maximum": 30
+                                            },
+                                            "textColor": {
+                                                "description": "Document text color as a six-digit hexadecimal CSS color.",
+                                                "type": "string",
+                                                "pattern": "^#[0-9a-fA-F]{6}$"
+                                            },
+                                            "fontFamily": {
+                                                "description": "Case-sensitive font family for the document; omitted uses the provider default.",
+                                                "type": "string"
+                                            },
+                                            "includeTimestamp": {
+                                                "description": "Whether to display the generated-at timestamp; omitted uses the provider default of true.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": [
+                                            "blocks",
+                                            "format"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Structured Markdown source and document styling."
+                                    }
+                                ],
+                                "description": "The source content and its rendering format; ordinary text is never pre-encoded."
+                            }
+                        },
+                        "required": [
+                            "content"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Content and optional layout for one generated PDF."
+                    },
+                    "FunctionOutput_anvil_generatepdf": {
+                        "type": "object",
+                        "properties": {
+                            "mediaType": {
+                                "type": "string",
+                                "const": "application/pdf",
+                                "description": "Media type of the generated file."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/pdf",
+                                "description": "Standard base64 encoding of the exact PDF response bytes, without a data-URL prefix."
+                            }
+                        },
+                        "required": [
+                            "mediaType",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The generated PDF encoded losslessly for transport."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new PDF rendered from content. Use `fill-pdf-template` for an existing Anvil template, or `upload-pdf` to store an existing PDF. Choose HTML for full CSS-based styling or Markdown for structured text and tables. HTML rendering does not support CSS Flexbox or Grid. The result contains base64-encoded PDF bytes, not a public download URL."
+            },
+            "filePath": "./anvil/tools/generate-pdf.ts",
+            "version": "26af2b5a1ebf2649e2383d7ec5e1f2586c5f585419542b877b97e4f8fe00b613",
+            "location": {
+                "js": "templates-zero/anvil/tools/generate-pdf/26af2b5a1ebf2649e2383d7ec5e1f2586c5f585419542b877b97e4f8fe00b613.cjs",
+                "ts": "templates-zero/anvil/tools/generate-pdf/26af2b5a1ebf2649e2383d7ec5e1f2586c5f585419542b877b97e4f8fe00b613.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upload-pdf",
+            "integrationId": "anvil",
+            "description": "Upload existing PDF bytes to create an Anvil PDF template or document, optionally detecting fields with Document AI and assigning aliases from a custom or HubSpot schema. AI detection requires an eligible plan.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_anvil_uploadpdf",
+            "output_schema_ref": "#/definitions/FunctionOutput_anvil_uploadpdf",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_anvil_uploadpdf": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "Optional display title for the new PDF; an empty string is forwarded unchanged.",
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string",
+                                "minLength": 5,
+                                "pattern": "^[^/\\\\]+\\.[pP][dD][fF]$",
+                                "description": "Original PDF filename including its .pdf extension; not a filesystem path."
+                            },
+                            "isTemplate": {
+                                "description": "Whether to create a reusable PDF template rather than a non-template PDF document. Defaults to true.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "aliasSchema": {
+                                "description": "Optional source for AI alias mapping; requires advancedDetectFields=true. Custom schemas are passed inline; HubSpot schemas use the organization's configured integration.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "custom",
+                                                "description": "Use a custom inline alias schema."
+                                            },
+                                            "aliases": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "description": {
+                                                            "type": "string",
+                                                            "description": "Meaning of this alias used for AI matching."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "description"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Map of desired field alias to its matching description.",
+                                                "minProperties": 1
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "aliases"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "hubspot",
+                                                "description": "Derive aliases from the organization's HubSpot integration."
+                                            },
+                                            "objectTypes": {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "HubSpot object type whose properties supply aliases."
+                                                },
+                                                "description": "HubSpot object types whose properties supply aliases. One type uses bare property names; multiple types use objectType.propertyName.",
+                                                "uniqueItems": true
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "objectTypes"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "detectFields": {
+                                "description": "Whether to detect existing PDF fields; defaults to true. AI detection options imply true.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                                "description": "Standard base64 encoding of the original binary PDF, without a data-URL prefix.",
+                                "contentEncoding": "base64",
+                                "contentMediaType": "application/pdf"
+                            },
+                            "organizationId": {
+                                "description": "Optional opaque organization EID for an explicitly selected organization; omit to use the API key's organization.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "allowedAliasIds": {
+                                "description": "Optional list restricting allowed field aliases. Omission leaves provider behavior unchanged; an empty list is forwarded as empty, not omitted.",
+                                "uniqueItems": true,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Allowed field alias."
+                                }
+                            },
+                            "detectBoxesAdvanced": {
+                                "description": "Enable AI box detection; requires the AI Pack or higher and implies detectFields=true. Defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "advancedDetectFields": {
+                                "description": "Enable AI analysis of fields; requires the AI Pack or higher and implies detectFields=true. Defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Existing binary PDF and options for creating one Anvil PDF template or document.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "aliasSchema"
+                                    ],
+                                    "properties": {
+                                        "aliasSchema": true
+                                    }
+                                },
+                                "then": {
+                                    "required": [
+                                        "advancedDetectFields"
+                                    ],
+                                    "properties": {
+                                        "advancedDetectFields": {
+                                            "const": true
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "advancedDetectFields"
+                                            ],
+                                            "properties": {
+                                                "advancedDetectFields": {
+                                                    "const": true
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "detectBoxesAdvanced"
+                                            ],
+                                            "properties": {
+                                                "detectBoxesAdvanced": {
+                                                    "const": true
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "then": {
+                                    "properties": {
+                                        "detectFields": {
+                                            "const": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_anvil_uploadpdf": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Cast EID identifying the created PDF, usable as pdfTemplateId when it is a template."
+                            },
+                            "name": {
+                                "description": "Provider-assigned PDF name, when returned.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Display title, when returned; preserves an empty string.",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "Detected field definitions when returned; an empty array means no fields were returned, while omission means unavailable.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Field identifier used in fill data."
+                                        },
+                                        "type": {
+                                            "description": "Opaque provider field-type name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "label": {
+                                            "description": "Detected human-readable field label, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "isTemplate": {
+                                "type": "boolean",
+                                "description": "Whether the created PDF is a reusable template."
+                            },
+                            "organizationId": {
+                                "description": "Opaque EID of the owning organization, when returned.",
+                                "type": "string"
+                            },
+                            "allowedAliasIds": {
+                                "description": "Allowed field aliases when returned by Anvil; an empty array is retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Allowed field alias returned by Anvil."
+                                }
+                            },
+                            "hasBeenPublished": {
+                                "description": "Whether Anvil reports that this PDF has been published; omitted if unavailable.",
+                                "type": "boolean"
+                            },
+                            "hasUnpublishedChanges": {
+                                "description": "Whether Anvil reports draft changes not yet published; omitted if unavailable.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "isTemplate"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created Anvil PDF identifier, template status, and available detected fields and publication information."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for an existing PDF file, not HTML or Markdown. It creates a new object every time; do not blindly retry an uncertain result. The default creates a reusable PDF template, which may require review and publishing in Anvil before live use. Use the returned id with `fill-pdf-template`, including its draft preview when appropriate. AI options require the AI Pack or higher. Provide base64 only for the existing binary PDF, not for titles or aliases."
+            },
+            "filePath": "./anvil/tools/upload-pdf.ts",
+            "version": "9d4137e30a080e8d86a69f6f02751a21032bee34e9931afc036ba50dabca8cf2",
+            "location": {
+                "js": "templates-zero/anvil/tools/upload-pdf/9d4137e30a080e8d86a69f6f02751a21032bee34e9931afc036ba50dabca8cf2.cjs",
+                "ts": "templates-zero/anvil/tools/upload-pdf/9d4137e30a080e8d86a69f6f02751a21032bee34e9931afc036ba50dabca8cf2.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

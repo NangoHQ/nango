@@ -1,0 +1,4198 @@
+{
+    "providerConfigKey": "acuity-scheduling",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Cancel an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_cancelappointment",
+            "name": "cancel-appointment",
+            "output": [
+                "ActionOutput_acuity_scheduling_cancelappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_cancelappointment",
+                "ActionOutput_acuity_scheduling_cancelappointment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_cancelappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Appointment ID. Example: 1722092210"
+                            },
+                            "cancelNote": {
+                                "description": "A message to send with cancellation notifications.",
+                                "type": "string"
+                            },
+                            "noShow": {
+                                "description": "Whether the appointment was a no show, settable by admins.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_cancelappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "dateCreated": {
+                                "type": "string"
+                            },
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "paid": {
+                                "type": "string"
+                            },
+                            "amountPaid": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "classID": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "duration": {
+                                "type": "string"
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "confirmationPage": {
+                                "type": "string"
+                            },
+                            "formsText": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "fieldID": {
+                                                        "type": "number"
+                                                    },
+                                                    "id": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "noShow": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check if a specific datetime is available for an appointment type.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_checkavailabilitytimes",
+            "name": "check-availability-times",
+            "output": [
+                "ActionOutput_acuity_scheduling_checkavailabilitytimes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_checkavailabilitytimes",
+                "ActionOutput_acuity_scheduling_checkavailabilitytimes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_checkavailabilitytimes": {
+                        "type": "object",
+                        "properties": {
+                            "datetime": {
+                                "type": "string",
+                                "description": "Date and time to check availability for. Must be parsable by strtotime. Example: \"2026-06-25T09:00:00+0300\""
+                            },
+                            "appointmentTypeID": {
+                                "type": "number",
+                                "description": "ID of the appointment type to check. Example: 94517100"
+                            },
+                            "calendarID": {
+                                "description": "ID of the calendar to check. If omitted, checks any available calendar. Example: 14209019",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_checkavailabilitytimes": {
+                        "type": "object",
+                        "properties": {
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "valid": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID",
+                            "valid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify a certificate or coupon code.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_checkcertificate",
+            "name": "check-certificate",
+            "output": [
+                "ActionOutput_acuity_scheduling_checkcertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_checkcertificate",
+                "ActionOutput_acuity_scheduling_checkcertificate"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_checkcertificate": {
+                        "type": "object",
+                        "properties": {
+                            "certificate": {
+                                "type": "string",
+                                "description": "The certificate code to check. Example: \"BFB0E13E\""
+                            },
+                            "appointmentTypeID": {
+                                "type": "number",
+                                "description": "The appointment type ID to check. Example: 94517100"
+                            },
+                            "email": {
+                                "description": "An optional email address to check if the certificate is valid for. Example: \"client@example.com\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "certificate",
+                            "appointmentTypeID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_checkcertificate": {
+                        "type": "object",
+                        "properties": {
+                            "valid": {
+                                "type": "boolean",
+                                "description": "Whether the certificate is valid for the given appointment type."
+                            },
+                            "id": {
+                                "description": "Certificate ID if valid. Example: 1",
+                                "type": "number"
+                            },
+                            "certificate": {
+                                "description": "Certificate code if valid. Example: \"BFB0E13E\"",
+                                "type": "string"
+                            },
+                            "productID": {
+                                "description": "Product ID associated with the certificate. Example: 1",
+                                "type": "number"
+                            },
+                            "orderID": {
+                                "description": "Order ID associated with the certificate. Example: null",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "appointmentTypeIDs": {
+                                "description": "Appointment type IDs the certificate applies to. Example: [1]",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "name": {
+                                "description": "Name of the certificate. Example: \"5 Small Builds\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address associated with the certificate. Example: \"\"",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Certificate type. Example: \"appointments\"",
+                                "type": "string"
+                            },
+                            "remainingCounts": {
+                                "description": "Remaining usage counts per appointment type. Example: { \"1\": 5 }",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            "remainingMinutes": {
+                                "description": "Remaining minutes on the certificate. Example: null",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "expiration": {
+                                "description": "Expiration date of the certificate. Example: null",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "error": {
+                                "description": "Error message if the certificate is invalid.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "valid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_createappointment",
+            "name": "create-appointment",
+            "output": [
+                "ActionOutput_acuity_scheduling_createappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createappointment",
+                "ActionOutput_acuity_scheduling_createappointment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_createappointment": {
+                        "type": "object",
+                        "properties": {
+                            "datetime": {
+                                "type": "string",
+                                "description": "Required date and time for the appointment, parsed by strtotime in the business or calendar timezone. Example: \"2026-06-30T10:00:00+0300\""
+                            },
+                            "appointmentTypeID": {
+                                "type": "number",
+                                "description": "Appointment type ID. Example: 94517100"
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "Client first name. Example: \"Bob\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Client last name. Example: \"McTest\""
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Client e-mail address. Example: \"bob.mctest@example.com\""
+                            },
+                            "calendarID": {
+                                "description": "Calendar ID. Example: 14209019",
+                                "type": "number"
+                            },
+                            "phone": {
+                                "description": "Client phone number. Example: \"(123) 555-0102\"",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Client timezone. Example: \"America/New_York\"",
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "description": "Package or coupon certificate code. Example: \"ABC123\"",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "Intake form field values.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Field ID. Example: 1"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Field value. Example: \"Party time!\""
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "notes": {
+                                "description": "Appointment notes. Only settable when booking as an admin.",
+                                "type": "string"
+                            },
+                            "addonIDs": {
+                                "description": "IDs of addons to include in the appointment. Example: [1]",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "labels": {
+                                "description": "Label objects to apply to the appointment. Currently only accepts an array of length 1.",
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Label ID. Example: 24774624"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "smsOptIn": {
+                                "description": "Indicates whether the client has explicitly given permission to receive SMS messages.",
+                                "type": "boolean"
+                            },
+                            "admin": {
+                                "description": "Pass true to disable availability and validation checks. Requires calendarID.",
+                                "type": "boolean"
+                            },
+                            "noEmail": {
+                                "description": "Pass true to skip sending confirmation emails.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_createappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "dateCreated": {
+                                "type": "string"
+                            },
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "paid": {
+                                "type": "string"
+                            },
+                            "amountPaid": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "addonIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "classID": {
+                                "type": "number"
+                            },
+                            "duration": {
+                                "type": "string"
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "canClientCancel": {
+                                "type": "boolean"
+                            },
+                            "canClientReschedule": {
+                                "type": "boolean"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": "string"
+                            },
+                            "confirmationPage": {
+                                "type": "string"
+                            },
+                            "formsText": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a calendar time block.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_createblock",
+            "name": "create-block",
+            "output": [
+                "ActionOutput_acuity_scheduling_createblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createblock",
+                "ActionOutput_acuity_scheduling_createblock"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_createblock": {
+                        "type": "object",
+                        "properties": {
+                            "start": {
+                                "type": "string",
+                                "description": "Start time of the block. Example: \"2026-07-15T09:00:00+0300\""
+                            },
+                            "end": {
+                                "type": "string",
+                                "description": "End time of the block. Example: \"2026-07-15T10:00:00+0300\""
+                            },
+                            "calendarID": {
+                                "type": "number",
+                                "description": "Calendar ID for the block. Example: 14209019"
+                            },
+                            "notes": {
+                                "description": "Optional notes for the block.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "start",
+                            "end",
+                            "calendarID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_createblock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "start": {
+                                "type": "string"
+                            },
+                            "end": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a package or gift certificate.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_createcertificate",
+            "name": "create-certificate",
+            "output": [
+                "ActionOutput_acuity_scheduling_createcertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createcertificate",
+                "ActionOutput_acuity_scheduling_createcertificate"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_createcertificate": {
+                        "type": "object",
+                        "properties": {
+                            "productID": {
+                                "description": "The package ID to create a certificate for. Example: 2231275",
+                                "type": "number"
+                            },
+                            "couponID": {
+                                "description": "The coupon ID to create a certificate for.",
+                                "type": "number"
+                            },
+                            "certificate": {
+                                "description": "Custom certificate code. Auto-generated if omitted. Example: \"NANGO-TEST-001\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address to assign the certificate to. Example: \"bob.mctest@example.com\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_createcertificate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Certificate ID. Example: 81297390"
+                            },
+                            "certificate": {
+                                "description": "Certificate code. Example: \"NANGO-TEST-001\"",
+                                "type": "string"
+                            },
+                            "productID": {
+                                "description": "Associated package ID. Example: 2231275",
+                                "type": "number"
+                            },
+                            "couponID": {
+                                "description": "Associated coupon ID.",
+                                "type": "number"
+                            },
+                            "email": {
+                                "description": "Assigned email address. Example: \"bob.mctest@example.com\"",
+                                "type": "string"
+                            },
+                            "orderID": {
+                                "description": "Associated order ID, null if created via API.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a client.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_createclient",
+            "name": "create-client",
+            "output": [
+                "ActionOutput_acuity_scheduling_createclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createclient",
+                "ActionOutput_acuity_scheduling_createclient"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_createclient": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string",
+                                "description": "Client first name. Example: \"Jane\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Client last name. Example: \"Doe\""
+                            },
+                            "phone": {
+                                "description": "Client phone number",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Client email",
+                                "type": "string"
+                            },
+                            "notes": {
+                                "description": "Client notes",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_createclient": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a calendar block.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_deleteblock",
+            "name": "delete-block",
+            "output": [
+                "ActionOutput_acuity_scheduling_deleteblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deleteblock",
+                "ActionOutput_acuity_scheduling_deleteblock"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_deleteblock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The ID of the block to delete. Example: 1234"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_deleteblock": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a certificate.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_deletecertificate",
+            "name": "delete-certificate",
+            "output": [
+                "ActionOutput_acuity_scheduling_deletecertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deletecertificate",
+                "ActionOutput_acuity_scheduling_deletecertificate"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_deletecertificate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Certificate ID. Example: 123"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_deletecertificate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "certificate": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "quantity": {
+                                "type": "number"
+                            },
+                            "balance": {
+                                "type": "number"
+                            },
+                            "massage": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "expiration": {
+                                "type": "string"
+                            },
+                            "productID": {
+                                "type": "number"
+                            },
+                            "couponID": {
+                                "type": "number"
+                            },
+                            "orderID": {
+                                "type": "number"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "typeID": {
+                                "type": "number"
+                            },
+                            "created": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a client.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_deleteclient",
+            "name": "delete-client",
+            "output": [
+                "ActionOutput_acuity_scheduling_deleteclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deleteclient",
+                "ActionOutput_acuity_scheduling_deleteclient"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_deleteclient": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string",
+                                "description": "Client first name. Example: \"Bob\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Client last name. Example: \"McTest\""
+                            },
+                            "phone": {
+                                "description": "Client phone number. Example: \"(123) 555-0102\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_deleteclient": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve payment transactions for an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getappointmentpayments",
+            "name": "get-appointment-payments",
+            "output": [
+                "ActionOutput_acuity_scheduling_getappointmentpayments"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getappointmentpayments",
+                "ActionOutput_acuity_scheduling_getappointmentpayments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getappointmentpayments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Appointment ID. Example: 1722092210"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getappointmentpayments": {
+                        "type": "object",
+                        "properties": {
+                            "payments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "transactionID": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "processor": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "payments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getappointment",
+            "name": "get-appointment",
+            "output": [
+                "ActionOutput_acuity_scheduling_getappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getappointment",
+                "ActionOutput_acuity_scheduling_getappointment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Appointment ID. Example: 1722092210"
+                            },
+                            "pastFormAnswers": {
+                                "description": "Include previous intake form answers.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "datetimeCreated": {
+                                "type": "string"
+                            },
+                            "dateCreated": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "paid": {
+                                "type": "string"
+                            },
+                            "amountPaid": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "duration": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": "string"
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single calendar block.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getblock",
+            "name": "get-block",
+            "output": [
+                "ActionOutput_acuity_scheduling_getblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getblock",
+                "ActionOutput_acuity_scheduling_getblock"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getblock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Blocked time ID. Example: 9990960594"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getblock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "serviceGroupID": {
+                                "type": "number"
+                            },
+                            "calendarTimezone": {
+                                "type": "string"
+                            },
+                            "start": {
+                                "type": "string"
+                            },
+                            "end": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "managed": {
+                                "type": "boolean"
+                            },
+                            "recurring": {},
+                            "until": {},
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "calendarID",
+                            "serviceGroupID",
+                            "calendarTimezone",
+                            "start",
+                            "end",
+                            "managed"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated user's account information.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getme",
+            "name": "get-me",
+            "output": [
+                "ActionOutput_acuity_scheduling_getme"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getme",
+                "ActionOutput_acuity_scheduling_getme"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getme": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "schedulingPage": {
+                                "type": "string"
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "timeZoneName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve account metadata.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getmeta",
+            "name": "get-meta",
+            "output": [
+                "ActionOutput_acuity_scheduling_getmeta"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getmeta",
+                "ActionOutput_acuity_scheduling_getmeta"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getmeta": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getmeta": {
+                        "type": "object",
+                        "properties": {
+                            "hooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single order.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_getorder",
+            "name": "get-order",
+            "output": [
+                "ActionOutput_acuity_scheduling_getorder"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getorder",
+                "ActionOutput_acuity_scheduling_getorder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_getorder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Order ID. Example: 1234"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_getorder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "products": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "total": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available add-ons for appointment types.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listappointmentaddons",
+            "name": "list-appointment-addons",
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointmentaddons"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointmentaddons",
+                "ActionOutput_acuity_scheduling_listappointmentaddons"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listappointmentaddons": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listappointmentaddons": {
+                        "type": "object",
+                        "properties": {
+                            "addons": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "price": {
+                                            "type": "string"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "duration",
+                                        "price",
+                                        "private"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "addons"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List appointment types.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listappointmenttypes",
+            "name": "list-appointment-types",
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointmenttypes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointmenttypes",
+                "ActionOutput_acuity_scheduling_listappointmenttypes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listappointmenttypes": {
+                        "type": "object",
+                        "properties": {
+                            "includeDeleted": {
+                                "description": "Also include deleted appointment types in the response.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listappointmenttypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "active": {
+                                            "type": [
+                                                "string",
+                                                "boolean"
+                                            ]
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "price": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "classSize": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "paddingAfter": {
+                                            "type": "number"
+                                        },
+                                        "paddingBefore": {
+                                            "type": "number"
+                                        },
+                                        "calendarIDs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List appointments.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listappointments",
+            "name": "list-appointments",
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointments"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointments",
+                "ActionOutput_acuity_scheduling_listappointments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listappointments": {
+                        "type": "object",
+                        "properties": {
+                            "max": {
+                                "description": "Maximum number of results. Default: 100",
+                                "type": "number"
+                            },
+                            "minDate": {
+                                "description": "Only get appointments on this date and after",
+                                "type": "string"
+                            },
+                            "maxDate": {
+                                "description": "Only get appointments on this date and before",
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "description": "Show only appointments on calendar with specified ID",
+                                "type": "number"
+                            },
+                            "appointmentTypeID": {
+                                "description": "Show only appointments of this type",
+                                "type": "number"
+                            },
+                            "canceled": {
+                                "description": "Include canceled appointments. Default: false",
+                                "type": "boolean"
+                            },
+                            "firstName": {
+                                "description": "Filter appointments for client first name",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Filter appointments for client last name",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Filter appointments for client e-mail address",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Filter appointments for client phone number",
+                                "type": "string"
+                            },
+                            "fieldId": {
+                                "description": "Filter appointments matching a particular custom intake form field",
+                                "type": "string"
+                            },
+                            "excludeForms": {
+                                "description": "Do not include intake forms in the response. Default: false",
+                                "type": "boolean"
+                            },
+                            "direction": {
+                                "description": "Sort direction: ASC or DESC. Default: DESC",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listappointments": {
+                        "type": "object",
+                        "properties": {
+                            "appointments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "time": {
+                                            "type": "string"
+                                        },
+                                        "endTime": {
+                                            "type": "string"
+                                        },
+                                        "dateCreated": {
+                                            "type": "string"
+                                        },
+                                        "datetime": {
+                                            "type": "string"
+                                        },
+                                        "price": {
+                                            "type": "string"
+                                        },
+                                        "paid": {
+                                            "type": "string"
+                                        },
+                                        "amountPaid": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "appointmentTypeID": {
+                                            "type": "number"
+                                        },
+                                        "addonIDs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "classID": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "duration": {
+                                            "type": "string"
+                                        },
+                                        "calendar": {
+                                            "type": "string"
+                                        },
+                                        "calendarID": {
+                                            "type": "number"
+                                        },
+                                        "canClientCancel": {
+                                            "type": "boolean"
+                                        },
+                                        "canClientReschedule": {
+                                            "type": "boolean"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "certificate": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "confirmationPage": {
+                                            "type": "string"
+                                        },
+                                        "formsText": {
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "forms": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "number"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "values": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "number"
+                                                                        },
+                                                                        "fieldID": {
+                                                                            "type": "number"
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "value": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": [
+                                                                        "id",
+                                                                        "fieldID",
+                                                                        "name",
+                                                                        "value"
+                                                                    ],
+                                                                    "additionalProperties": {}
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "values"
+                                                        ],
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "labels": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "number"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "color": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "color"
+                                                        ],
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "noShow": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "phone",
+                                        "email",
+                                        "date",
+                                        "time",
+                                        "endTime",
+                                        "dateCreated",
+                                        "datetime",
+                                        "price",
+                                        "paid",
+                                        "amountPaid",
+                                        "type",
+                                        "appointmentTypeID",
+                                        "addonIDs",
+                                        "classID",
+                                        "duration",
+                                        "calendar",
+                                        "calendarID",
+                                        "canClientCancel",
+                                        "canClientReschedule",
+                                        "location",
+                                        "certificate",
+                                        "confirmationPage",
+                                        "formsText",
+                                        "notes",
+                                        "timezone",
+                                        "forms",
+                                        "labels"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "appointments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available class/group appointment sessions.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listavailabilityclasses",
+            "name": "list-availability-classes",
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilityclasses"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilityclasses",
+                "ActionOutput_acuity_scheduling_listavailabilityclasses"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listavailabilityclasses": {
+                        "type": "object",
+                        "properties": {
+                            "month": {
+                                "description": "Month to check available classes (e.g., 2026-06).",
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "description": "Appointment type ID to filter by.",
+                                "type": "number"
+                            },
+                            "calendarID": {
+                                "description": "Calendar ID to filter by.",
+                                "type": "number"
+                            },
+                            "timezone": {
+                                "description": "Timezone for availability time conversion (e.g., America/New_York).",
+                                "type": "string"
+                            },
+                            "minDate": {
+                                "description": "Earliest date to return classes for.",
+                                "type": "string"
+                            },
+                            "maxDate": {
+                                "description": "Latest date to return classes for.",
+                                "type": "string"
+                            },
+                            "includeUnavailable": {
+                                "description": "Include classes that are no longer available.",
+                                "type": "boolean"
+                            },
+                            "includePrivate": {
+                                "description": "Include classes marked as private.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listavailabilityclasses": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "appointmentTypeID": {
+                                            "type": "number"
+                                        },
+                                        "calendarID": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "time": {
+                                            "type": "string"
+                                        },
+                                        "calendar": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "isSeries": {
+                                            "type": "boolean"
+                                        },
+                                        "slots": {
+                                            "type": "number"
+                                        },
+                                        "slotsAvailable": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "appointmentTypeID",
+                                        "calendarID",
+                                        "name",
+                                        "time",
+                                        "calendar",
+                                        "duration",
+                                        "isSeries",
+                                        "slots",
+                                        "slotsAvailable"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List dates with availability for a month and appointment type.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listavailabilitydates",
+            "name": "list-availability-dates",
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilitydates"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilitydates",
+                "ActionOutput_acuity_scheduling_listavailabilitydates"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listavailabilitydates": {
+                        "type": "object",
+                        "properties": {
+                            "month": {
+                                "type": "string",
+                                "description": "Month to check available dates. Example: \"2026-06\""
+                            },
+                            "appointmentTypeID": {
+                                "type": "number",
+                                "description": "Numeric ID of the appointment type to check availability for. Example: 94517100"
+                            },
+                            "calendarID": {
+                                "description": "Numeric ID of the calendar to check availability for.",
+                                "type": "number"
+                            },
+                            "addonIDs": {
+                                "description": "Addon IDs to use when calculating availability.",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "timezone": {
+                                "description": "Timezone for availability time conversion. Example: \"America/New_York\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "month",
+                            "appointmentTypeID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listavailabilitydates": {
+                        "type": "object",
+                        "properties": {
+                            "dates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of available date strings in YYYY-MM-DD format."
+                            }
+                        },
+                        "required": [
+                            "dates"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List available times for a date and appointment type.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listavailabilitytimes",
+            "name": "list-availability-times",
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilitytimes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilitytimes",
+                "ActionOutput_acuity_scheduling_listavailabilitytimes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listavailabilitytimes": {
+                        "type": "object",
+                        "properties": {
+                            "date": {
+                                "type": "string",
+                                "description": "Date to check availability for. Example: \"2026-06-15\""
+                            },
+                            "appointmentTypeID": {
+                                "type": "number",
+                                "description": "Appointment type ID to check availability for. Example: 94517100"
+                            },
+                            "calendarID": {
+                                "description": "Calendar ID to filter availability by. Example: 14209019",
+                                "type": "number"
+                            },
+                            "addonIDs": {
+                                "description": "Array of addon IDs to include in availability check.",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "timezone": {
+                                "description": "Timezone to use for the returned times. Example: \"Indian/Mayotte\"",
+                                "type": "string"
+                            },
+                            "ignoreAppointmentIDs": {
+                                "description": "Array of appointment IDs to ignore when checking availability (useful for rescheduling).",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": [
+                            "date",
+                            "appointmentTypeID"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listavailabilitytimes": {
+                        "type": "object",
+                        "properties": {
+                            "times": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "times"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List calendar time blocks.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listblocks",
+            "name": "list-blocks",
+            "output": [
+                "ActionOutput_acuity_scheduling_listblocks"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listblocks",
+                "ActionOutput_acuity_scheduling_listblocks"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listblocks": {
+                        "type": "object",
+                        "properties": {
+                            "max": {
+                                "description": "Maximum number of results.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "minDate": {
+                                "description": "Only get blocks this date and after (YYYY-MM-DD).",
+                                "type": "string"
+                            },
+                            "maxDate": {
+                                "description": "Only get blocks this date and before (YYYY-MM-DD).",
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "description": "Only get blocks on calendar with this ID.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listblocks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "until": {
+                                            "type": "string"
+                                        },
+                                        "recurring": {
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "type": "string"
+                                        },
+                                        "end": {
+                                            "type": "string"
+                                        },
+                                        "start": {
+                                            "type": "string"
+                                        },
+                                        "calendarID": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "description",
+                                        "end",
+                                        "start",
+                                        "calendarID"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List calendars.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listcalendars",
+            "name": "list-calendars",
+            "output": [
+                "ActionOutput_acuity_scheduling_listcalendars"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listcalendars",
+                "ActionOutput_acuity_scheduling_listcalendars"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listcalendars": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listcalendars": {
+                        "type": "object",
+                        "properties": {
+                            "calendars": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Calendar ID. Example: 14209019"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Calendar name. Example: \"Nango API\""
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "replyTo": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "image": {},
+                                        "thumbnail": {},
+                                        "isValid": {}
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "calendars"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List package and gift certificates.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listcertificates",
+            "name": "list-certificates",
+            "output": [
+                "ActionOutput_acuity_scheduling_listcertificates"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listcertificates",
+                "ActionOutput_acuity_scheduling_listcertificates"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listcertificates": {
+                        "type": "object",
+                        "properties": {
+                            "productID": {
+                                "description": "Get certificate codes for a particular product.",
+                                "type": "string"
+                            },
+                            "orderID": {
+                                "description": "Get certificate codes for a particular order.",
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "description": "Get certificate codes for a particular appointment type.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Get valid codes for a particular email address.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listcertificates": {
+                        "type": "object",
+                        "properties": {
+                            "certificates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "certificate": {
+                                            "type": "string"
+                                        },
+                                        "productID": {
+                                            "type": "number"
+                                        },
+                                        "orderID": {
+                                            "type": "string"
+                                        },
+                                        "appointmentTypeIDs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "remainingCounts": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "remainingMinutes": {
+                                            "type": "string"
+                                        },
+                                        "expiration": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "certificates"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List clients.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listclients",
+            "name": "list-clients",
+            "output": [
+                "ActionOutput_acuity_scheduling_listclients"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listclients",
+                "ActionOutput_acuity_scheduling_listclients"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listclients": {
+                        "type": "object",
+                        "properties": {
+                            "search": {
+                                "description": "Search filter by first name, last name, or phone.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listclients": {
+                        "type": "object",
+                        "properties": {
+                            "clients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "clients"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List intake forms.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listforms",
+            "name": "list-forms",
+            "output": [
+                "ActionOutput_acuity_scheduling_listforms"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listforms",
+                "ActionOutput_acuity_scheduling_listforms"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listforms": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listforms": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "number"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "appointmentTypeIDs": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                },
+                                "fields": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "number"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "required": {
+                                                "type": "boolean"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "options": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "required",
+                                            "type"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "hidden",
+                                "appointmentTypeIDs",
+                                "fields"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List appointment labels.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listlabels",
+            "name": "list-labels",
+            "output": [
+                "ActionOutput_acuity_scheduling_listlabels"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listlabels",
+                "ActionOutput_acuity_scheduling_listlabels"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listlabels": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listlabels": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "number",
+                                    "description": "Label ID. Example: 24774624"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Label name. Example: \"Confirmed\""
+                                },
+                                "color": {
+                                    "type": "string",
+                                    "description": "Label color. Example: \"yellow\""
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "color"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List orders",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listorders",
+            "name": "list-orders",
+            "output": [
+                "ActionOutput_acuity_scheduling_listorders"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listorders",
+                "ActionOutput_acuity_scheduling_listorders"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listorders": {
+                        "type": "object",
+                        "properties": {
+                            "max": {
+                                "description": "Maximum number of results",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listorders": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "number",
+                                    "description": "Order ID"
+                                },
+                                "total": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "time": {
+                                    "type": "string"
+                                },
+                                "firstName": {
+                                    "type": "string"
+                                },
+                                "lastName": {
+                                    "type": "string"
+                                },
+                                "phone": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "notes": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List products.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_listproducts",
+            "name": "list-products",
+            "output": [
+                "ActionOutput_acuity_scheduling_listproducts"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listproducts",
+                "ActionOutput_acuity_scheduling_listproducts"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_listproducts": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "description": "Include deleted products. Defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_listproducts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "price": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "hidden": {
+                                            "type": "boolean"
+                                        },
+                                        "expires": {
+                                            "type": "number"
+                                        },
+                                        "appointmentTypeIDs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "appointmentTypeCounts": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "minutes": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reschedule an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_rescheduleappointment",
+            "name": "reschedule-appointment",
+            "output": [
+                "ActionOutput_acuity_scheduling_rescheduleappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_rescheduleappointment",
+                "ActionOutput_acuity_scheduling_rescheduleappointment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_rescheduleappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Appointment ID. Example: 1722114448"
+                            },
+                            "datetime": {
+                                "type": "string",
+                                "description": "New datetime for the appointment. Example: \"2026-06-25T15:00:00+0300\""
+                            },
+                            "calendarID": {
+                                "description": "Calendar ID. Omit or pass null for auto-select.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "timezone": {
+                                "description": "Timezone for the appointment.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_rescheduleappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an appointment.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_updateappointment",
+            "name": "update-appointment",
+            "output": [
+                "ActionOutput_acuity_scheduling_updateappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_updateappointment",
+                "ActionOutput_acuity_scheduling_updateappointment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_updateappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Appointment ID. Example: 1722114427"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "labels": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "smsOptIn": {
+                                "type": "boolean"
+                            },
+                            "admin": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_updateappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "dateCreated": {
+                                "type": "string"
+                            },
+                            "datetime": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "paid": {
+                                "type": "string"
+                            },
+                            "amountPaid": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "classID": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "duration": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "confirmationPage": {
+                                "type": "string"
+                            },
+                            "formsText": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "fieldID": {
+                                                        "type": "number"
+                                                    },
+                                                    "id": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a client.",
+            "endpoint": null,
+            "input": "ActionInput_acuity_scheduling_updateclient",
+            "name": "update-client",
+            "output": [
+                "ActionOutput_acuity_scheduling_updateclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_updateclient",
+                "ActionOutput_acuity_scheduling_updateclient"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_acuity_scheduling_updateclient": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string",
+                                "description": "Client first name. Example: \"Bob\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Client last name. Example: \"McTest\""
+                            },
+                            "phone": {
+                                "description": "Client phone number. Example: \"(123) 555-0102\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Client email. Example: \"bob@example.com\"",
+                                "type": "string"
+                            },
+                            "notes": {
+                                "description": "Client notes.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_acuity_scheduling_updateclient": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync appointment types.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "appointment-types",
+            "output": [
+                "AppointmentType"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "AppointmentType"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AppointmentType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "classSize": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "paddingAfter": {
+                                "type": "number"
+                            },
+                            "paddingBefore": {
+                                "type": "number"
+                            },
+                            "calendarIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync appointments.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "appointments",
+            "output": [
+                "Appointment"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Appointment"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Appointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The appointment ID as a stable string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "datetime": {
+                                "type": "string",
+                                "description": "ISO 8601 datetime with explicit offset"
+                            },
+                            "endTime": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "paid": {
+                                "type": "string"
+                            },
+                            "amountPaid": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appointmentTypeID": {
+                                "type": "number"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "calendar": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "cancelNote": {
+                                "type": "string"
+                            },
+                            "isVideo": {
+                                "type": "boolean"
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "forms": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "addonIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "category": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync calendar time blocks.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "blocks",
+            "output": [
+                "Block"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Block"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Block": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "calendarID": {
+                                "type": "number"
+                            },
+                            "start": {
+                                "type": "string"
+                            },
+                            "end": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync calendars.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "calendars",
+            "output": [
+                "Calendar"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Calendar"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Calendar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "replyTo": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync package and gift certificates",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "certificates",
+            "output": [
+                "Certificate"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Certificate"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Certificate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "certificate": {
+                                "type": "string"
+                            },
+                            "productID": {
+                                "type": "number"
+                            },
+                            "orderID": {
+                                "type": "number"
+                            },
+                            "appointmentTypeIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "remainingCounts": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            "remainingMinutes": {
+                                "type": "number"
+                            },
+                            "expiration": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "certificate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync clients.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "clients",
+            "output": [
+                "Client"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Client"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Client": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique client identifier"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync intake forms",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "forms",
+            "output": [
+                "Form"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Form"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Form": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "appointmentTypeIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "options": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync appointment labels.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "labels",
+            "output": [
+                "Label"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Label"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Label": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Label ID"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Label name"
+                            },
+                            "color": {
+                                "type": "string",
+                                "description": "Label color"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync orders.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "orders",
+            "output": [
+                "Order"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Order"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Order": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "total": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync products.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "products",
+            "output": [
+                "Product"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "api-v1"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Product"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Product": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "expires": {
+                                "type": "number"
+                            },
+                            "appointmentTypeIDs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "appointmentTypeCounts": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            "minutes": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

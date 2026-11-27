@@ -19,7 +19,7 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalInvokeFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
-import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
+import type { DeleteAgentSession, GetAgentSessionTools, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
 import type { PostAgentPlaygroundChat } from './agent/playground.api.js';
 import type { EndpointMethod } from './api.js';
@@ -159,7 +159,6 @@ import type {
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
-    PostPlanExtendTrial,
     PutBillingInvoicingDetails,
     PutSpendAlert
 } from './plans/http.api.js';
@@ -203,6 +202,7 @@ export type PublicApiEndpoints =
     | DeletePublicIntegration
     | PostConnectSessions
     | PostAgentSessions
+    | GetAgentSessionTools
     | DeleteAgentSession
     | PostAgentSessionMcp
     | GetAgentSessionMcp
@@ -290,7 +290,6 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
-    | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
     | GetOverdueInvoices

@@ -33,7 +33,31 @@ export interface WebhookResponseNoContent {
     statusCode: 204;
 }
 
-export type WebhookResponse = WebhookResponseOnly | WebhookResponseWithConnectionIds | WebhookResponseWithForward | WebhookResponseNoContent;
+/** Answers the provider, e.g. a subscription validation handshake, without forwarding the request. */
+export interface WebhookResponseNoForward extends WebhookResponseOnly {
+    noForward: true;
+}
+
+export interface WebhookForwardGroup {
+    connectionIds: string[];
+    payload: unknown;
+}
+
+/**
+ * One forward per group, for batches that mix connections: each connection only receives its own events.
+ * A group without connection ids is forwarded without a `connectionId`.
+ */
+export interface WebhookResponseWithForwardGroups extends WebhookResponseWithConnectionIds {
+    forwardGroups: WebhookForwardGroup[];
+}
+
+export type WebhookResponse =
+    | WebhookResponseOnly
+    | WebhookResponseWithConnectionIds
+    | WebhookResponseWithForward
+    | WebhookResponseNoContent
+    | WebhookResponseNoForward
+    | WebhookResponseWithForwardGroups;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
 
@@ -393,6 +417,54 @@ export interface FathomWebhookResponse {
     default_summary?: DefaultSummary;
     action_items: ActionItem[] | null;
     crm_matches?: CRMMatches;
+}
+
+/** https://learn.microsoft.com/en-us/graph/api/resources/changenotification */
+export interface MicrosoftGraphNotification {
+    id?: string;
+    subscriptionId?: string;
+    subscriptionExpirationDateTime?: string;
+    clientState?: string | null;
+    changeType?: 'created' | 'updated' | 'deleted' | (string & {});
+    lifecycleEvent?: 'reauthorizationRequired' | 'subscriptionRemoved' | 'missed' | (string & {});
+    resource?: string;
+    tenantId?: string;
+    resourceData?: {
+        id?: string;
+        '@odata.type'?: string;
+        '@odata.id'?: string;
+        organizationId?: string;
+    };
+}
+
+export interface MicrosoftGraphNotificationPayload {
+    value?: MicrosoftGraphNotification[];
+}
+
+/** https://developer.okta.com/docs/concepts/event-hooks/#sample-event-delivery-payload */
+export interface OktaEventHookPayload {
+    eventType: 'com.okta.event_hook' | (string & {});
+    eventTypeVersion?: string;
+    cloudEventsVersion?: string;
+    /** `https://{oktaDomain}/api/v1/eventHooks/{eventHookId}` */
+    source: string;
+    eventId?: string;
+    eventTime?: string;
+    contentType?: string;
+    data?: {
+        events?: OktaLogEvent[];
+    };
+}
+
+export interface OktaLogEvent {
+    uuid: string;
+    published: string;
+    eventType: string;
+    displayMessage?: string;
+    severity?: string;
+    actor?: { id: string; type: string; alternateId?: string; displayName?: string };
+    target?: { id: string; type: string; alternateId?: string; displayName?: string }[];
+    [key: string]: unknown;
 }
 
 /**

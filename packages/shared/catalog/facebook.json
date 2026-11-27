@@ -1,0 +1,1732 @@
+{
+    "providerConfigKey": "facebook",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Publish a photo to a Facebook Page.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_createpagephoto",
+            "name": "create-page-photo",
+            "output": [
+                "ActionOutput_facebook_createpagephoto"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagephoto",
+                "ActionOutput_facebook_createpagephoto"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_createpagephoto": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "The Facebook Page ID to post the photo to. Example: \"1148671018324630\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the photo to upload. Example: \"https://example.com/photo.jpg\""
+                            },
+                            "caption": {
+                                "description": "Caption text for the photo. Example: \"Check out our new product!\"",
+                                "type": "string"
+                            },
+                            "published": {
+                                "description": "Whether the photo should be published immediately. Set to false to create an unpublished photo (draft). Defaults to true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "pageId",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_createpagephoto": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the created photo."
+                            },
+                            "postId": {
+                                "description": "The ID of the post associated with the photo (if published).",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Publish a post to a Facebook Page feed.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_createpagepost",
+            "name": "create-page-post",
+            "output": [
+                "ActionOutput_facebook_createpagepost"
+            ],
+            "scopes": [
+                "pages_manage_posts",
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagepost",
+                "ActionOutput_facebook_createpagepost"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_createpagepost": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID to post to. Example: \"1148671018324630\""
+                            },
+                            "message": {
+                                "description": "The message content of the post.",
+                                "type": "string"
+                            },
+                            "link": {
+                                "description": "URL to share in the post.",
+                                "type": "string"
+                            },
+                            "published": {
+                                "description": "Whether to publish immediately (true) or schedule (false). Default: true",
+                                "type": "boolean"
+                            },
+                            "scheduledPublishTime": {
+                                "description": "Unix timestamp for scheduled post publishing. Required if published=false.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_createpagepost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the created post."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Publish a video to a Facebook Page.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_createpagevideo",
+            "name": "create-page-video",
+            "output": [
+                "ActionOutput_facebook_createpagevideo"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagevideo",
+                "ActionOutput_facebook_createpagevideo"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_createpagevideo": {
+                        "type": "object",
+                        "properties": {
+                            "page_id": {
+                                "type": "string",
+                                "description": "Facebook Page ID to upload the video to. Example: \"1148671018324630\""
+                            },
+                            "file_url": {
+                                "type": "string",
+                                "description": "URL of the video to upload. Must be a publicly accessible URL. Example: \"https://example.com/video.mp4\""
+                            },
+                            "title": {
+                                "description": "Title of the video.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description or message for the video post.",
+                                "type": "string"
+                            },
+                            "published": {
+                                "description": "Whether the video should be published immediately. Set to false to create a draft. Defaults to true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "page_id",
+                            "file_url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_createpagevideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The video ID."
+                            },
+                            "post_id": {
+                                "description": "The ID of the post that was created for this video.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a comment on a Facebook post",
+            "endpoint": null,
+            "input": "ActionInput_facebook_createpostcomment",
+            "name": "create-post-comment",
+            "output": [
+                "ActionOutput_facebook_createpostcomment"
+            ],
+            "scopes": [
+                "pages_manage_engagement",
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpostcomment",
+                "ActionOutput_facebook_createpostcomment"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_createpostcomment": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "The ID of the page that owns the post. Example: \"1148671018324630\""
+                            },
+                            "postId": {
+                                "type": "string",
+                                "description": "The ID of the post to comment on. Example: \"1148671018324630_122098284213327930\""
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The comment text message. Example: \"Great post!\""
+                            }
+                        },
+                        "required": [
+                            "pageId",
+                            "postId",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_createpostcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Schedule a future post on a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_createscheduledpagepost",
+            "name": "create-scheduled-page-post",
+            "output": [
+                "ActionOutput_facebook_createscheduledpagepost"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createscheduledpagepost",
+                "ActionOutput_facebook_createscheduledpagepost"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_createscheduledpagepost": {
+                        "type": "object",
+                        "properties": {
+                            "page_id": {
+                                "type": "string",
+                                "description": "Facebook Page ID to post on. Example: \"123456789012345\""
+                            },
+                            "message": {
+                                "description": "The message text for the post",
+                                "type": "string"
+                            },
+                            "scheduled_publish_time": {
+                                "type": "number",
+                                "description": "Unix timestamp when the post should be published. Must be at least 10 minutes and at most 6 months in the future."
+                            },
+                            "link": {
+                                "description": "URL to attach to the post",
+                                "type": "string"
+                            },
+                            "photo_url": {
+                                "description": "URL of a photo to attach to the post",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "page_id",
+                            "scheduled_publish_time"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_createscheduledpagepost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the scheduled post"
+                            },
+                            "post_id": {
+                                "description": "The post ID (if immediately published)",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Facebook comment by comment ID",
+            "endpoint": null,
+            "input": "ActionInput_facebook_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_facebook_deletecomment"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_deletecomment",
+                "ActionOutput_facebook_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "description": "Facebook comment ID to delete. Example: \"122098284213327930_1544841897156600\""
+                            },
+                            "pageId": {
+                                "description": "The Facebook Page ID that owns the comment. Required when the user manages multiple pages to ensure the correct page token is used. Example: \"1148671018324630\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Facebook Page post by post ID",
+            "endpoint": null,
+            "input": "ActionInput_facebook_deletepost",
+            "name": "delete-post",
+            "output": [
+                "ActionOutput_facebook_deletepost"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_deletepost",
+                "ActionOutput_facebook_deletepost"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_deletepost": {
+                        "type": "object",
+                        "properties": {
+                            "postId": {
+                                "type": "string",
+                                "description": "The ID of the Facebook post to delete. Example: \"1148671018324630_122098284213327930\""
+                            }
+                        },
+                        "required": [
+                            "postId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_deletepost": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Facebook comment by comment ID.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_getcomment",
+            "name": "get-comment",
+            "output": [
+                "ActionOutput_facebook_getcomment"
+            ],
+            "scopes": [
+                "public_profile",
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getcomment",
+                "ActionOutput_facebook_getcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to retrieve. Example: \"122098284213327930_1544841897156600\""
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to retrieve. Example: \"id,message,created_time,from,like_count\"",
+                                "type": "string"
+                            },
+                            "pageId": {
+                                "description": "The Facebook Page ID that owns the comment. Required when the user manages multiple pages to ensure the correct page token is used. Example: \"1148671018324630\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve app subscriptions configured on a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_getpageappsubscriptions",
+            "name": "get-page-app-subscriptions",
+            "output": [
+                "ActionOutput_facebook_getpageappsubscriptions"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpageappsubscriptions",
+                "ActionOutput_facebook_getpageappsubscriptions"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_getpageappsubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"1148671018324630\""
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to return for each subscribed app. Example: \"id,name,link,subscribed_fields\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_getpageappsubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "App ID"
+                                        },
+                                        "name": {
+                                            "description": "App name",
+                                            "type": "string"
+                                        },
+                                        "link": {
+                                            "description": "App link URL",
+                                            "type": "string"
+                                        },
+                                        "subscribed_fields": {
+                                            "description": "List of subscribed webhook fields",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of apps subscribed to the page"
+                            },
+                            "paging": {
+                                "description": "Pagination information",
+                                "type": "object",
+                                "properties": {
+                                    "cursors": {
+                                        "type": "object",
+                                        "properties": {
+                                            "before": {
+                                                "type": "string"
+                                            },
+                                            "after": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "next": {
+                                        "description": "URL for the next page of results",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve Facebook Page metadata by page ID",
+            "endpoint": null,
+            "input": "ActionInput_facebook_getpage",
+            "name": "get-page",
+            "output": [
+                "ActionOutput_facebook_getpage"
+            ],
+            "scopes": [
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpage",
+                "ActionOutput_facebook_getpage"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_getpage": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"1148671018324630\""
+                            },
+                            "fields": {
+                                "description": "Comma-separated fields to retrieve. Example: \"id,name,category,fan_count,about,link\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_getpage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "fanCount": {
+                                "type": "number"
+                            },
+                            "about": {
+                                "type": "string"
+                            },
+                            "link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Facebook post by post ID",
+            "endpoint": null,
+            "input": "ActionInput_facebook_getpost",
+            "name": "get-post",
+            "output": [
+                "ActionOutput_facebook_getpost"
+            ],
+            "scopes": [
+                "public_profile",
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpost",
+                "ActionOutput_facebook_getpost"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_getpost": {
+                        "type": "object",
+                        "properties": {
+                            "post_id": {
+                                "type": "string",
+                                "description": "The ID of the Facebook post to retrieve. Example: \"1148671018324630_122098284213327930\""
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to retrieve. Example: \"id,message,created_time,from\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "post_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_getpost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated Facebook user profile or another accessible user object.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_getuserprofile",
+            "name": "get-user-profile",
+            "output": [
+                "ActionOutput_facebook_getuserprofile"
+            ],
+            "scopes": [
+                "public_profile"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getuserprofile",
+                "ActionOutput_facebook_getuserprofile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_getuserprofile": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "description": "Comma-separated list of fields to retrieve. Example: \"id,name,email,picture\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_getuserprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List posts from a Facebook Page feed.",
+            "endpoint": null,
+            "input": "ActionInput_facebook_listpageposts",
+            "name": "list-page-posts",
+            "output": [
+                "ActionOutput_facebook_listpageposts"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpageposts",
+                "ActionOutput_facebook_listpageposts"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_listpageposts": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"1148671018324630\""
+                            },
+                            "since": {
+                                "description": "Unix timestamp or ISO date. Posts created after this time.",
+                                "type": "string"
+                            },
+                            "until": {
+                                "description": "Unix timestamp or ISO date. Posts created before this time.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of posts to return per page. Max 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to include. Example: \"id,message,created_time,permalink_url\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_listpageposts": {
+                        "type": "object",
+                        "properties": {
+                            "posts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "permalinkUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "posts"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List scheduled posts for a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_listpagescheduledposts",
+            "name": "list-page-scheduled-posts",
+            "output": [
+                "ActionOutput_facebook_listpagescheduledposts"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpagescheduledposts",
+                "ActionOutput_facebook_listpagescheduledposts"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_listpagescheduledposts": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"1148671018324630\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of scheduled posts to return. Default: 25",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_listpagescheduledposts": {
+                        "type": "object",
+                        "properties": {
+                            "posts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "scheduledPublishTime": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "posts"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List videos published on a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_listpagevideos",
+            "name": "list-page-videos",
+            "output": [
+                "ActionOutput_facebook_listpagevideos"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpagevideos",
+                "ActionOutput_facebook_listpagevideos"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_listpagevideos": {
+                        "type": "object",
+                        "properties": {
+                            "page_id": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"1234567890\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of videos to return. Default: 25",
+                                "type": "number"
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to return. Example: \"id,title,description,created_time,source\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "page_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_listpagevideos": {
+                        "type": "object",
+                        "properties": {
+                            "videos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "created_time": {
+                                            "type": "string"
+                                        },
+                                        "updated_time": {
+                                            "type": "string"
+                                        },
+                                        "source": {
+                                            "type": "string"
+                                        },
+                                        "length": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "videos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments on a Facebook post with pagination support",
+            "endpoint": null,
+            "input": "ActionInput_facebook_listpostcomments",
+            "name": "list-post-comments",
+            "output": [
+                "ActionOutput_facebook_listpostcomments"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement",
+                "pages_read_user_content"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpostcomments",
+                "ActionOutput_facebook_listpostcomments"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_listpostcomments": {
+                        "type": "object",
+                        "properties": {
+                            "postId": {
+                                "type": "string",
+                                "description": "The post ID to list comments for. Example: \"1148671018324630_122098284213327930\""
+                            },
+                            "filter": {
+                                "description": "Filter for comments. \"toplevel\" (default) returns top-level comments only. \"stream\" returns all comments including replies.",
+                                "type": "string",
+                                "enum": [
+                                    "toplevel",
+                                    "stream"
+                                ]
+                            },
+                            "order": {
+                                "description": "Order of comments. \"chronological\" = oldest first, \"reverse_chronological\" = newest first.",
+                                "type": "string",
+                                "enum": [
+                                    "chronological",
+                                    "reverse_chronological"
+                                ]
+                            },
+                            "summary": {
+                                "description": "Include summary metadata (total_count, order, can_comment).",
+                                "type": "boolean"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "postId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_listpostcomments": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "from": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "createdTime"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "order": {
+                                        "type": "string",
+                                        "enum": [
+                                            "chronological",
+                                            "reverse_chronological",
+                                            "ranked"
+                                        ]
+                                    },
+                                    "totalCount": {
+                                        "type": "number"
+                                    },
+                                    "canComment": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "comments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Facebook Pages the authenticated user can access",
+            "endpoint": null,
+            "input": "ActionInput_facebook_listuserpages",
+            "name": "list-user-pages",
+            "output": [
+                "ActionOutput_facebook_listuserpages"
+            ],
+            "scopes": [
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listuserpages",
+                "ActionOutput_facebook_listuserpages"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_listuserpages": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_listuserpages": {
+                        "type": "object",
+                        "properties": {
+                            "pages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Page ID. Example: \"123456789\""
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Page name. Example: \"My Business Page\""
+                                        },
+                                        "category": {
+                                            "description": "Page category. Example: \"Retail Company\"",
+                                            "type": "string"
+                                        },
+                                        "categoryList": {
+                                            "description": "Detailed category list",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "accessToken": {
+                                            "description": "Page access token for API calls",
+                                            "type": "string"
+                                        },
+                                        "fanCount": {
+                                            "description": "Number of fans/likes",
+                                            "type": "number"
+                                        },
+                                        "pictureUrl": {
+                                            "description": "Page profile picture URL",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of Facebook Pages accessible to the user"
+                            }
+                        },
+                        "required": [
+                            "pages"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Subscribe the app to receive updates for a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_subscribeapptopage",
+            "name": "subscribe-app-to-page",
+            "output": [
+                "ActionOutput_facebook_subscribeapptopage"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_subscribeapptopage",
+                "ActionOutput_facebook_subscribeapptopage"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_subscribeapptopage": {
+                        "type": "object",
+                        "properties": {
+                            "page_id": {
+                                "type": "string",
+                                "description": "Facebook Page ID to subscribe the app to. Example: \"1148671018324630\""
+                            },
+                            "subscribed_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of webhook event types to subscribe to. Example: [\"feed\", \"messages\", \"mention\", \"name\", \"picture\"]"
+                            }
+                        },
+                        "required": [
+                            "page_id",
+                            "subscribed_fields"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_subscribeapptopage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove the app subscription from a Facebook Page",
+            "endpoint": null,
+            "input": "ActionInput_facebook_unsubscribeappfrompage",
+            "name": "unsubscribe-app-from-page",
+            "output": [
+                "ActionOutput_facebook_unsubscribeappfrompage"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_unsubscribeappfrompage",
+                "ActionOutput_facebook_unsubscribeappfrompage"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_facebook_unsubscribeappfrompage": {
+                        "type": "object",
+                        "properties": {
+                            "pageId": {
+                                "type": "string",
+                                "description": "Facebook Page ID. Example: \"123456789012345\""
+                            }
+                        },
+                        "required": [
+                            "pageId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_facebook_unsubscribeappfrompage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync posts from Facebook Pages the connection can access.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/page-posts"
+                }
+            ],
+            "input": "SyncMetadata_facebook_pageposts",
+            "name": "page-posts",
+            "output": [
+                "PagePost"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PagePost",
+                "SyncMetadata_facebook_pageposts"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PagePost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "pageId": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "updatedTime": {
+                                "type": "string"
+                            },
+                            "permalinkUrl": {
+                                "type": "string"
+                            },
+                            "statusType": {
+                                "type": "string"
+                            },
+                            "isPublished": {
+                                "type": "boolean"
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "pageId",
+                            "createdTime",
+                            "updatedTime"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_facebook_pageposts": {
+                        "type": "object",
+                        "properties": {
+                            "pageIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync scheduled unpublished posts for Facebook Pages in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/page-scheduled-posts"
+                }
+            ],
+            "input": "SyncMetadata_facebook_pagescheduledposts",
+            "name": "page-scheduled-posts",
+            "output": [
+                "PageScheduledPost"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement",
+                "pages_manage_posts"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PageScheduledPost",
+                "SyncMetadata_facebook_pagescheduledposts"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PageScheduledPost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "page_id": {
+                                "type": "string"
+                            },
+                            "page_name": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "scheduled_publish_time": {
+                                "type": "number"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "published": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "page_id",
+                            "published"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_facebook_pagescheduledposts": {
+                        "type": "object",
+                        "properties": {
+                            "pageIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync videos published on Facebook Pages in scope.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/page-videos"
+                }
+            ],
+            "input": null,
+            "name": "page-videos",
+            "output": [
+                "PageVideo"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PageVideo"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PageVideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "page_id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "updated_time": {
+                                "type": "string"
+                            },
+                            "length": {
+                                "type": "number"
+                            },
+                            "permalink_url": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "views": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "page_id",
+                            "created_time"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Facebook Pages the authenticated user can access",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/pages",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "pages",
+            "output": [
+                "Page"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "pages_show_list"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Page"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Page": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "access_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "access_token"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

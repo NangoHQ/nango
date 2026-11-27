@@ -1,0 +1,3347 @@
+{
+    "providerConfigKey": "wejam",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make learner mission assignments, their lifecycle status, timing and relationships available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-mission-assignments",
+            "output": [
+                "MissionAssignments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MissionAssignments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MissionAssignments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque mission assignment identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC RFC 3339 with source precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last-update instant in UTC RFC 3339 with source precision."
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Opaque assigned learner identifier."
+                            },
+                            "missionId": {
+                                "type": "string",
+                                "description": "Opaque assigned mission identifier."
+                            },
+                            "startsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Assignment start instant in UTC RFC 3339, not a calendar date."
+                            },
+                            "dueAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Due instant in UTC RFC 3339 or null when not applicable."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "completed",
+                                    "open"
+                                ],
+                                "description": "Assignment completion state reported by the provider."
+                            },
+                            "completedAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Completion instant in UTC RFC 3339 or null when not applicable."
+                            },
+                            "assignedByUserId": {
+                                "description": "Opaque assigner user identifier, or null when not applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "sprintId": {
+                                "description": "Opaque related sprint identifier, or null when not applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "updatedAt",
+                            "learnerUserId",
+                            "missionId",
+                            "startsAt",
+                            "dueAt",
+                            "status",
+                            "completedAt",
+                            "assignedByUserId",
+                            "sprintId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Learner mission assignments with lifecycle status, timing and relationships."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make mission identifiers, titles, and languages available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-missions",
+            "output": [
+                "Missions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Missions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Missions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque mission identifier."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Mission title as ordinary text."
+                            },
+                            "language": {
+                                "type": "string",
+                                "enum": [
+                                    "en",
+                                    "de",
+                                    "fr",
+                                    "es",
+                                    "it",
+                                    "nl",
+                                    "zh-Hans"
+                                ],
+                                "description": "Mission language code."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "language"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Mission identifiers, titles, and languages replicated from Wejam."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the real call sessions export collection, including transcripts, scored representatives, participant attribution and criterion analysis, available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-real-call-sessions",
+            "output": [
+                "RealCallSessions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "RealCallSessions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RealCallSessions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque real call session identifier."
+                            },
+                            "analysis": {
+                                "type": "object",
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Criterion name or null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "description": "Criterion score in the provider's unspecified scale."
+                                                },
+                                                "solved": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "notSolved",
+                                                        "partlySolved",
+                                                        "solved"
+                                                    ],
+                                                    "description": "Criterion solving state."
+                                                },
+                                                "suggestion": {
+                                                    "description": "Improvement suggestion or null; empty text preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "explanation": {
+                                                    "description": "Criterion explanation or null; empty text preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "score",
+                                                "solved",
+                                                "suggestion",
+                                                "explanation"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One criterion in the session scorecard analysis."
+                                        },
+                                        "description": "Per-criterion breakdown in source order."
+                                    },
+                                    "score": {
+                                        "type": "number",
+                                        "description": "Overall score in the provider's unspecified scale."
+                                    }
+                                },
+                                "required": [
+                                    "items",
+                                    "score"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Session scorecard analysis."
+                            },
+                            "language": {
+                                "type": "string",
+                                "enum": [
+                                    "en",
+                                    "de",
+                                    "fr",
+                                    "es",
+                                    "it",
+                                    "nl",
+                                    "zh-Hans"
+                                ],
+                                "description": "Session language code."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the provider reports the session completed."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC RFC 3339 with source precision."
+                            },
+                            "missionId": {
+                                "description": "Related mission identifier, omitted when source omits it.",
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last-update instant in UTC RFC 3339 with source precision."
+                            },
+                            "transcript": {
+                                "description": "Ordinary transcript text or null when unavailable; empty text is distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Opaque user identifier of the scored representative."
+                            },
+                            "participantUserIds": {
+                                "description": "Attributed speaker user IDs including the rep; [] means no attribution, omission means unavailable.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque user identifier of an attributed speaker."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "analysis",
+                            "language",
+                            "completed",
+                            "createdAt",
+                            "updatedAt",
+                            "transcript",
+                            "learnerUserId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A real call session with transcript, scored representative, participant attribution and criterion analysis."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make scorecard identifiers, titles, and languages available as a replicated reference dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-scorecards",
+            "output": [
+                "Scorecards"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Scorecards"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Scorecards": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque scorecard identifier."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Scorecard title as ordinary text."
+                            },
+                            "language": {
+                                "type": "string",
+                                "enum": [
+                                    "en",
+                                    "de",
+                                    "fr",
+                                    "es",
+                                    "it",
+                                    "nl",
+                                    "zh-Hans"
+                                ],
+                                "description": "Scorecard language code."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "language"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Scorecard identifiers, titles, and languages replicated as a reference dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the general sessions collection, including transcripts and per-criterion analysis, available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-sessions",
+            "output": [
+                "Sessions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Sessions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sessions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque session identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC RFC 3339 with source precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last-update instant in UTC RFC 3339 with source precision."
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Opaque learner user identifier."
+                            },
+                            "transcript": {
+                                "description": "Ordinary transcript text or null when unavailable; empty text is distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "analysis": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "number",
+                                        "description": "Overall score in the provider's unspecified scale."
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Criterion name or null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "solved": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "notSolved",
+                                                        "partlySolved",
+                                                        "solved"
+                                                    ],
+                                                    "description": "Criterion solving state."
+                                                },
+                                                "explanation": {
+                                                    "description": "Criterion explanation or null; empty text preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "suggestion": {
+                                                    "description": "Improvement suggestion or null; empty text preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "description": "Criterion score in the provider's unspecified scale."
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "solved",
+                                                "explanation",
+                                                "suggestion",
+                                                "score"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One criterion in the session scorecard analysis."
+                                        },
+                                        "description": "Per-criterion breakdown in source order."
+                                    }
+                                },
+                                "required": [
+                                    "score",
+                                    "items"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Session scorecard analysis."
+                            },
+                            "language": {
+                                "type": "string",
+                                "enum": [
+                                    "en",
+                                    "de",
+                                    "fr",
+                                    "es",
+                                    "it",
+                                    "nl",
+                                    "zh-Hans"
+                                ],
+                                "description": "Session language code."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the session is completed according to the provider."
+                            },
+                            "missionId": {
+                                "description": "Related mission identifier, omitted when source omits it.",
+                                "type": "string"
+                            },
+                            "participantUserIds": {
+                                "description": "Attributed speaker user IDs when provided; omission is distinct from an empty attribution list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque attributed speaker user identifier."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "updatedAt",
+                            "learnerUserId",
+                            "transcript",
+                            "analysis",
+                            "language",
+                            "completed"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A session from the general sessions collection, including its transcript and per-criterion analysis."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make sprint titles, creation and update instants, deadlines, creators and assigned teams available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-sprints",
+            "output": [
+                "Sprints"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Sprints"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sprints": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque sprint identifier."
+                            },
+                            "dueAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sprint due instant in UTC RFC 3339, not a calendar date."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Sprint title as ordinary text."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sprint creation instant in UTC RFC 3339 with source fractional precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sprint last-update instant in UTC RFC 3339 with source fractional precision."
+                            },
+                            "assignedTeamId": {
+                                "type": "string",
+                                "description": "Opaque assigned team identifier."
+                            },
+                            "createdByUserId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the sprint's creator."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "dueAt",
+                            "title",
+                            "createdAt",
+                            "updatedAt",
+                            "assignedTeamId",
+                            "createdByUserId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Replicated sprints with titles, creation and update instants, deadlines, creators and assigned teams."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make team identifiers and display names available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-teams",
+            "output": [
+                "Teams"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Teams"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Teams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque team identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Team display name as ordinary text."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Team identifiers and display names."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make learner track assignments, completed mission references, timing and relationships available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-track-assignments",
+            "output": [
+                "TrackAssignments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "TrackAssignments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TrackAssignments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque track assignment identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC RFC 3339 with source precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last-update instant in UTC RFC 3339 with source precision."
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Opaque assigned learner identifier."
+                            },
+                            "trackId": {
+                                "type": "string",
+                                "description": "Opaque assigned track identifier."
+                            },
+                            "startsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Start instant in UTC RFC 3339, not a calendar date."
+                            },
+                            "dueAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Due instant in UTC RFC 3339 or null when not applicable."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "completed",
+                                    "open"
+                                ],
+                                "description": "Assignment completion state reported by the provider."
+                            },
+                            "completedAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Completion instant in UTC RFC 3339 or null when not applicable."
+                            },
+                            "completedMissionIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque completed mission identifier."
+                                },
+                                "description": "Opaque completed mission identifiers for this assignment; may be empty."
+                            },
+                            "assignedByUserId": {
+                                "description": "Opaque assigner user identifier or null when not applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "sprintId": {
+                                "description": "Opaque related sprint identifier or null when not applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "updatedAt",
+                            "learnerUserId",
+                            "trackId",
+                            "startsAt",
+                            "dueAt",
+                            "status",
+                            "completedAt",
+                            "completedMissionIds",
+                            "assignedByUserId",
+                            "sprintId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Learner track assignment, completed mission references, timing and relationships."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make tracks, including archived tracks and their mission memberships, available as a replicated reference dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-tracks",
+            "output": [
+                "Tracks"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Tracks"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tracks": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque track identifier."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Track title as ordinary text."
+                            },
+                            "archived": {
+                                "type": "boolean",
+                                "description": "Whether the track is archived (soft-deleted)."
+                            },
+                            "missionIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque mission identifier."
+                                },
+                                "description": "Mission identifiers in the track, preserving source order."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Track description; empty text is preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "archived",
+                            "missionIds",
+                            "description"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A track, including its archived status and ordered mission memberships."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make user identities, nullable contact names, and team memberships available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "Users"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Users"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Users": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user identifier."
+                            },
+                            "email": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "User email address or null when unavailable."
+                            },
+                            "firstName": {
+                                "description": "Given name or null; empty text is distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastName": {
+                                "description": "Family name or null; empty text is distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "teamIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque team membership identifier."
+                                },
+                                "description": "Opaque team membership identifiers; may be empty."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "User creation instant as UTC RFC 3339 with source fractional precision."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName",
+                            "teamIds",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Replicated user identities, nullable contact names, and team memberships."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "assign-scorecard-to-real-call-session",
+            "integrationId": "wejam",
+            "description": "Assign a scorecard to an existing real call session, replacing its previous scorecard association when present.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_assignscorecardtorealcallsession",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_assignscorecardtorealcallsession",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_assignscorecardtorealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "sessionId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Existing real call session identifier on this connection."
+                            },
+                            "scorecardId": {
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{24}$",
+                                "description": "Scorecard identifier to associate with the session; omission, null and empty values cannot clear the association."
+                            }
+                        },
+                        "required": [
+                            "sessionId",
+                            "scorecardId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target real call session and scorecard to associate with it."
+                    },
+                    "FunctionOutput_wejam_assignscorecardtorealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Affected real call session identifier returned by the provider."
+                            },
+                            "state": {
+                                "type": "string",
+                                "enum": [
+                                    "PENDING",
+                                    "PROCESSING",
+                                    "DONE"
+                                ],
+                                "description": "Immediate provider processing state; not a completed-analysis guarantee."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the provider currently reports the session completed."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Session last-update instant normalized to UTC RFC 3339, preserving source precision."
+                            },
+                            "scorecardTitle": {
+                                "description": "Associated scorecard title when returned; null and omission remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "scorecardReferenceId": {
+                                "description": "Provider's associated scorecard reference when returned; not assumed identical to the input scorecardId.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "state",
+                            "completed",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Immediate assignment receipt, without waiting for completed analysis."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use after choosing a scorecard from `list-scorecards` and a session from `list-real-call-sessions` or `create-real-call-session`. This changes the session's scorecard association and may affect analysis; it does not edit transcript content. Use `get-real-call-session` to inspect subsequent state and results. The tool returns the provider's immediate state, not a promise of completed reanalysis. Do not blindly replay an uncertain assignment."
+            },
+            "filePath": "./wejam/tools/assign-scorecard-to-real-call-session.ts",
+            "version": "a543ce4c6e80cdc67c033ec04b8223505347e5546979b0760e8243ee0b020df1",
+            "location": {
+                "js": "templates-zero/wejam/tools/assign-scorecard-to-real-call-session/a543ce4c6e80cdc67c033ec04b8223505347e5546979b0760e8243ee0b020df1.cjs",
+                "ts": "templates-zero/wejam/tools/assign-scorecard-to-real-call-session/a543ce4c6e80cdc67c033ec04b8223505347e5546979b0760e8243ee0b020df1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-real-call-session",
+            "integrationId": "wejam",
+            "description": "Create a real call session from ordinary transcript text and attribute scoring to one representative. Eligible email uploads and labeled speakers may also provision organization members under the organization's rules.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_createrealcallsession",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_createrealcallsession",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_createrealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "missionId": {
+                                "description": "Optional mission ID used for the scorecard; omitted to leave mission selection unspecified.",
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{24}$"
+                            },
+                            "transcript": {
+                                "type": "string",
+                                "minLength": 10,
+                                "maxLength": 100000,
+                                "description": "Ordinary transcript text: plain text, SRT, or email/speaker-labeled SRT. Sent without base64 encoding or rewriting labels."
+                            },
+                            "meetingName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Nonempty name for this meeting, preserving caller text."
+                            },
+                            "scorecardId": {
+                                "description": "Optional explicit scorecard ID for analysis; when omitted the provider classifies the transcript and selects a scorecard.",
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{24}$"
+                            },
+                            "learnerEmail": {
+                                "description": "Scored representative's email, used instead of learnerUserId; an unknown address may create a Member only under organization provisioning rules.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "learnerUserId": {
+                                "description": "Scored representative's user ID in this organization; use instead of learnerEmail.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            }
+                        },
+                        "required": [
+                            "transcript",
+                            "meetingName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Transcript and meeting details with exactly one scored representative selector.",
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "required": [
+                                        "learnerEmail"
+                                    ],
+                                    "properties": {
+                                        "learnerEmail": true
+                                    }
+                                },
+                                "required": [
+                                    "learnerUserId"
+                                ],
+                                "properties": {
+                                    "learnerUserId": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "required": [
+                                        "learnerUserId"
+                                    ],
+                                    "properties": {
+                                        "learnerUserId": true
+                                    }
+                                },
+                                "required": [
+                                    "learnerEmail"
+                                ],
+                                "properties": {
+                                    "learnerEmail": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_wejam_createrealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Created real call session ID; use with get-real-call-session."
+                            },
+                            "state": {
+                                "type": "string",
+                                "enum": [
+                                    "PENDING",
+                                    "PROCESSING",
+                                    "DONE"
+                                ],
+                                "description": "Provider session processing state at creation response time; not a delivery or final-analysis guarantee."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the provider already reports the session completed."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Session creation instant normalized to UTC RFC 3339 with source precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Session last-update instant normalized to UTC RFC 3339 with source precision."
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Resolved user ID of the scored representative, including a newly provisioned user when applicable."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "state",
+                            "completed",
+                            "createdAt",
+                            "updatedAt",
+                            "learnerUserId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Creation receipt without waiting for transcript processing or final analysis."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Provide a transcript and exactly one of learnerUserId (from `list-users`) or learnerEmail. The rep must be you or someone you manage. Email-based provisioning requires organization opt-in, an allowed domain and whole-organization management authority, and may consume seats. Optional IDs come from `list-missions` and `list-scorecards`. Plain text and SRT are supported; email-labeled SRT must contain speech by the scored rep. This creates a session, not a completed analysis. Use the returned id with `get-real-call-session` to inspect progress and participants. Do not blindly repeat a successful or uncertain creation."
+            },
+            "filePath": "./wejam/tools/create-real-call-session.ts",
+            "version": "3c097892a04646409efc2a4d4a01c72902911504141f5afef7dd6895aad8d4fa",
+            "location": {
+                "js": "templates-zero/wejam/tools/create-real-call-session/3c097892a04646409efc2a4d4a01c72902911504141f5afef7dd6895aad8d4fa.cjs",
+                "ts": "templates-zero/wejam/tools/create-real-call-session/3c097892a04646409efc2a4d4a01c72902911504141f5afef7dd6895aad8d4fa.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-real-call-session",
+            "integrationId": "wejam",
+            "description": "Get a real call session's processing states, transcript, summary, participant attribution and detailed scorecard analysis by ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_getrealcallsession",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_getrealcallsession",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_getrealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "sessionId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Real call session identifier in the connection's organization."
+                            }
+                        },
+                        "required": [
+                            "sessionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the real call session to retrieve."
+                    },
+                    "FunctionOutput_wejam_getrealcallsession": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque real call session identifier."
+                            },
+                            "call": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque call identifier, distinct from session ID."
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "PENDING",
+                                            "DONE",
+                                            "DATA-NOT-AVAILABLE",
+                                            "CAN-NOT-PROCESS-TRANSCRIPT"
+                                        ],
+                                        "description": "Call processing or content-availability state."
+                                    },
+                                    "summary": {
+                                        "description": "Ordinary call summary text when reported; null and omission retained.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "createdAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Call creation instant in UTC RFC 3339 with source precision."
+                                    },
+                                    "updatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Call last-update instant in UTC RFC 3339 with source precision."
+                                    },
+                                    "transcript": {
+                                        "description": "Ordinary processed conversation text when reported; null, empty and omission retained.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "endedReason": {
+                                        "description": "Provider reason the call ended when reported; no invented interpretation.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "providerCallId": {
+                                        "description": "External provider's call identifier when reported; null and omission retained.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "state",
+                                    "createdAt",
+                                    "updatedAt"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Call content and its processing state."
+                            },
+                            "kpis": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque KPI record identifier."
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "PENDING",
+                                            "PROCESSING",
+                                            "DONE",
+                                            "SKIPPED"
+                                        ],
+                                        "description": "KPI processing state, independent of scorecard analysis state."
+                                    },
+                                    "createdAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "KPI creation instant in UTC RFC 3339 with source precision."
+                                    },
+                                    "updatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "KPI last-update instant in UTC RFC 3339 with source precision."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "state",
+                                    "createdAt",
+                                    "updatedAt"
+                                ],
+                                "additionalProperties": false,
+                                "description": "KPI identity and processing state; numeric metrics with undocumented units are not exposed."
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "REAL_CALL",
+                                "description": "Provider session category, always REAL_CALL for this operation."
+                            },
+                            "state": {
+                                "type": "string",
+                                "enum": [
+                                    "PENDING",
+                                    "PROCESSING",
+                                    "DONE"
+                                ],
+                                "description": "Overall session processing state."
+                            },
+                            "trackId": {
+                                "description": "Parent track identifier when reported; null and omission retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "analysis": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque analysis identifier."
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque analysis item identifier."
+                                                },
+                                                "name": {
+                                                    "description": "Criterion name when reported; null and omission retained.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "description": "Criterion numerical score in the provider's unspecified scale."
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "PROCESSING",
+                                                        "DONE",
+                                                        "ERROR"
+                                                    ],
+                                                    "description": "Criterion evaluation state; ERROR is returned as data, not a failed Get."
+                                                },
+                                                "solved": {
+                                                    "description": "Criterion solving state when reported; undetected, null and omission remain distinct.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "undetected",
+                                                                "notSolved",
+                                                                "partlySolved",
+                                                                "solved"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "createdAt": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Criterion creation instant in UTC RFC 3339 with source precision."
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Criterion last-update instant in UTC RFC 3339 with source precision."
+                                                },
+                                                "behaviours": {
+                                                    "description": "Behaviour assessments when supplied; omission is distinct from an empty assessment array.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "score": {
+                                                                "type": "number",
+                                                                "description": "Behaviour score in the provider's unspecified scale."
+                                                            },
+                                                            "verdict": {
+                                                                "type": "string",
+                                                                "description": "Provider's behaviour assessment verdict text."
+                                                            },
+                                                            "evidence": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string",
+                                                                    "description": "An ordinary text evidence entry."
+                                                                },
+                                                                "description": "Ordinary text evidence supporting this behaviour assessment, in source order."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "score",
+                                                            "verdict",
+                                                            "evidence"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "suggestion": {
+                                                    "description": "Improvement suggestion when reported; null, empty and omission retained.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "explanation": {
+                                                    "description": "Criterion explanation when reported; null, empty and omission retained.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "conversationItemReferenceId": {
+                                                    "description": "Provider conversation-item reference when reported; null and omission retained.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "score",
+                                                "state",
+                                                "createdAt",
+                                                "updatedAt"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "description": "Criterion analyses in source order; may be empty."
+                                    },
+                                    "score": {
+                                        "type": "number",
+                                        "description": "Overall provider score; no scale is documented or inferred."
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "PENDING",
+                                            "PROCESSING",
+                                            "DONE",
+                                            "SKIPPED"
+                                        ],
+                                        "description": "Analysis processing state; scores may be provisional before DONE."
+                                    },
+                                    "createdAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Analysis creation instant in UTC RFC 3339 with source precision."
+                                    },
+                                    "updatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Analysis last-update instant in UTC RFC 3339 with source precision."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "items",
+                                    "score",
+                                    "state",
+                                    "createdAt",
+                                    "updatedAt"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Detailed scorecard analysis and its processing state."
+                            },
+                            "language": {
+                                "type": "string",
+                                "enum": [
+                                    "en",
+                                    "de",
+                                    "fr",
+                                    "es",
+                                    "it",
+                                    "nl",
+                                    "zh-Hans"
+                                ],
+                                "description": "Session language code, distinct from playedLanguage."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the provider reports the session completed."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Session creation instant in UTC RFC 3339 with source precision."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Session last-update instant in UTC RFC 3339 with source precision."
+                            },
+                            "trackTitle": {
+                                "description": "Associated track title when reported; null and omission retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "missionTitle": {
+                                "description": "Associated mission title when reported; null and omission retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "learnerUserId": {
+                                "type": "string",
+                                "description": "Opaque user ID of the exclusively scored representative."
+                            },
+                            "playedLanguage": {
+                                "description": "Provider's played-language code when reported; null and omission are distinct from language.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "en",
+                                            "de",
+                                            "fr",
+                                            "es",
+                                            "it",
+                                            "nl",
+                                            "pl",
+                                            "zh",
+                                            "ja",
+                                            "id",
+                                            "tr",
+                                            "pt",
+                                            "el",
+                                            "ko",
+                                            "vi",
+                                            "hi",
+                                            "ms",
+                                            "th",
+                                            "hr",
+                                            "ro",
+                                            "bg",
+                                            "sv",
+                                            "no",
+                                            "yue"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "scorecardTitle": {
+                                "description": "Associated scorecard title when reported; null and omission retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "missionReferenceId": {
+                                "description": "Provider mission reference, not assumed interchangeable with missionId; omitted if not returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "participantUserIds": {
+                                "description": "User IDs of attributed speakers including the scored rep; [] means no attribution; omitted if not resolved or supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque attributed speaker user identifier."
+                                }
+                            },
+                            "scorecardReferenceId": {
+                                "description": "Provider scorecard reference, not assumed interchangeable with scorecardId; omitted if not returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "call",
+                            "kpis",
+                            "type",
+                            "state",
+                            "analysis",
+                            "language",
+                            "completed",
+                            "createdAt",
+                            "updatedAt",
+                            "learnerUserId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current real call session snapshot with independent processing states, content, attribution and detailed analysis."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a session id from `create-real-call-session` or `list-real-call-sessions`. This returns the current snapshot without waiting for processing. Inspect session, call, analysis and KPI states before treating scores as final; retrieve again later if needed. Participants may not be resolved until transcript processing finishes. Use `assign-scorecard-to-real-call-session` to change the scorecard, not this read tool."
+            },
+            "filePath": "./wejam/tools/get-real-call-session.ts",
+            "version": "cb4d892db28d3c22bafbe09f3d0afcf317cf411fc1d1f2d1785041281b0cfaa6",
+            "location": {
+                "js": "templates-zero/wejam/tools/get-real-call-session/cb4d892db28d3c22bafbe09f3d0afcf317cf411fc1d1f2d1785041281b0cfaa6.cjs",
+                "ts": "templates-zero/wejam/tools/get-real-call-session/cb4d892db28d3c22bafbe09f3d0afcf317cf411fc1d1f2d1785041281b0cfaa6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-mission-assignments",
+            "integrationId": "wejam",
+            "description": "Browse one page of learner mission assignments with status, timing, assigner and sprint relationships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listmissionassignments",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listmissionassignments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listmissionassignments": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum mission assignments per page; keep unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this collection and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse one page of learner mission assignments."
+                    },
+                    "FunctionOutput_wejam_listmissionassignments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque mission assignment identifier."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Assignment creation instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Assignment last-update instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "learnerUserId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the assigned learner."
+                                        },
+                                        "missionId": {
+                                            "type": "string",
+                                            "description": "Opaque assigned mission identifier."
+                                        },
+                                        "startsAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Assignment start instant in UTC RFC 3339, not a date-only value."
+                                        },
+                                        "dueAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Due instant in UTC RFC 3339 or null when not applicable."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "completed",
+                                                "open"
+                                            ],
+                                            "description": "Provider assignment completion state."
+                                        },
+                                        "completedAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Completion instant in UTC RFC 3339 or null when not applicable."
+                                        },
+                                        "assignedByUserId": {
+                                            "description": "Opaque assigner identifier or null when not applicable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "sprintId": {
+                                            "description": "Opaque related sprint identifier or null when not applicable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "learnerUserId",
+                                        "missionId",
+                                        "startsAt",
+                                        "dueAt",
+                                        "status",
+                                        "completedAt",
+                                        "assignedByUserId",
+                                        "sprintId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A learner mission assignment and its relationships."
+                                },
+                                "description": "Mission assignments in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of mission assignments with an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect assigned missions and completion status. `list-users`, `list-missions`, and `list-sprints` resolve related IDs. Continue with nextCursor as cursor keeping the same limit. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-mission-assignments.ts",
+            "version": "cdb25621f5b2604679962272519dee6c745344156cadc5b6d98c09ffe7bc078e",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-mission-assignments/cdb25621f5b2604679962272519dee6c745344156cadc5b6d98c09ffe7bc078e.cjs",
+                "ts": "templates-zero/wejam/tools/list-mission-assignments/cdb25621f5b2604679962272519dee6c745344156cadc5b6d98c09ffe7bc078e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-missions",
+            "integrationId": "wejam",
+            "description": "Browse one page of missions available to the connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listmissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listmissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listmissions": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum missions per page; keep unchanged when continuing.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool on the same connection; omit to begin.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for browsing one page of missions."
+                    },
+                    "FunctionOutput_wejam_listmissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque mission identifier."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Mission title as ordinary text."
+                                        },
+                                        "language": {
+                                            "type": "string",
+                                            "enum": [
+                                                "en",
+                                                "de",
+                                                "fr",
+                                                "es",
+                                                "it",
+                                                "nl",
+                                                "zh-Hans"
+                                            ],
+                                            "description": "Mission language code."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "language"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A mission available to the connection."
+                                },
+                                "description": "Missions in the provider's page order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when hasNext is false.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of missions and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this tool to find mission IDs and titles, including IDs for `create-real-call-session`. Pass nextCursor back as cursor with the same limit to continue. Each call returns one page; limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-missions.ts",
+            "version": "ecedab9fb626021649d6fc601907108b0ec9676c3745dfc703e6401e36d25120",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-missions/ecedab9fb626021649d6fc601907108b0ec9676c3745dfc703e6401e36d25120.cjs",
+                "ts": "templates-zero/wejam/tools/list-missions/ecedab9fb626021649d6fc601907108b0ec9676c3745dfc703e6401e36d25120.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-real-call-sessions",
+            "integrationId": "wejam",
+            "description": "Browse one page of real call sessions with transcripts, attributed speakers and scorecard analysis.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listrealcallsessions",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listrealcallsessions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listrealcallsessions": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum real call sessions per page; keep unchanged with cursor.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for real call sessions on this connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse one page of real call sessions, optionally continuing a previous page."
+                    },
+                    "FunctionOutput_wejam_listrealcallsessions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque real call session identifier."
+                                        },
+                                        "analysis": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Criterion name or null.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "score": {
+                                                                "type": "number",
+                                                                "description": "Criterion score in the provider's unspecified scale."
+                                                            },
+                                                            "solved": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "notSolved",
+                                                                    "partlySolved",
+                                                                    "solved"
+                                                                ],
+                                                                "description": "Criterion solving state."
+                                                            },
+                                                            "suggestion": {
+                                                                "description": "Improvement suggestion or null; empty text preserved.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "explanation": {
+                                                                "description": "Criterion explanation or null; empty text preserved.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "score",
+                                                            "solved",
+                                                            "suggestion",
+                                                            "explanation"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "One criterion in the session scorecard."
+                                                    },
+                                                    "description": "Per-criterion breakdown in source order."
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "description": "Overall score in the provider's unspecified scale."
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "score"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Session scorecard analysis."
+                                        },
+                                        "language": {
+                                            "type": "string",
+                                            "enum": [
+                                                "en",
+                                                "de",
+                                                "fr",
+                                                "es",
+                                                "it",
+                                                "nl",
+                                                "zh-Hans"
+                                            ],
+                                            "description": "Session language code."
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the provider reports the session complete."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Creation instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "missionId": {
+                                            "description": "Related mission identifier; omitted if not provided.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last-update instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "transcript": {
+                                            "description": "Ordinary transcript text or null when unavailable; empty text is distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "learnerUserId": {
+                                            "type": "string",
+                                            "description": "Opaque user ID of the scored representative."
+                                        },
+                                        "participantUserIds": {
+                                            "description": "Attributed speaker user IDs, including the scored rep; [] means no speaker attribution; omitted if unavailable.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque attributed speaker user identifier."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "analysis",
+                                        "language",
+                                        "completed",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "transcript",
+                                        "learnerUserId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One exported real call session."
+                                },
+                                "description": "Real call sessions in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of real call sessions and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for the real-call collection. Use `get-real-call-session` with a returned id for processing states and richer analysis, or `list-sessions` for the general collection. Continue with nextCursor as cursor, keeping limit unchanged. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-real-call-sessions.ts",
+            "version": "a002f9da0282d14a7fae2ba67e03dd4296950be9f6c3a4158dfdd2d19b14e4de",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-real-call-sessions/a002f9da0282d14a7fae2ba67e03dd4296950be9f6c3a4158dfdd2d19b14e4de.cjs",
+                "ts": "templates-zero/wejam/tools/list-real-call-sessions/a002f9da0282d14a7fae2ba67e03dd4296950be9f6c3a4158dfdd2d19b14e4de.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-scorecards",
+            "integrationId": "wejam",
+            "description": "Browse one page of scorecard identifiers, titles, and languages.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listscorecards",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listscorecards",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listscorecards": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum scorecards per page; keep unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool and connection; omit to begin.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for browsing one page of scorecards."
+                    },
+                    "FunctionOutput_wejam_listscorecards": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque scorecard identifier."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Scorecard title as ordinary text."
+                                        },
+                                        "language": {
+                                            "type": "string",
+                                            "enum": [
+                                                "en",
+                                                "de",
+                                                "fr",
+                                                "es",
+                                                "it",
+                                                "nl",
+                                                "zh-Hans"
+                                            ],
+                                            "description": "Scorecard language code."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "language"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A scorecard available for selection."
+                                },
+                                "description": "Scorecards in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when no next page exists.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of scorecards and an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this tool to select a scorecard for `create-real-call-session` or `assign-scorecard-to-real-call-session`. Continue with nextCursor as cursor, keeping limit unchanged. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-scorecards.ts",
+            "version": "fa0b8b024918918fe9cae78b90705a158b269bc2079ab417f7f58ee21e404070",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-scorecards/fa0b8b024918918fe9cae78b90705a158b269bc2079ab417f7f58ee21e404070.cjs",
+                "ts": "templates-zero/wejam/tools/list-scorecards/fa0b8b024918918fe9cae78b90705a158b269bc2079ab417f7f58ee21e404070.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-sessions",
+            "integrationId": "wejam",
+            "description": "Browse one page of the sessions export collection with transcripts and per-criterion scorecard analysis.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listsessions",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listsessions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listsessions": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Maximum sessions per page; keep unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this session collection and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse one page of the general sessions export collection."
+                    },
+                    "FunctionOutput_wejam_listsessions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque session identifier."
+                                        },
+                                        "analysis": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Criterion name or null.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "score": {
+                                                                "type": "number",
+                                                                "description": "Criterion score in the provider's unspecified scale."
+                                                            },
+                                                            "solved": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "notSolved",
+                                                                    "partlySolved",
+                                                                    "solved"
+                                                                ],
+                                                                "description": "Criterion solving state."
+                                                            },
+                                                            "suggestion": {
+                                                                "description": "Improvement suggestion or null; empty text is distinct.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "explanation": {
+                                                                "description": "Criterion explanation or null; empty text is distinct.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "score",
+                                                            "solved",
+                                                            "suggestion",
+                                                            "explanation"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "One criterion in the session scorecard."
+                                                    },
+                                                    "description": "Per-criterion analysis in source order."
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "description": "Overall provider score; scale is not specified."
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "score"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Scorecard analysis reported for the session."
+                                        },
+                                        "language": {
+                                            "type": "string",
+                                            "enum": [
+                                                "en",
+                                                "de",
+                                                "fr",
+                                                "es",
+                                                "it",
+                                                "nl",
+                                                "zh-Hans"
+                                            ],
+                                            "description": "Session language code."
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the provider reports the session completed."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Creation instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "missionId": {
+                                            "description": "Related mission identifier; omitted when source omits it.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last-update instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "transcript": {
+                                            "description": "Ordinary transcript text, or null when unavailable; empty text is distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "learnerUserId": {
+                                            "type": "string",
+                                            "description": "Opaque learner user identifier."
+                                        },
+                                        "participantUserIds": {
+                                            "description": "Attributed speaker user IDs when provided; empty means no attribution, omission means not provided.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque attributed speaker user identifier."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "analysis",
+                                        "language",
+                                        "completed",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "transcript",
+                                        "learnerUserId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An exported session with its transcript and scorecard."
+                                },
+                                "description": "Sessions in provider page order; no inferred session type."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token, omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of sessions and an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for the general sessions collection; use `list-real-call-sessions` for the dedicated real-call collection and `get-real-call-session` for a known real call's detailed processing state. Continue with nextCursor as cursor and unchanged limit. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-sessions.ts",
+            "version": "9c0148cbce8ba73874cc83fef6c49557e6a7e063a531a20ff069e6cc70cd1268",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-sessions/9c0148cbce8ba73874cc83fef6c49557e6a7e063a531a20ff069e6cc70cd1268.cjs",
+                "ts": "templates-zero/wejam/tools/list-sessions/9c0148cbce8ba73874cc83fef6c49557e6a7e063a531a20ff069e6cc70cd1268.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-sprints",
+            "integrationId": "wejam",
+            "description": "Browse one page of sprints, their due instants, creators and assigned teams.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listsprints",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listsprints",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listsprints": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum sprints per page; keep unchanged with cursor.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this tool and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse a single sprint page, optionally continuing a previous call."
+                    },
+                    "FunctionOutput_wejam_listsprints": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque sprint identifier."
+                                        },
+                                        "dueAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Sprint due instant in UTC RFC 3339, not a calendar date."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Sprint title as ordinary text."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Sprint creation instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Sprint last-update instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "assignedTeamId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the team assigned to the sprint."
+                                        },
+                                        "createdByUserId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the user who created the sprint."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "dueAt",
+                                        "title",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "assignedTeamId",
+                                        "createdByUserId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A sprint with its due instant, creator and assigned team."
+                                },
+                                "description": "Sprints in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token, omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of sprints and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to resolve sprint references on assignments. `list-users` and `list-teams` resolve creator and team IDs. Continue with nextCursor as cursor and the same limit. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-sprints.ts",
+            "version": "a1bb6d928aeacb6168a5c84e83270f576a7db6760bbf35505807afe816c9bb4c",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-sprints/a1bb6d928aeacb6168a5c84e83270f576a7db6760bbf35505807afe816c9bb4c.cjs",
+                "ts": "templates-zero/wejam/tools/list-sprints/a1bb6d928aeacb6168a5c84e83270f576a7db6760bbf35505807afe816c9bb4c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-teams",
+            "integrationId": "wejam",
+            "description": "Browse one page of teams and their names.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listteams",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listteams",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum teams per page, unchanged while continuing.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool and connection; omit to start.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of teams with an optional continuation and page size."
+                    },
+                    "FunctionOutput_wejam_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque team identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Team display name as ordinary text."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A team reference and its display name."
+                                },
+                                "description": "Teams in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token, omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of teams and an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to resolve team IDs found on users and sprints. Pass nextCursor as cursor with the same limit to continue. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-teams.ts",
+            "version": "fd81c5f80e7fa89fd5d5f929273db8c0ba1fa630664967608f84e489ae6ac30e",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-teams/fd81c5f80e7fa89fd5d5f929273db8c0ba1fa630664967608f84e489ae6ac30e.cjs",
+                "ts": "templates-zero/wejam/tools/list-teams/fd81c5f80e7fa89fd5d5f929273db8c0ba1fa630664967608f84e489ae6ac30e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-track-assignments",
+            "integrationId": "wejam",
+            "description": "Browse one page of learner track assignments and completed mission references.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listtrackassignments",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listtrackassignments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listtrackassignments": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Maximum track assignments per page; keep unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this collection and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination options for browsing learner track assignments."
+                    },
+                    "FunctionOutput_wejam_listtrackassignments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque track assignment identifier."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Creation instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last-update instant in UTC RFC 3339 with source precision."
+                                        },
+                                        "learnerUserId": {
+                                            "type": "string",
+                                            "description": "Opaque assigned learner identifier."
+                                        },
+                                        "trackId": {
+                                            "type": "string",
+                                            "description": "Opaque assigned track identifier."
+                                        },
+                                        "startsAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Start instant in UTC RFC 3339, not a date-only value."
+                                        },
+                                        "dueAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Due instant in UTC RFC 3339 or null when not applicable."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "completed",
+                                                "open"
+                                            ],
+                                            "description": "Assignment completion state reported by the provider."
+                                        },
+                                        "completedAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Completion instant in UTC RFC 3339 or null when not applicable."
+                                        },
+                                        "completedMissionIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque completed mission identifier."
+                                            },
+                                            "description": "Opaque identifiers of completed missions for this assignment; may be empty."
+                                        },
+                                        "assignedByUserId": {
+                                            "description": "Opaque assigner user identifier or null when not applicable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "sprintId": {
+                                            "description": "Opaque related sprint identifier or null when not applicable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "learnerUserId",
+                                        "trackId",
+                                        "startsAt",
+                                        "dueAt",
+                                        "status",
+                                        "completedAt",
+                                        "completedMissionIds",
+                                        "assignedByUserId",
+                                        "sprintId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A learner track assignment and its completed mission references."
+                                },
+                                "description": "Track assignments in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of learner track assignments with an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for track-assignment status and completed mission IDs. `list-tracks`, `list-users`, `list-missions`, and `list-sprints` resolve related IDs. Continue with nextCursor as cursor, keeping limit unchanged. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-track-assignments.ts",
+            "version": "2feefa0b87c83e34f8ce6d9adc4fc22198d80118c9939a018f98d8d5ac4b8eb9",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-track-assignments/2feefa0b87c83e34f8ce6d9adc4fc22198d80118c9939a018f98d8d5ac4b8eb9.cjs",
+                "ts": "templates-zero/wejam/tools/list-track-assignments/2feefa0b87c83e34f8ce6d9adc4fc22198d80118c9939a018f98d8d5ac4b8eb9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-tracks",
+            "integrationId": "wejam",
+            "description": "Browse one page of tracks and mission memberships, including archived tracks or only archived tracks.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listtracks",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listtracks",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listtracks": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum tracks per page; unchanged during continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation scoped to this connection, track selection and limit; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "archived": {
+                                "description": "include returns active and archived tracks; only returns archived tracks.",
+                                "type": "string",
+                                "enum": [
+                                    "include",
+                                    "only"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Selection and continuation for one page of tracks."
+                    },
+                    "FunctionOutput_wejam_listtracks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque track identifier."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Track title as ordinary text."
+                                        },
+                                        "archived": {
+                                            "type": "boolean",
+                                            "description": "True when the track is archived (soft-deleted)."
+                                        },
+                                        "missionIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque mission identifier."
+                                            },
+                                            "description": "Mission identifiers belonging to the track, in source order."
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Track description as ordinary text; empty text preserved."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "archived",
+                                        "missionIds",
+                                        "description"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A track and its mission memberships."
+                                },
+                                "description": "Tracks in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of tracks with an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to resolve track IDs and mission membership; use `list-missions` for mission titles. Archived tracks are included by default. Continue with nextCursor as cursor using the same archived choice and limit. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-tracks.ts",
+            "version": "b6d3a0a337309d3fa9cadb10d669761fcb12fc37c4289cc895e9239035346fab",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-tracks/b6d3a0a337309d3fa9cadb10d669761fcb12fc37c4289cc895e9239035346fab.cjs",
+                "ts": "templates-zero/wejam/tools/list-tracks/b6d3a0a337309d3fa9cadb10d669761fcb12fc37c4289cc895e9239035346fab.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "wejam",
+            "description": "Browse one page of users, contact names, and team memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wejam_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_wejam_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wejam_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum users per page, unchanged during continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this user collection and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for browsing one page of users."
+                    },
+                    "FunctionOutput_wejam_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user identifier."
+                                        },
+                                        "email": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "User email; null when unavailable."
+                                        },
+                                        "teamIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque team membership identifier."
+                                            },
+                                            "description": "Opaque team membership IDs; empty means no memberships reported."
+                                        },
+                                        "lastName": {
+                                            "description": "Family name; null when unavailable, empty text preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "User creation instant in UTC RFC 3339, preserving fractional precision."
+                                        },
+                                        "firstName": {
+                                            "description": "Given name; null when unavailable, empty text preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "teamIds",
+                                        "lastName",
+                                        "createdAt",
+                                        "firstName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user with contact names and team memberships."
+                                },
+                                "description": "Users in provider page order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation token; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of users and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find a learnerUserId for `create-real-call-session` or resolve assignment and participant IDs. Use `list-teams` for team names. Continue with nextCursor as cursor and the same limit. Limit is 1–100, default 10."
+            },
+            "filePath": "./wejam/tools/list-users.ts",
+            "version": "82e9e29f3d5e69f51df1fec59a934632f69136a3743a8bc332fa30d10db351a3",
+            "location": {
+                "js": "templates-zero/wejam/tools/list-users/82e9e29f3d5e69f51df1fec59a934632f69136a3743a8bc332fa30d10db351a3.cjs",
+                "ts": "templates-zero/wejam/tools/list-users/82e9e29f3d5e69f51df1fec59a934632f69136a3743a8bc332fa30d10db351a3.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

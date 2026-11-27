@@ -122,12 +122,12 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
                 resultByName.set(task.name, { taskId: task.id, retryKey: task.retryKey! });
             }
             let duplicateCount = 0;
-            for (const { props, reason } of batch.value.discarded) {
+            for (const { props, reason, error } of batch.value.discarded) {
                 if (reason === 'duplicate') {
                     duplicateCount++;
-                    resultByName.set(props.name, { error: { code: 'duplicate_task_name', message: 'Task with this name already exists' } });
+                    resultByName.set(props.name, { error: { code: 'duplicate_task_name', message: error.message } });
                 } else {
-                    resultByName.set(props.name, { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } });
+                    resultByName.set(props.name, { error: { code: 'task_cap_exceeded', message: error.message } });
                 }
             }
             if (duplicateCount > 0) {

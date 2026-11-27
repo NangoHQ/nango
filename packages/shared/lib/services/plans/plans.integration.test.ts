@@ -1,4 +1,3 @@
-import ms from 'ms';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
@@ -62,10 +61,8 @@ describe('handlePlanChanged', () => {
         expect(updated.unwrap().orb_subscription_id).toBe('orb_sub_2');
     });
 
-    it('clears the trial and applies the paid flags when a free account moves to pay-as-you-go', async () => {
-        const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'free', auto_idle: true, trial_start_at: new Date(), trial_end_at: new Date(Date.now() + ms('10days')) }
-        });
+    it('applies the paid flags when a free account moves to pay-as-you-go', async () => {
+        const { account } = await seedAccountEnvAndUser({ plan: { name: 'free' } });
 
         const res = await handlePlanChanged(db.knex, account, {
             newPlanCode: 'pay-as-you-go',
@@ -77,11 +74,6 @@ describe('handlePlanChanged', () => {
         expect(updated.name).toBe('pay-as-you-go');
         expect(updated.orb_subscription_id).toBe('orb_sub_payg');
         expect(updated.orb_subscribed_at).not.toBeNull();
-        // The trial cron pauses syncs on any plan still flagged auto_idle, so a paid plan has to clear both
-        expect(updated.auto_idle).toBe(false);
-        expect(updated.trial_start_at).toBeNull();
-        expect(updated.trial_end_at).toBeNull();
-        expect(updated.trial_expired).toBeNull();
         // Uncapped, metered through Orb instead
         expect(updated.connections_max).toBeNull();
         expect(updated.records_max).toBeNull();
@@ -90,9 +82,9 @@ describe('handlePlanChanged', () => {
         expect(updated.has_otel).toBe(false);
     });
 
-    it('restarts the trial and resets the flags when pay-as-you-go downgrades to free', async () => {
+    it('resets the flags when pay-as-you-go downgrades to free', async () => {
         const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null, data_transfer_max: null }
+            plan: { name: 'pay-as-you-go', connections_max: null, data_transfer_max: null }
         });
 
         const res = await handlePlanChanged(db.knex, account, {
@@ -103,16 +95,13 @@ describe('handlePlanChanged', () => {
         expect(res.unwrap()).toMatchObject({ isDowngrade: true });
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.name).toBe('free');
-        expect(updated.auto_idle).toBe(true);
-        expect(updated.trial_end_at).not.toBeNull();
-        expect(updated.trial_expired).toBe(false);
         expect(updated.connections_max).toBe(10);
         expect(updated.data_transfer_max).toBe(10_000_000_000);
     });
 
     it('keeps the growth feature set through a plan change while the add-on is active', async () => {
         const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'pay-as-you-go', has_growth_features: true, auto_idle: false, has_rbac: true, has_otel: true }
+            plan: { name: 'pay-as-you-go', has_growth_features: true, has_rbac: true, has_otel: true }
         });
 
         const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'growth-v2', orbSubscriptionId: 'orb_sub_addon' });
@@ -129,7 +118,7 @@ describe('handlePlanChanged', () => {
     it('leaves add-on state untouched, however stale the caller is', async () => {
         const endsAt = new Date('2026-10-01T00:00:00Z');
         const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'pay-as-you-go', has_growth_features: true, growth_features_ends_at: endsAt, auto_idle: false, has_rbac: true }
+            plan: { name: 'pay-as-you-go', has_growth_features: true, growth_features_ends_at: endsAt, has_rbac: true }
         });
 
         const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'pay-as-you-go', orbSubscriptionId: 'orb_sub_addon' });
@@ -148,7 +137,7 @@ describe('setGrowthAddon', () => {
     });
 
     it('grants the gated flags when the add-on is turned on', async () => {
-        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false } });
+        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go' } });
 
         (await setGrowthAddon(db.knex, account, { hasGrowthFeatures: true })).unwrap();
 
@@ -166,7 +155,7 @@ describe('setGrowthAddon', () => {
     it('records the end date while leaving the add-on active', async () => {
         const endsAt = new Date('2026-10-01T00:00:00Z');
         const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'pay-as-you-go', has_growth_features: true, auto_idle: false, has_otel: true, has_rbac: true }
+            plan: { name: 'pay-as-you-go', has_growth_features: true, has_otel: true, has_rbac: true }
         });
 
         (await setGrowthAddon(db.knex, account, { hasGrowthFeatures: true, endsAt })).unwrap();
@@ -183,7 +172,6 @@ describe('setGrowthAddon', () => {
                 name: 'pay-as-you-go',
                 has_growth_features: true,
                 growth_features_ends_at: new Date('2026-10-01T00:00:00Z'),
-                auto_idle: false,
                 has_otel: true,
                 has_rbac: true,
                 environments_max: 10,
@@ -204,7 +192,7 @@ describe('setGrowthAddon', () => {
 
     // Flags the add-on does not gate are none of its business, overrides included
     it('leaves ungated flags alone', async () => {
-        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: 50 } });
+        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', connections_max: 50 } });
 
         (await setGrowthAddon(db.knex, account, { hasGrowthFeatures: true })).unwrap();
 
@@ -214,7 +202,7 @@ describe('setGrowthAddon', () => {
 
     it('keeps hand-granted limits above the add-on ones', async () => {
         const { account } = await seedAccountEnvAndUser({
-            plan: { name: 'pay-as-you-go', auto_idle: false, environments_max: 50, api_rate_limit_size: '2xl' }
+            plan: { name: 'pay-as-you-go', environments_max: 50, api_rate_limit_size: '2xl' }
         });
 
         (await setGrowthAddon(db.knex, account, { hasGrowthFeatures: true })).unwrap();
