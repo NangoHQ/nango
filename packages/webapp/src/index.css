@@ -50,6 +50,13 @@
 
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-row-flash: row-flash 1.6s ease-out;
+
+    @keyframes row-flash {
+        from {
+            background-color: var(--color-status-info-bg);
+        }
+    }
 
     @keyframes accordion-down {
         from {
