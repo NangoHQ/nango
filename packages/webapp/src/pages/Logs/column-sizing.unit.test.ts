@@ -22,7 +22,7 @@ describe('computeLogsGridTemplate', () => {
     it('drops Integration and Connection while the panel is open', () => {
         const template = tracks(computeLogsGridTemplate([row({ integrationName: 'github', connectionName: 'abc' })], { panelOpen: true, now }));
         expect(template).toHaveLength(5);
-        expect(template[4]).toBe('minmax(0,1fr)');
+        expect(template.slice(3)).toEqual(['minmax(64px,1fr)', 'minmax(64px,1fr)']);
     });
 
     it('keeps the timestamp column wide enough for its header with no rows', () => {

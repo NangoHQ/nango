@@ -16,7 +16,7 @@ const STATUS_WIDTH = 104;
 const TYPE_WIDTH = 150;
 const PANEL_DURATION_WIDTH = 68;
 const PANEL_STATUS_WIDTH = 96;
-const PANEL_TYPE_WIDTH = 142;
+const PANEL_TEXT_MIN_WIDTH = 64;
 const INTEGRATION_MIN_WIDTH = 120;
 const FUNCTION_MIN_WIDTH = 120;
 const CONNECTION_MIN_WIDTH = 100;
@@ -34,7 +34,14 @@ export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpe
     const timestamp = Math.ceil(timeChars * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING;
 
     if (panelOpen) {
-        return [`${timestamp}px`, `${PANEL_DURATION_WIDTH}px`, `${PANEL_STATUS_WIDTH}px`, `${PANEL_TYPE_WIDTH}px`, 'minmax(0,1fr)'].join(' ');
+        // The panel can leave the list ~400px. Type and Function share it, or a fixed Type width pushes Function out of the card.
+        return [
+            `${timestamp}px`,
+            `${PANEL_DURATION_WIDTH}px`,
+            `${PANEL_STATUS_WIDTH}px`,
+            `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`,
+            `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`
+        ].join(' ');
     }
 
     const integration = Math.max(INTEGRATION_MIN_WIDTH, Math.ceil(widest(rows, (row) => row.integrationName) * SANS_CHAR_WIDTH) + LOGO_WIDTH + CELL_PADDING);
