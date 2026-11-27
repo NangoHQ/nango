@@ -7509,7 +7509,7 @@ Everything below is what you configure directly to run a production instance —
 | `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
 | `AZURE_INTEGRATIONS_CONTAINER_NAME` | `integrations` | Azure blob container for compiled integration files |
 | `AZURE_INTEGRATIONS_ACCOUNT_KEY` | `••••••••` | Optional Azure shared key. Omit to use `DefaultAzureCredential` |
-| `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
+| `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email through Mailgun. See [Email](#email) for SMTP, AWS SES, and other providers |
 | `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
 | `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
 | `NANGO_LICENSE` | *(the license from Nango)* | Your license. The server and the `selfHosting` workload read it |
@@ -7543,6 +7543,52 @@ That is the dashboard URL — `NANGO_PUBLIC_SERVER_URL` — which is the same ho
 
 <Warning>
 Treat the token as a secret, and remove it once it has been used. It is not consumed by the first signup and it does not expire, so for as long as it is set, anyone holding that URL can create another administrator. Unset `NANGO_ADMIN_INVITE_TOKEN` and restart the server once your first administrator exists; set it again only if you ever need to bootstrap another one.
+</Warning>
+
+### Email
+
+Nango sends transactional email for signup verification, password resets, team invitations, and spend alerts. Set `EMAIL_PROVIDER` to choose a provider, then set that provider's variables:
+
+| `EMAIL_PROVIDER` | Variables | Notes |
+|---|---|---|
+| `smtp` | `SMTP_URL` | Any SMTP server, for example `smtps://user:pass@email-smtp.eu-west-1.amazonaws.com:465` |
+| `ses` | `AWS_REGION`, `EMAIL_SES_FROM`, optional `EMAIL_SES_CONFIGURATION_SET` and `EMAIL_SES_TIMEOUT_MS` (default `10000`) | AWS SES API, authenticated with the default AWS credential chain |
+| `mailgun` | `MAILGUN_API_KEY`, `MAILGUN_URL` | `MAILGUN_URL` is the regional API base URL, for example `https://api.eu.mailgun.net` |
+| `http` | `EMAIL_HTTP_URL`, `EMAIL_HTTP_BODY`, optional `EMAIL_HTTP_HEADERS` | Any mail API that accepts JSON over HTTP, such as SendGrid, Resend, or Postmark |
+| `none` | | Logs each email instead of sending it |
+
+`SMTP_FROM` sets the sender for SMTP, Mailgun and HTTP, and defaults to `Nango <noreply@email.nango.dev>`. Set it to an address on a domain your provider can send from. SES uses `EMAIL_SES_FROM` instead, which has no default. When `EMAIL_PROVIDER` is set, the server refuses to start until that provider's required variables are present.
+
+<Note>
+`EMAIL_PROVIDER` is optional. Without it, Nango picks the first configured provider in the order `MAILGUN_API_KEY`, `SMTP_URL`, `EMAIL_HTTP_URL`, and logs a warning if more than one is set. AWS SES is never picked this way, so it always needs `EMAIL_PROVIDER=ses`.
+</Note>
+
+#### AWS SES
+
+With `EMAIL_PROVIDER=ses`, Nango calls the SES v2 API without any credentials of its own. The AWS SDK finds them in the usual places: an ECS task role, an EKS service account (IRSA), an EC2 instance profile, or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. You don't need SMTP credentials or an IAM user.
+
+Grant the workload's role permission to send from your verified identity:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "ses:SendEmail",
+            "Resource": [
+                "arn:aws:ses:<region>:<account-id>:identity/<your-domain>",
+                "arn:aws:ses:<region>:<account-id>:configuration-set/<configuration-set>"
+            ]
+        }
+    ]
+}
+```
+
+Leave out the configuration set resource if you don't set `EMAIL_SES_CONFIGURATION_SET`.
+
+<Warning>
+The `EMAIL_SES_FROM` address or its domain must be a verified identity in SES, in the same region as `AWS_REGION`. While your SES account is in the sandbox, SES only delivers to verified recipient addresses, so invitations to anyone else fail. Request production access before inviting your team.
 </Warning>
 
 ### Pre-built integrations catalog

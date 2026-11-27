@@ -255,6 +255,9 @@ function internalAuthPublicKeysSchema(varName: string) {
 // batch window and the delete.
 export const AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY = 2 / 3;
 
+export const EMAIL_PROVIDERS = ['mailgun', 'smtp', 'ses', 'http', 'none'] as const;
+export type EmailProviderName = (typeof EMAIL_PROVIDERS)[number];
+
 const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -740,6 +743,16 @@ const ENVS_SHAPE = z.object({
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
+
+    // Email
+    // Picks the email provider explicitly. Left unset, the provider is inferred from which of
+    // MAILGUN_API_KEY, SMTP_URL and EMAIL_HTTP_URL is set, so existing deployments keep working.
+    EMAIL_PROVIDER: z.enum(EMAIL_PROVIDERS).optional(),
+
+    // AWS SES (EMAIL_PROVIDER=ses). Region comes from AWS_REGION, credentials from the default AWS credential chain.
+    EMAIL_SES_FROM: z.string().optional(), // sender address; must be a verified SES identity
+    EMAIL_SES_CONFIGURATION_SET: z.string().optional(),
+    EMAIL_SES_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(10_000), // whole send, retries included
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
@@ -1267,6 +1280,22 @@ function checkInternalAuthKeyPair(
     }
 }
 
+/**
+ * Env vars each email provider needs. Providers marked `inferred` are picked, in EMAIL_PROVIDERS
+ * order, when EMAIL_PROVIDER is unset and their required vars are present. SES is never inferred:
+ * AWS_REGION is set on most AWS deployments and must not silently switch their provider.
+ * EMAIL_HTTP_BODY is not listed for http: its own check requires it whenever EMAIL_HTTP_URL is set.
+ */
+export const EMAIL_PROVIDER_ENVS = {
+    mailgun: { required: ['MAILGUN_API_KEY'], inferred: true },
+    smtp: { required: ['SMTP_URL'], inferred: true },
+    ses: { required: ['AWS_REGION', 'EMAIL_SES_FROM'], inferred: false },
+    http: { required: ['EMAIL_HTTP_URL'], inferred: true },
+    none: { required: [], inferred: false }
+} as const satisfies Record<EmailProviderName, { required: readonly (keyof z.infer<typeof ENVS_SHAPE>)[]; inferred: boolean }>;
+
+export type EmailProviderRequiredEnv = (typeof EMAIL_PROVIDER_ENVS)[EmailProviderName]['required'][number];
+
 export const ENVS = ENVS_SHAPE.check((ctx) => {
     if (ctx.value.SIGNUP_AD_CONTEXT_ENABLED && !ctx.value.SIGNUP_AD_CONTEXT_COOKIE_NAME) {
         ctx.issues.push({
@@ -1279,13 +1308,28 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
 
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
     // template. Fail here so a half-configured provider surfaces at startup instead of on the
-    // first email, and keep the error pointed at the var that is actually missing.
-    if (ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
+    // first email, and keep the error pointed at the var that is actually missing. Skipped when
+    // EMAIL_PROVIDER picks another provider, since the HTTP settings are then unused.
+    const httpProviderInUse = ctx.value.EMAIL_PROVIDER === undefined || ctx.value.EMAIL_PROVIDER === 'http';
+    if (httpProviderInUse && ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
         ctx.issues.push({
             code: 'custom',
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    // An explicitly chosen email provider must be fully configured, so a typo fails at startup
+    // rather than on a user's first signup email. Inferred providers are not checked here, to
+    // keep existing deployments booting exactly as before.
+    const requiredEmailEnvs: readonly EmailProviderRequiredEnv[] = ctx.value.EMAIL_PROVIDER ? EMAIL_PROVIDER_ENVS[ctx.value.EMAIL_PROVIDER].required : [];
+    for (const name of requiredEmailEnvs.filter((name) => !ctx.value[name])) {
+        ctx.issues.push({
+            code: 'custom',
+            message: `${name} is required when EMAIL_PROVIDER=${ctx.value.EMAIL_PROVIDER}`,
+            path: [name],
+            input: ctx.value[name]
         });
     }
 
