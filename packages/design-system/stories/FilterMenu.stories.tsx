@@ -45,6 +45,7 @@ function FlatFilter({ label, options, initial, searchable = false }: { label: st
     const [selected, setSelected] = useState(initial);
     return (
         <FilterMenu
+            label={label}
             trigger={<FilterTrigger label={label} count={selected.length} selectedLabel={options.find((o) => o.value === selected[0])?.label} />}
             open={open}
             onOpenChange={setOpen}
@@ -85,6 +86,7 @@ function TreeFilter() {
 
     return (
         <FilterMenu
+            label="Type"
             trigger={<FilterTrigger label="Type" count={selected.length} selectedLabel={selected[0]} />}
             open={open}
             onOpenChange={setOpen}

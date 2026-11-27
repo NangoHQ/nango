@@ -14,7 +14,7 @@ export interface FilterTriggerProps extends Omit<ButtonProps, 'children' | 'vari
 }
 
 export const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(({ label, selectedLabel, count, ...props }, ref) => (
-    <Button ref={ref} variant="outline" size="sm" {...props}>
+    <Button ref={ref} variant="outline-filled" size="sm" {...props}>
         <span>{label}</span>
         {count === 1 && selectedLabel && (
             <>
