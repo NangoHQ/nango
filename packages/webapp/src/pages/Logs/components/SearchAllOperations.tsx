@@ -1,5 +1,6 @@
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { LoaderCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
@@ -313,14 +314,22 @@ export const SearchAllOperations: React.FC<Props> = ({
                 )}
             </Table>
 
-            {flatData.length > 0 && hasNextPage && (
+            {flatData.length > 0 && hasNextPage && manualLoadMore && (
                 <div className="flex justify-center p-4">
                     <Button onClick={onClickLoadMore} variant={'outline'} loading={isFetchingNextPage}>
-                        Load more...
+                        Load more
                     </Button>
                 </div>
             )}
-            {flatData.length > 0 && !hasNextPage && <div className="px-5 py-4 type-text-regular-xs text-text-secondary">Nothing more to load...</div>}
+            {flatData.length > 0 && hasNextPage && !manualLoadMore && isFetchingNextPage && (
+                <div className="flex items-center justify-center gap-2 p-4 type-text-regular-xs text-text-secondary" role="status">
+                    <LoaderCircle aria-hidden className="size-3.5 animate-spin text-icon-secondary" />
+                    Loading older operations…
+                </div>
+            )}
+            {flatData.length > 0 && !hasNextPage && (
+                <div className="p-4 text-center type-text-regular-xs text-text-muted">No older operations in this time range</div>
+            )}
 
             {!isLoading && flatData.length <= 0 && (
                 <div className="flex flex-col items-center gap-2 p-10 py-20 text-center">
