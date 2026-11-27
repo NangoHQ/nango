@@ -1,0 +1,3599 @@
+{
+    "providerConfigKey": "icypeas",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make bulk search identity, lifecycle and provider processing counters available as replicated job records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-bulk-searches",
+            "output": [
+                "BulkSearch"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BulkSearch"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BulkSearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque bulk search ID."
+                            },
+                            "name": {
+                                "description": "Caller-assigned bulk search name when returned.",
+                                "type": "string"
+                            },
+                            "task": {
+                                "description": "Provider task label as returned.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider lifecycle, typically in_progress or done.",
+                                "type": "string"
+                            },
+                            "statistics": {
+                                "description": "Provider processing counters keyed by their original labels; no absent counters are invented.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "description": "Non-negative provider processing counter value."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bulk search identity, lifecycle and provider processing counters."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make queued and completed single-search and bulk-search row results available as replicated search item records, including provider status and email certainty.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-search-items",
+            "output": [
+                "SearchItem"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SearchItem"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SearchItem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque search item ID."
+                            },
+                            "order": {
+                                "description": "Zero-based provider row order when returned.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "emails": {
+                                "description": "Returned address findings; [] does not imply no match for pending records.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Found or tested address."
+                                        },
+                                        "certainty": {
+                                            "description": "Provider certainty label, preserved without collapsing states.",
+                                            "type": "string"
+                                        },
+                                        "mxRecords": {
+                                            "description": "Provider MX record values.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Provider MX record value."
+                                            }
+                                        },
+                                        "mxProvider": {
+                                            "description": "Provider MX service label.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An address finding and its provider certainty and MX information."
+                                }
+                            },
+                            "gender": {
+                                "description": "Provider gender label, including UNKNOWN.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Unmodified provider work/result status, including pending and failed work."
+                            },
+                            "fullName": {
+                                "description": "Found display name.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Found family name.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "UTC RFC 3339 creation instant with lossless fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "firstName": {
+                                "description": "Found given name.",
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "description": "UTC RFC 3339 modification instant with lossless fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "externalId": {
+                                "description": "Caller correlation ID when present; empty string is retained.",
+                                "type": "string"
+                            },
+                            "bulkSearchId": {
+                                "description": "Parent bulk search ID if available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A queued or completed single-search item or bulk-search row, including provider status and address findings."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-create-domain-scans",
+            "integrationId": "icypeas",
+            "description": "Queue role-based email discovery for up to 5,000 domains or companies in one bulk search.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchcreatedomainscans",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchcreatedomainscans",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchcreatedomainscans": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name for locating the bulk search later."
+                            },
+                            "companies": {
+                                "minItems": 1,
+                                "maxItems": 5000,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "externalId": {
+                                            "description": "Optional caller row ID for correlation, not idempotency.",
+                                            "type": "string"
+                                        },
+                                        "companyOrDomain": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Company name or domain to scan for role-based emails."
+                                        }
+                                    },
+                                    "required": [
+                                        "companyOrDomain"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One company or domain scan row with optional caller correlation."
+                                },
+                                "description": "Company/domain scan rows in insertion order, at most 5,000."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "companies"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A named bulk submission of company or domain scans."
+                    },
+                    "FunctionOutput_icypeas_batchcreatedomainscans": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque bulk search ID for progress and results."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider bulk lifecycle, normally in_progress on acceptance."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The queued bulk search acknowledgment, not completed scan results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–5,000 domains/companies; use `create-domain-scan` for one. Returns a bulk search ID, not completed addresses. Check `get-bulk-search` and retrieve pages with `list-search-items`. Work may consume credits."
+            },
+            "filePath": "./icypeas/tools/batch-create-domain-scans.ts",
+            "version": "18fe8292c66ad10b818fd30ee510dfe4e645d5d4a6c6bf1a67de81587b173266",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-create-domain-scans/18fe8292c66ad10b818fd30ee510dfe4e645d5d4a6c6bf1a67de81587b173266.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-create-domain-scans/18fe8292c66ad10b818fd30ee510dfe4e645d5d4a6c6bf1a67de81587b173266.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-create-email-searches",
+            "integrationId": "icypeas",
+            "description": "Create an asynchronous bulk email-discovery job for up to 5,000 prospects.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchcreateemailsearches",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchcreateemailsearches",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchcreateemailsearches": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name for finding this bulk search later."
+                            },
+                            "prospects": {
+                                "minItems": 1,
+                                "maxItems": 5000,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "lastName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Family name; optional if firstName supplied."
+                                        },
+                                        "firstName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Given name; optional if lastName supplied."
+                                        },
+                                        "externalId": {
+                                            "description": "Optional caller row ID; not an idempotency key.",
+                                            "type": "string"
+                                        },
+                                        "companyOrDomain": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Employer name or domain."
+                                        }
+                                    },
+                                    "required": [
+                                        "companyOrDomain"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "firstName": {
+                                                    "description": "Given name; optional if lastName supplied."
+                                                }
+                                            },
+                                            "required": [
+                                                "firstName"
+                                            ]
+                                        },
+                                        {
+                                            "properties": {
+                                                "lastName": {
+                                                    "description": "Family name; optional if firstName supplied."
+                                                }
+                                            },
+                                            "required": [
+                                                "lastName"
+                                            ]
+                                        }
+                                    ],
+                                    "description": "A prospect with an employer and at least one name."
+                                },
+                                "description": "Prospects in result insertion order; 1–5,000 per job."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "prospects"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A named bulk email-discovery submission containing up to 5,000 prospects."
+                    },
+                    "FunctionOutput_icypeas_batchcreateemailsearches": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque bulk search ID for get-bulk-search and list-search-items."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider bulk lifecycle, normally in_progress on acceptance."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The asynchronous bulk job acknowledgment, not individual email results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–5,000 prospects; use `create-email-search` for a single interactive request. This returns a bulk search ID, not email results. Inspect progress with `get-bulk-search`, then read one result page with `list-search-items`. Work may consume credits; do not blindly repeat ambiguous submissions."
+            },
+            "filePath": "./icypeas/tools/batch-create-email-searches.ts",
+            "version": "21008f6a3906f466297f19c7c5dc0361165b4fbd1ce50b5170874700c4abed91",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-create-email-searches/21008f6a3906f466297f19c7c5dc0361165b4fbd1ce50b5170874700c4abed91.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-create-email-searches/21008f6a3906f466297f19c7c5dc0361165b4fbd1ce50b5170874700c4abed91.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-create-email-verifications",
+            "integrationId": "icypeas",
+            "description": "Queue verification of up to 5,000 email addresses in one asynchronous bulk search.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchcreateemailverifications",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchcreateemailverifications",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchcreateemailverifications": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name for locating the bulk search later."
+                            },
+                            "emails": {
+                                "minItems": 1,
+                                "maxItems": 5000,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                            "description": "Address to verify."
+                                        },
+                                        "externalId": {
+                                            "description": "Optional caller row correlation ID, not a deduplication key.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An email verification row with an optional caller correlation ID."
+                                },
+                                "description": "Email verification rows in insertion order, at most 5,000."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "emails"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A named batch of email addresses to queue for asynchronous verification."
+                    },
+                    "FunctionOutput_icypeas_batchcreateemailverifications": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque bulk search ID for progress and results."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider bulk lifecycle, normally in_progress on acceptance."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bulk search acknowledgment, not individual email verification verdicts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–5,000 addresses; use `create-email-verification` for one. Returns a bulk search ID, not verification verdicts. Continue with `get-bulk-search` and `list-search-items`. Work may consume credits; repeated submission may create another job."
+            },
+            "filePath": "./icypeas/tools/batch-create-email-verifications.ts",
+            "version": "f7a919d623588c67ee6b0f16a77a4057c14f6f2e51063832e90fe809cf3c24c6",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-create-email-verifications/f7a919d623588c67ee6b0f16a77a4057c14f6f2e51063832e90fe809cf3c24c6.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-create-email-verifications/f7a919d623588c67ee6b0f16a77a4057c14f6f2e51063832e90fe809cf3c24c6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-get-companies",
+            "integrationId": "icypeas",
+            "description": "Enrich up to 50 known company URLs in one native batch request.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchgetcompanies",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchgetcompanies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchgetcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "companyUrls": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^https?:\\/\\/",
+                                    "format": "uri",
+                                    "description": "Company LinkedIn URL to enrich."
+                                },
+                                "description": "Company LinkedIn URLs to enrich, in caller order; at most 50."
+                            }
+                        },
+                        "required": [
+                            "companyUrls"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A native batch of 1 to 50 company LinkedIn URLs."
+                    },
+                    "FunctionOutput_icypeas_batchgetcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "description": "Stable item failure code."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Actionable provider failure explanation."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Provider-identified item failure, if available; not_found, invalid_input, permission_denied or insufficient_credits where established, otherwise provider_error."
+                                        },
+                                        "company": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Opaque provider company ID.",
+                                                    "type": "string"
+                                                },
+                                                "lid": {
+                                                    "description": "LinkedIn public company ID.",
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "description": "Company LinkedIn URL.",
+                                                    "type": "string"
+                                                },
+                                                "urn": {
+                                                    "description": "Opaque LinkedIn company URN.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Company display name.",
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "description": "Headquarters location text.",
+                                                    "type": "string"
+                                                },
+                                                "website": {
+                                                    "description": "Company website.",
+                                                    "type": "string"
+                                                },
+                                                "industry": {
+                                                    "description": "Industry label.",
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "description": "Company description text.",
+                                                    "type": "string"
+                                                },
+                                                "specialties": {
+                                                    "description": "Specialty labels, including empty arrays.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Specialty label."
+                                                    }
+                                                },
+                                                "numberOfEmployees": {
+                                                    "description": "Provider employee count.",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Found company business fields, absent for an unsuccessful outcome."
+                                        },
+                                        "companyUrl": {
+                                            "description": "Input company URL only when provider correlation establishes it.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One provider-returned company outcome, without positional input correlation."
+                                },
+                                "description": "Provider-returned company outcomes; no omitted row is assumed successful and no ordering correlation is invented."
+                            },
+                            "message": {
+                                "description": "Aggregate provider outcome text when no row-level outcomes are supplied; does not establish per-item success.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company enrichment outcomes explicitly returned by the provider, or an aggregate acknowledgment."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–50 company URLs from `search-company-url` or `search-companies`; use `get-company` for a single interactive lookup. Found companies consume credits. Item outcomes are returned only where the provider identifies them."
+            },
+            "filePath": "./icypeas/tools/batch-get-companies.ts",
+            "version": "41fcb3ad716180da334e8788d52484399dbdc86e1d0cdc38fccdea2ed7fe893c",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-get-companies/41fcb3ad716180da334e8788d52484399dbdc86e1d0cdc38fccdea2ed7fe893c.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-get-companies/41fcb3ad716180da334e8788d52484399dbdc86e1d0cdc38fccdea2ed7fe893c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-get-profiles",
+            "integrationId": "icypeas",
+            "description": "Enrich up to 50 known professional profile URLs in a native batch.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchgetprofiles",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchgetprofiles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchgetprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "profileUrls": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^https?://",
+                                    "format": "uri",
+                                    "description": "LinkedIn person profile URL to enrich."
+                                },
+                                "description": "LinkedIn person profile URLs to enrich, at most 50, in caller order."
+                            }
+                        },
+                        "required": [
+                            "profileUrls"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A native batch of 1–50 professional profile URLs."
+                    },
+                    "FunctionOutput_icypeas_batchgetprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "description": "Explicit row failure; codes include not_found, invalid_input, permission_denied, insufficient_credits or provider_error. Correct the row or account condition before retrying it.",
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "description": "Stable item failure code."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Actionable failure explanation."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "profile": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Opaque provider profile ID.",
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "description": "LinkedIn profile URL.",
+                                                    "type": "string"
+                                                },
+                                                "jobs": {
+                                                    "description": "Employment entries.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "title": {
+                                                                "description": "Job title.",
+                                                                "type": "string"
+                                                            },
+                                                            "location": {
+                                                                "description": "Job location wording.",
+                                                                "type": "string"
+                                                            },
+                                                            "isCurrent": {
+                                                                "description": "Provider current-job indicator, omitted if unknown.",
+                                                                "type": "boolean"
+                                                            },
+                                                            "companyUrl": {
+                                                                "description": "Employer LinkedIn URL.",
+                                                                "type": "string"
+                                                            },
+                                                            "companyName": {
+                                                                "description": "Employer name.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "An employment entry returned by the provider."
+                                                    }
+                                                },
+                                                "skills": {
+                                                    "description": "Skill labels.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A skill label."
+                                                    }
+                                                },
+                                                "fullName": {
+                                                    "description": "Provider display name.",
+                                                    "type": "string"
+                                                },
+                                                "headline": {
+                                                    "description": "Professional headline.",
+                                                    "type": "string"
+                                                },
+                                                "lastName": {
+                                                    "description": "Family name.",
+                                                    "type": "string"
+                                                },
+                                                "location": {
+                                                    "description": "Person location wording.",
+                                                    "type": "string"
+                                                },
+                                                "firstName": {
+                                                    "description": "Given name.",
+                                                    "type": "string"
+                                                },
+                                                "languages": {
+                                                    "description": "Language labels.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A language label."
+                                                    }
+                                                },
+                                                "description": {
+                                                    "description": "Profile summary text.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Found profile fields when available."
+                                        },
+                                        "profileUrl": {
+                                            "description": "Input profile URL when provider correlation establishes it.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An explicit provider-returned profile outcome."
+                                },
+                                "description": "Provider-returned profile outcomes, not inferred successes for every input."
+                            },
+                            "message": {
+                                "description": "Aggregate provider outcome when row details are unavailable; not per-item success.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit batch outcomes or an aggregate provider explanation, without inferred row success."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–50 profile URLs from `search-people` or profile URL searches. Use `get-profile` for one lookup. Found profiles consume credits; do not assume missing row outcomes succeeded."
+            },
+            "filePath": "./icypeas/tools/batch-get-profiles.ts",
+            "version": "40780971cd6bcd089e8cc1a4b96b1fe7656f49b346948edae3e867090486ede7",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-get-profiles/40780971cd6bcd089e8cc1a4b96b1fe7656f49b346948edae3e867090486ede7.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-get-profiles/40780971cd6bcd089e8cc1a4b96b1fe7656f49b346948edae3e867090486ede7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-search-company-urls",
+            "integrationId": "icypeas",
+            "description": "Find company-page URLs for up to 50 company names, domains or websites.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchsearchcompanyurls",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchsearchcompanyurls",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchsearchcompanyurls": {
+                        "type": "object",
+                        "properties": {
+                            "companies": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "companyOrDomain": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Company name, domain or website."
+                                        }
+                                    },
+                                    "required": [
+                                        "companyOrDomain"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company identity to resolve."
+                                },
+                                "description": "Company identities to resolve, at most 50, in caller order."
+                            }
+                        },
+                        "required": [
+                            "companies"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A batch of 1 to 50 company names, domains or websites to resolve."
+                    },
+                    "FunctionOutput_icypeas_batchsearchcompanyurls": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Found company URL, or null for an explicit no-match outcome; omitted if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "error": {
+                                            "description": "Explicit row failure; invalid_input, permission_denied, insufficient_credits or provider_error. Correct that row or account condition before retrying.",
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "description": "Stable item failure code."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Actionable item failure explanation."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "companyOrDomain": {
+                                            "description": "Input company identity when provider correlation establishes it.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An explicit provider row outcome, without inferred input correlation."
+                                },
+                                "description": "Explicit provider outcomes; may be empty if only an aggregate response is available."
+                            },
+                            "message": {
+                                "description": "Aggregate provider outcome if detailed rows are unavailable; not per-item success.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit company URL lookup outcomes, or an aggregate provider explanation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–50 companies; use `search-company-url` for a single lookup. Found URLs can be passed to `batch-get-companies`. Lookups consume credits when successful; missing outcomes are not successes."
+            },
+            "filePath": "./icypeas/tools/batch-search-company-urls.ts",
+            "version": "8efe26134c2ffc460f070fe19cd0bb2ed1cac81cf5d441353e33a3745093dc2c",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-search-company-urls/8efe26134c2ffc460f070fe19cd0bb2ed1cac81cf5d441353e33a3745093dc2c.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-search-company-urls/8efe26134c2ffc460f070fe19cd0bb2ed1cac81cf5d441353e33a3745093dc2c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-search-profile-urls",
+            "integrationId": "icypeas",
+            "description": "Find professional profile URLs for up to 50 people using their names and employer or title context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchsearchprofileurls",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchsearchprofileurls",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchsearchprofileurls": {
+                        "type": "object",
+                        "properties": {
+                            "people": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "firstName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Given name."
+                                        },
+                                        "lastName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Family name."
+                                        },
+                                        "companyOrDomain": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Employer name, domain or website; required without jobTitle."
+                                        },
+                                        "jobTitle": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Professional title; required without companyOrDomain."
+                                        }
+                                    },
+                                    "required": [
+                                        "firstName",
+                                        "lastName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "companyOrDomain": {
+                                                    "description": "Employer name, domain or website; required without jobTitle."
+                                                }
+                                            },
+                                            "required": [
+                                                "companyOrDomain"
+                                            ]
+                                        },
+                                        {
+                                            "properties": {
+                                                "jobTitle": {
+                                                    "description": "Professional title; required without companyOrDomain."
+                                                }
+                                            },
+                                            "required": [
+                                                "jobTitle"
+                                            ]
+                                        }
+                                    ],
+                                    "description": "A person identified by name and employer or title context."
+                                },
+                                "description": "Person identities to resolve, at most 50."
+                            }
+                        },
+                        "required": [
+                            "people"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One native batch of people whose professional profile URLs should be found."
+                    },
+                    "FunctionOutput_icypeas_batchsearchprofileurls": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Found profile URL or null for an explicit no-match; omitted when unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "error": {
+                                            "description": "Explicit row failure; invalid_input, permission_denied, insufficient_credits or provider_error. Correct the row/account condition before retrying.",
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "description": "Stable item failure code."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Actionable item failure explanation."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "inputIndex": {
+                                            "description": "Zero-based caller row index only if validated provider correlation supports it.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 49
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An explicit provider-returned row outcome, without assumed input correspondence."
+                                },
+                                "description": "Provider-returned outcomes; no assumed input-order correspondence or fabricated missing rows."
+                            },
+                            "message": {
+                                "description": "Aggregate provider outcome when row details are unavailable, not a per-row success guarantee.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit batch outcomes or an aggregate provider message, without inferred per-person success."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–50 people with names and employer/title context. Use `search-profile-url` for one, or `batch-search-profile-urls-by-email` for email-based identity. Found URLs can be passed to `batch-get-profiles`. Successful lookups consume credits."
+            },
+            "filePath": "./icypeas/tools/batch-search-profile-urls.ts",
+            "version": "2eea522e0f016e0f5e5e40b4388b682289ff54b071a85a3737f7baec4c6a53cc",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-search-profile-urls/2eea522e0f016e0f5e5e40b4388b682289ff54b071a85a3737f7baec4c6a53cc.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-search-profile-urls/2eea522e0f016e0f5e5e40b4388b682289ff54b071a85a3737f7baec4c6a53cc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-search-profile-urls-by-email",
+            "integrationId": "icypeas",
+            "description": "Find professional profile URLs associated with 2–50 professional email addresses.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_batchsearchprofileurlsbyemail",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_batchsearchprofileurlsbyemail",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_batchsearchprofileurlsbyemail": {
+                        "type": "object",
+                        "properties": {
+                            "emails": {
+                                "minItems": 2,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "A professional email address."
+                                },
+                                "description": "Professional email addresses, 2–50 per request, preserving caller order."
+                            }
+                        },
+                        "required": [
+                            "emails"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Professional email addresses for one native batch reverse lookup."
+                    },
+                    "FunctionOutput_icypeas_batchsearchprofileurlsbyemail": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Found profile URL, null for explicit no-match, omitted for unknown outcome.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Input address only when echoed or otherwise reliably correlated.",
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "description": "Explicit row failure: invalid_input, permission_denied, insufficient_credits or provider_error. Correct the address/account before retrying it.",
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "description": "Stable item error code."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Actionable item failure text."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One explicit provider-returned reverse-lookup outcome, without assumed input correlation."
+                                },
+                                "description": "Provider-returned reverse-lookup outcomes; not a fabricated outcome for each submitted address."
+                            },
+                            "message": {
+                                "description": "Aggregate provider outcome if row details are absent; not per-address success.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit reverse-lookup outcomes or an aggregate provider acknowledgment."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 2–50 professional emails; use `search-profile-url-by-email` for one address. Found URLs can feed `batch-get-profiles`. Credit usage and item reporting follow provider outcomes; do not assume missing rows succeeded."
+            },
+            "filePath": "./icypeas/tools/batch-search-profile-urls-by-email.ts",
+            "version": "f4b7968f104d60c86ee386d2acb7b97d72984834c83e2697dc4f8a157e169d6e",
+            "location": {
+                "js": "templates-zero/icypeas/tools/batch-search-profile-urls-by-email/f4b7968f104d60c86ee386d2acb7b97d72984834c83e2697dc4f8a157e169d6e.cjs",
+                "ts": "templates-zero/icypeas/tools/batch-search-profile-urls-by-email/f4b7968f104d60c86ee386d2acb7b97d72984834c83e2697dc4f8a157e169d6e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "count-companies",
+            "integrationId": "icypeas",
+            "description": "Count companies matching company criteria without paying for result retrieval.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_countcompanies",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_countcompanies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_countcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "ranges": {
+                                "description": "Integer comparisons for headcount or provider-defined revenue amounts; currency is not specified.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "enum": [
+                                        "headcount",
+                                        "revenue"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "atMost": {
+                                            "description": "Inclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "atLeast": {
+                                            "description": "Inclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "lessThan": {
+                                            "description": "Exclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "greaterThan": {
+                                            "description": "Exclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Integer comparisons; specify at least one bound."
+                                }
+                            },
+                            "filters": {
+                                "description": "Company text or identifier criteria; omitted means unrestricted.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "enum": [
+                                        "name",
+                                        "lid",
+                                        "urn",
+                                        "companyId",
+                                        "type",
+                                        "industry",
+                                        "location",
+                                        "keyword",
+                                        "domain"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "exclude": {
+                                            "description": "Excluded values; omit for no exclusions.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "A company criterion value to exclude."
+                                            }
+                                        },
+                                        "include": {
+                                            "description": "Alternative included values; comma-separated location parts must all match.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "An alternative company criterion value to include."
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Included or excluded company criterion values; specify at least one property."
+                                }
+                            },
+                            "headcountGrowth": {
+                                "description": "Employee growth percentages over a measurement period.",
+                                "type": "object",
+                                "properties": {
+                                    "max": {
+                                        "description": "Inclusive maximum percentage growth.",
+                                        "type": "number",
+                                        "minimum": -100,
+                                        "maximum": 10000
+                                    },
+                                    "min": {
+                                        "description": "Inclusive minimum percentage growth.",
+                                        "type": "number",
+                                        "minimum": -100,
+                                        "maximum": 10000
+                                    },
+                                    "period": {
+                                        "type": "string",
+                                        "enum": [
+                                            "6months",
+                                            "12months",
+                                            "24months"
+                                        ],
+                                        "description": "Measurement window."
+                                    }
+                                },
+                                "required": [
+                                    "period"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Company criteria for a free matching-company count."
+                    },
+                    "FunctionOutput_icypeas_countcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported number of matching companies at request time, not page length."
+                            }
+                        },
+                        "required": [
+                            "count"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider-reported number of matching companies."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use before `search-companies` to assess audience size for free. The count is not a reservation or a promise that a later search sees the same dataset."
+            },
+            "filePath": "./icypeas/tools/count-companies.ts",
+            "version": "a11cc7726155c419eee430a234ee8e6233f9127631c7efe5a6b5cab612565806",
+            "location": {
+                "js": "templates-zero/icypeas/tools/count-companies/a11cc7726155c419eee430a234ee8e6233f9127631c7efe5a6b5cab612565806.cjs",
+                "ts": "templates-zero/icypeas/tools/count-companies/a11cc7726155c419eee430a234ee8e6233f9127631c7efe5a6b5cab612565806.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "count-people",
+            "integrationId": "icypeas",
+            "description": "Count people matching personal and employer criteria without charge.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_countpeople",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_countpeople",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_countpeople": {
+                        "type": "object",
+                        "properties": {
+                            "ranges": {
+                                "description": "Integer bounds for experience/tenure in years, employer headcount in people, or employer revenue in unspecified provider units.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "enum": [
+                                        "totalYearsOfExperience",
+                                        "timeInCurrentCompany",
+                                        "currentCompanyHeadcount",
+                                        "pastCompanyHeadcount",
+                                        "currentCompanyRevenue",
+                                        "pastCompanyRevenue"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "atMost": {
+                                            "description": "Inclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "atLeast": {
+                                            "description": "Inclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "lessThan": {
+                                            "description": "Exclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "greaterThan": {
+                                            "description": "Exclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "One or more integer bounds for a criterion."
+                                }
+                            },
+                            "filters": {
+                                "description": "Personal and current/past-employer criteria with the same meanings as search-people. Current-job criteria constrain one current job; workLocation uses profile wording rather than comma-part location matching.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "enum": [
+                                        "firstName",
+                                        "lastName",
+                                        "currentJobTitle",
+                                        "pastJobTitle",
+                                        "school",
+                                        "languages",
+                                        "skills",
+                                        "location",
+                                        "profileLocation",
+                                        "workLocation",
+                                        "keyword",
+                                        "currentCompanyName",
+                                        "pastCompanyName",
+                                        "currentCompanyId",
+                                        "pastCompanyId",
+                                        "currentCompanyWebsite",
+                                        "pastCompanyWebsite",
+                                        "currentCompanyUrn",
+                                        "pastCompanyUrn",
+                                        "currentCompanyType",
+                                        "pastCompanyType",
+                                        "currentCompanyIndustry",
+                                        "pastCompanyIndustry",
+                                        "currentCompanyLocation",
+                                        "pastCompanyLocation",
+                                        "currentCompanyKeyword",
+                                        "pastCompanyKeyword"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "exclude": {
+                                            "description": "Excluded values, at most 200.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "A value to exclude."
+                                            }
+                                        },
+                                        "include": {
+                                            "description": "Alternative included values, at most 200; IDs stay strings.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "An alternative value to include; IDs stay strings."
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Included or excluded values for one criterion."
+                                }
+                            },
+                            "headcountGrowth": {
+                                "description": "Percentage-growth criteria for current or past employers.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "enum": [
+                                        "currentCompany",
+                                        "pastCompany"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "max": {
+                                            "description": "Inclusive maximum percentage growth.",
+                                            "type": "number",
+                                            "minimum": -100,
+                                            "maximum": 10000
+                                        },
+                                        "min": {
+                                            "description": "Inclusive minimum percentage growth.",
+                                            "type": "number",
+                                            "minimum": -100,
+                                            "maximum": 10000
+                                        },
+                                        "period": {
+                                            "type": "string",
+                                            "enum": [
+                                                "6months",
+                                                "12months",
+                                                "24months"
+                                            ],
+                                            "description": "Growth measurement period."
+                                        }
+                                    },
+                                    "required": [
+                                        "period"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Employer percentage-growth bounds and measurement period."
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Personal and employer criteria for a free point-in-time people count."
+                    },
+                    "FunctionOutput_icypeas_countpeople": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported number of people matching at request time."
+                            }
+                        },
+                        "required": [
+                            "count"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The number of matching people, without retrieving prospect records."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to size an audience before `search-people`. This returns a count only, not prospect records or a reserved audience."
+            },
+            "filePath": "./icypeas/tools/count-people.ts",
+            "version": "c7b59ceff2ba0dd18e520813fd61c685ac30e1e59a2efbb45c9348abe9df3593",
+            "location": {
+                "js": "templates-zero/icypeas/tools/count-people/c7b59ceff2ba0dd18e520813fd61c685ac30e1e59a2efbb45c9348abe9df3593.cjs",
+                "ts": "templates-zero/icypeas/tools/count-people/c7b59ceff2ba0dd18e520813fd61c685ac30e1e59a2efbb45c9348abe9df3593.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-domain-scan",
+            "integrationId": "icypeas",
+            "description": "Queue discovery of role-based addresses for one domain or company.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_createdomainscan",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_createdomainscan",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_createdomainscan": {
+                        "type": "object",
+                        "properties": {
+                            "externalId": {
+                                "description": "Optional caller correlation ID, not an idempotency key.",
+                                "type": "string"
+                            },
+                            "companyOrDomain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Domain or company name to scan for role-based addresses."
+                            }
+                        },
+                        "required": [
+                            "companyOrDomain"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One company or domain to scan, with optional caller correlation."
+                    },
+                    "FunctionOutput_icypeas_createdomainscan": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque search item ID for later result retrieval."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider work status, commonly NONE on acceptance."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the submitted scan, not completed email discovery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for addresses such as contact@ or admin@ at one company; use `create-email-search` for a named prospect. Retrieve the result with `get-search-item`; use `batch-create-domain-scans` for multiple companies. This returns queued work, not completed addresses, and may consume credits."
+            },
+            "filePath": "./icypeas/tools/create-domain-scan.ts",
+            "version": "147defbbee015327ebc5a9cfe81da612213530bc219de2feb40580f412a09aba",
+            "location": {
+                "js": "templates-zero/icypeas/tools/create-domain-scan/147defbbee015327ebc5a9cfe81da612213530bc219de2feb40580f412a09aba.cjs",
+                "ts": "templates-zero/icypeas/tools/create-domain-scan/147defbbee015327ebc5a9cfe81da612213530bc219de2feb40580f412a09aba.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-email-search",
+            "integrationId": "icypeas",
+            "description": "Queue email discovery for one prospect and return its search item immediately.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_createemailsearch",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_createemailsearch",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_createemailsearch": {
+                        "type": "object",
+                        "properties": {
+                            "lastName": {
+                                "description": "Family name; may be omitted if firstName is provided.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "firstName": {
+                                "description": "Given name; may be omitted if lastName is provided.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "externalId": {
+                                "description": "Optional caller correlation ID; not an idempotency key and not required to be unique by Icypeas.",
+                                "type": "string"
+                            },
+                            "companyOrDomain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Prospect's employer name or domain."
+                            }
+                        },
+                        "required": [
+                            "companyOrDomain"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "firstName"
+                                ],
+                                "properties": {
+                                    "firstName": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "lastName"
+                                ],
+                                "properties": {
+                                    "lastName": true
+                                }
+                            }
+                        ],
+                        "description": "One prospect with at least one name and an employer or domain to queue for email discovery."
+                    },
+                    "FunctionOutput_icypeas_createemailsearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque search item ID to pass to get-search-item."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider search status, initially commonly NONE; not a deliverability conclusion."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted email search item for separate result retrieval, not a completed email discovery result."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for one prospect with at least one name and an employer/domain. Use `batch-create-email-searches` for many prospects. This queues work, not a completed email result; continue with `get-search-item`. Credits may be consumed when work completes."
+            },
+            "filePath": "./icypeas/tools/create-email-search.ts",
+            "version": "2d4e386e1439f54fadf481272222c6fc3449320ebae86bb8a9b96335eb3ec85a",
+            "location": {
+                "js": "templates-zero/icypeas/tools/create-email-search/2d4e386e1439f54fadf481272222c6fc3449320ebae86bb8a9b96335eb3ec85a.cjs",
+                "ts": "templates-zero/icypeas/tools/create-email-search/2d4e386e1439f54fadf481272222c6fc3449320ebae86bb8a9b96335eb3ec85a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-email-verification",
+            "integrationId": "icypeas",
+            "description": "Queue verification of one email address and return the search item for later result retrieval.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_createemailverification",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_createemailverification",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_createemailverification": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address to verify."
+                            },
+                            "externalId": {
+                                "description": "Optional caller correlation ID, not an idempotency key.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One email address to queue for verification, with optional caller correlation."
+                    },
+                    "FunctionOutput_icypeas_createemailverification": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque search item ID for get-search-item."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider work status, commonly NONE on acceptance; not a verification verdict."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Search item acknowledgment for later verification result retrieval."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use to queue one email verification, not to send a message. Use `get-search-item` for its result and `batch-create-email-verifications` for many addresses. Acceptance does not establish that the address exists; work may consume credits."
+            },
+            "filePath": "./icypeas/tools/create-email-verification.ts",
+            "version": "9fe2d0849cb7a3af6cdb5e9a563618d9e3448a752cdb585b746756c1706f954e",
+            "location": {
+                "js": "templates-zero/icypeas/tools/create-email-verification/9fe2d0849cb7a3af6cdb5e9a563618d9e3448a752cdb585b746756c1706f954e.cjs",
+                "ts": "templates-zero/icypeas/tools/create-email-verification/9fe2d0849cb7a3af6cdb5e9a563618d9e3448a752cdb585b746756c1706f954e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-bulk-search",
+            "integrationId": "icypeas",
+            "description": "Retrieve one bulk search's identity, lifecycle and available processing statistics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_getbulksearch",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_getbulksearch",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_getbulksearch": {
+                        "type": "object",
+                        "properties": {
+                            "bulkSearchId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque bulk search ID returned as id by a batch create tool."
+                            }
+                        },
+                        "required": [
+                            "bulkSearchId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity of the bulk search to retrieve."
+                    },
+                    "FunctionOutput_icypeas_getbulksearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque bulk search ID."
+                            },
+                            "name": {
+                                "description": "Caller-assigned bulk search name when returned.",
+                                "type": "string"
+                            },
+                            "task": {
+                                "description": "Provider task label preserved as returned.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider lifecycle, typically in_progress or done; omitted if unavailable.",
+                                "type": "string"
+                            },
+                            "statistics": {
+                                "description": "Provider-supplied processing counters, keyed by their provider labels; no missing counters are invented.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "description": "Non-negative provider-supplied processing counter."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bulk search identity, available lifecycle metadata and processing statistics, without result rows."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain bulkSearchId from a batch create tool or `list-bulk-searches`. Use `list-search-items` for actual row findings; this returns job information and statistics only. It does not wait for the job to finish."
+            },
+            "filePath": "./icypeas/tools/get-bulk-search.ts",
+            "version": "a9e656cee2eab3c0d350dcdd1b3eedef5360baf37e5c1ed654fc04879697140e",
+            "location": {
+                "js": "templates-zero/icypeas/tools/get-bulk-search/a9e656cee2eab3c0d350dcdd1b3eedef5360baf37e5c1ed654fc04879697140e.cjs",
+                "ts": "templates-zero/icypeas/tools/get-bulk-search/a9e656cee2eab3c0d350dcdd1b3eedef5360baf37e5c1ed654fc04879697140e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-company",
+            "integrationId": "icypeas",
+            "description": "Retrieve company enrichment for a known LinkedIn company URL. A found company consumes credits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_getcompany",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_getcompany",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "companyUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "LinkedIn company page URL to enrich."
+                            }
+                        },
+                        "required": [
+                            "companyUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company enrichment lookup by a known LinkedIn company page URL."
+                    },
+                    "FunctionOutput_icypeas_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Opaque provider company identifier if returned.",
+                                "type": "string"
+                            },
+                            "lid": {
+                                "description": "LinkedIn public company identifier when returned.",
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Company LinkedIn URL returned by provider, or requested URL if absent."
+                            },
+                            "urn": {
+                                "description": "LinkedIn company URN as an opaque string.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Company name when returned.",
+                                "type": "string"
+                            },
+                            "address": {
+                                "description": "Headquarters location text.",
+                                "type": "string"
+                            },
+                            "website": {
+                                "description": "Company website when returned.",
+                                "type": "string"
+                            },
+                            "industry": {
+                                "description": "Company industry label.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Company description as ordinary Unicode text.",
+                                "type": "string"
+                            },
+                            "specialties": {
+                                "description": "Specialty labels; empty arrays are retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Company specialty label."
+                                }
+                            },
+                            "numberOfEmployees": {
+                                "description": "Provider-reported employee count.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Enriched company business data without scraping transport metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use with a known company URL; obtain one from `search-company-url` or `search-companies`. Use `batch-get-companies` for multiple URLs. A found company may debit credits."
+            },
+            "filePath": "./icypeas/tools/get-company.ts",
+            "version": "0f8fe5e6557f1ad5635c499253085b193131e157695e7b0ac5691d4a0d547997",
+            "location": {
+                "js": "templates-zero/icypeas/tools/get-company/0f8fe5e6557f1ad5635c499253085b193131e157695e7b0ac5691d4a0d547997.cjs",
+                "ts": "templates-zero/icypeas/tools/get-company/0f8fe5e6557f1ad5635c499253085b193131e157695e7b0ac5691d4a0d547997.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-profile",
+            "integrationId": "icypeas",
+            "description": "Retrieve professional profile enrichment for a known LinkedIn profile URL. Found profiles consume credits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_getprofile",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_getprofile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_getprofile": {
+                        "type": "object",
+                        "properties": {
+                            "profileUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "LinkedIn person profile URL to enrich."
+                            }
+                        },
+                        "required": [
+                            "profileUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The known LinkedIn person profile to enrich."
+                    },
+                    "FunctionOutput_icypeas_getprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Opaque provider identifier if returned.",
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Returned profile URL, or requested URL if absent."
+                            },
+                            "jobs": {
+                                "description": "Employment entries when returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "description": "Job title.",
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "description": "Job location wording.",
+                                            "type": "string"
+                                        },
+                                        "isCurrent": {
+                                            "description": "Provider's current-job indicator; omitted if unknown.",
+                                            "type": "boolean"
+                                        },
+                                        "companyUrl": {
+                                            "description": "Employer LinkedIn URL.",
+                                            "type": "string"
+                                        },
+                                        "companyName": {
+                                            "description": "Employer name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An employment entry returned by the provider."
+                                }
+                            },
+                            "skills": {
+                                "description": "Skill labels when returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A skill label."
+                                }
+                            },
+                            "fullName": {
+                                "description": "Provider display name when available.",
+                                "type": "string"
+                            },
+                            "headline": {
+                                "description": "Professional headline text.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Family name when available.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Person location wording.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Given name when available.",
+                                "type": "string"
+                            },
+                            "languages": {
+                                "description": "Language labels when returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A language label."
+                                }
+                            },
+                            "description": {
+                                "description": "Profile summary as ordinary Unicode text.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Professional profile enrichment with available business fields."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain a profile URL from `search-profile-url`, `search-profile-url-by-email`, or `search-people`. Use `batch-get-profiles` for multiple URLs. A found profile may debit credits."
+            },
+            "filePath": "./icypeas/tools/get-profile.ts",
+            "version": "beef12ef43f96b386916d81944c30c4dcc64588ce059deeb14889388199753f8",
+            "location": {
+                "js": "templates-zero/icypeas/tools/get-profile/beef12ef43f96b386916d81944c30c4dcc64588ce059deeb14889388199753f8.cjs",
+                "ts": "templates-zero/icypeas/tools/get-profile/beef12ef43f96b386916d81944c30c4dcc64588ce059deeb14889388199753f8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-search-item",
+            "integrationId": "icypeas",
+            "description": "Retrieve one queued or completed email-discovery, verification, or domain-scan result.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_getsearchitem",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_getsearchitem",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_getsearchitem": {
+                        "type": "object",
+                        "properties": {
+                            "searchItemId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID returned for a single search or one row of a bulk search."
+                            }
+                        },
+                        "required": [
+                            "searchItemId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the single search item to retrieve."
+                    },
+                    "FunctionOutput_icypeas_getsearchitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque search item identifier."
+                            },
+                            "order": {
+                                "description": "Zero-based provider row order when returned.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "emails": {
+                                "description": "Returned address findings; [] is not a no-match conclusion while pending.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Found or tested address."
+                                        },
+                                        "certainty": {
+                                            "description": "Provider verification/certainty label, preserved without collapsing states.",
+                                            "type": "string"
+                                        },
+                                        "mxRecords": {
+                                            "description": "Provider MX record values when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Provider MX record value."
+                                            }
+                                        },
+                                        "mxProvider": {
+                                            "description": "Provider's MX service label.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One returned address finding and its provider verification details."
+                                }
+                            },
+                            "gender": {
+                                "description": "Provider gender label, including UNKNOWN; not inferred.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Unmodified provider status, including pending, no-match and failure states."
+                            },
+                            "fullName": {
+                                "description": "Found full display name when available.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Found family name when available.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "Item creation instant in UTC RFC 3339 form, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "firstName": {
+                                "description": "Found given name when available.",
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "description": "Item modification instant in UTC RFC 3339 form, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "externalId": {
+                                "description": "Caller correlation value if supplied; empty strings retained.",
+                                "type": "string"
+                            },
+                            "bulkSearchId": {
+                                "description": "Parent bulk search identifier if this is a bulk row.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One queued or completed search item with its status and available email findings."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get searchItemId from a create-search tool or `list-search-items`. NONE, SCHEDULED and IN_PROGRESS mean work is still pending; wait before calling again. Inspect status and email certainty rather than treating an empty pending result as no match. This does not start another search."
+            },
+            "filePath": "./icypeas/tools/get-search-item.ts",
+            "version": "b942518523d80c15914a256dde5861d9a614c57f6d07bdb919d614c52d3ff7ee",
+            "location": {
+                "js": "templates-zero/icypeas/tools/get-search-item/b942518523d80c15914a256dde5861d9a614c57f6d07bdb919d614c52d3ff7ee.cjs",
+                "ts": "templates-zero/icypeas/tools/get-search-item/b942518523d80c15914a256dde5861d9a614c57f6d07bdb919d614c52d3ff7ee.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-subscription-information",
+            "integrationId": "icypeas",
+            "description": "Retrieve subscription information, remaining credits and user identity for a supplied account email.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_getsubscriptioninformation",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_getsubscriptioninformation",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_getsubscriptioninformation": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email of the Icypeas user whose subscription this connection is authorized to inspect."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Account email whose subscription information is requested."
+                    },
+                    "FunctionOutput_icypeas_getsubscriptioninformation": {
+                        "type": "object",
+                        "properties": {
+                            "plan": {
+                                "description": "Subscription plan name or identifier when available, preserved as supplied.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider subscription state when available; no undocumented state collapsing.",
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Opaque Icypeas user identifier."
+                            },
+                            "credits": {
+                                "type": "number",
+                                "description": "Provider-reported remaining credit balance in credits; fractional credits are retained without rounding."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "credits"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-reported account identity, remaining credits, and available subscription details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect credit availability or account subscription before paid searches. Supply an account email you are authorized to inspect. This does not upgrade, cancel or change the subscription."
+            },
+            "filePath": "./icypeas/tools/get-subscription-information.ts",
+            "version": "c6a96e5da278c01e5c3927b5b6d6001e8a81e0ba4351275e14d43d497385a152",
+            "location": {
+                "js": "templates-zero/icypeas/tools/get-subscription-information/c6a96e5da278c01e5c3927b5b6d6001e8a81e0ba4351275e14d43d497385a152.cjs",
+                "ts": "templates-zero/icypeas/tools/get-subscription-information/c6a96e5da278c01e5c3927b5b6d6001e8a81e0ba4351275e14d43d497385a152.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-bulk-searches",
+            "integrationId": "icypeas",
+            "description": "List one page of bulk searches and their available progress statistics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_listbulksearches",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_listbulksearches",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_listbulksearches": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Jobs per page, default 10 and maximum 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same status and limit; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "description": "Optional lifecycle restriction; omit to include all jobs.",
+                                "type": "string",
+                                "enum": [
+                                    "in_progress",
+                                    "done"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of bulk searches, optionally restricted by lifecycle."
+                    },
+                    "FunctionOutput_icypeas_listbulksearches": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque bulk search ID."
+                                        },
+                                        "name": {
+                                            "description": "Caller-assigned search name when returned.",
+                                            "type": "string"
+                                        },
+                                        "task": {
+                                            "description": "Provider task label, preserved as returned.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Provider lifecycle, typically in_progress or done.",
+                                            "type": "string"
+                                        },
+                                        "statistics": {
+                                            "description": "Provider processing counters keyed by their labels, without invented counts.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "description": "Nonnegative provider processing counter."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Bulk search identity, available metadata, and processing counters."
+                                },
+                                "description": "Bulk searches in provider creation-date order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; may lead to an empty terminal page and is omitted at verified exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of bulk searches and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to locate bulkSearchId for `get-bulk-search` or `list-search-items`, including after an ambiguous submission. Optionally select in-progress or done jobs. Pass nextCursor as cursor with unchanged status and limit. At most 50 jobs per call."
+            },
+            "filePath": "./icypeas/tools/list-bulk-searches.ts",
+            "version": "67e53e2b83f279297074876a6af1f8120b430c22d340d2a4dc04b47f3b453df2",
+            "location": {
+                "js": "templates-zero/icypeas/tools/list-bulk-searches/67e53e2b83f279297074876a6af1f8120b430c22d340d2a4dc04b47f3b453df2.cjs",
+                "ts": "templates-zero/icypeas/tools/list-bulk-searches/67e53e2b83f279297074876a6af1f8120b430c22d340d2a4dc04b47f3b453df2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-search-items",
+            "integrationId": "icypeas",
+            "description": "Retrieve one page of single-search history or bulk-search row results.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_listsearchitems",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_listsearchitems",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_listsearchitems": {
+                        "type": "object",
+                        "properties": {
+                            "mode": {
+                                "type": "string",
+                                "enum": [
+                                    "single",
+                                    "bulk"
+                                ],
+                                "description": "single lists individual searches; bulk lists rows across bulk searches or one selected bulk."
+                            },
+                            "task": {
+                                "description": "Restrict single mode by task; unavailable in bulk mode.",
+                                "type": "string",
+                                "enum": [
+                                    "email-search",
+                                    "email-verification",
+                                    "domain-scan"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Rows per page, default 10, maximum 100.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for unchanged mode, filters and limit; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "bulkSearchId": {
+                                "description": "Restrict bulk mode to this opaque bulk search ID; unavailable in single mode.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select one page of individual-search history or bulk-search rows.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "mode": {
+                                            "const": "single"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "bulkSearchId"
+                                        ],
+                                        "properties": {
+                                            "bulkSearchId": true
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "mode": {
+                                            "const": "bulk"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "task"
+                                        ],
+                                        "properties": {
+                                            "task": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_icypeas_listsearchitems": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque search item ID."
+                                        },
+                                        "order": {
+                                            "description": "Zero-based provider row order.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "emails": {
+                                            "description": "Address findings when supplied; empty pending results are not no-match verdicts.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "email": {
+                                                        "type": "string",
+                                                        "description": "Found or tested email."
+                                                    },
+                                                    "certainty": {
+                                                        "description": "Provider certainty label without state collapse.",
+                                                        "type": "string"
+                                                    },
+                                                    "mxRecords": {
+                                                        "description": "Returned MX record values.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "An MX record value returned by the provider."
+                                                        }
+                                                    },
+                                                    "mxProvider": {
+                                                        "description": "Provider MX service label.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "email"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One found or tested address and its provider findings."
+                                            }
+                                        },
+                                        "gender": {
+                                            "description": "Provider gender label including UNKNOWN.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Unmodified provider work/result status."
+                                        },
+                                        "fullName": {
+                                            "description": "Found display name.",
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "description": "Found family name.",
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "description": "UTC RFC 3339 creation instant, lossless fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "firstName": {
+                                            "description": "Found given name.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "UTC RFC 3339 modification instant, lossless fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "externalId": {
+                                            "description": "Caller correlation ID when present, including empty strings.",
+                                            "type": "string"
+                                        },
+                                        "bulkSearchId": {
+                                            "description": "Parent bulk ID when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "status"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One search item with its unchanged provider status and available results."
+                                },
+                                "description": "Search items in provider order, including pending or failed work."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; an additional empty terminal page may be required. Omitted at verified exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of search items and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use mode single for individual-search history or bulk for bulk rows; obtain bulkSearchId from a bulk create tool or `list-bulk-searches`. Use `get-search-item` for a known row ID. Pass nextCursor as cursor with unchanged filters and limit. At most 100 rows per call; pending rows are not no-match verdicts."
+            },
+            "filePath": "./icypeas/tools/list-search-items.ts",
+            "version": "8e6c1edfb14db2868f5a1ddd8c97050bf45b856ee00a4bb88e3729e9be90b522",
+            "location": {
+                "js": "templates-zero/icypeas/tools/list-search-items/8e6c1edfb14db2868f5a1ddd8c97050bf45b856ee00a4bb88e3729e9be90b522.cjs",
+                "ts": "templates-zero/icypeas/tools/list-search-items/8e6c1edfb14db2868f5a1ddd8c97050bf45b856ee00a4bb88e3729e9be90b522.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-companies",
+            "integrationId": "icypeas",
+            "description": "Find companies matching company attributes and return one page of company records. Retrieving results consumes credits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_searchcompanies",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_searchcompanies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_searchcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 100,
+                                "description": "Maximum companies in this page; defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this search with identical filters and limit; omit on the first call.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "ranges": {
+                                "description": "Integer comparisons for company headcount or revenue. Revenue units are provider-defined, not assumed to be a particular currency.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "enum": [
+                                        "headcount",
+                                        "revenue"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "atMost": {
+                                            "description": "Inclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "atLeast": {
+                                            "description": "Inclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "lessThan": {
+                                            "description": "Exclusive upper bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "greaterThan": {
+                                            "description": "Exclusive lower bound.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Integer comparisons defining a noncontradictory range."
+                                }
+                            },
+                            "filters": {
+                                "description": "Company criteria; omitted means no attribute restrictions. Different fields are combined by the provider.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "enum": [
+                                        "name",
+                                        "lid",
+                                        "urn",
+                                        "companyId",
+                                        "type",
+                                        "industry",
+                                        "location",
+                                        "keyword",
+                                        "domain"
+                                    ]
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "exclude": {
+                                            "description": "Excluded values, at most 200; omit when no exclusions apply.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "A value to exclude."
+                                            }
+                                        },
+                                        "include": {
+                                            "description": "Alternative included values, at most 200. Comma-separated location parts must all match; IDs remain strings.",
+                                            "maxItems": 200,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "An alternative included value; comma-separated location parts must all match."
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Included or excluded company attribute values."
+                                }
+                            },
+                            "headcountGrowth": {
+                                "description": "Employee growth percentage over a named measurement period.",
+                                "type": "object",
+                                "properties": {
+                                    "max": {
+                                        "description": "Inclusive maximum growth in percentage points, not a fraction.",
+                                        "type": "number",
+                                        "minimum": -100,
+                                        "maximum": 10000
+                                    },
+                                    "min": {
+                                        "description": "Inclusive minimum growth in percentage points, not a fraction.",
+                                        "type": "number",
+                                        "minimum": -100,
+                                        "maximum": 10000
+                                    },
+                                    "period": {
+                                        "type": "string",
+                                        "enum": [
+                                            "6months",
+                                            "12months",
+                                            "24months"
+                                        ],
+                                        "description": "Measurement window preceding the provider observation."
+                                    }
+                                },
+                                "required": [
+                                    "period"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Company search criteria and one-page pagination settings."
+                    },
+                    "FunctionOutput_icypeas_searchcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque company dataset identifier."
+                                        },
+                                        "lid": {
+                                            "description": "LinkedIn public company identifier, when available.",
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "description": "Company LinkedIn URL, when available.",
+                                            "type": "string"
+                                        },
+                                        "urn": {
+                                            "description": "LinkedIn company URN, preserved as an opaque string.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Company display name, when available.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Provider's headquarters location text; not a parsed postal address.",
+                                            "type": "string"
+                                        },
+                                        "website": {
+                                            "description": "Company website as supplied by the provider.",
+                                            "type": "string"
+                                        },
+                                        "industry": {
+                                            "description": "Provider industry label, when available.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Ordinary company description text, including Unicode.",
+                                            "type": "string"
+                                        },
+                                        "specialties": {
+                                            "description": "Company specialty labels; an empty array means none returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A company specialty label as supplied by the provider."
+                                            }
+                                        },
+                                        "numberOfEmployees": {
+                                            "description": "Provider-reported employee count, when available.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company from the provider dataset."
+                                },
+                                "description": "Companies in this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when the provider reports exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One company search page and its continuation, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for company prospecting; use `count-companies` to assess audience size without charge, or `get-company` to enrich a known company URL. Pass nextCursor as cursor with unchanged filters and limit. Each call returns at most 200 companies and may debit credits."
+            },
+            "filePath": "./icypeas/tools/search-companies.ts",
+            "version": "59532663b83b6a2a5e5575e72775e1fea28fa6b3a670720f39dfe5f721785449",
+            "location": {
+                "js": "templates-zero/icypeas/tools/search-companies/59532663b83b6a2a5e5575e72775e1fea28fa6b3a670720f39dfe5f721785449.cjs",
+                "ts": "templates-zero/icypeas/tools/search-companies/59532663b83b6a2a5e5575e72775e1fea28fa6b3a670720f39dfe5f721785449.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-company-url",
+            "integrationId": "icypeas",
+            "description": "Find a company's professional company-page URL using its name, domain, or website.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_searchcompanyurl",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_searchcompanyurl",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_searchcompanyurl": {
+                        "type": "object",
+                        "properties": {
+                            "companyOrDomain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company name, domain or website to identify."
+                            }
+                        },
+                        "required": [
+                            "companyOrDomain"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company identity to use for one company-page URL lookup."
+                    },
+                    "FunctionOutput_icypeas_searchcompanyurl": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "description": "Found company page URL, or null when no match was found.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company-page URL lookup outcome."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use when you have a company name or domain rather than a LinkedIn URL. Pass a found url to `get-company`; use `batch-search-company-urls` for multiple companies. Found URLs consume credits."
+            },
+            "filePath": "./icypeas/tools/search-company-url.ts",
+            "version": "72ebdc0371e4ba3ae2d323bcf40e63ab25a64c9e69340dcbccf20b0b187977a1",
+            "location": {
+                "js": "templates-zero/icypeas/tools/search-company-url/72ebdc0371e4ba3ae2d323bcf40e63ab25a64c9e69340dcbccf20b0b187977a1.cjs",
+                "ts": "templates-zero/icypeas/tools/search-company-url/72ebdc0371e4ba3ae2d323bcf40e63ab25a64c9e69340dcbccf20b0b187977a1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-profile-url",
+            "integrationId": "icypeas",
+            "description": "Find a person's professional profile URL using their name and company or job-title context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_searchprofileurl",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_searchprofileurl",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_searchprofileurl": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Prospect's given name as ordinary text."
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Prospect's family name as ordinary text."
+                            },
+                            "companyOrDomain": {
+                                "description": "Employer name, domain or website; required unless jobTitle is supplied.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "jobTitle": {
+                                "description": "Prospect's job title; required unless companyOrDomain is supplied.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Name and employer or job-title context for one professional profile URL search.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "companyOrDomain"
+                                ],
+                                "properties": {
+                                    "companyOrDomain": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "jobTitle"
+                                ],
+                                "properties": {
+                                    "jobTitle": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_icypeas_searchprofileurl": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "description": "Found professional profile URL, or null for a valid no-match result.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The found professional profile URL, or an explicit no-match result."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use when a person's name and employer or title are known. Use `search-profile-url-by-email` if you only have their professional email. Pass a found URL to `get-profile`. Use `batch-search-profile-urls` for several people. Found URLs consume credits."
+            },
+            "filePath": "./icypeas/tools/search-profile-url.ts",
+            "version": "f0d852efd1e419d73f69c70ec7b54c13c28af22d9f0639ae9b6479400240455f",
+            "location": {
+                "js": "templates-zero/icypeas/tools/search-profile-url/f0d852efd1e419d73f69c70ec7b54c13c28af22d9f0639ae9b6479400240455f.cjs",
+                "ts": "templates-zero/icypeas/tools/search-profile-url/f0d852efd1e419d73f69c70ec7b54c13c28af22d9f0639ae9b6479400240455f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-profile-url-by-email",
+            "integrationId": "icypeas",
+            "description": "Find the professional profile URL associated with one professional email address.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_icypeas_searchprofileurlbyemail",
+            "output_schema_ref": "#/definitions/FunctionOutput_icypeas_searchprofileurlbyemail",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_icypeas_searchprofileurlbyemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Professional email address whose profile URL should be found."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One professional email address to reverse lookup."
+                    },
+                    "FunctionOutput_icypeas_searchprofileurlbyemail": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "description": "Found profile URL, or null for a valid lookup with no match.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The profile URL found by the reverse lookup, or an explicit no-match result."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use when a professional email is known; use `search-profile-url` for name-and-employer matching instead. A found URL can be passed to `get-profile`. Use `batch-search-profile-urls-by-email` for 2–50 addresses. Found reverse lookups consume credits."
+            },
+            "filePath": "./icypeas/tools/search-profile-url-by-email.ts",
+            "version": "357d0331fb2a8fdd7b451cf1c5e944c38af435756b48ae08a933cf2b29f92524",
+            "location": {
+                "js": "templates-zero/icypeas/tools/search-profile-url-by-email/357d0331fb2a8fdd7b451cf1c5e944c38af435756b48ae08a933cf2b29f92524.cjs",
+                "ts": "templates-zero/icypeas/tools/search-profile-url-by-email/357d0331fb2a8fdd7b451cf1c5e944c38af435756b48ae08a933cf2b29f92524.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

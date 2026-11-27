@@ -1,0 +1,719 @@
+{
+    "providerConfigKey": "millionverifier",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Remove an uploaded bulk file from the account.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_deletebulkfile",
+            "name": "delete-bulk-file",
+            "output": [
+                "ActionOutput_millionverifier_deletebulkfile"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_deletebulkfile",
+                "ActionOutput_millionverifier_deletebulkfile"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_deletebulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the bulk file to delete. Example: \"12345\""
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_deletebulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download the verification results report for a completed bulk file",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_downloadbulkfilereport",
+            "name": "download-bulk-file-report",
+            "output": [
+                "ActionOutput_millionverifier_downloadbulkfilereport"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_downloadbulkfilereport",
+                "ActionOutput_millionverifier_downloadbulkfilereport"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_downloadbulkfilereport": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the uploaded file. Example: \"940\""
+                            },
+                            "filter": {
+                                "type": "string",
+                                "enum": [
+                                    "ok",
+                                    "ok_and_catch_all",
+                                    "unknown",
+                                    "invalid",
+                                    "all",
+                                    "custom"
+                                ],
+                                "description": "Result filter preset. Example: \"all\""
+                            },
+                            "statuses": {
+                                "description": "When filter is \"custom\", comma-separated statuses. Example: \"ok,disposable,invalid\"",
+                                "type": "string"
+                            },
+                            "free": {
+                                "description": "When filter is \"custom\", \"1\" or \"0\" to filter free domains",
+                                "type": "string"
+                            },
+                            "role": {
+                                "description": "When filter is \"custom\", \"1\" or \"0\" to filter role emails",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "file_id",
+                            "filter"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_downloadbulkfilereport": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "The downloaded report content as a CSV string"
+                            },
+                            "content_type": {
+                                "description": "The content type of the downloaded report",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve processing status and result counts for an uploaded bulk file.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_getbulkfileinfo",
+            "name": "get-bulk-file-info",
+            "output": [
+                "ActionOutput_millionverifier_getbulkfileinfo"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_getbulkfileinfo",
+                "ActionOutput_millionverifier_getbulkfileinfo"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_getbulkfileinfo": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the uploaded bulk file. Example: \"940\""
+                            },
+                            "api_key": {
+                                "description": "Optional API key override for the bulk API. If omitted, the connection credentials are used.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_getbulkfileinfo": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "unique_emails": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "createdate": {
+                                "type": "string"
+                            },
+                            "percent": {
+                                "type": "number"
+                            },
+                            "total_rows": {
+                                "type": "number"
+                            },
+                            "verified": {
+                                "type": "number"
+                            },
+                            "unverified": {
+                                "type": "number"
+                            },
+                            "ok": {
+                                "type": "number"
+                            },
+                            "catch_all": {
+                                "type": "number"
+                            },
+                            "disposable": {
+                                "type": "number"
+                            },
+                            "invalid": {
+                                "type": "number"
+                            },
+                            "unknown": {
+                                "type": "number"
+                            },
+                            "reverify": {
+                                "type": "number"
+                            },
+                            "credit": {
+                                "type": "number"
+                            },
+                            "estimated_time_sec": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "file_id",
+                            "file_name",
+                            "status",
+                            "unique_emails"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the remaining single-verification and bulk credit balance.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_getcredits",
+            "name": "get-credits",
+            "output": [
+                "ActionOutput_millionverifier_getcredits"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_getcredits",
+                "ActionOutput_millionverifier_getcredits"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_getcredits": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_getcredits": {
+                        "type": "object",
+                        "properties": {
+                            "credits": {
+                                "type": "number"
+                            },
+                            "bulk_credits": {
+                                "type": "number"
+                            },
+                            "renewing_credits": {
+                                "type": "number"
+                            },
+                            "plan": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "credits",
+                            "bulk_credits",
+                            "renewing_credits",
+                            "plan"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List uploaded bulk verification files, with filtering.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_listbulkfiles",
+            "name": "list-bulk-files",
+            "output": [
+                "ActionOutput_millionverifier_listbulkfiles"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_listbulkfiles",
+                "ActionOutput_millionverifier_listbulkfiles"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_listbulkfiles": {
+                        "type": "object",
+                        "properties": {
+                            "offset": {
+                                "description": "Offset for pagination. Example: 0",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "description": "The amount of files to show on one page. Defaults to 50, max 50. Example: 25",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "id": {
+                                "description": "Filter for file IDs. Comma separated values allowed. Example: \"1,2,3\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Filter for file name. Example: \"myfile.txt\"",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Filter for file state. Example: \"in_progress,finished\"",
+                                "type": "string"
+                            },
+                            "updated_at_from": {
+                                "description": "Filter for files updated after the given date time. Format: yyyy-MM-dd HH:mm:ss. Example: \"2023-01-01 15:00:05\"",
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+                            },
+                            "updated_at_to": {
+                                "description": "Filter for files updated before the given date time. Format: yyyy-MM-dd HH:mm:ss. Example: \"2023-01-01 15:00:05\"",
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+                            },
+                            "createdate_from": {
+                                "description": "Filter for files created after the given date time. Format: yyyy-MM-dd HH:mm:ss. Example: \"2023-01-01 15:00:05\"",
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+                            },
+                            "createdate_to": {
+                                "description": "Filter for files created before the given date time. Format: yyyy-MM-dd HH:mm:ss. Example: \"2023-01-01 15:00:05\"",
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+                            },
+                            "percent_from": {
+                                "description": "Filter for files with progress over the given percentage. Example: 50",
+                                "type": "number"
+                            },
+                            "percent_to": {
+                                "description": "Filter for files with progress below the given percentage. Example: 75",
+                                "type": "number"
+                            },
+                            "has_error": {
+                                "description": "Filter for files that had or did not have errors. Example: \"true\" or \"false\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_listbulkfiles": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file_id": {
+                                            "type": "string"
+                                        },
+                                        "file_name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "unique_emails": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "createdate": {
+                                            "type": "string"
+                                        },
+                                        "percent": {
+                                            "type": "number"
+                                        },
+                                        "total_rows": {
+                                            "type": "number"
+                                        },
+                                        "verified": {
+                                            "type": "number"
+                                        },
+                                        "unverified": {
+                                            "type": "number"
+                                        },
+                                        "ok": {
+                                            "type": "number"
+                                        },
+                                        "catch_all": {
+                                            "type": "number"
+                                        },
+                                        "disposable": {
+                                            "type": "number"
+                                        },
+                                        "invalid": {
+                                            "type": "number"
+                                        },
+                                        "unknown": {
+                                            "type": "number"
+                                        },
+                                        "reverify": {
+                                            "type": "number"
+                                        },
+                                        "credit": {
+                                            "type": "number"
+                                        },
+                                        "estimated_time_sec": {
+                                            "type": "number"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "file_id",
+                                        "file_name",
+                                        "status",
+                                        "unique_emails",
+                                        "updated_at",
+                                        "createdate",
+                                        "percent",
+                                        "total_rows",
+                                        "verified",
+                                        "unverified",
+                                        "ok",
+                                        "catch_all",
+                                        "disposable",
+                                        "invalid",
+                                        "unknown",
+                                        "reverify",
+                                        "credit",
+                                        "estimated_time_sec",
+                                        "error"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "files",
+                            "total"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Halt in-progress verification of an uploaded bulk file.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_stopbulkfile",
+            "name": "stop-bulk-file",
+            "output": [
+                "ActionOutput_millionverifier_stopbulkfile"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_stopbulkfile",
+                "ActionOutput_millionverifier_stopbulkfile"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_stopbulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the bulk file to stop processing. Example: \"940\""
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_stopbulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify a single email address in real time.",
+            "endpoint": null,
+            "input": "ActionInput_millionverifier_verifyemail",
+            "name": "verify-email",
+            "output": [
+                "ActionOutput_millionverifier_verifyemail"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_millionverifier_verifyemail",
+                "ActionOutput_millionverifier_verifyemail"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_millionverifier_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address to verify. Example: \"user@example.com\""
+                            },
+                            "timeout": {
+                                "description": "Timeout in seconds (2-60). Default: 20",
+                                "type": "number",
+                                "minimum": 2,
+                                "maximum": 60
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_millionverifier_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            },
+                            "quality": {
+                                "type": "string",
+                                "enum": [
+                                    "good",
+                                    "bad"
+                                ]
+                            },
+                            "result": {
+                                "type": "string"
+                            },
+                            "resultcode": {
+                                "type": "number"
+                            },
+                            "subresult": {
+                                "type": "string"
+                            },
+                            "free": {
+                                "type": "boolean"
+                            },
+                            "role": {
+                                "type": "boolean"
+                            },
+                            "didyoumean": {
+                                "type": "string"
+                            },
+                            "credits": {
+                                "type": "number"
+                            },
+                            "executiontime": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": "string"
+                            },
+                            "livemode": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "quality",
+                            "result",
+                            "resultcode",
+                            "subresult"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync uploaded bulk verification file records (job history).",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "bulk-files",
+            "output": [
+                "BulkFile"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BulkFile"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BulkFile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "file_id": {
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "unique_emails": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "createdate": {
+                                "type": "string"
+                            },
+                            "percent": {
+                                "type": "number"
+                            },
+                            "total_rows": {
+                                "type": "number"
+                            },
+                            "verified": {
+                                "type": "number"
+                            },
+                            "unverified": {
+                                "type": "number"
+                            },
+                            "ok": {
+                                "type": "number"
+                            },
+                            "catch_all": {
+                                "type": "number"
+                            },
+                            "disposable": {
+                                "type": "number"
+                            },
+                            "invalid": {
+                                "type": "number"
+                            },
+                            "unknown": {
+                                "type": "number"
+                            },
+                            "reverify": {
+                                "type": "number"
+                            },
+                            "credit": {
+                                "type": "number"
+                            },
+                            "estimated_time_sec": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "file_id",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,3 +1,19 @@
+export class TaskCapExceededError extends Error {
+    public readonly groupKey: string;
+    public readonly cap: number;
+
+    constructor({ groupKey, cap }: { groupKey: string; cap: number }) {
+        super(`Task cap of ${cap} exceeded for group '${groupKey}'`);
+        this.name = 'TaskCapExceededError';
+        this.groupKey = groupKey;
+        this.cap = cap;
+    }
+}
+
+export function isTaskCapExceededError(err: unknown): boolean {
+    return err instanceof TaskCapExceededError;
+}
+
 export class DuplicateTaskNameError extends Error {
     constructor() {
         super('Task with this name already exists');

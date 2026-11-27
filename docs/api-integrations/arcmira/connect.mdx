@@ -1,0 +1,51 @@
+---
+title: 'Arcmira - How do I link my account?'
+sidebarTitle: 'Arcmira'
+---
+
+## Overview
+
+To authenticate with Arcmira, you need:
+
+1. **API Key** — an Arcmira key that starts with `arc_sk_`. A key from the dashboard or a read-only sign-up key from the API both work.
+
+This guide will show you how to get one.
+
+### Prerequisites
+
+- An Arcmira account. [Sign up](https://arcmira.com/sign-up) with your email; every account starts on the Free plan and includes API access. No card is needed.
+
+### Step 1: Create an API key
+
+1. Sign in to Arcmira and open [Dashboard → API keys](https://arcmira.com/dashboard/api).
+2. Click **Create key**.
+
+<img src="/api-integrations/arcmira/api_keys_page.png" alt="Arcmira API keys page with the Create key button"/>
+
+3. Enter a name for the key, for example the name of your app. Leave **Expires** blank for a key that never expires, then click **Create key**.
+
+<img src="/api-integrations/arcmira/create_key_dialog.png" alt="Arcmira Create key dialog with the key name and Expires fields"/>
+
+4. Copy the `arc_sk_` key from the **API key created** panel. It is shown only once.
+
+<img src="/api-integrations/arcmira/api_key_created.png" alt="Arcmira API key created panel with the Copy button"/>
+
+### Step 2: Or get a sign-up key through the API
+
+Instead of a dashboard key, you can get a read-only `arc_sk_` key without a browser:
+
+1. Send `POST https://api.arcmira.com/v1/signups` with `{"email": "<your email>"}`. Arcmira emails you a six-digit code.
+2. Send `POST https://api.arcmira.com/v1/signups/verify` with `{"email": "<your email>", "code": "<six-digit code>"}`.
+3. Copy the `key` field from the response.
+
+<img src="/api-integrations/arcmira/signup_key_created.png" alt="Arcmira POST /v1/signups/verify response with the sign-up key"/>
+
+### Step 3: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Arcmira.
+2. Enter your `arc_sk_` key in the **API Key** field.
+3. Submit the form. Nango checks the key with Arcmira before saving the connection.
+
+<img src="/api-integrations/arcmira/form.png" alt="Arcmira Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Arcmira.

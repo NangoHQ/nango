@@ -34,11 +34,10 @@ export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateA
     },
     confirmation: ({ args, environment }) =>
         `Deploy template "${args.template}" to integration "${args.integration_id}" in environment "${environment.name}"? Any same-named non-catalog function configuration will be replaced.`,
-    async handler({ args, account, environment, plan }) {
+    async handler({ args, account, environment }) {
         const result = await functionDeploymentService.deployTemplate({
             account,
             environment,
-            plan,
             body: { type: 'template', ...args }
         });
         if (result.isOk()) {

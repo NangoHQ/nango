@@ -1,0 +1,367 @@
+{
+    "providerConfigKey": "discourse",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a category in discourse",
+            "endpoint": null,
+            "input": "ActionInput_discourse_createcategory",
+            "name": "create-category",
+            "output": [
+                "ActionOutput_discourse_createcategory"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_discourse_createcategory",
+                "ActionOutput_discourse_createcategory"
+            ],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discourse_createcategory": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "text_color": {
+                                "type": "string"
+                            },
+                            "parent_category_id": {
+                                "type": "string"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "search_priority": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discourse_createcategory": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "slug": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "description",
+                            "slug"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new topic in discourse",
+            "endpoint": null,
+            "input": "ActionInput_discourse_createtopic",
+            "name": "create-topic",
+            "output": [
+                "ActionOutput_discourse_createtopic"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_discourse_createtopic",
+                "ActionOutput_discourse_createtopic"
+            ],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discourse_createtopic": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "number"
+                            },
+                            "raw": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "title",
+                            "category",
+                            "raw"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discourse_createtopic": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the status of a topic",
+            "endpoint": null,
+            "input": "ActionInput_discourse_updatetopicstatus",
+            "name": "update-topic-status",
+            "output": [
+                "ActionOutput_discourse_updatetopicstatus"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_discourse_updatetopicstatus",
+                "ActionOutput_discourse_updatetopicstatus"
+            ],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discourse_updatetopicstatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "closed"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "pinned"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "pinned_globally"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "archived"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "visible"
+                                    }
+                                ]
+                            },
+                            "enabled": {
+                                "anyOf": [
+                                    {},
+                                    {}
+                                ]
+                            },
+                            "until": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "enabled",
+                            "until"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discourse_updatetopicstatus": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "string"
+                            },
+                            "result": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "result"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of active users from Discourse.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users"
+                }
+            ],
+            "input": "SyncMetadata_discourse_activeusers",
+            "name": "active-users",
+            "output": [
+                "User"
+            ],
+            "runs": "every 1 hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_discourse_activeusers"
+            ],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "admin": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "username",
+                            "name",
+                            "admin"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_discourse_activeusers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "List all categories",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/categories",
+                    "group": "Categories"
+                }
+            ],
+            "input": "SyncMetadata_discourse_categories",
+            "name": "categories",
+            "output": [
+                "Category"
+            ],
+            "runs": "every week",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Category",
+                "SyncMetadata_discourse_categories"
+            ],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Category": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "slug": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "description",
+                            "slug"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_discourse_categories": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

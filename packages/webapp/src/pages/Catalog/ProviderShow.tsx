@@ -1,9 +1,9 @@
-import { ArrowUpRight, Ellipsis, Zap } from 'lucide-react';
+import { ArrowUpRight, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, AlertDescription, Badge, Button, IconButton, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
+import { Alert, AlertDescription, Badge, Button, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -21,7 +21,7 @@ import { useStore } from '@/store';
 import { getDisplayName } from '../Integrations/utils';
 import PageNotFound from '../PageNotFound';
 import { trackSetupButtonClick } from './analytics';
-import { getCategoryLabel, getInstantSetup, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
+import { getCategoryLabel, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
 import { CatalogFunctions } from './components/CatalogFunctions';
 import { CatalogLogo } from './components/CatalogLogo';
 import { ProviderCallout } from './components/ProviderCallout';
@@ -37,7 +37,6 @@ export const CatalogProviderShow: React.FC = () => {
     const { data: integrationsData, isPending: integrationsPending } = useListIntegrations(env);
     const { can } = usePermissions();
     const canSetUp = can('environment:integrations:update');
-    const canCreateConnection = can('environment:connections:update');
     const { data: templatesData, isPending: templatesPending, error: templatesError } = useGetProviderTemplates({ env, provider: providerName });
     const { mutateAsync: postIntegration } = usePostIntegration(env);
     const navigate = useNavigate();
@@ -79,33 +78,27 @@ export const CatalogProviderShow: React.FC = () => {
         try {
             const response = await postIntegration(oneClickSetupBody);
             toast({ title: `${provider.displayName} integration added`, variant: 'success' });
-            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}`);
+            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}/functions`);
         } catch {
             toast({ title: `Failed to add ${provider.displayName}`, variant: 'error' });
         } finally {
             setSettingUp(false);
         }
     };
-    const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
-        <PermissionGate asChild condition={existingIntegrationId ? canCreateConnection : canSetUp}>
+    const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => {
+        if (configuredIntegrationIds && configuredIntegrationIds.length > 0) {
+            return null;
+        }
+        return renderAddIntegrationButton(source, size);
+    };
+    const renderAddIntegrationButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
+        <PermissionGate asChild condition={canSetUp}>
             {(allowed) => {
                 if (configuredIntegrationIds === null) {
                     return (
                         <Button variant="primary" size={size} loading disabled>
                             Add integration
                         </Button>
-                    );
-                }
-                if (existingIntegrationId) {
-                    return (
-                        <ButtonLink
-                            to={`/${env}/connections/create?integration_id=${encodeURIComponent(existingIntegrationId)}`}
-                            variant="primary"
-                            size={size}
-                            disabled={!allowed}
-                        >
-                            Add test connection
-                        </ButtonLink>
                     );
                 }
                 if (oneClickSetupBody && hasCustomSetup(provider)) {
@@ -123,7 +116,7 @@ export const CatalogProviderShow: React.FC = () => {
                                     <DropdownMenuItem
                                         onSelect={() => {
                                             trackSetupButtonClick(provider.name, source, 'advanced');
-                                            void navigate(`/${env}/integrations/create/${provider.name}`);
+                                            void navigate(`/${env}/catalog/${provider.name}/add`);
                                         }}
                                     >
                                         Advanced…
@@ -140,7 +133,7 @@ export const CatalogProviderShow: React.FC = () => {
                     </Button>
                 ) : (
                     <ButtonLink
-                        to={`/${env}/integrations/create/${provider.name}`}
+                        to={`/${env}/catalog/${provider.name}/add`}
                         variant="primary"
                         size={size}
                         disabled={!allowed}
@@ -152,10 +145,8 @@ export const CatalogProviderShow: React.FC = () => {
             }}
         </PermissionGate>
     );
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     const categories = getVisibleCategories(provider);
-
-    const showMoreMenu = Boolean(existingIntegrationId && canSetUp);
 
     return (
         <DashboardLayout hasPageHeading breadcrumbLabel={provider.displayName} className="flex flex-col gap-6">
@@ -190,29 +181,10 @@ export const CatalogProviderShow: React.FC = () => {
                         <TryInPlaygroundButton provider={provider.name} integrationName={provider.displayName} source="catalog" variant="outline" />
                     )}
                     {renderSetupButton('header', 'md')}
-                    {showMoreMenu && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <IconButton variant="ghost" size="md" label="More actions">
-                                    <Ellipsis />
-                                </IconButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    onSelect={() => {
-                                        trackSetupButtonClick(provider.name, 'more_menu', 'form');
-                                        void navigate(`/${env}/integrations/create/${provider.name}`);
-                                    }}
-                                >
-                                    Add another integration
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
                 </div>
             </header>
 
-            <ProviderCallout state={calloutState} displayName={provider.displayName} provider={provider.name} env={env} />
+            <ProviderCallout state={calloutState} displayName={provider.displayName} provider={provider.name} env={env} canAddAnother={canSetUp} />
 
             {templatesPending ? (
                 <Skeleton className="h-24 w-full" />
@@ -223,6 +195,7 @@ export const CatalogProviderShow: React.FC = () => {
             ) : (
                 <CatalogFunctions
                     templates={templatesData?.data ?? []}
+                    provider={provider.name}
                     displayName={provider.displayName}
                     isMcp={isMcp(provider)}
                     renderSetupButton={() => (existingIntegrationId ? null : renderSetupButton('panel', 'sm'))}
@@ -233,7 +206,7 @@ export const CatalogProviderShow: React.FC = () => {
 };
 
 function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds: string[] | null): ProviderCalloutState {
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     if (configuredIntegrationIds === null) {
         // Only instant setup apps always end up with a callout. Elsewhere a placeholder could vanish once the list loads.
         return instantSetup ? { kind: 'loading' } : { kind: 'none' };
@@ -241,7 +214,7 @@ function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds
     if (configuredIntegrationIds.length > 0) {
         return { kind: 'configured', integrationIds: configuredIntegrationIds };
     }
-    if (instantSetup === 'managed') {
+    if (instantSetup === 'nango-managed-app') {
         return { kind: 'instant-managed' };
     }
     if (instantSetup === 'no-dev-app') {

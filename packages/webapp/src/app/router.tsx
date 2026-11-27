@@ -16,6 +16,7 @@ import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredT
 import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
+import { ProviderBreadcrumb } from '@/pages/Catalog/components/ProviderBreadcrumb';
 import { CatalogProviderShow } from '@/pages/Catalog/ProviderShow';
 import { CatalogShow } from '@/pages/Catalog/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
@@ -98,7 +99,20 @@ const RedirectLegacyFunctionPage = () => {
     }
 
     const search = next.toString();
-    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}`, search: search ? `?${search}` : '' }} replace />;
+    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}/functions`, search: search ? `?${search}` : '' }} replace />;
+};
+
+const RedirectToAddIntegration = () => {
+    const { env, provider } = useParams();
+    const location = useLocation();
+
+    return (
+        <Navigate
+            to={{ pathname: `/${env}/catalog/${encodeURIComponent(provider ?? '')}/add`, search: location.search, hash: location.hash }}
+            state={location.state as unknown}
+            replace
+        />
+    );
 };
 
 const ConnectionIndexRedirect = () => {
@@ -255,8 +269,20 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: ':provider',
-                                element: <CatalogProviderShow />,
-                                handle: { breadcrumb: (params) => params.provider || 'Provider' } as BreadcrumbHandle
+                                handle: {
+                                    breadcrumb: (params) => (params.provider ? <ProviderBreadcrumb provider={params.provider} /> : 'Provider')
+                                } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <CatalogProviderShow />
+                                    },
+                                    {
+                                        path: 'add',
+                                        element: <CreateIntegration />,
+                                        handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -270,16 +296,14 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
                                         element: <Navigate to="../../catalog" replace />
                                     },
                                     {
-                                        path: ':providerConfigKey',
-                                        element: <CreateIntegration />,
-                                        handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                                        path: ':provider',
+                                        element: <RedirectToAddIntegration />
                                     }
                                 ]
                             },

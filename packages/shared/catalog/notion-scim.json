@@ -1,0 +1,3133 @@
+{
+    "providerConfigKey": "notion-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make workspace group identities, names and returned member associations available as replicated group records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Groups"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Groups"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Groups": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion group ID in the connected workspace."
+                            },
+                            "members": {
+                                "description": "Returned membership data; [] means explicitly empty, while omission means membership data is unavailable.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque Notion user ID associated with this group."
+                                        },
+                                        "displayName": {
+                                            "description": "Member display label when returned; omitted if unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A returned association between this group and a workspace user."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group's returned human-readable name."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A workspace group identity, name, and member associations when returned by Notion SCIM."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make workspace member identities, access states, workspace roles and returned SCIM profile attributes available as replicated records. General workspace guests are not included.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-workspace-members",
+            "output": [
+                "WorkspaceMembers"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "WorkspaceMembers"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "WorkspaceMembers": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion user ID identifying this workspace member."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Account email from SCIM userName."
+                            },
+                            "active": {
+                                "description": "Reported workspace-access state; omitted if unavailable.",
+                                "type": "boolean"
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "roles": {
+                                        "description": "SCIM profile roles, distinct from workspace authority.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Professional title.",
+                                        "type": "string"
+                                    },
+                                    "emails": {
+                                        "description": "Returned SCIM email entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference.",
+                                        "type": "string"
+                                    },
+                                    "photos": {
+                                        "description": "Returned photo entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "division": {
+                                        "description": "Organizational division.",
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "description": "Profile user type.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Returned postal addresses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address category.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country in provider notation.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Preferred-address flag.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted postal address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code as text.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street-address text including line breaks.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM postal address."
+                                        }
+                                    },
+                                    "givenName": {
+                                        "description": "Given-name component.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost-center identifier or label.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Organizational department.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family-name component.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "description": "Single stored phone number, omitted if none.",
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Stored phone category.",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "description": "Stored phone-number text."
+                                            }
+                                        },
+                                        "required": [
+                                            "value"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "managerEmail": {
+                                        "description": "Manager email, not a Notion ID.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization profile value.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Opaque employee identifier retaining leading zeros.",
+                                        "type": "string"
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred-language value.",
+                                        "type": "string"
+                                    },
+                                    "managerDisplayName": {
+                                        "description": "Manager display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Returned profile attributes; absent/null fields are omitted and explicit empty values preserved."
+                            },
+                            "workspaceRole": {
+                                "description": "Workspace role, retaining unknown future values.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workspace member identity, access state, workspace role, and returned SCIM profile attributes; general workspace guests are excluded."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-member-to-group",
+            "integrationId": "notion-scim",
+            "description": "Add an existing workspace member to a group without replacing the group's other memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_addmembertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_addmembertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion group ID receiving the member."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion user ID of an existing member in the connected workspace."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An existing workspace member and the group to which their association should be added."
+                    },
+                    "FunctionOutput_notion_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "added": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider acknowledged the membership-add operation; not a claim that an invitation was delivered or the association was newly created."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group ID."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "description": "Workspace member ID whose association was requested."
+                            }
+                        },
+                        "required": [
+                            "added",
+                            "groupId",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the requested group membership addition."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups` and memberId from `list-workspace-members`. This adds only the association; it does not provision workspace membership. Use `add-workspace-member` first if the person is not a workspace member. Use `update-group` for an intentional complete membership replacement and `remove-member-from-group` to remove one association. Organization settings may cause group invitation emails."
+            },
+            "filePath": "./notion-scim/tools/add-member-to-group.ts",
+            "version": "70afeaabeee237bfd8c3c8c1e2f233bd295e61fb5c4f61d365c3819e41da09a5",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/add-member-to-group/70afeaabeee237bfd8c3c8c1e2f233bd295e61fb5c4f61d365c3819e41da09a5.cjs",
+                "ts": "templates-zero/notion-scim/tools/add-member-to-group/70afeaabeee237bfd8c3c8c1e2f233bd295e61fb5c4f61d365c3819e41da09a5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "add-workspace-member",
+            "integrationId": "notion-scim",
+            "description": "Add a person to the connected workspace by email, creating their Notion account if necessary. Also supports transitioning a page guest to a restricted member.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_addworkspacemember",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_addworkspacemember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_addworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Account email used to find or create the person and add workspace membership."
+                            },
+                            "profile": {
+                                "description": "Optional profile attributes to provision; omitted fields are not supplied. Organization ownership and domain rules apply.",
+                                "type": "object",
+                                "properties": {
+                                    "roles": {
+                                        "description": "SCIM profile roles, distinct from workspaceRole.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category for this entry; omitted when unspecified.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "The entry's text value, such as a photo URL, email address, or role."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the preferred entry; omitted leaves the provider preference unspecified.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Structured SCIM profile entry to provision."
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Professional title.",
+                                        "type": "string"
+                                    },
+                                    "emails": {
+                                        "description": "Additional SCIM email entries, distinct from the required account email.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category for this entry; omitted when unspecified.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "The entry's text value, such as a photo URL, email address, or role."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the preferred entry; omitted leaves the provider preference unspecified.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Structured SCIM profile entry to provision."
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference in the provider's notation.",
+                                        "type": "string"
+                                    },
+                                    "photos": {
+                                        "description": "Profile photo URL entries, read by Notion on creation but not on subsequent updates.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category for this entry; omitted when unspecified.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "The entry's text value, such as a photo URL, email address, or role."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the preferred entry; omitted leaves the provider preference unspecified.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Structured SCIM profile entry to provision."
+                                        }
+                                    },
+                                    "division": {
+                                        "description": "Organizational division.",
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "description": "Profile user-type value, not workspace authority.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Structured postal addresses; an empty array supplies no addresses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address category, such as work.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country in the provider's notation.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the preferred postal address.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted postal address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code as text, preserving leading zeros.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street-address text, including any line breaks.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Structured postal address to provision."
+                                        }
+                                    },
+                                    "givenName": {
+                                        "description": "Given-name component used as an alternative to the formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost-center identifier or label.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Organizational department.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family-name component used as an alternative to the formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Recommended full name, mapped to SCIM name.formatted; empty text is passed unchanged.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "description": "The single phone number Notion stores for this person.",
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Provider phone category, such as work or mobile; omitted when unspecified.",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "description": "Phone number text, without imposing a telephone-number normalization."
+                                            }
+                                        },
+                                        "required": [
+                                            "value"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "managerEmail": {
+                                        "description": "Manager email address; Notion expects email rather than a Notion ID.",
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    "organization": {
+                                        "description": "Organization profile value.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Opaque employee identifier; leading zeros are retained.",
+                                        "type": "string"
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred-language value in the provider's notation.",
+                                        "type": "string"
+                                    },
+                                    "managerDisplayName": {
+                                        "description": "Manager's display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workspaceRole": {
+                                "description": "Workspace authority to assign; omitted uses the provider's provisioning default. restricted_member also supports converting a page guest.",
+                                "type": "string",
+                                "enum": [
+                                    "owner",
+                                    "membership_admin",
+                                    "member",
+                                    "restricted_member"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provision a workspace member by account email with optional workspace authority and profile attributes."
+                    },
+                    "FunctionOutput_notion_scim_addworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion user ID identifying this workspace member."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Account email from SCIM userName."
+                            },
+                            "active": {
+                                "description": "Provider-reported workspace-access state; omitted if not returned.",
+                                "type": "boolean"
+                            },
+                            "profile": {
+                                "description": "Profile attributes actually returned by Notion; missing or null attributes are omitted, not invented.",
+                                "type": "object",
+                                "properties": {
+                                    "roles": {
+                                        "description": "SCIM profile roles, distinct from workspace authority.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category, omitted if unavailable.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag, omitted if unavailable.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "SCIM profile entry returned by Notion."
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Professional title.",
+                                        "type": "string"
+                                    },
+                                    "emails": {
+                                        "description": "Returned SCIM email entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category, omitted if unavailable.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag, omitted if unavailable.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "SCIM profile entry returned by Notion."
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference.",
+                                        "type": "string"
+                                    },
+                                    "photos": {
+                                        "description": "Returned photo entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category, omitted if unavailable.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag, omitted if unavailable.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "SCIM profile entry returned by Notion."
+                                        }
+                                    },
+                                    "division": {
+                                        "description": "Organizational division.",
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "description": "Profile user type.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Returned structured postal addresses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address category.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country in provider notation.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the preferred address.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted postal address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code as text.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street-address text with line breaks preserved.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Structured postal address returned by Notion."
+                                        }
+                                    },
+                                    "givenName": {
+                                        "description": "Given-name component, when returned.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost-center identifier or label.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Organizational department.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family-name component, when returned.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Formatted full name, when returned.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "description": "The single stored phone number, omitted when none is returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Stored phone category, omitted when unavailable.",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "description": "Stored phone-number text."
+                                            }
+                                        },
+                                        "required": [
+                                            "value"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "managerEmail": {
+                                        "description": "Manager email, not a Notion user identifier.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization profile value.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Opaque employee identifier with leading zeros preserved.",
+                                        "type": "string"
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred-language value.",
+                                        "type": "string"
+                                    },
+                                    "managerDisplayName": {
+                                        "description": "Manager display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workspaceRole": {
+                                "description": "Provider workspace role, including unfamiliar future roles; omitted if unavailable.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workspace member accepted by Notion provisioning; this does not establish invitation delivery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to provision workspace membership by email, including a guest-to-restricted-member transition. Use `update-workspace-member` for someone who is already a workspace member and `list-workspace-members` to look them up. Provisioning can send invitation emails according to organization settings. Profile photos are accepted only during provisioning. This requires an Enterprise workspace with SCIM configured by an owner."
+            },
+            "filePath": "./notion-scim/tools/add-workspace-member.ts",
+            "version": "62a8917ad0e367a0a4c484cdaa0be24f6ff72c62777b3ae3e9c27e985782767c",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/add-workspace-member/62a8917ad0e367a0a4c484cdaa0be24f6ff72c62777b3ae3e9c27e985782767c.cjs",
+                "ts": "templates-zero/notion-scim/tools/add-workspace-member/62a8917ad0e367a0a4c484cdaa0be24f6ff72c62777b3ae3e9c27e985782767c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "notion-scim",
+            "description": "Create a workspace group, optionally with an initial set of workspace members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "memberIds": {
+                                "description": "Opaque Notion user IDs for initial membership; omitted or [] creates a group without initial members. Maximum 100 in this call.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Notion user ID for an initial workspace membership."
+                                },
+                                "uniqueItems": true
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Human-readable group name, supplied as ordinary Unicode text."
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create a workspace group with an optional initial set of existing workspace members."
+                    },
+                    "FunctionOutput_notion_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion group ID."
+                            },
+                            "members": {
+                                "description": "Group memberships returned by Notion; [] means explicitly empty, while omission means membership data was not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque Notion user ID referenced by this group membership."
+                                        },
+                                        "displayName": {
+                                            "description": "Member display label when returned; omitted if unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A group membership returned by Notion."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group name returned by Notion."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group accepted by Notion, including only membership data returned by Notion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to create a new group. Obtain initial member IDs from `list-workspace-members`. Use `list-groups` to find an existing group and `update-group` to rename it or replace its membership. Use `add-member-to-group` for one subsequent membership addition. Group provisioning may send invitation emails according to organization settings. Initial membership is limited to 100 members per call."
+            },
+            "filePath": "./notion-scim/tools/create-group.ts",
+            "version": "31d973d2e68edfe50f48b1363e7c4be12dffab27b5665b691684e871bc121c75",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/create-group/31d973d2e68edfe50f48b1363e7c4be12dffab27b5665b691684e871bc121c75.cjs",
+                "ts": "templates-zero/notion-scim/tools/create-group/31d973d2e68edfe50f48b1363e7c4be12dffab27b5665b691684e871bc121c75.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-group",
+            "integrationId": "notion-scim",
+            "description": "Delete a workspace group, subject to Notion's safeguard against leaving pages with no one having full access.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_deletegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_deletegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion group ID to delete from the connected workspace."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The workspace group to delete."
+                    },
+                    "FunctionOutput_notion_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Notion acknowledged deleting the group; no restoration capability is implied."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Group ID targeted by the acknowledged deletion."
+                            }
+                        },
+                        "required": [
+                            "deleted",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the workspace group deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Find the group ID with `list-groups` and inspect it with `get-group` before deletion if needed. This deletes the group and its membership associations, not the members' accounts or workspace memberships. Notion forbids deletion when it would leave a page with nobody having full access. Recovery or restoration of the deleted group is not documented; do not assume deletion can be undone. Use `remove-member-from-group` to remove just one association."
+            },
+            "filePath": "./notion-scim/tools/delete-group.ts",
+            "version": "0e23993780131f2de4e16a7724f3f58d5f27a363c25b15569e44ba63732b3ed4",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/delete-group/0e23993780131f2de4e16a7724f3f58d5f27a363c25b15569e44ba63732b3ed4.cjs",
+                "ts": "templates-zero/notion-scim/tools/delete-group/0e23993780131f2de4e16a7724f3f58d5f27a363c25b15569e44ba63732b3ed4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "notion-scim",
+            "description": "Retrieve a workspace group's name and returned membership information by Notion group ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion group ID in the connected workspace."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the workspace group to retrieve."
+                    },
+                    "FunctionOutput_notion_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion group ID."
+                            },
+                            "members": {
+                                "description": "Returned membership array; [] explicitly means empty, while omission means not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque Notion user ID referenced by this membership."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member label, omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A membership returned by Notion."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group name returned by Notion."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The workspace group and its returned membership information."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a group ID returned by `list-groups` or `create-group`. Use `list-groups` when you know only the name. Returned member IDs can be read with `get-workspace-member`; absent membership data is not the same as an empty group."
+            },
+            "filePath": "./notion-scim/tools/get-group.ts",
+            "version": "97b7ab7845ee30197ba976b0a90f0b8d378e20aa0fd4e85c6a02e79476ab284d",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/get-group/97b7ab7845ee30197ba976b0a90f0b8d378e20aa0fd4e85c6a02e79476ab284d.cjs",
+                "ts": "templates-zero/notion-scim/tools/get-group/97b7ab7845ee30197ba976b0a90f0b8d378e20aa0fd4e85c6a02e79476ab284d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "notion-scim",
+            "description": "Retrieve the SCIM protocol features and authentication schemes advertised for the connected workspace.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed to retrieve the connected workspace SCIM configuration."
+                    },
+                    "FunctionOutput_notion_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "bulk": {
+                                "description": "Advertised SCIM bulk capability and limits, not a promise of an available public batch tool.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether the provider advertises bulk support."
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations per bulk request; omitted if unspecified.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadBytes": {
+                                        "description": "Advertised maximum bulk payload size in bytes; omitted if unspecified.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "etag": {
+                                "description": "Advertised entity-tag capability; omitted if not reported.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether the provider advertises this feature as supported."
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "sort": {
+                                "description": "Advertised sorting capability; omitted if not reported.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether the provider advertises this feature as supported."
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "patch": {
+                                "description": "Advertised PATCH capability; omitted when not reported.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether the provider advertises this feature as supported."
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "description": "Advertised filtering capability and limit.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether filtering is advertised as supported."
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised maximum filter result count; omitted if unspecified.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "changePassword": {
+                                "description": "Advertised password-change capability; omitted if not reported.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "type": "boolean",
+                                        "description": "Whether the provider advertises this feature as supported."
+                                    }
+                                },
+                                "required": [
+                                    "supported"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "documentationUrl": {
+                                "description": "Provider documentation URI, omitted when unavailable.",
+                                "type": "string"
+                            },
+                            "authenticationSchemes": {
+                                "description": "Advertised authentication schemes in provider order; [] means explicitly none, omission means not supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Human-readable authentication-scheme name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Advertised authentication-scheme type.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this scheme is advertised as primary; omitted if unspecified.",
+                                            "type": "boolean"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the scheme.",
+                                            "type": "string"
+                                        },
+                                        "documentationUrl": {
+                                            "description": "Scheme documentation URI, omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "specificationUrl": {
+                                            "description": "URI describing the authentication specification, omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One advertised authentication scheme."
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Advertised SCIM capabilities, limits, and authentication schemes without the protocol envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this administrative discovery tool to inspect supported SCIM features and advertised limits. Use `list-resource-types` for resource schemas and `list-workspace-members` or `list-groups` for actual records. Advertised support does not by itself provide a callable operation for a feature such as bulk requests."
+            },
+            "filePath": "./notion-scim/tools/get-service-provider-config.ts",
+            "version": "9d0d8f7e77b5f0e06bb245b0b9d17906bce0465204045d6647ff88d8ad5e39d9",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/get-service-provider-config/9d0d8f7e77b5f0e06bb245b0b9d17906bce0465204045d6647ff88d8ad5e39d9.cjs",
+                "ts": "templates-zero/notion-scim/tools/get-service-provider-config/9d0d8f7e77b5f0e06bb245b0b9d17906bce0465204045d6647ff88d8ad5e39d9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-workspace-member",
+            "integrationId": "notion-scim",
+            "description": "Retrieve a workspace member's identity, workspace role and returned SCIM profile attributes by Notion user ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_getworkspacemember",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_getworkspacemember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_getworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion user ID of a member in the connected workspace."
+                            }
+                        },
+                        "required": [
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one member of the connected workspace."
+                    },
+                    "FunctionOutput_notion_scim_getworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion user ID of this workspace member."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Account email from SCIM userName."
+                            },
+                            "active": {
+                                "description": "Reported workspace-access state, omitted if unavailable.",
+                                "type": "boolean"
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "roles": {
+                                        "description": "SCIM profile roles, distinct from workspace authority.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider entry category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Professional title.",
+                                        "type": "string"
+                                    },
+                                    "emails": {
+                                        "description": "Returned SCIM email entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider entry category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference.",
+                                        "type": "string"
+                                    },
+                                    "photos": {
+                                        "description": "Returned photo entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider entry category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM profile entry."
+                                        }
+                                    },
+                                    "division": {
+                                        "description": "Organizational division.",
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "description": "Profile user type.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Returned postal addresses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address category.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country in provider notation.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Preferred-address flag.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted postal address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code as text.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street-address text, preserving line breaks.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Returned SCIM postal address."
+                                        }
+                                    },
+                                    "givenName": {
+                                        "description": "Given-name component, if returned.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost-center identifier or label.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Organizational department.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family-name component, if returned.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "description": "Single stored phone number, omitted when none is returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Stored phone category, omitted if unavailable.",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "description": "Stored phone-number text."
+                                            }
+                                        },
+                                        "required": [
+                                            "value"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "managerEmail": {
+                                        "description": "Manager email, not a Notion ID.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization profile value.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Opaque employee identifier, retaining leading zeros.",
+                                        "type": "string"
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred-language value.",
+                                        "type": "string"
+                                    },
+                                    "managerDisplayName": {
+                                        "description": "Manager display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Returned profile attributes; absent/null attributes are omitted and explicit empty values are preserved."
+                            },
+                            "workspaceRole": {
+                                "description": "Reported workspace role, including unfamiliar future values; omitted if unavailable.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workspace member identity, workspace authority, and returned SCIM profile attributes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a member ID returned by `list-workspace-members` or `add-workspace-member`. Use `list-workspace-members` to find a person by email or name. This reads workspace members, not general Notion accounts or workspace guests."
+            },
+            "filePath": "./notion-scim/tools/get-workspace-member.ts",
+            "version": "d704b7e546e649934df0cb4b8e14d2e8d6c371295db3f3face19ac3860c6af1c",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/get-workspace-member/d704b7e546e649934df0cb4b8e14d2e8d6c371295db3f3face19ac3860c6af1c.cjs",
+                "ts": "templates-zero/notion-scim/tools/get-workspace-member/d704b7e546e649934df0cb4b8e14d2e8d6c371295db3f3face19ac3860c6af1c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "notion-scim",
+            "description": "Retrieve one page of workspace groups, optionally matching a display name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum groups requested in this page; defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same connection, displayName filter and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "displayName": {
+                                "description": "Optional group-name equality filter; omitted lists groups without filtering. Matching case behavior is provider-defined.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of workspace groups, optionally matching a group name."
+                    },
+                    "FunctionOutput_notion_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Notion group ID."
+                                        },
+                                        "members": {
+                                            "description": "Returned membership data; [] is explicitly empty, omission means not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "memberId": {
+                                                        "type": "string",
+                                                        "description": "Opaque Notion user ID referenced by this membership."
+                                                    },
+                                                    "displayName": {
+                                                        "description": "Returned member label, omitted if unavailable.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "memberId"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A returned group membership."
+                                            }
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Returned group name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "displayName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workspace group and any returned membership data."
+                                },
+                                "description": "Groups in this provider page, preserving provider order; empty if none match."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation, omitted when provider pagination metadata establishes exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of workspace groups and its available continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse groups or find groups by name; names are not promised to be unique. Pass `nextCursor` back as `cursor` with the same displayName and limit for another page. Each call requests at most 100 groups. Use `get-group` for a known group ID."
+            },
+            "filePath": "./notion-scim/tools/list-groups.ts",
+            "version": "8f58d9c6f6daa7672d715a026ff875c01ebeeaadf3ece007d3b8ac6537be660c",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/list-groups/8f58d9c6f6daa7672d715a026ff875c01ebeeaadf3ece007d3b8ac6537be660c.cjs",
+                "ts": "templates-zero/notion-scim/tools/list-groups/8f58d9c6f6daa7672d715a026ff875c01ebeeaadf3ece007d3b8ac6537be660c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-resource-types",
+            "integrationId": "notion-scim",
+            "description": "Retrieve the SCIM resource types available to the connected workspace for provisioning integration discovery.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_listresourcetypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_listresourcetypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed for workspace resource-type discovery."
+                    },
+                    "FunctionOutput_notion_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque resource-type identifier, omitted when not supplied.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "SCIM resource-type name, such as User or Group."
+                                        },
+                                        "schema": {
+                                            "description": "Core SCIM schema URI for the resource type, omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "Provider endpoint path for this resource type; informational, not a new callable dependency.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the resource type, omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "schemaExtensions": {
+                                            "description": "Advertised extension schemas; [] means explicitly none, omission means not supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "schema": {
+                                                        "type": "string",
+                                                        "description": "Extension schema URI."
+                                                    },
+                                                    "required": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the provider requires this extension for the resource type."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "schema",
+                                                    "required"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An extension schema advertised for this resource type."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A resource type advertised by the workspace for SCIM provisioning."
+                                },
+                                "description": "Resource types returned by this discovery request, without the SCIM list envelope."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The resource-type discovery collection returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this administrative discovery tool to inspect which resource types and schema extensions the workspace exposes. It returns the collection supplied by the provider in one call, not workspace users or groups; use `list-workspace-members` or `list-groups` for those records. Use `get-service-provider-config` for supported protocol features."
+            },
+            "filePath": "./notion-scim/tools/list-resource-types.ts",
+            "version": "baddd40f24fb799d567a823b1a0e82f9d31247565d78d6f5adbbf04fb7cbb0fa",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/list-resource-types/baddd40f24fb799d567a823b1a0e82f9d31247565d78d6f5adbbf04fb7cbb0fa.cjs",
+                "ts": "templates-zero/notion-scim/tools/list-resource-types/baddd40f24fb799d567a823b1a0e82f9d31247565d78d6f5adbbf04fb7cbb0fa.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-workspace-members",
+            "integrationId": "notion-scim",
+            "description": "Retrieve one page of workspace members, optionally matching an email, given name or family name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_listworkspacemembers",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_listworkspacemembers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_listworkspacemembers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum members requested in this page; defaults to 100.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same connection, filter and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional equality filter; omission lists members without a filter.",
+                                "type": "object",
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "email",
+                                            "givenName",
+                                            "familyName"
+                                        ],
+                                        "description": "Member attribute to match; names are case sensitive and email is lowercased."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Ordinary text to match, not a SCIM expression; the implementation escapes and encodes it."
+                                    }
+                                },
+                                "required": [
+                                    "field",
+                                    "value"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for retrieving one page of workspace members."
+                    },
+                    "FunctionOutput_notion_scim_listworkspacemembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Notion user ID."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Account email from SCIM userName."
+                                        },
+                                        "active": {
+                                            "description": "Reported workspace-access state; omitted if unavailable.",
+                                            "type": "boolean"
+                                        },
+                                        "profile": {
+                                            "description": "Returned profile data; absent/null attributes are omitted and explicit empty values preserved.",
+                                            "type": "object",
+                                            "properties": {
+                                                "roles": {
+                                                    "description": "SCIM profile roles, distinct from workspace authority.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Provider category.",
+                                                                "type": "string"
+                                                            },
+                                                            "value": {
+                                                                "description": "Entry text value.",
+                                                                "type": "string"
+                                                            },
+                                                            "primary": {
+                                                                "description": "Provider preference flag.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A returned SCIM profile entry."
+                                                    }
+                                                },
+                                                "title": {
+                                                    "description": "Professional title.",
+                                                    "type": "string"
+                                                },
+                                                "emails": {
+                                                    "description": "Returned SCIM email entries.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Provider category.",
+                                                                "type": "string"
+                                                            },
+                                                            "value": {
+                                                                "description": "Entry text value.",
+                                                                "type": "string"
+                                                            },
+                                                            "primary": {
+                                                                "description": "Provider preference flag.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A returned SCIM profile entry."
+                                                    }
+                                                },
+                                                "locale": {
+                                                    "description": "Locale preference.",
+                                                    "type": "string"
+                                                },
+                                                "photos": {
+                                                    "description": "Returned photo entries.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Provider category.",
+                                                                "type": "string"
+                                                            },
+                                                            "value": {
+                                                                "description": "Entry text value.",
+                                                                "type": "string"
+                                                            },
+                                                            "primary": {
+                                                                "description": "Provider preference flag.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A returned SCIM profile entry."
+                                                    }
+                                                },
+                                                "division": {
+                                                    "description": "Organizational division.",
+                                                    "type": "string"
+                                                },
+                                                "userType": {
+                                                    "description": "Profile user type.",
+                                                    "type": "string"
+                                                },
+                                                "addresses": {
+                                                    "description": "Returned postal addresses.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Address category.",
+                                                                "type": "string"
+                                                            },
+                                                            "region": {
+                                                                "description": "State, province, or region.",
+                                                                "type": "string"
+                                                            },
+                                                            "country": {
+                                                                "description": "Country in provider notation.",
+                                                                "type": "string"
+                                                            },
+                                                            "primary": {
+                                                                "description": "Preferred-address flag.",
+                                                                "type": "boolean"
+                                                            },
+                                                            "locality": {
+                                                                "description": "City or locality.",
+                                                                "type": "string"
+                                                            },
+                                                            "formatted": {
+                                                                "description": "Full formatted postal address.",
+                                                                "type": "string"
+                                                            },
+                                                            "postalCode": {
+                                                                "description": "Postal code as text.",
+                                                                "type": "string"
+                                                            },
+                                                            "streetAddress": {
+                                                                "description": "Street-address text including line breaks.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A returned postal address."
+                                                    }
+                                                },
+                                                "givenName": {
+                                                    "description": "Given-name component.",
+                                                    "type": "string"
+                                                },
+                                                "costCenter": {
+                                                    "description": "Cost-center identifier or label.",
+                                                    "type": "string"
+                                                },
+                                                "department": {
+                                                    "description": "Organizational department.",
+                                                    "type": "string"
+                                                },
+                                                "familyName": {
+                                                    "description": "Family-name component.",
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "description": "Formatted full name.",
+                                                    "type": "string"
+                                                },
+                                                "phoneNumber": {
+                                                    "description": "Single stored phone number, omitted if none.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Stored phone category.",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "type": "string",
+                                                            "description": "Stored phone-number text."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "value"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                "managerEmail": {
+                                                    "description": "Manager email, not a Notion ID.",
+                                                    "type": "string"
+                                                },
+                                                "organization": {
+                                                    "description": "Organization profile value.",
+                                                    "type": "string"
+                                                },
+                                                "employeeNumber": {
+                                                    "description": "Opaque employee identifier retaining leading zeros.",
+                                                    "type": "string"
+                                                },
+                                                "preferredLanguage": {
+                                                    "description": "Preferred-language value.",
+                                                    "type": "string"
+                                                },
+                                                "managerDisplayName": {
+                                                    "description": "Manager display name.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "workspaceRole": {
+                                            "description": "Reported workspace role; unknown future values are preserved.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workspace member and the profile attributes returned by Notion."
+                                },
+                                "description": "Workspace members in this provider page, in provider order; empty when none match."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation, omitted when the provider's pagination metadata establishes exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of workspace members and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse members or find one by email or name. Name matches are case sensitive; email is lowercased for matching. Pass `nextCursor` back as `cursor` with the same filter and limit for another page. Each call returns at most 100 members. Use `get-workspace-member` when you already know the ID. Guests are not generally available through this API."
+            },
+            "filePath": "./notion-scim/tools/list-workspace-members.ts",
+            "version": "df31f720b4d671cb4166cec04dc2a5f64e594527ee0711b49ea67dd3cebcd278",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/list-workspace-members/df31f720b4d671cb4166cec04dc2a5f64e594527ee0711b49ea67dd3cebcd278.cjs",
+                "ts": "templates-zero/notion-scim/tools/list-workspace-members/df31f720b4d671cb4166cec04dc2a5f64e594527ee0711b49ea67dd3cebcd278.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-group",
+            "integrationId": "notion-scim",
+            "description": "Remove one workspace member's group association without deleting the group, the person's account or their workspace membership.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_removememberfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_removememberfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion group ID from which to remove the association."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion user ID whose association with this group is to be removed."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group and workspace member whose group association should be removed."
+                    },
+                    "FunctionOutput_notion_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group ID."
+                            },
+                            "removed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider acknowledged the targeted association-removal operation; this does not mean workspace membership or the account was deleted."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "description": "Member ID whose group association was targeted."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "removed",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the targeted group-association removal, not account or workspace-member deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use IDs from `list-groups` and `list-workspace-members`; `get-group` shows returned membership IDs. This removes only the group association and may remove group-derived page access. It does not remove the person from the workspace. Use `remove-workspace-member` for workspace removal and `update-group` for a complete member-set replacement."
+            },
+            "filePath": "./notion-scim/tools/remove-member-from-group.ts",
+            "version": "81c8eb8283c800114f107bb360a3dc0277354fcc7d496338e3b030e04f198cbd",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/remove-member-from-group/81c8eb8283c800114f107bb360a3dc0277354fcc7d496338e3b030e04f198cbd.cjs",
+                "ts": "templates-zero/notion-scim/tools/remove-member-from-group/81c8eb8283c800114f107bb360a3dc0277354fcc7d496338e3b030e04f198cbd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-workspace-member",
+            "integrationId": "notion-scim",
+            "description": "Remove a person's workspace membership and log them out of active sessions without deleting their Notion account.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_removeworkspacemember",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_removeworkspacemember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_removeworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion user ID whose membership in the connected workspace is to be removed."
+                            }
+                        },
+                        "required": [
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The member whose access to the connected workspace will be removed."
+                    },
+                    "FunctionOutput_notion_scim_removeworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "removed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Notion acknowledged successful removal; this does not mean the person's Notion account was deleted."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "description": "Notion user ID targeted by the completed workspace-removal request."
+                            }
+                        },
+                        "required": [
+                            "removed",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of completed workspace membership removal, not account deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the member ID from `list-workspace-members`. This removes workspace access and logs the person out of all active sessions; it does not delete their Notion account. The owner who created the current SCIM bot token cannot be removed this way. Removing another owner revokes tokens they created and can break integrations; arrange replacement tokens first. Use `add-workspace-member` for later provisioning, not as a promise to restore prior permissions."
+            },
+            "filePath": "./notion-scim/tools/remove-workspace-member.ts",
+            "version": "3204f0b2d24bfa2b19736854240167b86a6220234d64b89f15b21b66b94ff641",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/remove-workspace-member/3204f0b2d24bfa2b19736854240167b86a6220234d64b89f15b21b66b94ff641.cjs",
+                "ts": "templates-zero/notion-scim/tools/remove-workspace-member/3204f0b2d24bfa2b19736854240167b86a6220234d64b89f15b21b66b94ff641.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "notion-scim",
+            "description": "Partially update a workspace group's name or replace its complete member set while preserving omitted fields.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "memberIds": {
+                                        "description": "Complete replacement member set of opaque Notion user IDs; [] explicitly removes all memberships, omission preserves membership. Maximum 100 supplied IDs.",
+                                        "uniqueItems": true,
+                                        "maxItems": 100,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque Notion user ID to include in the replacement member set."
+                                        }
+                                    },
+                                    "displayName": {
+                                        "description": "New human-readable name; omission preserves the existing name.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Partial group changes; omitted properties remain unchanged, and null is not accepted.",
+                                "minProperties": 1
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion group ID to modify."
+                            }
+                        },
+                        "required": [
+                            "changes",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a workspace group and supply only the group properties to change."
+                    },
+                    "FunctionOutput_notion_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unchanged opaque Notion group ID."
+                            },
+                            "members": {
+                                "description": "Returned memberships after the update; [] explicitly means empty, omission means membership data was not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque Notion user ID referenced by the group membership."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member label, omitted if unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A membership returned by Notion after the group update."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group name returned after the update."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider-acknowledged group after the update, including memberships when returned."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain a group ID with `list-groups` and member IDs with `list-workspace-members`. Omit membership to preserve it; a supplied memberIds array replaces the entire member set, and [] removes all memberships. Use `add-member-to-group` or `remove-member-from-group` for one association without replacing the others. Replacement can remove group-derived page access. At most 100 replacement members can be supplied in one call; this does not limit the size of a group you only rename."
+            },
+            "filePath": "./notion-scim/tools/update-group.ts",
+            "version": "0214e6c71353b2a231d8f67504a8db9202fe525771478153d1f4efa773ed52ec",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/update-group/0214e6c71353b2a231d8f67504a8db9202fe525771478153d1f4efa773ed52ec.cjs",
+                "ts": "templates-zero/notion-scim/tools/update-group/0214e6c71353b2a231d8f67504a8db9202fe525771478153d1f4efa773ed52ec.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-workspace-member",
+            "integrationId": "notion-scim",
+            "description": "Partially modify a workspace member's supported profile attributes, workspace role or active state. Setting active to false removes workspace access.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_notion_scim_updateworkspacemember",
+            "output_schema_ref": "#/definitions/FunctionOutput_notion_scim_updateworkspacemember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_notion_scim_updateworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "description": "New account email, mapped to userName; requires the provider's verified-domain authority.",
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    "active": {
+                                        "description": "Requested workspace-access state; false removes access. True requests activation but is not a promise to recreate removed membership.",
+                                        "type": "boolean"
+                                    },
+                                    "profile": {
+                                        "description": "Profile changes; omitted nested fields are preserved. Full name and components follow the provider's single-name behavior.",
+                                        "type": "object",
+                                        "properties": {
+                                            "roles": {
+                                                "description": "Replace SCIM profile roles, not workspace authority; null or [] clears them.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "description": "Provider entry category.",
+                                                                    "type": "string"
+                                                                },
+                                                                "value": {
+                                                                    "type": "string",
+                                                                    "description": "Email or profile-role text value."
+                                                                },
+                                                                "primary": {
+                                                                    "description": "Whether this is the preferred entry.",
+                                                                    "type": "boolean"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "value"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "title": {
+                                                "description": "Professional title; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "emails": {
+                                                "description": "Replace additional SCIM email entries; null or [] clears them, not the required account email.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "description": "Provider entry category.",
+                                                                    "type": "string"
+                                                                },
+                                                                "value": {
+                                                                    "type": "string",
+                                                                    "description": "Email or profile-role text value."
+                                                                },
+                                                                "primary": {
+                                                                    "description": "Whether this is the preferred entry.",
+                                                                    "type": "boolean"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "value"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "locale": {
+                                                "description": "Locale preference; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "division": {
+                                                "description": "Organizational division; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "userType": {
+                                                "description": "Profile user type; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "addresses": {
+                                                "description": "Replace postal addresses; null or [] clears them.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "description": "Address category.",
+                                                                    "type": "string"
+                                                                },
+                                                                "region": {
+                                                                    "description": "State, province, or region.",
+                                                                    "type": "string"
+                                                                },
+                                                                "country": {
+                                                                    "description": "Country in provider notation.",
+                                                                    "type": "string"
+                                                                },
+                                                                "primary": {
+                                                                    "description": "Preferred-address flag.",
+                                                                    "type": "boolean"
+                                                                },
+                                                                "locality": {
+                                                                    "description": "City or locality.",
+                                                                    "type": "string"
+                                                                },
+                                                                "formatted": {
+                                                                    "description": "Full formatted address.",
+                                                                    "type": "string"
+                                                                },
+                                                                "postalCode": {
+                                                                    "description": "Postal code as text.",
+                                                                    "type": "string"
+                                                                },
+                                                                "streetAddress": {
+                                                                    "description": "Street-address text including line breaks.",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "givenName": {
+                                                "description": "Given-name component; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "costCenter": {
+                                                "description": "Cost-center value; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "department": {
+                                                "description": "Organizational department; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "familyName": {
+                                                "description": "Family-name component; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "displayName": {
+                                                "description": "Formatted full name; null clears, empty text is explicitly supplied.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "phoneNumber": {
+                                                "description": "Replace the single stored phone entry; null clears it. A supplied object replaces its value and optional type together.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "description": "Phone category, omitted if unspecified.",
+                                                                "type": "string"
+                                                            },
+                                                            "value": {
+                                                                "type": "string",
+                                                                "description": "Phone-number text to store."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "value"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "managerEmail": {
+                                                "description": "Manager email address, not a Notion ID; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "organization": {
+                                                "description": "Organization profile value; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "employeeNumber": {
+                                                "description": "Opaque employee identifier; null clears it and leading zeros in text are retained.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "preferredLanguage": {
+                                                "description": "Preferred-language value; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "managerDisplayName": {
+                                                "description": "Manager display name; null clears it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "workspaceRole": {
+                                        "description": "Workspace authority to assign; distinct from SCIM profile roles.",
+                                        "type": "string",
+                                        "enum": [
+                                            "owner",
+                                            "membership_admin",
+                                            "member",
+                                            "restricted_member"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial changes; omitted fields are preserved. Null clears optional profile fields; email, active and workspaceRole cannot be null."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Notion user ID of the member to modify."
+                            }
+                        },
+                        "required": [
+                            "changes",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Member identifier and partial workspace member changes."
+                    },
+                    "FunctionOutput_notion_scim_updateworkspacemember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Notion user ID."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Account email from the updated SCIM userName."
+                            },
+                            "active": {
+                                "description": "Reported workspace-access state, omitted if unavailable.",
+                                "type": "boolean"
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "roles": {
+                                        "description": "SCIM profile roles, distinct from workspaceRole.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Professional title.",
+                                        "type": "string"
+                                    },
+                                    "emails": {
+                                        "description": "Returned SCIM email entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference.",
+                                        "type": "string"
+                                    },
+                                    "photos": {
+                                        "description": "Returned photo entries, not editable by this tool.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Provider category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Entry text value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Provider preference flag.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "division": {
+                                        "description": "Organizational division.",
+                                        "type": "string"
+                                    },
+                                    "userType": {
+                                        "description": "Profile user type.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Returned postal addresses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address category.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country in provider notation.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Preferred-address flag.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code as text.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street-address text including line breaks.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "givenName": {
+                                        "description": "Given-name component.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost-center identifier or label.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Organizational department.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family-name component.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "description": "Single stored phone number, omitted if none.",
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "description": "Stored phone category.",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "description": "Stored phone-number text."
+                                            }
+                                        },
+                                        "required": [
+                                            "value"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "managerEmail": {
+                                        "description": "Manager email, not a Notion ID.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization profile value.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Opaque employee identifier retaining leading zeros.",
+                                        "type": "string"
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred-language value.",
+                                        "type": "string"
+                                    },
+                                    "managerDisplayName": {
+                                        "description": "Manager display name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Updated profile attributes returned by Notion; absent/null fields are omitted, not echoed from the request."
+                            },
+                            "workspaceRole": {
+                                "description": "Reported workspace role, retaining unfamiliar future values.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Updated workspace member record reported by Notion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Find the member ID with `list-workspace-members` or read it with `get-workspace-member`. Supply only changes; omitted attributes are preserved. Null clears an optional profile attribute, and empty arrays clear multi-value attributes. Profile edits require verified ownership of the member's email domain. Photos cannot be updated through SCIM. Setting active=false removes workspace access; use `remove-workspace-member` for explicit removal and session logout. Use `add-workspace-member` for provisioning or a guest-to-restricted-member transition."
+            },
+            "filePath": "./notion-scim/tools/update-workspace-member.ts",
+            "version": "8ae4555a7ed51b5b07b8fa510f6db95fc73f118061922c94d0e0f27a890b5ea4",
+            "location": {
+                "js": "templates-zero/notion-scim/tools/update-workspace-member/8ae4555a7ed51b5b07b8fa510f6db95fc73f118061922c94d0e0f27a890b5ea4.cjs",
+                "ts": "templates-zero/notion-scim/tools/update-workspace-member/8ae4555a7ed51b5b07b8fa510f6db95fc73f118061922c94d0e0f27a890b5ea4.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

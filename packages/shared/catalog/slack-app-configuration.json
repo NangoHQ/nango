@@ -1,0 +1,2079 @@
+{
+    "providerConfigKey": "slack-app-configuration",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the current configuration manifests of explicitly selected Slack apps available as structured records.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_slack_app_configuration_syncappmanifests",
+            "name": "sync-app-manifests",
+            "output": [
+                "AppManifests"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "app_configurations:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "AppManifests",
+                "SyncMetadata_slack_app_configuration_syncappmanifests"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AppManifests": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Slack app ID identifying this manifest record."
+                            },
+                            "manifest": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Structured configuration document with original app-manifest keys and JSON values preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "manifest"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current configuration manifest of a selected Slack app."
+                    },
+                    "SyncMetadata_slack_app_configuration_syncappmanifests": {
+                        "type": "object",
+                        "properties": {
+                            "appIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Slack app ID selected for manifest export."
+                                },
+                                "uniqueItems": true,
+                                "description": "App IDs whose configuration documents belong in this dataset. Obtain them from app creation or the Slack dashboard; this API does not enumerate apps."
+                            }
+                        },
+                        "required": [
+                            "appIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Selected Slack apps whose configuration manifests belong in this dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make distribution policies and reported access entities for explicitly selected custom functions available as records.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_slack_app_configuration_syncfunctionpermissions",
+            "name": "sync-function-permissions",
+            "output": [
+                "FunctionPermissions"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "app_configurations:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "FunctionPermissions",
+                "SyncMetadata_slack_app_configuration_syncfunctionpermissions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "FunctionPermissions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable selector-derived identity: JSON serialization of ['id',functionId] or ['callback',appId,callbackId]. Distinct selector forms remain distinct records."
+                            },
+                            "appId": {
+                                "description": "Configured app ID when the callback selector form is used.",
+                                "type": "string"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque entity ID."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "user",
+                                                "team",
+                                                "organization"
+                                            ],
+                                            "description": "Kind of access entity."
+                                        },
+                                        "email": {
+                                            "description": "User's reported email address; omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "User's reported Slack username; omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An access entity explicitly reported by Slack."
+                                },
+                                "description": "Access entities actually reported by Slack, not an enumeration of every effective user under broad policies."
+                            },
+                            "callbackId": {
+                                "description": "Configured function callback ID when the callback selector form is used.",
+                                "type": "string"
+                            },
+                            "functionId": {
+                                "description": "Configured encoded function ID when that selector form is used.",
+                                "type": "string"
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Provider's distribution policy value, including unknown future policy values."
+                            },
+                            "reportedEntityTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "user",
+                                        "team",
+                                        "organization"
+                                    ],
+                                    "description": "An entity category whose source collection was explicitly returned."
+                                },
+                                "uniqueItems": true,
+                                "description": "Categories with explicitly returned collections, including explicit empty collections; unreported categories are not assumed empty."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "items",
+                            "permissionType",
+                            "reportedEntityTypes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Distribution policy and reported access entities for one explicitly selected custom function."
+                    },
+                    "SyncMetadata_slack_app_configuration_syncfunctionpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "functions": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "appId": {
+                                            "description": "Containing app ID, required with callbackId.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "callbackId": {
+                                            "description": "Function callback ID scoped to appId.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "functionId": {
+                                            "description": "Encoded function ID instead of appId/callbackId.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "oneOf": [
+                                        {
+                                            "not": {
+                                                "anyOf": [
+                                                    {
+                                                        "required": [
+                                                            "appId"
+                                                        ],
+                                                        "properties": {
+                                                            "appId": true
+                                                        }
+                                                    },
+                                                    {
+                                                        "required": [
+                                                            "callbackId"
+                                                        ],
+                                                        "properties": {
+                                                            "callbackId": true
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "required": [
+                                                "functionId"
+                                            ],
+                                            "properties": {
+                                                "functionId": true
+                                            }
+                                        },
+                                        {
+                                            "not": {
+                                                "required": [
+                                                    "functionId"
+                                                ],
+                                                "properties": {
+                                                    "functionId": true
+                                                }
+                                            },
+                                            "required": [
+                                                "appId",
+                                                "callbackId"
+                                            ],
+                                            "properties": {
+                                                "appId": true,
+                                                "callbackId": true
+                                            }
+                                        }
+                                    ],
+                                    "description": "A custom function selected by encoded ID or by app ID and callback ID, exclusively."
+                                },
+                                "uniqueItems": true,
+                                "description": "Functions included in the dataset, identified by encoded function ID or by app ID plus callback ID."
+                            }
+                        },
+                        "required": [
+                            "functions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit custom function selectors included in the permissions dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-user-to-function",
+            "integrationId": "slack-app-configuration",
+            "description": "Grant one user access to a custom function already using named-entity distribution permissions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_addusertofunction",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_addusertofunction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_addusertofunction": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Containing app ID, required with callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Slack user ID to grant function access."
+                            },
+                            "callbackId": {
+                                "description": "Function callback ID scoped to appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID instead of appId and callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "appId": {}
+                                            },
+                                            "required": [
+                                                "appId"
+                                            ]
+                                        },
+                                        {
+                                            "properties": {
+                                                "callbackId": {}
+                                            },
+                                            "required": [
+                                                "callbackId"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "properties": {
+                                    "functionId": {
+                                        "description": "Encoded function ID instead of appId and callbackId."
+                                    }
+                                },
+                                "required": [
+                                    "functionId"
+                                ]
+                            },
+                            {
+                                "not": {
+                                    "properties": {
+                                        "functionId": {}
+                                    },
+                                    "required": [
+                                        "functionId"
+                                    ]
+                                },
+                                "properties": {
+                                    "appId": {
+                                        "description": "Containing app ID, required with callbackId."
+                                    },
+                                    "callbackId": {
+                                        "description": "Function callback ID scoped to appId."
+                                    }
+                                },
+                                "required": [
+                                    "appId",
+                                    "callbackId"
+                                ]
+                            }
+                        ],
+                        "description": "One function selector and the Slack user to grant access."
+                    },
+                    "FunctionOutput_slack_app_configuration_addusertofunction": {
+                        "type": "object",
+                        "properties": {
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Resulting distribution policy reported by Slack."
+                            },
+                            "users": {
+                                "description": "Users with access reported by Slack, not a per-input success list; omitted if unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Slack user ID."
+                                        },
+                                        "email": {
+                                            "description": "Email address if reported.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "Slack username if reported.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user reported by Slack as having access."
+                                }
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The resulting function distribution permissions reported by Slack."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get the function selector from your function definition and a Slack user ID from your workspace directory. Use `list-function-permissions` to check the policy; it must already be named_entities. Use `update-function-permissions` to change the policy, or `batch-add-users-to-function` for several users. This does not create a user or a function.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/add-user-to-function.ts",
+            "version": "e281ab34d380eea75d50916be59e70416d408b8b6414ca9671e5df151da0f1c1",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/add-user-to-function/e281ab34d380eea75d50916be59e70416d408b8b6414ca9671e5df151da0f1c1.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/add-user-to-function/e281ab34d380eea75d50916be59e70416d408b8b6414ca9671e5df151da0f1c1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-add-users-to-function",
+            "integrationId": "slack-app-configuration",
+            "description": "Grant up to 100 users access to one custom function already using named-entity distribution permissions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_batchadduserstofunction",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_batchadduserstofunction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_batchadduserstofunction": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Containing app ID, required with callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Slack user ID to grant access."
+                                },
+                                "uniqueItems": true,
+                                "description": "Slack user IDs to grant access in one native request. Maximum 100 is a provisional local bound."
+                            },
+                            "callbackId": {
+                                "description": "Function callback ID scoped to appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID instead of appId/callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "appId"
+                                            ],
+                                            "properties": {
+                                                "appId": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "callbackId"
+                                            ],
+                                            "properties": {
+                                                "callbackId": true
+                                            }
+                                        }
+                                    ]
+                                },
+                                "required": [
+                                    "functionId"
+                                ],
+                                "properties": {
+                                    "functionId": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "required": [
+                                        "functionId"
+                                    ],
+                                    "properties": {
+                                        "functionId": true
+                                    }
+                                },
+                                "required": [
+                                    "appId",
+                                    "callbackId"
+                                ],
+                                "properties": {
+                                    "appId": true,
+                                    "callbackId": true
+                                }
+                            }
+                        ],
+                        "description": "One function selector and 1–100 unique Slack user IDs to grant access."
+                    },
+                    "FunctionOutput_slack_app_configuration_batchadduserstofunction": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "description": "Reported users with access, not per-requested-user success outcomes. Omitted when unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Reported Slack user ID."
+                                        },
+                                        "email": {
+                                            "description": "Reported email address when available.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "Reported Slack username when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user Slack reports with access to the function."
+                                }
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Policy Slack reported after accepting the native grant request."
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Slack-reported access state after accepting the grant, not individual mutation receipts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use a function ID or app ID plus callback ID, and 1–100 unique user IDs. Check the policy with `list-function-permissions`; it must already be named_entities. Use `add-user-to-function` for one user and `update-function-permissions` for a policy replacement. The result is reported access state, not individual success receipts. After an ambiguous result inspect current permissions before retrying.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/batch-add-users-to-function.ts",
+            "version": "4120dcbfa1843ebe451697249fec4fb505c16e1d5df2190d328a1e9be6a189eb",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/batch-add-users-to-function/4120dcbfa1843ebe451697249fec4fb505c16e1d5df2190d328a1e9be6a189eb.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/batch-add-users-to-function/4120dcbfa1843ebe451697249fec4fb505c16e1d5df2190d328a1e9be6a189eb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-remove-users-from-function",
+            "integrationId": "slack-app-configuration",
+            "description": "Revoke up to 100 users' explicit access grants from one custom function using named-entity distribution permissions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_batchremoveusersfromfunction",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_batchremoveusersfromfunction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_batchremoveusersfromfunction": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Containing app ID, required with callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Slack user ID whose explicit grant should be removed."
+                                },
+                                "uniqueItems": true,
+                                "description": "Slack user IDs whose explicit grants should be removed in one request; maximum 100 is a provisional local bound."
+                            },
+                            "callbackId": {
+                                "description": "Function callback ID scoped to appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID instead of appId/callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "appId"
+                                            ],
+                                            "properties": {
+                                                "appId": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "callbackId"
+                                            ],
+                                            "properties": {
+                                                "callbackId": true
+                                            }
+                                        }
+                                    ]
+                                },
+                                "required": [
+                                    "functionId"
+                                ],
+                                "properties": {
+                                    "functionId": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "required": [
+                                        "functionId"
+                                    ],
+                                    "properties": {
+                                        "functionId": true
+                                    }
+                                },
+                                "required": [
+                                    "appId",
+                                    "callbackId"
+                                ],
+                                "properties": {
+                                    "appId": true,
+                                    "callbackId": true
+                                }
+                            }
+                        ],
+                        "description": "One function selector and 1 to 100 unique Slack users whose explicit grants should be revoked."
+                    },
+                    "FunctionOutput_slack_app_configuration_batchremoveusersfromfunction": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "description": "Reported users with access after removal; not input-correlated mutation outcomes. Omitted if unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Reported Slack user ID."
+                                        },
+                                        "email": {
+                                            "description": "Reported email address if available.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "Reported Slack username if available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user Slack reports as having access after removal."
+                                }
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Distribution policy Slack reported after processing the native removal request."
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Slack-reported distribution policy and optional access state after the aggregate removal request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-function-permissions` to inspect access and obtain user IDs. Supply 1–100 unique users and one function selector. Use `remove-user-from-function` for one user. This removes explicit grants, not users, functions, workflows, or indirect team/organization access. The aggregate result is not a set of per-user success receipts; check current permissions after an ambiguous response.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/batch-remove-users-from-function.ts",
+            "version": "000b19e04daa30c7ef8d4c9ba9b7e182e0a5e7dcc449f23c63c3745d38daf8e6",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/batch-remove-users-from-function/000b19e04daa30c7ef8d4c9ba9b7e182e0a5e7dcc449f23c63c3745d38daf8e6.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/batch-remove-users-from-function/000b19e04daa30c7ef8d4c9ba9b7e182e0a5e7dcc449f23c63c3745d38daf8e6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-app",
+            "integrationId": "slack-app-configuration",
+            "description": "Create a Slack app from a structured app manifest and obtain its credentials and authorization URL.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_createapp",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_createapp",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_createapp": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "description": "Workspace ID to select when the connection supports organization-level app creation. Omit to use the connection's workspace.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "manifest": {
+                                "type": "object",
+                                "properties": {
+                                    "settings": {
+                                        "description": "App settings; external event-subscription registration is excluded.",
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {},
+                                        "not": {
+                                            "required": [
+                                                "event_subscriptions"
+                                            ],
+                                            "properties": {
+                                                "event_subscriptions": true
+                                            }
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {},
+                                "description": "Declarative Slack app manifest as structured JSON, not a serialized string. Keys retain the app-manifest specification's spelling. Notification subscription registration is not supported by this tool."
+                            }
+                        },
+                        "required": [
+                            "manifest"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create a Slack app from a structured manifest, optionally selecting a workspace."
+                    },
+                    "FunctionOutput_slack_app_configuration_createapp": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the newly created app."
+                            },
+                            "credentials": {
+                                "type": "object",
+                                "properties": {
+                                    "clientId": {
+                                        "description": "OAuth client ID issued for the app.",
+                                        "type": "string"
+                                    },
+                                    "clientSecret": {
+                                        "description": "Sensitive OAuth client secret.",
+                                        "type": "string"
+                                    },
+                                    "signingSecret": {
+                                        "description": "Sensitive secret used to verify requests from Slack.",
+                                        "type": "string"
+                                    },
+                                    "verificationToken": {
+                                        "description": "Legacy verification token returned by Slack; not a replacement for signature verification.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Sensitive credentials issued for this app; store securely."
+                            },
+                            "authorizationUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Slack OAuth authorization URL; creating the app does not complete authorization or installation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "credentials",
+                            "authorizationUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The created app identity, sensitive credentials, and unchanged OAuth authorization URL."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to create a new app, not to install it. Use `validate-app-manifest` first when checking a draft, and `update-app` for an existing app. Store returned credentials securely. Repeating a call can create another app; do not retry an ambiguous result without checking your Slack app dashboard.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/create-app.ts",
+            "version": "4eb4875bf1c52c9da11d3611319c1ef563aed83abc728ab7cd9dbf7a8027afe4",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/create-app/4eb4875bf1c52c9da11d3611319c1ef563aed83abc728ab7cd9dbf7a8027afe4.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/create-app/4eb4875bf1c52c9da11d3611319c1ef563aed83abc728ab7cd9dbf7a8027afe4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-app-permanently",
+            "integrationId": "slack-app-configuration",
+            "description": "Permanently delete an app created through app manifests.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_deleteapppermanently",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_deleteapppermanently",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_deleteapppermanently": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the manifest-created app to permanently delete."
+                            }
+                        },
+                        "required": [
+                            "appId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The manifest-created app to permanently delete."
+                    },
+                    "FunctionOutput_slack_app_configuration_deleteapppermanently": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "ID of the app Slack acknowledged deleting."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after Slack acknowledges permanent deletion."
+                            }
+                        },
+                        "required": [
+                            "appId",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that Slack permanently deleted the target app."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a known app ID from `create-app` or the Slack app dashboard. This deletes the app itself, not merely an installation, and cannot be undone. Manager connections can delete only apps created by that manager app. Use `get-app-manifest` first if you need a configuration backup.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/delete-app-permanently.ts",
+            "version": "996d7df60b95962cd706c9f9b298bface15099c50be8472e16f9bd185c5c3348",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/delete-app-permanently/996d7df60b95962cd706c9f9b298bface15099c50be8472e16f9bd185c5c3348.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/delete-app-permanently/996d7df60b95962cd706c9f9b298bface15099c50be8472e16f9bd185c5c3348.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-app-manifest",
+            "integrationId": "slack-app-configuration",
+            "description": "Retrieve an existing app's configuration as a reusable structured manifest.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_getappmanifest",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_getappmanifest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_getappmanifest": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the app whose manifest is requested."
+                            }
+                        },
+                        "required": [
+                            "appId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the existing Slack app whose configuration should be retrieved."
+                    },
+                    "FunctionOutput_slack_app_configuration_getappmanifest": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "ID of the app whose configuration was retrieved."
+                            },
+                            "manifest": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Reusable Slack app configuration document. Domain keys, values, nulls, and empty collections are preserved; no transport envelope is included."
+                            }
+                        },
+                        "required": [
+                            "appId",
+                            "manifest"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested Slack app ID and its reusable structured manifest."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a known app ID from `create-app` or the Slack app dashboard. Manager-app connections can read only apps created by that manager app. Use the returned manifest as the starting point for `update-app`; configuration replacement requires unchanged fields too.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:read"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/get-app-manifest.ts",
+            "version": "4fcbe8ada91f2cd8722fa61030d961475ab16b05e8ef88a2bb063c07306d9e99",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/get-app-manifest/4fcbe8ada91f2cd8722fa61030d961475ab16b05e8ef88a2bb063c07306d9e99.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/get-app-manifest/4fcbe8ada91f2cd8722fa61030d961475ab16b05e8ef88a2bb063c07306d9e99.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-function-permissions",
+            "integrationId": "slack-app-configuration",
+            "description": "Read a custom function's distribution access type and the users, workspaces, or organizations Slack reports as having access.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_listfunctionpermissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_listfunctionpermissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_listfunctionpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "App ID containing the function; required with callbackId instead of functionId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "callbackId": {
+                                "description": "Callback ID from the function definition, scoped to appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID; use instead of appId and callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "appId": {}
+                                            },
+                                            "required": [
+                                                "appId"
+                                            ]
+                                        },
+                                        {
+                                            "properties": {
+                                                "callbackId": {}
+                                            },
+                                            "required": [
+                                                "callbackId"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "properties": {
+                                    "functionId": {
+                                        "description": "Encoded function ID; use instead of appId and callbackId."
+                                    }
+                                },
+                                "required": [
+                                    "functionId"
+                                ]
+                            },
+                            {
+                                "not": {
+                                    "properties": {
+                                        "functionId": {}
+                                    },
+                                    "required": [
+                                        "functionId"
+                                    ]
+                                },
+                                "properties": {
+                                    "appId": {
+                                        "description": "App ID containing the function; required with callbackId instead of functionId."
+                                    },
+                                    "callbackId": {
+                                        "description": "Callback ID from the function definition, scoped to appId."
+                                    }
+                                },
+                                "required": [
+                                    "appId",
+                                    "callbackId"
+                                ]
+                            }
+                        ],
+                        "description": "Select one custom function by encoded ID or by its app ID and callback ID pair."
+                    },
+                    "FunctionOutput_slack_app_configuration_listfunctionpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque ID of this user, workspace, or organization."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "user",
+                                                "team",
+                                                "organization"
+                                            ],
+                                            "description": "Kind of access entity."
+                                        },
+                                        "email": {
+                                            "description": "User's reported email address; omitted when not returned.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "User's Slack username when reported; absent for non-user entities.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One access entity reported by Slack."
+                                },
+                                "description": "Access entities present in this provider response, preserving provider ordering within each category. Missing categories must not be interpreted as empty."
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Slack's distribution access type; known values are everyone, app_collaborators, named_entities, and system. Unknown future values remain intact."
+                            },
+                            "reportedEntityTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "user",
+                                        "team",
+                                        "organization"
+                                    ],
+                                    "description": "Kind of explicitly reported entity collection."
+                                },
+                                "uniqueItems": true,
+                                "description": "Categories for which Slack explicitly returned an entity collection, including empty collections."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "permissionType",
+                            "reportedEntityTypes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The function distribution policy and the access entities Slack explicitly reported."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Identify the function by its encoded ID, or by its app ID plus callback ID from your function definition. Use `update-function-permissions` to replace access policy, and `add-user-to-function` or `remove-user-from-function` for individual named-user access changes. This returns one provider response, with no documented pagination controls. reportedEntityTypes distinguishes an unreported entity category from an explicitly empty one.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:read"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/list-function-permissions.ts",
+            "version": "861a440f74eb69083fe0d2be7ae1b03c1de26903f425b28110a42f6d05dd95ce",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/list-function-permissions/861a440f74eb69083fe0d2be7ae1b03c1de26903f425b28110a42f6d05dd95ce.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/list-function-permissions/861a440f74eb69083fe0d2be7ae1b03c1de26903f425b28110a42f6d05dd95ce.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-user-from-function",
+            "integrationId": "slack-app-configuration",
+            "description": "Revoke one user's explicit access to a custom function using named-entity distribution permissions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_removeuserfromfunction",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_removeuserfromfunction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_removeuserfromfunction": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Containing app ID, required with callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Slack user ID whose explicit function grant is to be removed."
+                            },
+                            "callbackId": {
+                                "description": "Function callback ID within appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID instead of appId/callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One user and exactly one function selector: functionId or appId with callbackId.",
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "appId"
+                                            ],
+                                            "properties": {
+                                                "appId": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "callbackId"
+                                            ],
+                                            "properties": {
+                                                "callbackId": true
+                                            }
+                                        }
+                                    ]
+                                },
+                                "required": [
+                                    "functionId"
+                                ],
+                                "properties": {
+                                    "functionId": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "required": [
+                                        "functionId"
+                                    ],
+                                    "properties": {
+                                        "functionId": true
+                                    }
+                                },
+                                "required": [
+                                    "appId",
+                                    "callbackId"
+                                ],
+                                "properties": {
+                                    "appId": true,
+                                    "callbackId": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_slack_app_configuration_removeuserfromfunction": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "description": "Users with access reported by Slack after removal, not a per-input result. Omitted when unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Slack user ID."
+                                        },
+                                        "email": {
+                                            "description": "Reported email address if available.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "Reported Slack username if available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user with access reported by Slack after removal."
+                                }
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Distribution policy reported by Slack after processing removal."
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The distribution policy and any users Slack reports after removing the explicit user grant."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-function-permissions` to inspect the function policy and user IDs. Identify the function by ID or app ID plus callback ID. The policy must already be named_entities. This removes the user's explicit grant, not the user or function; other team or organization grants may still permit access. Use `batch-remove-users-from-function` for several users.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/remove-user-from-function.ts",
+            "version": "b1ad907657d2649ec221a79d5064a68dc681c4534e4522d4a548b67447dfd0ce",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/remove-user-from-function/b1ad907657d2649ec221a79d5064a68dc681c4534e4522d4a548b67447dfd0ce.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/remove-user-from-function/b1ad907657d2649ec221a79d5064a68dc681c4534e4522d4a548b67447dfd0ce.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-app",
+            "integrationId": "slack-app-configuration",
+            "description": "Replace an app's configuration with a complete manifest containing both changed and unchanged fields.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_updateapp",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_updateapp",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_updateapp": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the existing app to reconfigure."
+                            },
+                            "manifest": {
+                                "type": "object",
+                                "properties": {
+                                    "settings": {
+                                        "description": "Complete app settings; event-subscription registration is excluded.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {},
+                                        "not": {
+                                            "required": [
+                                                "event_subscriptions"
+                                            ],
+                                            "properties": {
+                                                "event_subscriptions": true
+                                            }
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {},
+                                "description": "Complete replacement Slack app manifest, including unchanged fields. Specification-defined keys are preserved. External event-subscription registration is excluded."
+                            }
+                        },
+                        "required": [
+                            "appId",
+                            "manifest"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing app and its complete replacement configuration."
+                    },
+                    "FunctionOutput_slack_app_configuration_updateapp": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the app whose replacement configuration Slack accepted."
+                            },
+                            "permissionsUpdated": {
+                                "description": "Slack's permissions_updated indicator, when returned. This is not a guarantee of installation, authorization, or recipient access.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The app whose configuration Slack accepted and its optional permissions indicator."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Start with `get-app-manifest`, edit the complete document, and optionally check it with `validate-app-manifest`. This replaces configuration, not a partial patch: omitted settings are not promised to survive. Some configuration transitions cannot be undone. Manager-app connections can update only apps that manager created.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/update-app.ts",
+            "version": "5e29ab48f6857b042ad2db4f00dd19dfdf7eae49188ed0d72d8d61da0921a328",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/update-app/5e29ab48f6857b042ad2db4f00dd19dfdf7eae49188ed0d72d8d61da0921a328.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/update-app/5e29ab48f6857b042ad2db4f00dd19dfdf7eae49188ed0d72d8d61da0921a328.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-function-permissions",
+            "integrationId": "slack-app-configuration",
+            "description": "Replace a custom function's distribution access type and, for named-entity access, its user, workspace, and organization allowlists.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_updatefunctionpermissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_updatefunctionpermissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_updatefunctionpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Containing app ID, required together with callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "teamIds": {
+                                "uniqueItems": true,
+                                "description": "Complete workspace allowlist for named_entities; omitted means empty in this replacement. Not allowed for other policies.",
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Slack workspace ID."
+                                }
+                            },
+                            "userIds": {
+                                "uniqueItems": true,
+                                "description": "Complete user allowlist for named_entities; omitted means empty in this replacement. Not allowed for other policies.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Slack user ID."
+                                }
+                            },
+                            "callbackId": {
+                                "description": "Function-definition callback ID within appId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "functionId": {
+                                "description": "Encoded function ID, instead of appId and callbackId.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "enum": [
+                                    "everyone",
+                                    "app_collaborators",
+                                    "named_entities",
+                                    "system"
+                                ],
+                                "description": "Complete distribution policy selection, using Slack's documented values; system remains provider-defined."
+                            },
+                            "organizationIds": {
+                                "uniqueItems": true,
+                                "description": "Complete organization allowlist for named_entities; omitted means empty in this replacement. Not allowed for other policies.",
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Slack organization ID."
+                                }
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "allOf": [
+                            {
+                                "anyOf": [
+                                    {
+                                        "not": {
+                                            "anyOf": [
+                                                {
+                                                    "properties": {
+                                                        "appId": {}
+                                                    },
+                                                    "required": [
+                                                        "appId"
+                                                    ]
+                                                },
+                                                {
+                                                    "properties": {
+                                                        "callbackId": {}
+                                                    },
+                                                    "required": [
+                                                        "callbackId"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "properties": {
+                                            "functionId": {
+                                                "description": "Encoded function ID, instead of appId and callbackId."
+                                            }
+                                        },
+                                        "required": [
+                                            "functionId"
+                                        ]
+                                    },
+                                    {
+                                        "not": {
+                                            "properties": {
+                                                "functionId": {}
+                                            },
+                                            "required": [
+                                                "functionId"
+                                            ]
+                                        },
+                                        "properties": {
+                                            "appId": {
+                                                "description": "Containing app ID, required together with callbackId."
+                                            },
+                                            "callbackId": {
+                                                "description": "Function-definition callback ID within appId."
+                                            }
+                                        },
+                                        "required": [
+                                            "appId",
+                                            "callbackId"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "if": {
+                                    "properties": {
+                                        "permissionType": {
+                                            "const": "named_entities"
+                                        }
+                                    }
+                                },
+                                "else": {
+                                    "not": {
+                                        "anyOf": [
+                                            {
+                                                "properties": {
+                                                    "userIds": true
+                                                },
+                                                "required": [
+                                                    "userIds"
+                                                ]
+                                            },
+                                            {
+                                                "properties": {
+                                                    "teamIds": true
+                                                },
+                                                "required": [
+                                                    "teamIds"
+                                                ]
+                                            },
+                                            {
+                                                "properties": {
+                                                    "organizationIds": true
+                                                },
+                                                "required": [
+                                                    "organizationIds"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "description": "Function selector and complete replacement distribution policy."
+                    },
+                    "FunctionOutput_slack_app_configuration_updatefunctionpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "description": "Users with access reported by Slack, not per-input mutation outcomes; omitted when unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Slack user ID."
+                                        },
+                                        "email": {
+                                            "description": "Reported email address; omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "description": "Reported Slack username; omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user reported by Slack as having access."
+                                }
+                            },
+                            "teamIds": {
+                                "description": "Workspace IDs reported by Slack after the write; omitted rather than inferred from the request when unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque Slack workspace ID."
+                                }
+                            },
+                            "permissionType": {
+                                "type": "string",
+                                "description": "Distribution policy reported by Slack after processing the update."
+                            },
+                            "organizationIds": {
+                                "description": "Organization IDs reported by Slack after the write; omitted when unreported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque Slack organization ID."
+                                }
+                            }
+                        },
+                        "required": [
+                            "permissionType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Resulting distribution policy and entity data reported by Slack."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-function-permissions` to inspect current access. Identify the function by ID or by app ID plus callback ID. This replaces access policy, not an additive grant. For a single named-user change use `add-user-to-function` or `remove-user-from-function`. Each team and organization list is limited to 50 IDs; the user list is limited to 100. Empty named-entity lists intentionally remove those grants.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/update-function-permissions.ts",
+            "version": "7e842150e3e491dd814a9ce87d066f313cdc4f886ef27a05b7542eb4d894c2b3",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/update-function-permissions/7e842150e3e491dd814a9ce87d066f313cdc4f886ef27a05b7542eb4d894c2b3.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/update-function-permissions/7e842150e3e491dd814a9ce87d066f313cdc4f886ef27a05b7542eb4d894c2b3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-managed-app-permissions",
+            "integrationId": "slack-app-configuration",
+            "description": "Request who may interact with a managed app before installation. Already-installed apps retain their current permissions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_updatemanagedapppermissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_updatemanagedapppermissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_updatemanagedapppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the managed app owned by this manager connection."
+                            },
+                            "permissions": {
+                                "type": "string",
+                                "enum": [
+                                    "everyone",
+                                    "app_owner"
+                                ],
+                                "description": "Requested interaction audience: all members or only the app owner. An installed app retains its current audience."
+                            }
+                        },
+                        "required": [
+                            "appId",
+                            "permissions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Managed app and requested pre-installation interaction audience."
+                    },
+                    "FunctionOutput_slack_app_configuration_updatemanagedapppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "ID of the managed app whose request was processed."
+                            },
+                            "permissions": {
+                                "type": "string",
+                                "description": "Effective interaction permission returned by Slack, which may differ from the requested audience when the app is installed."
+                            }
+                        },
+                        "required": [
+                            "appId",
+                            "permissions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Managed app and effective interaction permissions confirmed by Slack."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an app ID from `create-app` or the Slack dashboard and its managing connection. This Enterprise Grid feature applies only before installation. An installed app is not changed; inspect the returned effective permissions instead of assuming the requested value took effect. This is not custom-function distribution access; use `update-function-permissions` for that.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/update-managed-app-permissions.ts",
+            "version": "91a3653e039ec87f6fdc72a2ebafd58ca0653a9c5ada9be65e8ba2642a600fee",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/update-managed-app-permissions/91a3653e039ec87f6fdc72a2ebafd58ca0653a9c5ada9be65e8ba2642a600fee.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/update-managed-app-permissions/91a3653e039ec87f6fdc72a2ebafd58ca0653a9c5ada9be65e8ba2642a600fee.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "validate-app-manifest",
+            "integrationId": "slack-app-configuration",
+            "description": "Check a structured app manifest and return actionable validation issues without creating or updating an app.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_slack_app_configuration_validateappmanifest",
+            "output_schema_ref": "#/definitions/FunctionOutput_slack_app_configuration_validateappmanifest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_slack_app_configuration_validateappmanifest": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "description": "Existing app ID to provide validation context; omit for a new-app draft.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "manifest": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Slack app manifest as structured JSON with specification-defined keys, not encoded text."
+                            }
+                        },
+                        "required": [
+                            "manifest"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A structured Slack app manifest and optional existing-app validation context."
+                    },
+                    "FunctionOutput_slack_app_configuration_validateappmanifest": {
+                        "type": "object",
+                        "properties": {
+                            "valid": {
+                                "type": "boolean",
+                                "description": "Whether Slack accepted the manifest in this validation context; not a guarantee that a subsequent write will succeed."
+                            },
+                            "issues": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Provider's explanation of the validation problem."
+                                        },
+                                        "pointer": {
+                                            "description": "Provider's JSON pointer into the supplied manifest, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One manifest validation problem reported by Slack."
+                                },
+                                "description": "Validation issues reported by Slack; empty for a valid manifest."
+                            }
+                        },
+                        "required": [
+                            "valid",
+                            "issues"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Completed manifest validation with actionable provider diagnostics."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use before `create-app` or `update-app`. Supply appId when validating for an existing app. A completed validation can return valid:false with messages and JSON pointers; that is a usable result, not a failed tool call. Successful validation does not install or apply the manifest.",
+                "required_scopes": {
+                    "all": [
+                        "app_configurations:write"
+                    ]
+                }
+            },
+            "filePath": "./slack-app-configuration/tools/validate-app-manifest.ts",
+            "version": "ebfb51f6dcb845938fd869208aaca7d4b6a85f7645bc417ab89565e400714465",
+            "location": {
+                "js": "templates-zero/slack-app-configuration/tools/validate-app-manifest/ebfb51f6dcb845938fd869208aaca7d4b6a85f7645bc417ab89565e400714465.cjs",
+                "ts": "templates-zero/slack-app-configuration/tools/validate-app-manifest/ebfb51f6dcb845938fd869208aaca7d4b6a85f7645bc417ab89565e400714465.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

@@ -4,6 +4,7 @@ import { authorizeIn, expandIssuable, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq
 import { environmentService } from '@nangohq/shared';
 import { getLogger, hasApiKeyScope, metrics } from '@nangohq/utils';
 
+import { toJsonSchema202012 } from '../../utils/toolSchema.js';
 import { triggerActionTool } from './actions/trigger.js';
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
@@ -29,7 +30,7 @@ import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
 import { callToolsTool } from './tools/call.js';
-import { handleMcpToolError, jsonStructuredContent, mcpToolError, toJsonSchema202012 } from './utils.js';
+import { handleMcpToolError, jsonStructuredContent, mcpToolError } from './utils.js';
 
 import type {
     ManagementMcpAuditContext,

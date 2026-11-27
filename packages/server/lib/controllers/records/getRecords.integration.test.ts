@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { format, records } from '@nangohq/records';
-import { seeders } from '@nangohq/shared';
+import { agentSessionResultModel, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 import { getLookbackCutoff } from './getRecords.js';
@@ -42,6 +42,19 @@ describe(`GET ${route}`, () => {
                 errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['model'] }]
             }
         });
+    });
+
+    it('should reject an agent session result model', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            headers: { 'connection-id': 'a', 'provider-config-key': 'github' },
+            query: { model: agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10') }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('invalid_query_params');
     });
 
     it('should require headers', async () => {

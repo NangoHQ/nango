@@ -1,0 +1,42 @@
+---
+title: 'Fuse - How do I link my account?'
+sidebarTitle: 'Fuse'
+---
+
+## Overview
+
+To authenticate with Fuse, you need:
+
+1. **API Key** - a Fuse API key, created in API Cockpit.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- A [Fuse](https://app.fuseai.com/signup) account.
+
+### Step 1: Create your API key
+
+1. Sign in to the [Fuse app](https://app.fuseai.com/signin).
+2. Open the profile menu (your initials, top right) and click **Settings**.
+3. In the left sidebar, under **Developer**, click **API Cockpit**.
+
+<img src="/api-integrations/fuse/settings_api_cockpit.png" alt="Fuse Settings sidebar with API Cockpit highlighted under Developer"/>
+
+4. Click **Create New Key**, then click **Create API Key** in the dialog.
+
+<img src="/api-integrations/fuse/create_new_key.png" alt="Fuse API Cockpit page with the Create New Key button"/>
+
+5. Copy the key from the **New API Key Generated** dialog. It starts with `af_`. Fuse shows the full key only once, so copy it before you click **Close**.
+
+<img src="/api-integrations/fuse/api_key_created.png" alt="Fuse New API Key Generated dialog with the copy button next to the new key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fuse.
+2. Enter your **API Key** in the designated field. There is no password to enter.
+3. Click **Connect**. Nango checks the key with Fuse and rejects it if it is wrong.
+
+<img src="/api-integrations/fuse/form.png" alt="Nango Connect UI form for entering the Fuse API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fuse.

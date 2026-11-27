@@ -1,0 +1,188 @@
+{
+    "providerConfigKey": "aws-iam",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in AWS IAM.",
+            "endpoint": null,
+            "input": "ActionInput_aws_iam_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_aws_iam_createuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_aws_iam_createuser",
+                "ActionOutput_aws_iam_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aws_iam_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aws_iam_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an existing user in AWS IAM. When you delete a user, you must delete the items attached to the user manually, or the deletion fails.",
+            "endpoint": null,
+            "input": "ActionInput_aws_iam_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_aws_iam_deleteuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_aws_iam_deleteuser",
+                "ActionOutput_aws_iam_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aws_iam_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aws_iam_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from AWS IAM",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_aws_iam_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_aws_iam_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_aws_iam_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

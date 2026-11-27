@@ -1,0 +1,1202 @@
+{
+    "providerConfigKey": "tiktok-personal",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Fetch creator posting capabilities and limits.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getcreatorinfo",
+            "name": "get-creator-info",
+            "output": [
+                "ActionOutput_tiktok_personal_getcreatorinfo"
+            ],
+            "scopes": [
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getcreatorinfo",
+                "ActionOutput_tiktok_personal_getcreatorinfo"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getcreatorinfo": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getcreatorinfo": {
+                        "type": "object",
+                        "properties": {
+                            "creator_avatar_url": {
+                                "type": "string"
+                            },
+                            "creator_username": {
+                                "type": "string"
+                            },
+                            "creator_nickname": {
+                                "type": "string"
+                            },
+                            "privacy_level_options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "comment_disabled": {
+                                "type": "boolean"
+                            },
+                            "duet_disabled": {
+                                "type": "boolean"
+                            },
+                            "stitch_disabled": {
+                                "type": "boolean"
+                            },
+                            "max_video_post_duration_sec": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check TikTok publish status for an upload.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getpublishstatus",
+            "name": "get-publish-status",
+            "output": [
+                "ActionOutput_tiktok_personal_getpublishstatus"
+            ],
+            "scopes": [
+                "video.upload",
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getpublishstatus",
+                "ActionOutput_tiktok_personal_getpublishstatus"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getpublishstatus": {
+                        "type": "object",
+                        "properties": {
+                            "publish_id": {
+                                "type": "string",
+                                "description": "The publish ID returned when initializing a post. Example: \"v1234567890\""
+                            }
+                        },
+                        "required": [
+                            "publish_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getpublishstatus": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            },
+                            "fail_reason": {
+                                "type": "string"
+                            },
+                            "publicaly_available_post_id": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "uploaded_bytes": {
+                                "type": "number"
+                            },
+                            "downloaded_bytes": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch TikTok user profile fields allowed by granted scopes.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getuserinfo",
+            "name": "get-user-info",
+            "output": [
+                "ActionOutput_tiktok_personal_getuserinfo"
+            ],
+            "scopes": [
+                "user.info.basic",
+                "user.info.profile",
+                "user.info.stats"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserinfo",
+                "ActionOutput_tiktok_personal_getuserinfo"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getuserinfo": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "description": "Specific user fields to request. Defaults to basic profile fields.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getuserinfo": {
+                        "type": "object",
+                        "properties": {
+                            "open_id": {
+                                "type": "string"
+                            },
+                            "union_id": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            },
+                            "avatar_url_100": {
+                                "type": "string"
+                            },
+                            "avatar_large_url": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "bio_description": {
+                                "type": "string"
+                            },
+                            "profile_deep_link": {
+                                "type": "string"
+                            },
+                            "is_verified": {
+                                "type": "boolean"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "follower_count": {
+                                "type": "number"
+                            },
+                            "following_count": {
+                                "type": "number"
+                            },
+                            "likes_count": {
+                                "type": "number"
+                            },
+                            "video_count": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch extended TikTok user profile including bio description, profile deep link, and verification status.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getuserprofile",
+            "name": "get-user-profile",
+            "output": [
+                "ActionOutput_tiktok_personal_getuserprofile"
+            ],
+            "scopes": [
+                "user.info.profile"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserprofile",
+                "ActionOutput_tiktok_personal_getuserprofile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getuserprofile": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getuserprofile": {
+                        "type": "object",
+                        "properties": {
+                            "bio_description": {
+                                "type": "string"
+                            },
+                            "profile_deep_link": {
+                                "type": "string"
+                            },
+                            "is_verified": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch TikTok user statistics including follower count, likes count, and video count.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getuserstats",
+            "name": "get-user-stats",
+            "output": [
+                "ActionOutput_tiktok_personal_getuserstats"
+            ],
+            "scopes": [
+                "user.info.stats"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserstats",
+                "ActionOutput_tiktok_personal_getuserstats"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getuserstats": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getuserstats": {
+                        "type": "object",
+                        "properties": {
+                            "follower_count": {
+                                "type": "number"
+                            },
+                            "following_count": {
+                                "type": "number"
+                            },
+                            "likes_count": {
+                                "type": "number"
+                            },
+                            "video_count": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single video from TikTok Accounts.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_getvideo",
+            "name": "get-video",
+            "output": [
+                "ActionOutput_tiktok_personal_getvideo"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getvideo",
+                "ActionOutput_tiktok_personal_getvideo"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_getvideo": {
+                        "type": "object",
+                        "properties": {
+                            "video_id": {
+                                "type": "string",
+                                "description": "TikTok video ID. Example: \"7077642457847991554\""
+                            }
+                        },
+                        "required": [
+                            "video_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_getvideo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "create_time": {
+                                "type": "number"
+                            },
+                            "cover_image_url": {
+                                "type": "string"
+                            },
+                            "share_url": {
+                                "type": "string"
+                            },
+                            "video_description": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "height": {
+                                "type": "number"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "embed_html": {
+                                "type": "string"
+                            },
+                            "embed_link": {
+                                "type": "string"
+                            },
+                            "like_count": {
+                                "type": "number"
+                            },
+                            "comment_count": {
+                                "type": "number"
+                            },
+                            "share_count": {
+                                "type": "number"
+                            },
+                            "view_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Initialize a TikTok video upload to a creator inbox as a draft.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_initinboxvideoupload",
+            "name": "init-inbox-video-upload",
+            "output": [
+                "ActionOutput_tiktok_personal_initinboxvideoupload"
+            ],
+            "scopes": [
+                "video.upload"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initinboxvideoupload",
+                "ActionOutput_tiktok_personal_initinboxvideoupload"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_initinboxvideoupload": {
+                        "type": "object",
+                        "properties": {
+                            "source_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "FILE_UPLOAD"
+                                            },
+                                            "video_size": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "chunk_size": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "total_chunk_count": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "video_size",
+                                            "chunk_size",
+                                            "total_chunk_count"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "PULL_FROM_URL"
+                                            },
+                                            "video_url": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "video_url"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "source_info"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_initinboxvideoupload": {
+                        "type": "object",
+                        "properties": {
+                            "publish_id": {
+                                "type": "string"
+                            },
+                            "upload_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "publish_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Initialize a TikTok photo post.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_initphotoupload",
+            "name": "init-photo-upload",
+            "output": [
+                "ActionOutput_tiktok_personal_initphotoupload"
+            ],
+            "scopes": [
+                "video.publish",
+                "video.upload"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initphotoupload",
+                "ActionOutput_tiktok_personal_initphotoupload"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_initphotoupload": {
+                        "type": "object",
+                        "properties": {
+                            "media_type": {
+                                "type": "string",
+                                "const": "PHOTO",
+                                "description": "Must be PHOTO."
+                            },
+                            "post_mode": {
+                                "type": "string",
+                                "enum": [
+                                    "DIRECT_POST",
+                                    "MEDIA_UPLOAD"
+                                ],
+                                "description": "DIRECT_POST or MEDIA_UPLOAD."
+                            },
+                            "post_info": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "description": "Post title. Max 90 UTF-16 runes.",
+                                        "type": "string",
+                                        "maxLength": 90
+                                    },
+                                    "description": {
+                                        "description": "Post description. Max 4000 UTF-16 runes.",
+                                        "type": "string",
+                                        "maxLength": 4000
+                                    },
+                                    "privacy_level": {
+                                        "description": "Privacy level. Required for DIRECT_POST.",
+                                        "type": "string",
+                                        "enum": [
+                                            "PUBLIC_TO_EVERYONE",
+                                            "MUTUAL_FOLLOW_FRIENDS",
+                                            "FOLLOWER_OF_CREATOR",
+                                            "SELF_ONLY"
+                                        ]
+                                    },
+                                    "disable_comment": {
+                                        "description": "If true, disables comments. Only for DIRECT_POST.",
+                                        "type": "boolean"
+                                    },
+                                    "auto_add_music": {
+                                        "description": "If true, auto-adds recommended music. Only for DIRECT_POST.",
+                                        "type": "boolean"
+                                    },
+                                    "brand_content_toggle": {
+                                        "description": "If true, content is a paid partnership. Only for DIRECT_POST.",
+                                        "type": "boolean"
+                                    },
+                                    "brand_organic_toggle": {
+                                        "description": "If true, content promotes own business. Only for DIRECT_POST.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Post metadata."
+                            },
+                            "source_info": {
+                                "type": "object",
+                                "properties": {
+                                    "source": {
+                                        "type": "string",
+                                        "const": "PULL_FROM_URL",
+                                        "description": "Must be PULL_FROM_URL for photos."
+                                    },
+                                    "photo_images": {
+                                        "minItems": 1,
+                                        "maxItems": 35,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "description": "Publicly accessible photo URLs (1-35)."
+                                    },
+                                    "photo_cover_index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Index of the cover photo, starting from 0."
+                                    }
+                                },
+                                "required": [
+                                    "source",
+                                    "photo_images",
+                                    "photo_cover_index"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Media source metadata."
+                            }
+                        },
+                        "required": [
+                            "media_type",
+                            "post_mode",
+                            "post_info",
+                            "source_info"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_initphotoupload": {
+                        "type": "object",
+                        "properties": {
+                            "publish_id": {
+                                "type": "string",
+                                "description": "Identifier to track the posting action."
+                            }
+                        },
+                        "required": [
+                            "publish_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Initialize a TikTok direct video upload or pull-from-url post.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_initvideoupload",
+            "name": "init-video-upload",
+            "output": [
+                "ActionOutput_tiktok_personal_initvideoupload"
+            ],
+            "scopes": [
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initvideoupload",
+                "ActionOutput_tiktok_personal_initvideoupload"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_initvideoupload": {
+                        "type": "object",
+                        "properties": {
+                            "post_info": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "description": "Video caption. Supports hashtags and @mentions. Max 2200 characters.",
+                                        "type": "string"
+                                    },
+                                    "privacy_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "PUBLIC_TO_EVERYONE",
+                                            "MUTUAL_FOLLOW_FRIENDS",
+                                            "FOLLOWER_OF_CREATOR",
+                                            "SELF_ONLY"
+                                        ],
+                                        "description": "Privacy level for the posted video."
+                                    },
+                                    "disable_duet": {
+                                        "type": "boolean"
+                                    },
+                                    "disable_stitch": {
+                                        "type": "boolean"
+                                    },
+                                    "disable_comment": {
+                                        "type": "boolean"
+                                    },
+                                    "video_cover_timestamp_ms": {
+                                        "description": "Timestamp in milliseconds for the video cover frame.",
+                                        "type": "number"
+                                    },
+                                    "brand_content_toggle": {
+                                        "type": "boolean"
+                                    },
+                                    "brand_organic_toggle": {
+                                        "type": "boolean"
+                                    },
+                                    "is_aigc": {
+                                        "description": "Whether the content is AI-generated.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "privacy_level"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "source_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "FILE_UPLOAD"
+                                            },
+                                            "video_size": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "description": "Size of the video in bytes."
+                                            },
+                                            "chunk_size": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "description": "Size of each upload chunk in bytes."
+                                            },
+                                            "total_chunk_count": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "description": "Total number of chunks."
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "video_size",
+                                            "chunk_size",
+                                            "total_chunk_count"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string",
+                                                "const": "PULL_FROM_URL"
+                                            },
+                                            "video_url": {
+                                                "type": "string",
+                                                "description": "URL of the video. Domain must be verified with TikTok."
+                                            }
+                                        },
+                                        "required": [
+                                            "source",
+                                            "video_url"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "post_mode": {
+                                "description": "DIRECT_POST to publish immediately, MEDIA_UPLOAD to send to Creator Inbox.",
+                                "type": "string",
+                                "enum": [
+                                    "DIRECT_POST",
+                                    "MEDIA_UPLOAD"
+                                ]
+                            },
+                            "media_type": {
+                                "type": "string",
+                                "const": "VIDEO"
+                            }
+                        },
+                        "required": [
+                            "post_info",
+                            "source_info"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_initvideoupload": {
+                        "type": "object",
+                        "properties": {
+                            "publish_id": {
+                                "type": "string",
+                                "description": "Identifier to track the posting action."
+                            },
+                            "upload_url": {
+                                "description": "URL provided by TikTok to upload the video file. Only present for FILE_UPLOAD.",
+                                "type": "string"
+                            },
+                            "post_id": {
+                                "description": "Post ID if available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "publish_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List videos from TikTok Accounts",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_listvideos",
+            "name": "list-videos",
+            "output": [
+                "ActionOutput_tiktok_personal_listvideos"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_listvideos",
+                "ActionOutput_tiktok_personal_listvideos"
+            ],
+            "version": "0.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_listvideos": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "type": "number"
+                            },
+                            "max_count": {
+                                "type": "number"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_listvideos": {
+                        "type": "object",
+                        "properties": {
+                            "videos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "create_time": {
+                                            "type": "number"
+                                        },
+                                        "cover_image_url": {
+                                            "type": "string"
+                                        },
+                                        "share_url": {
+                                            "type": "string"
+                                        },
+                                        "video_description": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "embed_html": {
+                                            "type": "string"
+                                        },
+                                        "embed_link": {
+                                            "type": "string"
+                                        },
+                                        "like_count": {
+                                            "type": "number"
+                                        },
+                                        "comment_count": {
+                                            "type": "number"
+                                        },
+                                        "share_count": {
+                                            "type": "number"
+                                        },
+                                        "view_count": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "cursor": {
+                                "type": "number"
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "videos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch TikTok video details by IDs.",
+            "endpoint": null,
+            "input": "ActionInput_tiktok_personal_queryvideos",
+            "name": "query-videos",
+            "output": [
+                "ActionOutput_tiktok_personal_queryvideos"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_queryvideos",
+                "ActionOutput_tiktok_personal_queryvideos"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_tiktok_personal_queryvideos": {
+                        "type": "object",
+                        "properties": {
+                            "video_ids": {
+                                "minItems": 1,
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of TikTok video IDs to query. Maximum 20."
+                            },
+                            "fields": {
+                                "description": "Fields to return for each video. Defaults to all fields.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "video_ids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_tiktok_personal_queryvideos": {
+                        "type": "object",
+                        "properties": {
+                            "videos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "create_time": {
+                                            "type": "number"
+                                        },
+                                        "cover_image_url": {
+                                            "type": "string"
+                                        },
+                                        "share_url": {
+                                            "type": "string"
+                                        },
+                                        "video_description": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "embed_html": {
+                                            "type": "string"
+                                        },
+                                        "embed_link": {
+                                            "type": "string"
+                                        },
+                                        "like_count": {
+                                            "type": "number"
+                                        },
+                                        "comment_count": {
+                                            "type": "number"
+                                        },
+                                        "share_count": {
+                                            "type": "number"
+                                        },
+                                        "view_count": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "videos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync TikTok user profile and stats including follower count, likes count, bio, and verification status",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/user-profile"
+                }
+            ],
+            "input": null,
+            "name": "user-profile",
+            "output": [
+                "UserProfile"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "user.info.basic",
+                "user.info.profile",
+                "user.info.stats"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "UserProfile"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UserProfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "open_id": {
+                                "type": "string"
+                            },
+                            "union_id": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "bio_description": {
+                                "type": "string"
+                            },
+                            "profile_deep_link": {
+                                "type": "string"
+                            },
+                            "is_verified": {
+                                "type": "boolean"
+                            },
+                            "follower_count": {
+                                "type": "number"
+                            },
+                            "following_count": {
+                                "type": "number"
+                            },
+                            "likes_count": {
+                                "type": "number"
+                            },
+                            "video_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "open_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync videos from TikTok Accounts.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/videos"
+                }
+            ],
+            "input": null,
+            "name": "videos",
+            "output": [
+                "Video"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "video.list"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Video"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Video": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "create_time": {
+                                "type": "number"
+                            },
+                            "cover_image_url": {
+                                "type": "string"
+                            },
+                            "share_url": {
+                                "type": "string"
+                            },
+                            "video_description": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "height": {
+                                "type": "number"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "embed_html": {
+                                "type": "string"
+                            },
+                            "embed_link": {
+                                "type": "string"
+                            },
+                            "like_count": {
+                                "type": "number"
+                            },
+                            "comment_count": {
+                                "type": "number"
+                            },
+                            "share_count": {
+                                "type": "number"
+                            },
+                            "view_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

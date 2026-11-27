@@ -1,0 +1,1020 @@
+{
+    "providerConfigKey": "granola",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Retrieve a single meeting note, optionally with its transcript inlined.",
+            "endpoint": null,
+            "input": "ActionInput_granola_getnote",
+            "name": "get-note",
+            "output": [
+                "ActionOutput_granola_getnote"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_granola_getnote",
+                "ActionOutput_granola_getnote"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_granola_getnote": {
+                        "type": "object",
+                        "properties": {
+                            "note_id": {
+                                "type": "string",
+                                "description": "The ID of the note to retrieve. Example: not_1d3tmYTlCICgjy"
+                            },
+                            "include_transcript": {
+                                "description": "Whether to include the transcript inline in the response. If the transcript is too large, the API returns a 413 error.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "note_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Granola meeting note."
+                    },
+                    "ActionOutput_granola_getnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the note."
+                            },
+                            "object": {
+                                "type": "string",
+                                "description": "The object type of the note."
+                            },
+                            "title": {
+                                "description": "The title of the note, or null if not set.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "The name of the user, or null if not set.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "description": "The email of the user."
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "additionalProperties": false,
+                                "description": "The owner of the note."
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "The creation time of the note."
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "The last update time of the note."
+                            },
+                            "web_url": {
+                                "type": "string",
+                                "description": "The URL to view the note in the Granola web app."
+                            },
+                            "calendar_event": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "event_title": {
+                                                "description": "The title of the calendar event, or null if not available.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "invitees": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "email": {
+                                                            "type": "string",
+                                                            "description": "The email of the calendar invitee."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "The invitees of the calendar event."
+                                            },
+                                            "organiser": {
+                                                "description": "The email of the organiser, or null if not available.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "calendar_event_id": {
+                                                "description": "The ID of the calendar event, or null if not available.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "scheduled_start_time": {
+                                                "description": "The scheduled start time of the calendar event, or null if not available.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "scheduled_end_time": {
+                                                "description": "The scheduled end time of the calendar event, or null if not available.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "event_title",
+                                            "invitees",
+                                            "organiser",
+                                            "calendar_event_id",
+                                            "scheduled_start_time",
+                                            "scheduled_end_time"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "The calendar event associated with the note, or null if not available."
+                            },
+                            "attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "The name of the user, or null if not set.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "The email of the user."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "The attendees of the meeting."
+                            },
+                            "folder_membership": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The ID of the folder."
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "description": "The object type of the folder."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the folder."
+                                        },
+                                        "parent_folder_id": {
+                                            "description": "The ID of the parent folder, or null if the folder is top-level.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "space_id": {
+                                            "description": "The ID of the space this folder belongs to.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "parent_folder_id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "The folders this note belongs to."
+                            },
+                            "space_membership": {
+                                "default": [],
+                                "description": "The spaces this note belongs to.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The ID of the space."
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "description": "The object type of the space."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the space."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "summary_text": {
+                                "type": "string",
+                                "description": "The summary text of the note."
+                            },
+                            "summary_markdown": {
+                                "description": "The summary of the note in markdown format, or null if not available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "private_notes_text": {
+                                "description": "The private notes text of the note owner, or null if the API key does not belong to the owner.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "private_notes_markdown": {
+                                "description": "The private notes markdown of the note owner, or null if the API key does not belong to the owner.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "transcript": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "speaker": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "source": {
+                                                            "type": "string",
+                                                            "description": "The source of the speaker."
+                                                        },
+                                                        "attribution": {
+                                                            "description": "Who said this relative to the note owner.",
+                                                            "type": "string"
+                                                        },
+                                                        "diarization_label": {
+                                                            "description": "The diarized anonymous speaker label assigned in the transcript.",
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "description": "The resolved name of the identified speaker.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "source"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "The speaker information for this transcript segment."
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "description": "The text of the transcript segment."
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "description": "The start time of the transcript segment."
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "description": "The end time of the transcript segment."
+                                                }
+                                            },
+                                            "required": [
+                                                "speaker",
+                                                "text",
+                                                "start_time",
+                                                "end_time"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "The inline transcript of the note, or null if not included or too large to return."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "object",
+                            "title",
+                            "owner",
+                            "created_at",
+                            "updated_at",
+                            "web_url",
+                            "calendar_event",
+                            "attendees",
+                            "folder_membership",
+                            "space_membership",
+                            "summary_text",
+                            "summary_markdown",
+                            "private_notes_text",
+                            "private_notes_markdown",
+                            "transcript"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Granola meeting note."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a meeting transcript in pages - use when get-note's inline transcript is too large, or to page through a transcript directly.",
+            "endpoint": null,
+            "input": "ActionInput_granola_gettranscript",
+            "name": "get-transcript",
+            "output": [
+                "ActionOutput_granola_gettranscript"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_granola_gettranscript",
+                "ActionOutput_granola_gettranscript"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_granola_gettranscript": {
+                        "type": "object",
+                        "properties": {
+                            "note_id": {
+                                "type": "string",
+                                "description": "Unique identifier of the note whose transcript to retrieve. Example: \"not_IBuThyr2eJgage\""
+                            },
+                            "cursor": {
+                                "description": "Opaque pagination cursor from a previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of transcript segments per page. Maximum 100, default 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "required": [
+                            "note_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a paginated meeting transcript."
+                    },
+                    "ActionOutput_granola_gettranscript": {
+                        "type": "object",
+                        "properties": {
+                            "transcript": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Spoken text of the segment."
+                                        },
+                                        "start_time": {
+                                            "type": "string",
+                                            "description": "ISO 8601 start time of the segment."
+                                        },
+                                        "end_time": {
+                                            "type": "string",
+                                            "description": "ISO 8601 end time of the segment."
+                                        },
+                                        "speaker": {
+                                            "type": "object",
+                                            "properties": {
+                                                "source": {
+                                                    "type": "string",
+                                                    "description": "Source of the speaker attribution, such as \"microphone\" or \"speaker\"."
+                                                },
+                                                "attribution": {
+                                                    "description": "Who said this relative to the note: \"me\" is the note-taker, \"them\" is other participants. Omitted when unknown.",
+                                                    "type": "string"
+                                                },
+                                                "diarization_label": {
+                                                    "description": "Diarized anonymous speaker label, such as \"Speaker A\". Present only on iOS transcripts when diarization is available.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Resolved name of the identified speaker, such as \"Alice Smith\". Present only when a speaker could be identified.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "source"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Speaker information for this segment."
+                                        }
+                                    },
+                                    "required": [
+                                        "text",
+                                        "start_time",
+                                        "end_time",
+                                        "speaker"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A single segment of a meeting transcript."
+                                },
+                                "description": "Array of transcript segments for the requested page."
+                            },
+                            "hasMore": {
+                                "type": "boolean",
+                                "description": "Whether additional pages of transcript segments exist."
+                            },
+                            "cursor": {
+                                "description": "Opaque cursor to request the next page. Omitted when hasMore is false.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "transcript",
+                            "hasMore"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Output containing a page of transcript segments and pagination state."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List folders, including their parent/child hierarchy.",
+            "endpoint": null,
+            "input": "ActionInput_granola_listfolders",
+            "name": "list-folders",
+            "output": [
+                "ActionOutput_granola_listfolders"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_granola_listfolders",
+                "ActionOutput_granola_listfolders"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_granola_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of folders per page, between 1 and 30. Defaults to 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 30
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing folders."
+                    },
+                    "ActionOutput_granola_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique identifier for the folder."
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "description": "The object type, typically \"folder\"."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the folder."
+                                        },
+                                        "parent_folder_id": {
+                                            "description": "ID of the parent folder, or null for top-level folders.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "space_id": {
+                                            "description": "ID of the space this folder belongs to.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "parent_folder_id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of folders."
+                            },
+                            "hasMore": {
+                                "type": "boolean",
+                                "description": "Whether there are more pages of results."
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to fetch the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "folders",
+                            "hasMore"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Output for listing folders."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List meeting notes visible to the API key, with date and folder filtering.",
+            "endpoint": null,
+            "input": "ActionInput_granola_listnotes",
+            "name": "list-notes",
+            "output": [
+                "ActionOutput_granola_listnotes"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_granola_listnotes",
+                "ActionOutput_granola_listnotes"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_granola_listnotes": {
+                        "type": "object",
+                        "properties": {
+                            "created_before": {
+                                "description": "Return notes created before this date. Accepts ISO 8601 date or date-time strings.",
+                                "type": "string"
+                            },
+                            "created_after": {
+                                "description": "Return notes created after this date. Accepts ISO 8601 date or date-time strings.",
+                                "type": "string"
+                            },
+                            "updated_after": {
+                                "description": "Return notes updated after this date. Accepts ISO 8601 date or date-time strings. This filter is precise and will return an empty list if no notes match.",
+                                "type": "string"
+                            },
+                            "folder_id": {
+                                "description": "Return notes in this folder and any of its child folders. Use the list folders endpoint to discover folder IDs.",
+                                "type": "string",
+                                "pattern": "^fol_[a-zA-Z0-9]{14}$"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Maximum number of notes to return per page. Defaults to 10, capped at 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 30
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing Granola meeting notes."
+                    },
+                    "ActionOutput_granola_listnotes": {
+                        "type": "object",
+                        "properties": {
+                            "notes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The ID of the note."
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "note",
+                                            "description": "The object type of the note."
+                                        },
+                                        "title": {
+                                            "description": "The title of the note, if present.",
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "The name of the note owner, if known.",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "description": "The email of the note owner."
+                                                }
+                                            },
+                                            "required": [
+                                                "email"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "The owner of the note."
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "The creation time of the note in ISO 8601 format."
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "The last update time of the note in ISO 8601 format."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "owner",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "The list of notes visible to the API key."
+                            },
+                            "hasMore": {
+                                "type": "boolean",
+                                "description": "Whether another page of notes is available."
+                            },
+                            "next_cursor": {
+                                "description": "The opaque cursor for the next page, or omitted when this is the final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "notes",
+                            "hasMore"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Output from listing Granola meeting notes."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync folders (id, name, parent hierarchy)",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "folders",
+            "output": [
+                "Folder"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Folder"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the folder"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the folder"
+                            },
+                            "parent_folder_id": {
+                                "description": "ID of the parent folder, or null when this folder is top-level",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "space_id": {
+                                "description": "ID of the space this folder belongs to",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "parent_folder_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A folder for organizing meeting notes in Granola"
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync meeting notes (metadata, summary, attendees, folder/space membership - not the transcript)",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "notes",
+            "output": [
+                "Note"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Note"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Note": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique ID of the note"
+                            },
+                            "object": {
+                                "type": "string",
+                                "description": "The object type of the note"
+                            },
+                            "title": {
+                                "description": "The title of the note",
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "The name of the user",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "description": "The email of the user"
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ],
+                                "additionalProperties": false,
+                                "description": "The owner of the note"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "The creation time of the note"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "description": "The last update time of the note"
+                            },
+                            "web_url": {
+                                "type": "string",
+                                "description": "The URL to view the note in the Granola web app"
+                            },
+                            "calendar_event": {
+                                "description": "Calendar event associated with the note",
+                                "type": "object",
+                                "properties": {
+                                    "event_title": {
+                                        "description": "The title of the calendar event",
+                                        "type": "string"
+                                    },
+                                    "invitees": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "description": "The email of the calendar invitee"
+                                                }
+                                            },
+                                            "required": [
+                                                "email"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A calendar invitee"
+                                        },
+                                        "description": "The invitees of the calendar event"
+                                    },
+                                    "organiser": {
+                                        "description": "The email of the organiser",
+                                        "type": "string"
+                                    },
+                                    "calendar_event_id": {
+                                        "description": "The ID of the calendar event",
+                                        "type": "string"
+                                    },
+                                    "scheduled_start_time": {
+                                        "description": "The scheduled start time of the calendar event",
+                                        "type": "string"
+                                    },
+                                    "scheduled_end_time": {
+                                        "description": "The scheduled end time of the calendar event",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "invitees"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "The name of the user",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "The email of the user"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user"
+                                },
+                                "description": "The attendees of the meeting"
+                            },
+                            "folder_membership": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The ID of the folder"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "description": "The object type of the folder"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the folder"
+                                        },
+                                        "parent_folder_id": {
+                                            "description": "The ID of the parent folder, or omitted if top-level",
+                                            "type": "string"
+                                        },
+                                        "space_id": {
+                                            "description": "The ID of the space this folder belongs to",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A folder"
+                                },
+                                "description": "The folders the note belongs to"
+                            },
+                            "space_membership": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The ID of the space"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "description": "The object type of the space"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the space"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Granola space (team workspace)"
+                                },
+                                "description": "The spaces the note belongs to"
+                            },
+                            "summary_text": {
+                                "type": "string",
+                                "description": "The summary text of the note"
+                            },
+                            "summary_markdown": {
+                                "description": "The summary of the note in markdown format",
+                                "type": "string"
+                            },
+                            "private_notes_text": {
+                                "description": "The private notes text of the note owner",
+                                "type": "string"
+                            },
+                            "private_notes_markdown": {
+                                "description": "The private notes markdown of the note owner",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "object",
+                            "owner",
+                            "created_at",
+                            "updated_at",
+                            "web_url",
+                            "attendees",
+                            "folder_membership",
+                            "space_membership",
+                            "summary_text"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Granola meeting note"
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

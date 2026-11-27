@@ -1,0 +1,2353 @@
+{
+    "providerConfigKey": "canva-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected team's group identities, display names, and creation instants available as records. Group membership is not included because the API does not expose it.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Group"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Group"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Canva-generated SCIM group ID in this team."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Group creation instant normalized to UTC Z with fractional precision preserved."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group name shown to users."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A connected Canva team group identity, display name, and creation instant, without membership information."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected team's active and inactive user provisioning profiles available as records, including identity-provider references, work email, names, locale, role, and creation time.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Canva-generated SCIM user ID in the connected team."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Original SCIM role value; non-Member documented values map to Canva Brand Designer, not team administrator."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Activation state; false identifies a deprovisioned user."
+                            },
+                            "emails": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Work email address unchanged."
+                                        },
+                                        "primary": {
+                                            "type": "boolean",
+                                            "description": "Provider primary-email flag, including false."
+                                        }
+                                    },
+                                    "required": [
+                                        "address",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Supported work email entry from the provisioning profile."
+                                },
+                                "description": "Supported work email entry; empty arrays are preserved."
+                            },
+                            "locale": {
+                                "description": "Provider locale such as en_AU; omitted when absent.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Unique SCIM username, distinct from id."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "User creation instant normalized to UTC Z with fractional precision preserved."
+                            },
+                            "givenName": {
+                                "description": "Given name from the provisioning profile; omitted when absent.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning-client resource ID; omitted when absent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Family name from the provisioning profile; omitted when absent.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Name shown to end users."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role",
+                            "active",
+                            "emails",
+                            "userName",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Active or inactive user provisioning profile in the connected Canva team."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "activate-user",
+            "integrationId": "canva-scim",
+            "description": "Request activation of an eligible SCIM user by setting active to true. This does not bypass SSO linking, ownership confirmation, or soft-deleted-account login requirements.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_activateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_activateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_activateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva-generated SCIM ID of the eligible user to activate in this team."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the existing Canva SCIM user to request activation for."
+                    },
+                    "FunctionOutput_canva_scim_activateuser": {
+                        "type": "object",
+                        "properties": {
+                            "active": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Provider-returned activation state confirming activation, not proof of user login or content restoration."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Canva SCIM ID returned for the activated user."
+                            }
+                        },
+                        "required": [
+                            "active",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Activation state confirmed by the Canva SCIM response."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-user` or `list-users` to identify an inactive user and obtain its Canva SCIM ID. This requests activation, not restoration of deleted content. Soft-deleted accounts may require the user to log in first. Use `deprovision-user` for the opposite lifecycle action or `update-user` for profile changes."
+            },
+            "filePath": "./canva-scim/tools/activate-user.ts",
+            "version": "eae82893ca246582213b25c1ff4c801032428de01677a9ca4da1d147f05850b8",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/activate-user/eae82893ca246582213b25c1ff4c801032428de01677a9ca4da1d147f05850b8.cjs",
+                "ts": "templates-zero/canva-scim/tools/activate-user/eae82893ca246582213b25c1ff4c801032428de01677a9ca4da1d147f05850b8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "add-user-to-group",
+            "integrationId": "canva-scim",
+            "description": "Add an existing team user to an existing group without replacing the group's other memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_addusertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_addusertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_addusertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM user ID to associate with the group, not an IdP externalId or username."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM ID of the destination group in this team."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An existing team user and the existing group to associate them with."
+                    },
+                    "FunctionOutput_canva_scim_addusertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "Canva accepted the membership request; the API does not return observable membership."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID submitted for association, not independently read back as a member."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group ID echoed after successful acknowledgment."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the membership request, not verification of group membership."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups` and userId from `list-users` or `create-user`. For several users use `batch-add-users-to-group`. This associates an existing user; it does not create an account. Membership must be inspected in the Canva web interface."
+            },
+            "filePath": "./canva-scim/tools/add-user-to-group.ts",
+            "version": "e59046853e671c6e9a01ecd4b517a71020315324063ba16626cc52349938dd03",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/add-user-to-group/e59046853e671c6e9a01ecd4b517a71020315324063ba16626cc52349938dd03.cjs",
+                "ts": "templates-zero/canva-scim/tools/add-user-to-group/e59046853e671c6e9a01ecd4b517a71020315324063ba16626cc52349938dd03.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-add-users-to-group",
+            "integrationId": "canva-scim",
+            "description": "Add up to 1000 existing users to one group using a native membership request, without replacing other members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_batchadduserstogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_batchadduserstogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_batchadduserstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM ID of the single destination group."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Canva SCIM user ID."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct Canva SCIM user IDs to add, at most 1000; not IdP identifiers."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One destination group and the distinct existing users to add to it."
+                    },
+                    "FunctionOutput_canva_scim_batchadduserstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "Aggregate successful acknowledgment from Canva; does not assert individual outcomes or atomicity."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Group targeted by the accepted batch request."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgment of the native membership request, without individual membership verification."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId with `list-groups` and user IDs with `list-users`. Submit 1–1000 distinct IDs in one call; use `add-user-to-group` for one user. The result is an aggregate acknowledgment, not per-user success or independently verified membership. Inspect membership in Canva before retrying an ambiguous request."
+            },
+            "filePath": "./canva-scim/tools/batch-add-users-to-group.ts",
+            "version": "bfc2f10dbe3d600491d4d08b33c6187afad5149e1ea828dfb6987d27b3a57989",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/batch-add-users-to-group/bfc2f10dbe3d600491d4d08b33c6187afad5149e1ea828dfb6987d27b3a57989.cjs",
+                "ts": "templates-zero/canva-scim/tools/batch-add-users-to-group/bfc2f10dbe3d600491d4d08b33c6187afad5149e1ea828dfb6987d27b3a57989.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-remove-users-from-group",
+            "integrationId": "canva-scim",
+            "description": "Remove up to 1000 users' memberships from one group without deleting or deprovisioning their accounts.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_batchremoveusersfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_batchremoveusersfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_batchremoveusersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM ID of the one group to remove associations from."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Canva SCIM user ID whose membership should be removed."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct Canva SCIM user IDs whose memberships should be removed; user accounts remain."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One group and 1-1000 distinct users whose memberships should be removed."
+                    },
+                    "FunctionOutput_canva_scim_batchremoveusersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "Aggregate successful acknowledgment, not per-user outcomes or an atomicity guarantee."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Group targeted by the native batch request."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgment of the native membership-removal request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use IDs from `list-groups` and `list-users`; submit 1–1000 distinct user IDs. Use `remove-user-from-group` for one membership. This returns aggregate acknowledgment only, not per-user results. Inspect membership in Canva before repeating an ambiguous request."
+            },
+            "filePath": "./canva-scim/tools/batch-remove-users-from-group.ts",
+            "version": "12fd2b17a380910fc2f26d93bbe7671a943452efcc02b65f96f1a2f37e3036fd",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/batch-remove-users-from-group/12fd2b17a380910fc2f26d93bbe7671a943452efcc02b65f96f1a2f37e3036fd.cjs",
+                "ts": "templates-zero/canva-scim/tools/batch-remove-users-from-group/12fd2b17a380910fc2f26d93bbe7671a943452efcc02b65f96f1a2f37e3036fd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "canva-scim",
+            "description": "Create an initially empty user group in the connected Canva team.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Display name for the new group, unique within the connected team; passed without trimming or case changes."
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Name of the initially empty group to create in the connected Canva team."
+                    },
+                    "FunctionOutput_canva_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New Canva-generated SCIM group ID."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Group creation instant in UTC Z with original fractional precision preserved."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group display name returned by Canva."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-assigned identity, name, and creation instant of the new Canva group."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Choose a name not already used in the team; `list-groups` can check names. After creation, use `add-user-to-group` or `batch-add-users-to-group` to add members. Creating a group does not provision users."
+            },
+            "filePath": "./canva-scim/tools/create-group.ts",
+            "version": "d40e1a682eb528890bccb51c24d69584b6a7d1f6c3a9e78aa3cfb47121e170dd",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/create-group/d40e1a682eb528890bccb51c24d69584b6a7d1f6c3a9e78aa3cfb47121e170dd.cjs",
+                "ts": "templates-zero/canva-scim/tools/create-group/d40e1a682eb528890bccb51c24d69584b6a7d1f6c3a9e78aa3cfb47121e170dd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-user",
+            "integrationId": "canva-scim",
+            "description": "Provision a Canva team user from identity-provider information. The team must have SSO configured and authorize the email domain for SCIM.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_createuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_createuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "description": "SCIM role; defaults to Member. Every other listed value maps to Canva Brand Designer, not administrator authority.",
+                                "type": "string",
+                                "enum": [
+                                    "Member",
+                                    "Teacher",
+                                    "Staff",
+                                    "Admin",
+                                    "Template-designer",
+                                    "Aide",
+                                    "Administrator",
+                                    "School administrator",
+                                    "School",
+                                    "Tenant",
+                                    "Faculty"
+                                ]
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "User's single work email address; must be unique and in a domain authorized for SCIM."
+                            },
+                            "active": {
+                                "description": "Desired initial activation state; defaults locally to true. False requests a deprovisioned account.",
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "description": "Optional provider locale, for example en_AU; omitted leaves provider behavior unchanged.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Unique SCIM identity from the IdP; must not already be in use."
+                            },
+                            "givenName": {
+                                "description": "Optional given name sent as name.givenName.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Optional opaque identifier assigned by the provisioning client; omitted means not sent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Optional family name sent as name.familyName.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Optional name displayed to users, sent unchanged; empty text remains empty.",
+                                "type": "string"
+                            },
+                            "emailPrimary": {
+                                "description": "Whether the work email is primary; defaults locally to true, with false available explicitly.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity-provider information for provisioning one Canva team user."
+                    },
+                    "FunctionOutput_canva_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New Canva-generated SCIM user ID."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Original SCIM role label; non-Member documented labels mean Brand Designer."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Activation state returned by Canva."
+                            },
+                            "emails": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Returned work email address."
+                                        },
+                                        "primary": {
+                                            "type": "boolean",
+                                            "description": "Returned primary-email flag."
+                                        }
+                                    },
+                                    "required": [
+                                        "address",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One returned work email and its primary flag."
+                                },
+                                "description": "Work email entries returned after provisioning."
+                            },
+                            "locale": {
+                                "description": "Returned provider locale; omitted when absent.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "SCIM username returned by Canva."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC Z, preserving fractional precision."
+                            },
+                            "givenName": {
+                                "description": "Returned given name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Returned provisioning-client identifier; omitted when absent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Returned family name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name returned by Canva, including any provider-selected default."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role",
+                            "active",
+                            "emails",
+                            "userName",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created Canva SCIM user, with profile fields flattened and creation time normalized to UTC."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use a unique IdP username and work email. `list-users` can resolve existing usernames or external IDs before creating. Creation is limited to one request per second; do not replay ambiguous writes without checking for an existing user. SCIM role Admin means Brand Designer, not team administrator. This does not add the user to a group."
+            },
+            "filePath": "./canva-scim/tools/create-user.ts",
+            "version": "c6613281d80beebe476ad0cedefdf43f854f29a8aa3d1087a142986ce9f7bc8c",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/create-user/c6613281d80beebe476ad0cedefdf43f854f29a8aa3d1087a142986ce9f7bc8c.cjs",
+                "ts": "templates-zero/canva-scim/tools/create-user/c6613281d80beebe476ad0cedefdf43f854f29a8aa3d1087a142986ce9f7bc8c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-group",
+            "integrationId": "canva-scim",
+            "description": "Delete an existing group from the connected team without removing its users. Recovery or restoration of the group is not documented.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_deletegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_deletegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Canva SCIM ID of the group to delete in this team."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the group to delete from the connected team."
+                    },
+                    "FunctionOutput_canva_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after Canva returns its successful deletion response; does not describe user deletion."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "ID of the group whose deletion Canva acknowledged."
+                            }
+                        },
+                        "required": [
+                            "deleted",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of group deletion without deletion of its user accounts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId from `list-groups`. This removes the group, not its user accounts. There is no restore tool; do not assume deletion can be undone. Use `remove-user-from-group` to remove just one membership instead."
+            },
+            "filePath": "./canva-scim/tools/delete-group.ts",
+            "version": "55e3713395abbd1a88859bd41db2109823612f4caa1ee7c303ce04d29f3a1c67",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/delete-group/55e3713395abbd1a88859bd41db2109823612f4caa1ee7c303ce04d29f3a1c67.cjs",
+                "ts": "templates-zero/canva-scim/tools/delete-group/55e3713395abbd1a88859bd41db2109823612f4caa1ee7c303ce04d29f3a1c67.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "deprovision-user",
+            "integrationId": "canva-scim",
+            "description": "Deprovision a SCIM user by setting active to false without deleting the user resource or replacing its profile.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_deprovisionuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_deprovisionuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_deprovisionuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva-generated SCIM user ID to deprovision in the connected team."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the SCIM user to deactivate without replacing their profile."
+                    },
+                    "FunctionOutput_canva_scim_deprovisionuser": {
+                        "type": "object",
+                        "properties": {
+                            "active": {
+                                "type": "boolean",
+                                "const": false,
+                                "description": "Provider-returned activation state confirming the user is inactive, not a deletion acknowledgment."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Canva SCIM ID returned for the deprovisioned user."
+                            }
+                        },
+                        "required": [
+                            "active",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider-confirmed identity and inactive state of the deprovisioned user."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get userId from `list-users` or `create-user`; inspect the account with `get-user` if needed. This deactivates the SCIM user, not a group membership. It is not permanent deletion and does not promise content deletion. Use `activate-user` to request activation of an eligible account later."
+            },
+            "filePath": "./canva-scim/tools/deprovision-user.ts",
+            "version": "0ad2ad2e53aacebfb2c2dfef0a0ff620248ea7cc0e932f73c68c7df86b51f8c7",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/deprovision-user/0ad2ad2e53aacebfb2c2dfef0a0ff620248ea7cc0e932f73c68c7df86b51f8c7.cjs",
+                "ts": "templates-zero/canva-scim/tools/deprovision-user/0ad2ad2e53aacebfb2c2dfef0a0ff620248ea7cc0e932f73c68c7df86b51f8c7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "canva-scim",
+            "description": "Get a group's identity, name, and creation time from the connected team. The API cannot report its members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Canva-generated SCIM group ID in the connected team."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a group in the connected Canva team."
+                    },
+                    "FunctionOutput_canva_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Canva-generated SCIM group ID."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Group creation instant in UTC with Z, preserving fractional precision."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group name shown to users."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group identity, name, and creation instant, without membership information."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain groupId from `list-groups` or `create-group`. Use this for a known group, not to inspect membership; use the Canva web interface for members."
+            },
+            "filePath": "./canva-scim/tools/get-group.ts",
+            "version": "588dc55551a8e9e45495e8d960223c9926c1dfb3ec8ef779951873c5cec21319",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/get-group/588dc55551a8e9e45495e8d960223c9926c1dfb3ec8ef779951873c5cec21319.cjs",
+                "ts": "templates-zero/canva-scim/tools/get-group/588dc55551a8e9e45495e8d960223c9926c1dfb3ec8ef779951873c5cec21319.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "canva-scim",
+            "description": "Get a user's provisioning profile and activation state by Canva-generated SCIM ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Canva-generated SCIM user ID in the connected team; not userName or externalId."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a user in the connected Canva team by their SCIM ID."
+                    },
+                    "FunctionOutput_canva_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Canva-generated SCIM user ID."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Original SCIM role label; documented non-Member labels mean Canva Brand Designer, not administrator authority."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "User activation state; false means deprovisioned."
+                            },
+                            "emails": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Work email address unchanged."
+                                        },
+                                        "primary": {
+                                            "type": "boolean",
+                                            "description": "Whether this email is primary, preserving false."
+                                        }
+                                    },
+                                    "required": [
+                                        "address",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A work email entry from the provisioning profile."
+                                },
+                                "description": "Work email entries returned by Canva; preserves an empty array."
+                            },
+                            "locale": {
+                                "description": "Provider locale such as en_US; omitted when absent.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Unique SCIM username."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant normalized to UTC Z, preserving fractional digits."
+                            },
+                            "givenName": {
+                                "description": "Given name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning client's identifier; omitted when absent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Family name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Name displayed to end users."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role",
+                            "active",
+                            "emails",
+                            "userName",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current Canva provisioning profile and activation state without the SCIM envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain userId from `list-users` or `create-user`. If you only know an IdP username or external ID, resolve it with `list-users` first. Role labels such as Admin do not grant team administrator authority through SCIM."
+            },
+            "filePath": "./canva-scim/tools/get-user.ts",
+            "version": "b92ed7c7b8daaed94395f7288090f2e8e829ee5c0315f22ffae8598f82a864d8",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/get-user/b92ed7c7b8daaed94395f7288090f2e8e829ee5c0315f22ffae8598f82a864d8.cjs",
+                "ts": "templates-zero/canva-scim/tools/get-user/b92ed7c7b8daaed94395f7288090f2e8e829ee5c0315f22ffae8598f82a864d8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "canva-scim",
+            "description": "List one page of groups in the connected Canva team, optionally matching a display name. Membership information is not available through this API.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Maximum groups requested in this page; defaults to 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same connection, filter, and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "displayName": {
+                                "description": "Optional group display name to match using provider equality semantics; omitted means all groups.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of Canva team groups, optionally matching a display name."
+                    },
+                    "FunctionOutput_canva_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Canva-generated SCIM group ID in the connected team."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Group creation instant normalized to UTC with Z; fractional precision is preserved."
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Group name shown to users."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "createdAt",
+                                        "displayName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Canva team group without membership information."
+                                },
+                                "description": "Groups in this page; contains no membership data."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another page; omitted when exhausted.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported total groups matching this query at request time; not a snapshot guarantee."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "totalResults"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-ordered page of Canva team groups and its continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover group IDs or find a group by name; use `get-group` for a known ID. Returns one page of up to 10 groups. Pass nextCursor as cursor with the same filter and limit to continue. Use the Canva web interface to inspect membership."
+            },
+            "filePath": "./canva-scim/tools/list-groups.ts",
+            "version": "59b1278e3679fb8685466208f770e751bb07215cf01fd6d772196e6211d5b180",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/list-groups/59b1278e3679fb8685466208f770e751bb07215cf01fd6d772196e6211d5b180.cjs",
+                "ts": "templates-zero/canva-scim/tools/list-groups/59b1278e3679fb8685466208f770e751bb07215cf01fd6d772196e6211d5b180.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "canva-scim",
+            "description": "List one page of users in the connected team, including inactive users, optionally matching a username or IdP external ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested maximum users in this page; defaults to 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same connection, filter, and limit; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional single equality match; omit to enumerate all team users, including inactive ones.",
+                                "type": "object",
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "userName",
+                                            "externalId"
+                                        ],
+                                        "description": "Identity attribute to match: SCIM username or provisioning-client external ID."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "Exact value passed to the provider's equality comparison; no case or whitespace normalization."
+                                    }
+                                },
+                                "required": [
+                                    "field",
+                                    "value"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "List one page of team users with an optional identity equality filter."
+                    },
+                    "FunctionOutput_canva_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Canva-generated SCIM user ID in this team."
+                                        },
+                                        "userName": {
+                                            "type": "string",
+                                            "description": "User's unique SCIM identity, distinct from the Canva ID."
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Name shown to end users."
+                                        },
+                                        "emails": {
+                                            "maxItems": 1,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "Work email address returned by Canva, unchanged."
+                                                    },
+                                                    "primary": {
+                                                        "type": "boolean",
+                                                        "description": "Whether Canva marks this work email as primary."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "address",
+                                                    "primary"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A work email entry returned by Canva."
+                                            },
+                                            "description": "Supported work email entry; empty remains empty rather than inventing an address."
+                                        },
+                                        "active": {
+                                            "type": "boolean",
+                                            "description": "Whether the user is active; false means deprovisioned."
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "description": "Provider SCIM role value. Member means Member; all other documented values map to Canva Brand Designer, not team administrator authority."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "User creation instant normalized to UTC Z, preserving fractional precision."
+                                        },
+                                        "externalId": {
+                                            "description": "Provisioning-client resource ID; omitted when absent.",
+                                            "type": "string"
+                                        },
+                                        "givenName": {
+                                            "description": "Given name from name.givenName; omitted when absent.",
+                                            "type": "string"
+                                        },
+                                        "familyName": {
+                                            "description": "Family name from name.familyName; omitted when absent.",
+                                            "type": "string"
+                                        },
+                                        "locale": {
+                                            "description": "Provider locale such as en_AU, preserved without converting to a timezone; omitted when absent.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "userName",
+                                        "displayName",
+                                        "emails",
+                                        "active",
+                                        "role",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A team user with SCIM envelopes removed."
+                                },
+                                "description": "Users in this provider page, including inactive users."
+                            },
+                            "totalResults": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported number of users matching this query at request time, not a stable snapshot count."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next page, omitted at exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "totalResults"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of team users and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover Canva user IDs or resolve an IdP identity; use `get-user` for a known Canva ID. Filters use provider equality, not substring search. Returns at most 10 users per page, including inactive users. Continue by passing nextCursor as cursor with the same filter and limit."
+            },
+            "filePath": "./canva-scim/tools/list-users.ts",
+            "version": "af01b3b496ff21f2d5eb8d3a34e50db7c8c98a2acda3b2aa8b730fc6fbd8965d",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/list-users/af01b3b496ff21f2d5eb8d3a34e50db7c8c98a2acda3b2aa8b730fc6fbd8965d.cjs",
+                "ts": "templates-zero/canva-scim/tools/list-users/af01b3b496ff21f2d5eb8d3a34e50db7c8c98a2acda3b2aa8b730fc6fbd8965d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-user-from-group",
+            "integrationId": "canva-scim",
+            "description": "Remove one user's association with a group without deleting or deprovisioning the user.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_removeuserfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_removeuserfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_removeuserfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM user ID whose group membership will be removed; user account remains."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM ID of the group whose association will be removed."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group and user whose membership association will be removed."
+                    },
+                    "FunctionOutput_canva_scim_removeuserfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "Canva accepted the removal request; this is not an independently read member list."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID submitted for membership removal."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group ID echoed after acknowledgment."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the requested membership removal, not independent membership verification."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use groupId from `list-groups` and userId from `list-users`. This removes only membership; use `deprovision-user` to deactivate an account instead. For several users use `batch-remove-users-from-group`. Inspect current membership in Canva, since reads cannot report it."
+            },
+            "filePath": "./canva-scim/tools/remove-user-from-group.ts",
+            "version": "c00ec92928f2bac5138c59fb10a01533b9f247c0fa3a11de071d9afba0542b9d",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/remove-user-from-group/c00ec92928f2bac5138c59fb10a01533b9f247c0fa3a11de071d9afba0542b9d.cjs",
+                "ts": "templates-zero/canva-scim/tools/remove-user-from-group/c00ec92928f2bac5138c59fb10a01533b9f247c0fa3a11de071d9afba0542b9d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "canva-scim",
+            "description": "Update a group's display name without replacing or removing its membership.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Canva-generated SCIM group ID in the connected team."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "New unique group display name; null and empty values are not supported."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group to rename and its new display name, leaving membership unchanged."
+                    },
+                    "FunctionOutput_canva_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unchanged Canva SCIM group ID."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Original creation instant normalized to UTC Z without precision loss."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group display name after the update."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The renamed group identity, display name, and original creation instant."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId from `list-groups`. Use this for a name change; use `update-group-members` to replace membership or `update-group-replacement` for a complete group replacement. Existing members are left alone."
+            },
+            "filePath": "./canva-scim/tools/update-group.ts",
+            "version": "d48b8d8a48a533b8a05804df435f30d37729df061fea47ae1c27cccea0608804",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/update-group/d48b8d8a48a533b8a05804df435f30d37729df061fea47ae1c27cccea0608804.cjs",
+                "ts": "templates-zero/canva-scim/tools/update-group/d48b8d8a48a533b8a05804df435f30d37729df061fea47ae1c27cccea0608804.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group-members",
+            "integrationId": "canva-scim",
+            "description": "Replace the entire member list of an existing group while leaving its name unchanged.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_updategroupmembers",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_updategroupmembers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_updategroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM group ID whose full membership list will be replaced."
+                            },
+                            "memberIds": {
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Canva SCIM user ID to include in the group."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired list of Canva SCIM user IDs; [] clears all memberships. Existing IDs not listed are removed."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group and complete desired membership list for replacement."
+                    },
+                    "FunctionOutput_canva_scim_updategroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "Aggregate provider acknowledgment; not an independently verified list of members."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Group whose membership replacement was acknowledged."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgment of the group membership replacement."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only with the complete desired member list, obtained from your source of truth or the Canva web interface. API reads cannot provide it. An empty list clears all memberships; users remain in the team. Use `add-user-to-group` or the batch add/remove tools for incremental changes. Maximum 1000 members per call."
+            },
+            "filePath": "./canva-scim/tools/update-group-members.ts",
+            "version": "d778cbef93c3fef1ff7f5fb76a9083b174e9b3e4d8d4d2b0a696565fd064b078",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/update-group-members/d778cbef93c3fef1ff7f5fb76a9083b174e9b3e4d8d4d2b0a696565fd064b078.cjs",
+                "ts": "templates-zero/canva-scim/tools/update-group-members/d778cbef93c3fef1ff7f5fb76a9083b174e9b3e4d8d4d2b0a696565fd064b078.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group-replacement",
+            "integrationId": "canva-scim",
+            "description": "Replace a group's complete editable information, including its entire membership list. Existing members not listed are removed from the group, not from the team.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_updategroupreplacement",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_updategroupreplacement",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_updategroupreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva-generated SCIM ID of the existing group."
+                            },
+                            "memberIds": {
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Canva SCIM user ID to include in the complete desired membership."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired membership as Canva SCIM user IDs; [] removes all members. This is not a list of additions."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Complete desired group display name, unique in the team."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberIds",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete desired editable information for an existing Canva group."
+                    },
+                    "FunctionOutput_canva_scim_updategroupreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Existing group ID retained by replacement."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Original group creation instant in UTC Z, preserving fractional precision."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name returned after replacement."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group identity, display name, and original creation instant returned after replacement; membership is not verified."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only when you know the complete desired name and member list. `get-group` cannot supply existing members; inspect them in Canva if necessary. For a rename use `update-group`; for membership-only replacement use `update-group-members`. Accepts at most 1000 member IDs. An empty list removes all memberships."
+            },
+            "filePath": "./canva-scim/tools/update-group-replacement.ts",
+            "version": "38c1a5d8cb5107146a9d6c1a63671533454daf436e9b2f1f3686a865baef61c9",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/update-group-replacement/38c1a5d8cb5107146a9d6c1a63671533454daf436e9b2f1f3686a865baef61c9.cjs",
+                "ts": "templates-zero/canva-scim/tools/update-group-replacement/38c1a5d8cb5107146a9d6c1a63671533454daf436e9b2f1f3686a865baef61c9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "canva-scim",
+            "description": "Partially update a user's provisioning attributes without removing omitted information. Setting active to false deprovisions the user.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva-generated SCIM ID of the existing team user."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "description": "New SCIM role; all listed values except Member map to Canva Brand Designer, not administrator authority. Omitted preserves it.",
+                                        "type": "string",
+                                        "enum": [
+                                            "Member",
+                                            "Teacher",
+                                            "Staff",
+                                            "Admin",
+                                            "Template-designer",
+                                            "Aide",
+                                            "Administrator",
+                                            "School administrator",
+                                            "School",
+                                            "Tenant",
+                                            "Faculty"
+                                        ]
+                                    },
+                                    "email": {
+                                        "description": "New single work email address; cannot be cleared.",
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    "active": {
+                                        "description": "Desired activation state; false deprovisions the user, true requests activation, omitted leaves state unchanged.",
+                                        "type": "boolean"
+                                    },
+                                    "locale": {
+                                        "description": "New provider locale such as en_AU; null removes it, omitted preserves it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "userName": {
+                                        "description": "New unique SCIM username; cannot be cleared.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "givenName": {
+                                        "description": "New name.givenName; null removes only this component, omitted preserves it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "externalId": {
+                                        "description": "New provisioning-client ID; null removes it, empty string writes empty text, omitted preserves it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "familyName": {
+                                        "description": "New name.familyName; null removes only this component, omitted preserves it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "displayName": {
+                                        "description": "New display name; null requests attribute removal, empty text writes empty text, omitted preserves it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "emailPrimary": {
+                                        "description": "New primary-email flag; omitted preserves it, including when changing the email address.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial modifications; omitted properties remain unchanged. Null removes a supported optional attribute, not the user."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Existing team user and the provisioning attributes to change."
+                    },
+                    "FunctionOutput_canva_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Existing Canva SCIM user ID."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Returned SCIM role label; non-Member documented labels mean Brand Designer."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Activation state returned after the update."
+                            },
+                            "emails": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Returned work email address."
+                                        },
+                                        "primary": {
+                                            "type": "boolean",
+                                            "description": "Returned primary flag, preserving false."
+                                        }
+                                    },
+                                    "required": [
+                                        "address",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Returned work email and its primary flag."
+                                },
+                                "description": "Returned work email entries."
+                            },
+                            "locale": {
+                                "description": "Returned provider locale; omitted when absent.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "SCIM username returned after the update."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Original user creation instant in UTC Z with fractional precision preserved."
+                            },
+                            "givenName": {
+                                "description": "Returned given name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Returned external ID; omitted when absent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Returned family name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Provider-returned display name after updates or provider removal normalization."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role",
+                            "active",
+                            "emails",
+                            "userName",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-returned user profile after the requested partial changes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get userId from `list-users` or `create-user`; use `get-user` to inspect the current profile. Provide only fields to change. Null clears supported optional profile attributes; omitted fields remain untouched. Use `update-user-replacement` only for complete replacement, or `deprovision-user` for focused deactivation. SCIM Admin is Brand Designer, not administrator authority."
+            },
+            "filePath": "./canva-scim/tools/update-user.ts",
+            "version": "6a7f3c74fd359d4748d7744a658a2a3c5460970ee56b5266b3828d02c11f0101",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/update-user/6a7f3c74fd359d4748d7744a658a2a3c5460970ee56b5266b3828d02c11f0101.cjs",
+                "ts": "templates-zero/canva-scim/tools/update-user/6a7f3c74fd359d4748d7744a658a2a3c5460970ee56b5266b3828d02c11f0101.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user-replacement",
+            "integrationId": "canva-scim",
+            "description": "Replace a user's complete editable provisioning profile. Existing information not supplied is removed according to Canva's replacement semantics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_canva_scim_updateuserreplacement",
+            "output_schema_ref": "#/definitions/FunctionOutput_canva_scim_updateuserreplacement",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_canva_scim_updateuserreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "Member",
+                                    "Teacher",
+                                    "Staff",
+                                    "Admin",
+                                    "Template-designer",
+                                    "Aide",
+                                    "Administrator",
+                                    "School administrator",
+                                    "School",
+                                    "Tenant",
+                                    "Faculty"
+                                ],
+                                "description": "Complete desired SCIM role; non-Member labels map to Brand Designer, not team administrator."
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Complete desired single work email in a SCIM-authorized domain."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Complete desired activation state; false deprovisions the user. Required to avoid an undocumented omission default."
+                            },
+                            "locale": {
+                                "description": "Desired provider locale such as en_AU; omitted removes existing locale information.",
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canva SCIM user ID whose profile will be replaced."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Complete desired unique SCIM username."
+                            },
+                            "givenName": {
+                                "description": "Desired given name; omitted removes existing given-name information.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Desired provisioning-client ID; omitted removes existing information, empty writes empty text.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Desired family name; omitted removes existing family-name information.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Desired display name; omitted invokes provider removal/default normalization, not preservation.",
+                                "type": "string"
+                            },
+                            "emailPrimary": {
+                                "description": "Desired primary flag for the replacement work email; defaults locally to true, not the old value.",
+                                "default": true,
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "role",
+                            "email",
+                            "active",
+                            "userId",
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete desired editable provisioning profile for an existing Canva SCIM user."
+                    },
+                    "FunctionOutput_canva_scim_updateuserreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Existing Canva SCIM user ID retained by replacement."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Returned SCIM role label with non-Member labels mapping to Brand Designer."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Activation state returned by Canva."
+                            },
+                            "emails": {
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Returned work email address."
+                                        },
+                                        "primary": {
+                                            "type": "boolean",
+                                            "description": "Returned primary-email flag."
+                                        }
+                                    },
+                                    "required": [
+                                        "address",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A returned work email entry."
+                                },
+                                "description": "Work email entries returned after replacement."
+                            },
+                            "locale": {
+                                "description": "Returned provider locale; omitted when absent.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "SCIM username returned after replacement."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Original creation instant in UTC Z with fractional precision preserved."
+                            },
+                            "givenName": {
+                                "description": "Returned given name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Returned external ID; omitted when absent.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "Returned family name; omitted when absent.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Provider-returned display name, including any default or normalization after omission."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role",
+                            "active",
+                            "emails",
+                            "userName",
+                            "createdAt",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The resulting Canva SCIM user profile returned by the replacement operation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-user` to inspect the current profile, and supply the complete desired replacement. Omitted optional information is removed, not preserved. Use `update-user` for partial edits or `deprovision-user` for deactivation alone. Explicit active and role are required here to avoid accidental lifecycle or role defaults."
+            },
+            "filePath": "./canva-scim/tools/update-user-replacement.ts",
+            "version": "026e19204ff5144ee790b36bb517cc809a849fdd3eaad59e541d8f0911948804",
+            "location": {
+                "js": "templates-zero/canva-scim/tools/update-user-replacement/026e19204ff5144ee790b36bb517cc809a849fdd3eaad59e541d8f0911948804.cjs",
+                "ts": "templates-zero/canva-scim/tools/update-user-replacement/026e19204ff5144ee790b36bb517cc809a849fdd3eaad59e541d8f0911948804.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

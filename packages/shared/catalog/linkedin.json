@@ -1,0 +1,1199 @@
+{
+    "providerConfigKey": "linkedin",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a linkedin post with an optional video",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_post",
+            "name": "post",
+            "output": [
+                "ActionOutput_linkedin_post"
+            ],
+            "scopes": [
+                "openid",
+                "profile",
+                "r_basicprofile",
+                "w_member_social",
+                "email",
+                "w_organization_social",
+                "r_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_post",
+                "ActionOutput_linkedin_post"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_post": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "videoURN": {
+                                "type": "string"
+                            },
+                            "videoTitle": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "videoURN",
+                            "videoTitle",
+                            "ownerId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_post": {
+                        "type": "object",
+                        "properties": {
+                            "succcess": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "succcess"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a comment on a LinkedIn post or comment thread.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_createcomment",
+            "name": "create-comment",
+            "output": [
+                "ActionOutput_linkedin_createcomment"
+            ],
+            "scopes": [
+                "w_organization_social_feed",
+                "w_member_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createcomment",
+                "ActionOutput_linkedin_createcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "The URN of the share, ugcPost, or comment to comment on. Example: \"urn:li:ugcPost:123\""
+                            },
+                            "actor": {
+                                "type": "string",
+                                "description": "The URN of the entity authoring the comment. Example: \"urn:li:person:abc\" or \"urn:li:organization:123\""
+                            },
+                            "object": {
+                                "type": "string",
+                                "description": "The URN of the top-level share or ugcPost that contains the comment. Example: \"urn:li:activity:123\""
+                            },
+                            "message": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string",
+                                        "description": "The comment text."
+                                    },
+                                    "attributes": {
+                                        "description": "Mention attributes in the comment text.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "length": {
+                                                    "type": "number"
+                                                },
+                                                "start": {
+                                                    "type": "number"
+                                                },
+                                                "value": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "organization": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "organization": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "organization"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        },
+                                                        "person": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "person": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "person"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": [
+                                                "length",
+                                                "start"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "text"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "parentComment": {
+                                "description": "For nested comments, the URN of the parent comment. Example: \"urn:li:comment:(urn:li:activity:123,456)\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "target",
+                            "actor",
+                            "object",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "commentUrn": {
+                                "type": "string"
+                            },
+                            "actor": {
+                                "type": "string"
+                            },
+                            "agent": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string"
+                                    },
+                                    "attributes": {
+                                        "type": "array",
+                                        "items": {}
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "created": {
+                                "type": "object",
+                                "properties": {
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "impersonator": {
+                                        "type": "string"
+                                    },
+                                    "time": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "lastModified": {
+                                "type": "object",
+                                "properties": {
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "impersonator": {
+                                        "type": "string"
+                                    },
+                                    "time": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Like a LinkedIn post or comment as a person or organization.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_createlike",
+            "name": "create-like",
+            "output": [
+                "ActionOutput_linkedin_createlike"
+            ],
+            "scopes": [
+                "w_member_social_feed",
+                "w_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createlike",
+                "ActionOutput_linkedin_createlike"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_createlike": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "The URN of the share, UGC post, or comment to like. Example: \"urn:li:share:123\""
+                            },
+                            "actor": {
+                                "type": "string",
+                                "description": "The URN of the person or organization performing the like. Example: \"urn:li:person:abc\""
+                            },
+                            "object": {
+                                "type": "string",
+                                "description": "The URN of the entity to which the like belongs. Example: \"urn:li:share:123\""
+                            }
+                        },
+                        "required": [
+                            "target",
+                            "actor",
+                            "object"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_createlike": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "actor": {
+                                "type": "string"
+                            },
+                            "agent": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "created": {
+                                "type": "object",
+                                "properties": {
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "time": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "actor",
+                                    "time"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "lastModified": {
+                                "type": "object",
+                                "properties": {
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "time": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "actor",
+                                    "time"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "actor",
+                            "agent",
+                            "object",
+                            "created",
+                            "lastModified"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Publish an organic LinkedIn post for a member or organization.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_createpost",
+            "name": "create-post",
+            "output": [
+                "ActionOutput_linkedin_createpost"
+            ],
+            "scopes": [
+                "w_member_social",
+                "w_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createpost",
+                "ActionOutput_linkedin_createpost"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_createpost": {
+                        "type": "object",
+                        "properties": {
+                            "author": {
+                                "type": "string",
+                                "description": "Author URN. Example: \"urn:li:organization:5515715\""
+                            },
+                            "commentary": {
+                                "type": "string",
+                                "description": "Post commentary text."
+                            },
+                            "visibility": {
+                                "type": "string",
+                                "enum": [
+                                    "PUBLIC",
+                                    "CONNECTIONS"
+                                ],
+                                "description": "Post visibility."
+                            },
+                            "lifecycleState": {
+                                "type": "string",
+                                "enum": [
+                                    "PUBLISHED",
+                                    "DRAFT",
+                                    "PUBLISH_REQUESTED"
+                                ],
+                                "description": "Lifecycle state of the post."
+                            },
+                            "content": {
+                                "type": "object",
+                                "properties": {
+                                    "article": {
+                                        "type": "object",
+                                        "properties": {
+                                            "source": {
+                                                "type": "string"
+                                            },
+                                            "thumbnail": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "source"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "media": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "reshareContext": {
+                                "type": "object",
+                                "properties": {
+                                    "parent": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "parent"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "isReshareDisabledByAuthor": {
+                                "type": "boolean"
+                            },
+                            "distribution": {
+                                "type": "object",
+                                "properties": {
+                                    "feedDistribution": {
+                                        "type": "string",
+                                        "enum": [
+                                            "MAIN_FEED",
+                                            "NONE"
+                                        ]
+                                    },
+                                    "targetEntities": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "thirdPartyDistributionChannels": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "author",
+                            "commentary",
+                            "visibility",
+                            "lifecycleState"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_createpost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Created post URN."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a LinkedIn comment by target URN and comment ID.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_linkedin_deletecomment"
+            ],
+            "scopes": [
+                "w_organization_social_feed",
+                "w_member_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletecomment",
+                "ActionOutput_linkedin_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "Target URN of the share, ugcPost, or comment. Example: \"urn:li:ugcPost:7096760097833439232\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "Comment ID to delete. Example: \"7102976128625123328\""
+                            },
+                            "actor": {
+                                "description": "Organization URN when deleting on behalf of an organization. Example: \"urn:li:organization:79988552\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "target",
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a LinkedIn like from a post or comment.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_deletelike",
+            "name": "delete-like",
+            "output": [
+                "ActionOutput_linkedin_deletelike"
+            ],
+            "scopes": [
+                "w_member_social_feed",
+                "w_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletelike",
+                "ActionOutput_linkedin_deletelike"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_deletelike": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "The URN of the post or comment to unlike. Example: \"urn:li:share:123\" or \"urn:li:ugcPost:123\""
+                            },
+                            "actorUrn": {
+                                "type": "string",
+                                "description": "The URN of the actor (person or organization) who created the like. Example: \"urn:li:person:123\""
+                            }
+                        },
+                        "required": [
+                            "target",
+                            "actorUrn"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_deletelike": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "target": {
+                                "type": "string"
+                            },
+                            "actorUrn": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "target",
+                            "actorUrn"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a LinkedIn post by post URN",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_deletepost",
+            "name": "delete-post",
+            "output": [
+                "ActionOutput_linkedin_deletepost"
+            ],
+            "scopes": [
+                "w_organization_social",
+                "w_member_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletepost",
+                "ActionOutput_linkedin_deletepost"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_deletepost": {
+                        "type": "object",
+                        "properties": {
+                            "postUrn": {
+                                "type": "string",
+                                "description": "The LinkedIn post URN to delete. Example: \"urn:li:share:123456789\""
+                            }
+                        },
+                        "required": [
+                            "postUrn"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_deletepost": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "postUrn": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "postUrn"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated member profile.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_getcurrentmemberprofile",
+            "name": "get-current-member-profile",
+            "output": [
+                "ActionOutput_linkedin_getcurrentmemberprofile"
+            ],
+            "scopes": [
+                "openid",
+                "profile",
+                "email"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_getcurrentmemberprofile",
+                "ActionOutput_linkedin_getcurrentmemberprofile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_getcurrentmemberprofile": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_getcurrentmemberprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "emailVerified": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "object",
+                                "properties": {
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "language": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List reactions on a LinkedIn post or comment thread. Returns all reaction types (LIKE, PRAISE, EMPATHY, APPRECIATION, etc.).",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_listpostlikes",
+            "name": "list-post-likes",
+            "output": [
+                "ActionOutput_linkedin_listpostlikes"
+            ],
+            "scopes": [
+                "r_member_social",
+                "w_member_social",
+                "r_organization_social",
+                "r_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_listpostlikes",
+                "ActionOutput_linkedin_listpostlikes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_listpostlikes": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "The URN of the share, UGC post, or comment. Example: \"urn:li:share:123\""
+                            },
+                            "start": {
+                                "description": "Pagination start offset. Omit for the first page.",
+                                "type": "number"
+                            },
+                            "count": {
+                                "description": "Number of reactions to return per page. Max recommended is 600.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "target"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_listpostlikes": {
+                        "type": "object",
+                        "properties": {
+                            "elements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "reactionType": {
+                                            "type": "string"
+                                        },
+                                        "root": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "object",
+                                            "properties": {
+                                                "actor": {
+                                                    "type": "string"
+                                                },
+                                                "time": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lastModified": {
+                                            "type": "object",
+                                            "properties": {
+                                                "actor": {
+                                                    "type": "string"
+                                                },
+                                                "time": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "paging": {
+                                "type": "object",
+                                "properties": {
+                                    "start": {
+                                        "type": "number"
+                                    },
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "links": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "next_start": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "elements"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update editable fields on a LinkedIn post.",
+            "endpoint": null,
+            "input": "ActionInput_linkedin_updatepost",
+            "name": "update-post",
+            "output": [
+                "ActionOutput_linkedin_updatepost"
+            ],
+            "scopes": [
+                "w_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_updatepost",
+                "ActionOutput_linkedin_updatepost"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_linkedin_updatepost": {
+                        "type": "object",
+                        "properties": {
+                            "encodedPostUrn": {
+                                "type": "string",
+                                "description": "Encoded LinkedIn post URN. Example: urn%3Ali%3Ashare%3A12345"
+                            },
+                            "commentary": {
+                                "description": "Updated post commentary/content.",
+                                "type": "string"
+                            },
+                            "lifecycleState": {
+                                "description": "Updated lifecycle state of the post.",
+                                "type": "string",
+                                "enum": [
+                                    "PUBLISHED",
+                                    "DRAFT",
+                                    "ARCHIVED"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "encodedPostUrn"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_linkedin_updatepost": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "urn": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "This sync captures all LinkedIn messages for a Linkedin member for archiving purposes",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/messages",
+                    "group": "messages"
+                }
+            ],
+            "input": "SyncMetadata_linkedin_messages",
+            "name": "messages",
+            "output": [
+                "LinkedInMessage"
+            ],
+            "runs": "every 1h",
+            "scopes": [
+                "r_dma_portability_3rd_party"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "LinkedInMessage",
+                "SyncMetadata_linkedin_messages"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LinkedInMessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "resourceId": {
+                                "type": "string"
+                            },
+                            "method": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "actor": {
+                                "type": "string"
+                            },
+                            "activityId": {
+                                "type": "string"
+                            },
+                            "processedAt": {
+                                "type": "number"
+                            },
+                            "capturedAt": {
+                                "type": "number"
+                            },
+                            "activityStatus": {
+                                "type": "string"
+                            },
+                            "thread": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "author": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "configVersion": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "methodName": {
+                                "type": "string"
+                            },
+                            "processedActivity": {},
+                            "deletedAt": {
+                                "type": "number"
+                            },
+                            "activityData": {
+                                "type": "object",
+                                "properties": {
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "createdAt": {
+                                        "type": "number"
+                                    },
+                                    "attachments": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "messageContexts": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "thread": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "version": {
+                                        "type": "number"
+                                    },
+                                    "contentCertificationToken": {
+                                        "type": "string"
+                                    },
+                                    "extensionContent": {}
+                                },
+                                "required": [
+                                    "actor",
+                                    "createdAt",
+                                    "attachments",
+                                    "author",
+                                    "messageContexts",
+                                    "thread"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "content": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "format": {
+                                                "type": "string"
+                                            },
+                                            "fallback": {
+                                                "type": "string"
+                                            },
+                                            "formatVersion": {
+                                                "type": "number"
+                                            },
+                                            "content": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "string": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "format",
+                                            "fallback",
+                                            "formatVersion"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "deliveredAt": {
+                                "type": "number"
+                            },
+                            "mailbox": {
+                                "type": "string"
+                            },
+                            "contentClassification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "classification": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "classification"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "contentUrns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "extensionContent": {},
+                            "messageContexts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "resourceId",
+                            "method",
+                            "owner",
+                            "actor",
+                            "activityId",
+                            "processedAt",
+                            "capturedAt",
+                            "activityStatus",
+                            "thread",
+                            "author",
+                            "createdAt",
+                            "isDeleted",
+                            "configVersion"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_linkedin_messages": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

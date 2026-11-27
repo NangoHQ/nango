@@ -29,8 +29,7 @@ export {
     auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
     auditBillingSpendAlertChanged,
-    auditBillingSpendAlertRemoved,
-    auditBillingTrialExtended
+    auditBillingSpendAlertRemoved
 } from './billing.middleware.js';
 export {
     auditConnectionCreated,

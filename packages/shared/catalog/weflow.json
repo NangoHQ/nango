@@ -1,0 +1,1414 @@
+{
+    "providerConfigKey": "weflow",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make recording metadata available as records, including stable recording identifiers and available titles, Weflow links, and participants. Recording media and derived content remain separate on-demand resources.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-recordings",
+            "output": [
+                "Recordings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Recordings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Recordings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this Weflow recording, usable by recording-specific tools."
+                            },
+                            "url": {
+                                "description": "Weflow application page URL for the recording when supplied; not a media URL.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "title": {
+                                "description": "Recording title when supplied; omitted when unavailable, with empty text retained.",
+                                "type": "string"
+                            },
+                            "participants": {
+                                "description": "Reported recording participants when supplied; omitted if unavailable, distinct from a known empty array.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Participant display name when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Participant email address as reported when supplied, without inferred identity matching.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A reported recording participant."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording metadata, excluding recording media and derived content."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make available summary templates accessible as records with selection identifiers and available human-readable names and descriptions.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-summary-templates",
+            "output": [
+                "SummaryTemplates"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SummaryTemplates"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SummaryTemplates": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the summary template, usable as summaryTemplateId for recording summary retrieval."
+                            },
+                            "name": {
+                                "description": "Human-readable template name when supplied; omitted when unavailable.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Provider description of the template's purpose when supplied; omitted when unavailable, with empty text retained.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Summary templates available for selecting recording summary formats."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-recording",
+            "integrationId": "weflow",
+            "description": "Get metadata for one recording by its identifier, including available title, application link, and participants.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_getrecording",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_getrecording",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_getrecording": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording, returned by list-recordings."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifier of the recording whose metadata to retrieve."
+                    },
+                    "FunctionOutput_weflow_getrecording": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this recording."
+                            },
+                            "url": {
+                                "description": "Weflow application link for this recording when supplied; not a media URL.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "title": {
+                                "description": "Recording title when supplied; omitted when unavailable.",
+                                "type": "string"
+                            },
+                            "participants": {
+                                "description": "Participants reported for the recording; omitted if unavailable, distinct from a known empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Participant display name when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Participant email address as reported when supplied; no inferred identity matching is performed.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A participant reported for this recording, without transcript speaker matching."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording metadata without media bytes, transcript content, or inferred participant identities."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain recordingId from `list-recordings`. Use this for recording metadata, not media bytes or transcript content. Use `get-recording-transcript`, `get-recording-summary`, or `get-recording-video-urls` for those tasks."
+            },
+            "filePath": "./weflow/tools/get-recording.ts",
+            "version": "03d458e6cf5a03e8321076be525353d0612dd5174c45e9276b0399b9b4623f0e",
+            "location": {
+                "js": "templates-zero/weflow/tools/get-recording/03d458e6cf5a03e8321076be525353d0612dd5174c45e9276b0399b9b4623f0e.cjs",
+                "ts": "templates-zero/weflow/tools/get-recording/03d458e6cf5a03e8321076be525353d0612dd5174c45e9276b0399b9b4623f0e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-interaction-metrics",
+            "integrationId": "weflow",
+            "description": "Get available interaction metrics for a recording, retaining metric names, values, and any supplied units or participant context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_getrecordinginteractionmetrics",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_getrecordinginteractionmetrics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_getrecordinginteractionmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose interaction metrics to retrieve."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording whose interaction metrics to retrieve."
+                    },
+                    "FunctionOutput_weflow_getrecordinginteractionmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Provider metric name or unambiguous source path when a nested scalar metric is flattened."
+                                        },
+                                        "unit": {
+                                            "description": "Explicit provider unit or scale label, if supplied; omitted when unknown. No implied conversion to percentages or durations.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "number"
+                                                        },
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "boolean"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Metric value in the provider's supplied scale and precision; null represents an explicitly unavailable measurement."
+                                        },
+                                        "participantId": {
+                                            "description": "Opaque provider participant or speaker identifier when this is a participant-specific metric; omitted for unscoped metrics.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider measurement with any available unit and participant identifier."
+                                },
+                                "description": "Available metrics, retaining provider labels and scales rather than inventing universal metric definitions."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the recording described by these metrics."
+                            }
+                        },
+                        "required": [
+                            "metrics",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Interaction measurements for the requested recording, without scale conversion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain recordingId from `list-recordings`. Use this for measured interaction data; use `list-recording-scorecards` for evaluations and `get-recording-transcript` for spoken content. Do not assume a unit or scoring range when it is absent from the result."
+            },
+            "filePath": "./weflow/tools/get-recording-interaction-metrics.ts",
+            "version": "770db6857c55ea87516beec500f77263f9b00dad6e9bb2f8a851361e6f848adf",
+            "location": {
+                "js": "templates-zero/weflow/tools/get-recording-interaction-metrics/770db6857c55ea87516beec500f77263f9b00dad6e9bb2f8a851361e6f848adf.cjs",
+                "ts": "templates-zero/weflow/tools/get-recording-interaction-metrics/770db6857c55ea87516beec500f77263f9b00dad6e9bb2f8a851361e6f848adf.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-summary",
+            "integrationId": "weflow",
+            "description": "Get the summary of a recording for a caller-selected summary template, with readable content and any supplied section structure.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_getrecordingsummary",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_getrecordingsummary",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_getrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording to summarize."
+                            },
+                            "summaryTemplateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the summary template selected from list-summary-templates."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "summaryTemplateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The recording and explicitly selected summary template to read."
+                    },
+                    "FunctionOutput_weflow_getrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "Readable summary content, preserving Unicode and supplied markup. Structured sections are rendered in provider order when no complete text is supplied."
+                            },
+                            "sections": {
+                                "description": "Summary sections when the provider supplies structure; omitted for an unstructured summary.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Readable content of this section, retaining Unicode, line breaks, and supplied markup."
+                                        },
+                                        "title": {
+                                            "description": "Section heading when supplied; omitted when untitled.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "text"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An ordered summary section with readable content and an optional heading."
+                                }
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the recording whose summary was read."
+                            },
+                            "summaryTemplateId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the template used for this summary."
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "recordingId",
+                            "summaryTemplateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The selected recording summary as readable text and any supplied section structure."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get recordingId from `list-recordings` and summaryTemplateId from `list-summary-templates`. Select the template that matches the user's desired summary. This reads a summary; it does not promise to generate or regenerate one. Use `get-recording-transcript` for the spoken content."
+            },
+            "filePath": "./weflow/tools/get-recording-summary.ts",
+            "version": "053084638d2165b5f3f5fb0c650e6c153c1a99190c271c03f36ba304760f1ef4",
+            "location": {
+                "js": "templates-zero/weflow/tools/get-recording-summary/053084638d2165b5f3f5fb0c650e6c153c1a99190c271c03f36ba304760f1ef4.cjs",
+                "ts": "templates-zero/weflow/tools/get-recording-summary/053084638d2165b5f3f5fb0c650e6c153c1a99190c271c03f36ba304760f1ef4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-transcript",
+            "integrationId": "weflow",
+            "description": "Get a recording's readable transcript and any supplied speaker-attributed segments.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_getrecordingtranscript",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_getrecordingtranscript",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_getrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose transcript to retrieve."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording whose available transcript to retrieve."
+                    },
+                    "FunctionOutput_weflow_getrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "Readable transcript text retaining Unicode and line breaks; if no complete text is supplied, segment text is joined in provider order with newlines."
+                            },
+                            "segments": {
+                                "description": "Provider-supplied transcript segments in provider order; omitted for an unsegmented transcript.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Readable spoken content for this segment, with no transport encoding."
+                                        },
+                                        "speakerId": {
+                                            "description": "Opaque speaker identifier when supplied; not assumed to match a participant ID or email.",
+                                            "type": "string"
+                                        },
+                                        "endSeconds": {
+                                            "description": "Segment end offset in seconds from the beginning of the recording, preserving supported fractional precision; omitted if unavailable.",
+                                            "type": "number",
+                                            "minimum": 0
+                                        },
+                                        "speakerName": {
+                                            "description": "Speaker display name when explicitly supplied; omitted otherwise.",
+                                            "type": "string"
+                                        },
+                                        "startSeconds": {
+                                            "description": "Segment start offset in seconds from the beginning of the recording, preserving supported fractional precision; omitted if unavailable.",
+                                            "type": "number",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "text"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-supplied transcript segment."
+                                }
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the transcribed recording."
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Readable recording transcript and any supplied speaker-attributed segments."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get recordingId from `list-recordings`. Use this for spoken content, or `get-recording-summary` for a template-based summary. Segment offsets are relative seconds, not calendar timestamps. This reads an available transcript and does not promise to start transcription."
+            },
+            "filePath": "./weflow/tools/get-recording-transcript.ts",
+            "version": "822ea088eea36d0c8ba604e1abd580e1a5bd23b11818733fefdafa1f47f23e1a",
+            "location": {
+                "js": "templates-zero/weflow/tools/get-recording-transcript/822ea088eea36d0c8ba604e1abd580e1a5bd23b11818733fefdafa1f47f23e1a.cjs",
+                "ts": "templates-zero/weflow/tools/get-recording-transcript/822ea088eea36d0c8ba604e1abd580e1a5bd23b11818733fefdafa1f47f23e1a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-video-urls",
+            "integrationId": "weflow",
+            "description": "Get the provider-supplied video URLs for a recording without downloading the media.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_getrecordingvideourls",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_getrecordingvideourls",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_getrecordingvideourls": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose video URLs to retrieve."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording whose provider-supplied video links to retrieve."
+                    },
+                    "FunctionOutput_weflow_getrecordingvideourls": {
+                        "type": "object",
+                        "properties": {
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Provider-supplied video URL, preserving its path, query, signature, and escaping exactly."
+                                        },
+                                        "label": {
+                                            "description": "Explicit provider label or source field name distinguishing this URL; omitted when none is supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "url"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-supplied video link and its explicit source distinction, when present."
+                                },
+                                "description": "Video links returned by Weflow, with no implied permanence, anonymous access, or guaranteed download semantics."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the recording associated with these video URLs."
+                            }
+                        },
+                        "required": [
+                            "urls",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Requested recording identifier and unchanged provider-supplied video URLs."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use recordingId from `list-recordings` to obtain video URLs. This returns links, not video bytes, and does not guarantee that links are permanent or anonymously accessible. Use `list-recording-clips` for links to individual clips. Request fresh URLs if previously returned ones no longer work."
+            },
+            "filePath": "./weflow/tools/get-recording-video-urls.ts",
+            "version": "b1ed4f17f8e820d26917d99507a7e854b5a4f2bc71f18f8be53f484190fa4625",
+            "location": {
+                "js": "templates-zero/weflow/tools/get-recording-video-urls/b1ed4f17f8e820d26917d99507a7e854b5a4f2bc71f18f8be53f484190fa4625.cjs",
+                "ts": "templates-zero/weflow/tools/get-recording-video-urls/b1ed4f17f8e820d26917d99507a7e854b5a4f2bc71f18f8be53f484190fa4625.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recording-clips",
+            "integrationId": "weflow",
+            "description": "List one page of clips associated with a recording, including available titles, links, and clip boundaries.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listrecordingclips",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listrecordingclips",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listrecordingclips": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool for the same recording and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose clips to list."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the recording and optionally continue a previous clips page."
+                    },
+                    "FunctionOutput_weflow_listrecordingclips": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque clip identifier when supplied by Weflow.",
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "description": "Provider-supplied link for the clip; omitted when unavailable, with no inferred permanence.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "title": {
+                                            "description": "Clip title when supplied; omitted if unavailable.",
+                                            "type": "string"
+                                        },
+                                        "endSeconds": {
+                                            "description": "Clip end offset in seconds from the start of the recording, including provider-supported fractional precision; omitted when unavailable.",
+                                            "type": "number",
+                                            "minimum": 0
+                                        },
+                                        "recordingId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the parent recording."
+                                        },
+                                        "startSeconds": {
+                                            "description": "Clip start offset in seconds from the start of the recording, including provider-supported fractional precision; omitted when unavailable.",
+                                            "type": "number",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "recordingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A clip associated with the requested recording."
+                                },
+                                "description": "Clips in this provider page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another page; omitted at confirmed exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of recording clips and any available continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get recordingId from `list-recordings`. Use this to discover clips of that recording; use `get-recording-video-urls` for the full recording's video URLs. Continue with nextCursor as cursor for the same recording when returned."
+            },
+            "filePath": "./weflow/tools/list-recording-clips.ts",
+            "version": "79b79f9f10a21c40f6e1fd4e67cb5fbefadfc87d06bcd843c04e3da54a0b3112",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-recording-clips/79b79f9f10a21c40f6e1fd4e67cb5fbefadfc87d06bcd843c04e3da54a0b3112.cjs",
+                "ts": "templates-zero/weflow/tools/list-recording-clips/79b79f9f10a21c40f6e1fd4e67cb5fbefadfc87d06bcd843c04e3da54a0b3112.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recording-comments",
+            "integrationId": "weflow",
+            "description": "List one page of comments on a recording with readable comment content and available author and reply context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listrecordingcomments",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listrecordingcomments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listrecordingcomments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same recording and connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose comments to list."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The recording whose comments to read and an optional continuation."
+                    },
+                    "FunctionOutput_weflow_listrecordingcomments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque comment identifier when supplied.",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Decoded comment content as ordinary text, retaining supplied markup and Unicode rather than stripping content."
+                                        },
+                                        "authorName": {
+                                            "description": "Comment author's display name when supplied; omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "recordingId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the parent recording."
+                                        },
+                                        "parentCommentId": {
+                                            "description": "Opaque parent comment identifier for a reply when supplied; omitted when no parent is reported.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "text",
+                                        "recordingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recording comment with available identity, author, and explicit reply context."
+                                },
+                                "description": "Comments in this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when exhaustion is established.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider collection of recording comments and any continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a recordingId from `list-recordings` to read its comments. This does not create or reply to comments. Pass nextCursor back as cursor with the same recordingId to continue when returned."
+            },
+            "filePath": "./weflow/tools/list-recording-comments.ts",
+            "version": "6dafb2e1200b99c7cc23e7dc17a37c63e771481a8a8e5a97e3ae33c30779baf5",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-recording-comments/6dafb2e1200b99c7cc23e7dc17a37c63e771481a8a8e5a97e3ae33c30779baf5.cjs",
+                "ts": "templates-zero/weflow/tools/list-recording-comments/6dafb2e1200b99c7cc23e7dc17a37c63e771481a8a8e5a97e3ae33c30779baf5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recording-scorecards",
+            "integrationId": "weflow",
+            "description": "List one page of scorecards for a recording, including available scores and criterion-level evaluations without assuming a universal scoring scale.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listrecordingscorecards",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listrecordingscorecards",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listrecordingscorecards": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool for the same recording and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose scorecards to list."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the recording whose scorecards to read."
+                    },
+                    "FunctionOutput_weflow_listrecordingscorecards": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque scorecard identifier when supplied.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Scorecard name when supplied.",
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "description": "Overall score in its supplied scale or label; explicit null means no overall score was provided, while omission means the field is absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "criteria": {
+                                            "description": "Criterion-level evaluations when supplied; omitted if unavailable and empty if explicitly none.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Criterion label from the scorecard."
+                                                    },
+                                                    "score": {
+                                                        "description": "Criterion score or label in the provider's scale, preserving explicit null and numeric precision.",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "number"
+                                                            },
+                                                            {
+                                                                "type": "string"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "feedback": {
+                                                        "description": "Readable criterion feedback when supplied, retaining Unicode and markup.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One criterion evaluation in its supplied scale."
+                                            }
+                                        },
+                                        "recordingId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the evaluated recording."
+                                        }
+                                    },
+                                    "required": [
+                                        "recordingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One cached scorecard evaluation for the requested recording."
+                                },
+                                "description": "Scorecards in one provider page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when the collection is confirmed exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of recording scorecards, retaining supplied score scales and criterion feedback."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use recordingId from `list-recordings`. Use this for scorecard evaluations, or `get-recording-interaction-metrics` for interaction measurements. Continue with nextCursor as cursor for the same recording when supplied. Scores retain their provider scale."
+            },
+            "filePath": "./weflow/tools/list-recording-scorecards.ts",
+            "version": "65ebfdb4c9aea97fed7dc0e1b653ed4718a3b1ba378e9e0467e358f0c31084b9",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-recording-scorecards/65ebfdb4c9aea97fed7dc0e1b653ed4718a3b1ba378e9e0467e358f0c31084b9.cjs",
+                "ts": "templates-zero/weflow/tools/list-recording-scorecards/65ebfdb4c9aea97fed7dc0e1b653ed4718a3b1ba378e9e0467e358f0c31084b9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recording-trackers",
+            "integrationId": "weflow",
+            "description": "List one page of tracker results associated with a recording, including available labels and matched content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listrecordingtrackers",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listrecordingtrackers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listrecordingtrackers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same recording and connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the recording whose tracker results to list."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the recording whose tracker results to retrieve."
+                    },
+                    "FunctionOutput_weflow_listrecordingtrackers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Tracker label when supplied, with provider meaning preserved.",
+                                            "type": "string"
+                                        },
+                                        "matches": {
+                                            "description": "Matched occurrences when explicitly supplied; omitted if unavailable and empty for an explicit empty list.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "text": {
+                                                        "type": "string",
+                                                        "description": "Matched text or readable occurrence content from the provider, retaining Unicode and markup."
+                                                    },
+                                                    "startSeconds": {
+                                                        "description": "Occurrence start offset in seconds from the beginning of the recording when supplied with interpretable units; omitted otherwise.",
+                                                        "type": "number",
+                                                        "minimum": 0
+                                                    }
+                                                },
+                                                "required": [
+                                                    "text"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One matched occurrence supplied by Weflow."
+                                            }
+                                        },
+                                        "trackerId": {
+                                            "description": "Opaque identifier of the tracker definition when supplied; not assumed to identify a unique occurrence.",
+                                            "type": "string"
+                                        },
+                                        "recordingId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the recording containing these tracker results."
+                                        }
+                                    },
+                                    "required": [
+                                        "recordingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A tracker and its available matches for the requested recording."
+                                },
+                                "description": "Tracker results in this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next page; omitted at confirmed exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of tracker results for the recording."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get recordingId from `list-recordings`. Use this to inspect tracker results for that recording, not to configure trackers. Use `get-recording-transcript` for the complete spoken content. Continue with nextCursor as cursor for the same recording when returned."
+            },
+            "filePath": "./weflow/tools/list-recording-trackers.ts",
+            "version": "b68294f5d9079dd9f599763e38c79379db5524af3efd5e5879d7f51730519f06",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-recording-trackers/b68294f5d9079dd9f599763e38c79379db5524af3efd5e5879d7f51730519f06.cjs",
+                "ts": "templates-zero/weflow/tools/list-recording-trackers/b68294f5d9079dd9f599763e38c79379db5524af3efd5e5879d7f51730519f06.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recordings",
+            "integrationId": "weflow",
+            "description": "List one page of recordings accessible to the connection, with identifiers and available metadata.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listrecordings",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listrecordings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listrecordings": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from list-recordings for the same connection. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Parameters for browsing one page of recordings accessible to this connection."
+                    },
+                    "FunctionOutput_weflow_listrecordings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque recording identifier used by the recording-specific tools."
+                                        },
+                                        "url": {
+                                            "description": "Link to the recording in Weflow when supplied; not a video download URL.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "title": {
+                                            "description": "Recording title when supplied; an empty title remains empty, and an unavailable title is omitted.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recording identifier and the available listing metadata."
+                                },
+                                "description": "Recordings in this provider page, in provider order; empty when this page has no recordings."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for the next page; omitted when the provider indicates there are no more results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of recordings and an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover recording IDs. Use `get-recording` for metadata about a known recording, and the recording-specific tools for its transcript, summary, or other content. Pass nextCursor back as cursor to continue when it is returned. Each call returns one page, not the entire recording library."
+            },
+            "filePath": "./weflow/tools/list-recordings.ts",
+            "version": "46b16c29883bcd96d94400f0971c56111be0c7ce16daba89fcf61783e722122f",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-recordings/46b16c29883bcd96d94400f0971c56111be0c7ce16daba89fcf61783e722122f.cjs",
+                "ts": "templates-zero/weflow/tools/list-recordings/46b16c29883bcd96d94400f0971c56111be0c7ce16daba89fcf61783e722122f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-summary-templates",
+            "integrationId": "weflow",
+            "description": "List one page of available summary templates so callers can select a template for a recording summary.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_weflow_listsummarytemplates",
+            "output_schema_ref": "#/definitions/FunctionOutput_weflow_listsummarytemplates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_weflow_listsummarytemplates": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from list-summary-templates for the same connection; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing one page of available summary templates."
+                    },
+                    "FunctionOutput_weflow_listsummarytemplates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque summary template identifier accepted as summaryTemplateId by get-recording-summary."
+                                        },
+                                        "name": {
+                                            "description": "Human-readable template name when supplied; omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the template's purpose when supplied; omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An available summary template that can be selected for a recording summary."
+                                },
+                                "description": "Summary templates in this provider page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next page; omitted at confirmed exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of summary templates and continuation when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this before `get-recording-summary` to choose summaryTemplateId. Select by the available name and description rather than assuming the first template is a default. Pass nextCursor back as cursor to continue when returned."
+            },
+            "filePath": "./weflow/tools/list-summary-templates.ts",
+            "version": "64219901c42fc2d5acfa7ce3fbf9f7cbb15ef9c5235370e0f93c45543383aedd",
+            "location": {
+                "js": "templates-zero/weflow/tools/list-summary-templates/64219901c42fc2d5acfa7ce3fbf9f7cbb15ef9c5235370e0f93c45543383aedd.cjs",
+                "ts": "templates-zero/weflow/tools/list-summary-templates/64219901c42fc2d5acfa7ce3fbf9f7cbb15ef9c5235370e0f93c45543383aedd.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

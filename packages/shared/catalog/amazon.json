@@ -1,0 +1,151 @@
+{
+    "providerConfigKey": "amazon",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected customer's Login with Amazon profile available as a replicated customer-profile record. Each connection exposes only its authorized customer, not an Amazon customer directory. Requires any one of profile:user_id, postal_code, or profile.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-customer-profiles",
+            "output": [
+                "CustomerProfiles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CustomerProfiles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CustomerProfiles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Amazon user_id for the connected customer, scoped to the Login with Amazon company rather than globally across companies."
+                            },
+                            "name": {
+                                "description": "Customer name shared by Amazon; omitted when not returned under the granted permissions.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Customer's registered Amazon email address as returned, without case normalization or inferred verification status; omitted when not shared.",
+                                "type": "string"
+                            },
+                            "postalCode": {
+                                "description": "Primary shipping address zip or postal code when shared; preserve leading zeros, spaces, and letter case. Omitted when not returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected customer's Login with Amazon profile, limited to data shared under the granted permissions."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-customer-profile",
+            "integrationId": "amazon",
+            "description": "Retrieve the connected Amazon customer's identifier and the profile information shared through the connection's granted scopes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_amazon_getcustomerprofile",
+            "output_schema_ref": "#/definitions/FunctionOutput_amazon_getcustomerprofile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_amazon_getcustomerprofile": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Look up the connected Amazon customer without any input parameters."
+                    },
+                    "FunctionOutput_amazon_getcustomerprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Amazon user_id for the connected customer. Its identity scope is the Login with Amazon company; do not treat it as a universal cross-company identifier."
+                            },
+                            "name": {
+                                "description": "Customer name as shared by Amazon. Omitted when not returned under the granted permissions.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address registered with Amazon as returned by the provider. Omitted when not shared; no normalization or inferred verification status.",
+                                "type": "string"
+                            },
+                            "postalCode": {
+                                "description": "Zip or postal code from the customer's primary shipping address when shared. Preserve leading zeros, spaces, and letter case. Omitted when not returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected Amazon customer identifier and the profile fields shared under the granted permissions."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for an on-demand lookup of the connected customer. No customer identifier is needed. The connection's permissions determine whether name, email, and postal code are returned; missing fields are not empty values. This cannot look up other Amazon customers. Use `verify-access-token` instead to check an externally supplied token's audience.",
+                "required_scopes": {
+                    "any": [
+                        "postal_code",
+                        "profile",
+                        "profile:user_id"
+                    ]
+                }
+            },
+            "filePath": "./amazon/tools/get-customer-profile.ts",
+            "version": "909bf6c402adcdbef558d765384a1d0ee673327347405a174e236a8cc99015c2",
+            "location": {
+                "js": "templates-zero/amazon/tools/get-customer-profile/909bf6c402adcdbef558d765384a1d0ee673327347405a174e236a8cc99015c2.cjs",
+                "ts": "templates-zero/amazon/tools/get-customer-profile/909bf6c402adcdbef558d765384a1d0ee673327347405a174e236a8cc99015c2.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

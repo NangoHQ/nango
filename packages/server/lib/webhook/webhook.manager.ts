@@ -11,7 +11,7 @@ import { InternalNango } from './internal-nango.js';
 import { unverifiedWebhookMessage } from './missing-secret.js';
 import { withoutNangoWebhookSecret } from './nango-webhook-secret.js';
 
-import type { WebhookHandlersMap, WebhookRequest, WebhookResponse } from './types.js';
+import type { WebhookForwardGroup, WebhookHandlersMap, WebhookRequest, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
@@ -108,9 +108,13 @@ export async function routeWebhook({
 
     // Only forward webhook if there is no capping and the response was successful
     const cappingStatus = await capping.getStatus(plan || null, 'webhook_forwards', 'data_transfer');
-    if (!cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
-        const webhookBodyToForward = 'toForward' in res ? res.toForward : request.body;
-        const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
+    const noForward = 'noForward' in res && res.noForward;
+    if (!noForward && !cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
+        const forwardGroups: WebhookForwardGroup[] =
+            'forwardGroups' in res
+                ? res.forwardGroups
+                : [{ connectionIds: 'connectionIds' in res ? res.connectionIds : [], payload: 'toForward' in res ? res.toForward : request.body }];
+        const connectionIds = [...new Set(forwardGroups.flatMap((group) => group.connectionIds))];
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
@@ -135,66 +139,74 @@ export async function routeWebhook({
         const forwardSpan = tracer.startSpan('webhook.forward');
         const pendingEvents: MaybeStampedEvent<'usage'>[] = [];
 
-        void forwardWebhook({
-            integration,
-            account,
-            environment,
-            secret: webhookSigningSecret,
-            webhookSettings,
-            connectionIds,
-            webhookUrlOverrideByConnectionId,
-            payload: webhookBodyToForward,
-            webhookOriginalHeaders: request.rawHeaders,
-            logContextGetter,
-            ...(internalNango.unverified
-                ? { unverified: { reason: internalNango.unverified.reason, message: unverifiedWebhookMessage(integration, internalNango.unverified) } }
-                : {}),
-            onBytes: (bytes, connectionId) => {
-                pendingEvents.push(
-                    makeDataTransferEvent({
-                        pkg: 'server',
-                        callsite: 'webhook_forward',
-                        accountId: account.id,
-                        connectionId,
-                        integrationId: integration.unique_key,
-                        environmentId: environment.id,
-                        meteredBytes: bytes,
-                        environmentName: environment.name
-                    })
-                );
-            }
-        })
-            .then((res) => {
-                if (res.isOk()) {
-                    for (const { connectionId, success } of res.value.results) {
-                        pendingEvents.push({
-                            subject: 'usage',
-                            type: 'usage.webhook_forward',
-                            payload: {
-                                value: 1,
-                                properties: {
-                                    accountId: account.id,
-                                    environmentId: environment.id,
-                                    environmentName: environment.name,
-                                    integrationId: integration.unique_key,
-                                    connectionId,
-                                    success
+        // Groups are forwarded one after another, like the connections inside each forwardWebhook call, so a
+        // batch spanning many connections doesn't start all their (retrying) deliveries at once.
+        const forwardGroup = (group: WebhookForwardGroup) =>
+            forwardWebhook({
+                integration,
+                account,
+                environment,
+                secret: webhookSigningSecret,
+                webhookSettings,
+                connectionIds: group.connectionIds,
+                webhookUrlOverrideByConnectionId,
+                payload: group.payload,
+                webhookOriginalHeaders: request.rawHeaders,
+                logContextGetter,
+                ...(internalNango.unverified
+                    ? { unverified: { reason: internalNango.unverified.reason, message: unverifiedWebhookMessage(integration, internalNango.unverified) } }
+                    : {}),
+                onBytes: (bytes, connectionId) => {
+                    pendingEvents.push(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'webhook_forward',
+                            accountId: account.id,
+                            connectionId,
+                            integrationId: integration.unique_key,
+                            environmentId: environment.id,
+                            meteredBytes: bytes,
+                            environmentName: environment.name
+                        })
+                    );
+                }
+            })
+                .then((res) => {
+                    if (res.isOk()) {
+                        for (const { connectionId, success } of res.value.results) {
+                            pendingEvents.push({
+                                subject: 'usage',
+                                type: 'usage.webhook_forward',
+                                payload: {
+                                    value: 1,
+                                    properties: {
+                                        accountId: account.id,
+                                        environmentId: environment.id,
+                                        environmentName: environment.name,
+                                        integrationId: integration.unique_key,
+                                        connectionId,
+                                        success
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            })
-            .catch((err: unknown) => {
-                logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
-            })
-            .finally(() => {
-                if (pendingEvents.length > 0) {
-                    void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
-                }
+                })
+                .catch((err: unknown) => {
+                    logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
+                });
 
-                forwardSpan.finish();
-            });
+        void (async () => {
+            for (const group of forwardGroups) {
+                await forwardGroup(group);
+            }
+        })().finally(() => {
+            if (pendingEvents.length > 0) {
+                void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
+            }
+
+            forwardSpan.finish();
+        });
     }
 
     return res;

@@ -1,0 +1,915 @@
+{
+    "providerConfigKey": "pave",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make merit cycle employee records available with parent cycle context, names, eligibility, currency, and dynamic compensation-planning columns. A record is identified by its meritCycleId and cycle employee id together.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-merit-cycle-employees",
+            "output": [
+                "MeritCycleEmployees"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeritCycleEmployees"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeritCycleEmployees": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque merit cycle employee ID; record identity is this ID together with meritCycleId, not email."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Employee email text, preserved as reported."
+                            },
+                            "columns": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Column display name, retained independently of the map key."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider column type such as text, number, currency, boolean, or composite; unfamiliar types remain intact."
+                                        },
+                                        "value": {
+                                            "description": "Native JSON column value preserving scalar types and structured composite or currency objects; nested currency objects retain code and value members."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A cycle-defined compensation-planning column and its native JSON value."
+                                },
+                                "description": "Cycle-defined column keys mapped to column metadata and native structured values; empty maps are preserved."
+                            },
+                            "currency": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "description": "ISO 4217 code from source currencyCode.code; omitted if absent.",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "Readable currency name from source currencyCode.value; omitted if absent.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Employee currency code and readable name; source omissions of nested members are retained."
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Employee last name, preserving Unicode and empty strings."
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "Employee first name, preserving Unicode and empty strings."
+                            },
+                            "meritCycleId": {
+                                "type": "string",
+                                "description": "Opaque parent merit cycle ID that scopes this employee record."
+                            },
+                            "preferredName": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Preferred name preserved as ordinary text, null, or an opaque structured object because the source declaration and example disagree."
+                            },
+                            "eligibilityStatus": {
+                                "type": "string",
+                                "enum": [
+                                    "eligible",
+                                    "ineligible"
+                                ],
+                                "description": "Employee eligibility in this merit cycle, without an inferred reason."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "columns",
+                            "currency",
+                            "lastName",
+                            "firstName",
+                            "meritCycleId",
+                            "preferredName",
+                            "eligibilityStatus"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Merit cycle employee records with parent cycle context, names, eligibility, currency, and dynamic compensation-planning columns."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make each merit cycle's base currency and exchange-rate table available as a dataset, with one record per cycle.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-merit-cycle-exchange-rates",
+            "output": [
+                "MeritCycleExchangeRates"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeritCycleExchangeRates"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeritCycleExchangeRates": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque merit cycle ID, also the identity of this cycle's exchange-rate-table record."
+                            },
+                            "rates": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "description": "Numeric exchange rate from the base currency to the currency identified by this key."
+                                },
+                                "description": "Target currency codes mapped to provider-reported exchange rates from the base currency; empty maps are preserved."
+                            },
+                            "baseCurrencyCode": {
+                                "type": "string",
+                                "description": "Base currency reported by Pave for this merit cycle."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "rates",
+                            "baseCurrencyCode"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A merit cycle's base currency and provider-reported exchange-rate table, identified by the cycle ID."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make merit cycle identifiers, names, lifecycle statuses, and start, end, and creation instants available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-merit-cycles",
+            "output": [
+                "MeritCycles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeritCycles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeritCycles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque merit cycle identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Cycle display name, preserving Unicode text."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "finalized"
+                                ],
+                                "description": "Cycle lifecycle status reported by Pave."
+                            },
+                            "startsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle start instant normalized to UTC Z with fractional precision preserved."
+                            },
+                            "endsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle end instant normalized to UTC Z with fractional precision preserved."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle creation instant normalized to UTC Z with fractional precision preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "startsAt",
+                            "endsAt",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Merit cycle identifiers, names, lifecycle statuses, and start, end, and creation instants."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-merit-cycle",
+            "integrationId": "pave",
+            "description": "Get one merit cycle by its opaque identifier.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_pave_getmeritcycle",
+            "output_schema_ref": "#/definitions/FunctionOutput_pave_getmeritcycle",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_pave_getmeritcycle": {
+                        "type": "object",
+                        "properties": {
+                            "meritCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque merit cycle ID returned by list-merit-cycles."
+                            }
+                        },
+                        "required": [
+                            "meritCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The opaque identifier of the merit cycle to retrieve."
+                    },
+                    "FunctionOutput_pave_getmeritcycle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque merit cycle identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Cycle display name as ordinary Unicode text."
+                            },
+                            "endsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle end instant in UTC with Z, preserving fractional-second precision."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "finalized"
+                                ],
+                                "description": "Cycle lifecycle status reported by Pave."
+                            },
+                            "startsAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle start instant in UTC with Z, preserving fractional-second precision."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle creation instant in UTC with Z, preserving fractional-second precision."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "endsAt",
+                            "status",
+                            "startsAt",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Merit cycle metadata with timestamps normalized to UTC without losing fractional seconds."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a known cycle ID. Obtain IDs with `list-merit-cycles`. Use `list-merit-cycle-employees` for participants or `get-merit-cycle-exchange-rates` for cycle rates; this tool returns cycle metadata only."
+            },
+            "filePath": "./pave/tools/get-merit-cycle.ts",
+            "version": "2807a95909bf1ba362f47c41d50e9e731407a616bea6caf9a211347d8aedcae7",
+            "location": {
+                "js": "templates-zero/pave/tools/get-merit-cycle/2807a95909bf1ba362f47c41d50e9e731407a616bea6caf9a211347d8aedcae7.cjs",
+                "ts": "templates-zero/pave/tools/get-merit-cycle/2807a95909bf1ba362f47c41d50e9e731407a616bea6caf9a211347d8aedcae7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-merit-cycle-exchange-rates",
+            "integrationId": "pave",
+            "description": "Get the exchange-rate table relative to a merit cycle's own currency.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_pave_getmeritcycleexchangerates",
+            "output_schema_ref": "#/definitions/FunctionOutput_pave_getmeritcycleexchangerates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_pave_getmeritcycleexchangerates": {
+                        "type": "object",
+                        "properties": {
+                            "meritCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque merit cycle ID whose configured exchange-rate table is requested."
+                            }
+                        },
+                        "required": [
+                            "meritCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the merit cycle whose configured exchange-rate table to retrieve."
+                    },
+                    "FunctionOutput_pave_getmeritcycleexchangerates": {
+                        "type": "object",
+                        "properties": {
+                            "rates": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "description": "Provider-reported exchange rate from the base currency to the currency named by this map key."
+                                },
+                                "description": "Target-currency code to numeric exchange rate from the base currency, preserving the provider's entries; an empty map means no rates were returned."
+                            },
+                            "meritCycleId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the cycle to which this table belongs."
+                            },
+                            "baseCurrencyCode": {
+                                "type": "string",
+                                "description": "Base currency reported by Pave, which is the merit cycle currency."
+                            }
+                        },
+                        "required": [
+                            "rates",
+                            "meritCycleId",
+                            "baseCurrencyCode"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete configured exchange-rate table relative to the requested merit cycle currency."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for the rates configured for a particular merit cycle, not for a live market quote. Obtain meritCycleId from `list-merit-cycles`. The returned table is a single complete response, with rates keyed by target currency. Use `get-merit-cycle` for cycle metadata."
+            },
+            "filePath": "./pave/tools/get-merit-cycle-exchange-rates.ts",
+            "version": "ff4560c12b5924fbe43c2730383e86300f65d2d90bd6d5fa191a56474c3749c3",
+            "location": {
+                "js": "templates-zero/pave/tools/get-merit-cycle-exchange-rates/ff4560c12b5924fbe43c2730383e86300f65d2d90bd6d5fa191a56474c3749c3.cjs",
+                "ts": "templates-zero/pave/tools/get-merit-cycle-exchange-rates/ff4560c12b5924fbe43c2730383e86300f65d2d90bd6d5fa191a56474c3749c3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-merit-cycle-employees",
+            "integrationId": "pave",
+            "description": "List one page of employees in a merit cycle, including eligibility, currency, and dynamic compensation-planning columns.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_pave_listmeritcycleemployees",
+            "output_schema_ref": "#/definitions/FunctionOutput_pave_listmeritcycleemployees",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_pave_listmeritcycleemployees": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum employees requested in this page; defaults to 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from the same cycle and connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "meritCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the merit cycle whose participants are requested."
+                            }
+                        },
+                        "required": [
+                            "meritCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Request one page of participants in a merit cycle."
+                    },
+                    "FunctionOutput_pave_listmeritcycleemployees": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque merit cycle employee ID, not an assumed organization-wide employee ID; interpret in conjunction with meritCycleId."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Employee email text reported by Pave, preserved without normalization."
+                                        },
+                                        "columns": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Column display name, which may differ from the containing map key."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider column type, such as text, number, currency, boolean, or composite; retained without imposing a closed enum."
+                                                    },
+                                                    "value": {
+                                                        "description": "Native column value, preserving strings, booleans, numbers, nulls, and structured composite or currency objects; currency objects retain their code and value members."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "type",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A cycle-defined planning column and its native value."
+                                            },
+                                            "description": "Cycle-defined column keys mapped to their display name, type, and structured value; empty maps remain empty."
+                                        },
+                                        "currency": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "description": "ISO 4217 currency code from the source code member; omitted if absent upstream.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Readable currency name from the source value member; omitted if absent upstream.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Employee currency code and readable name, retaining any source omission of either member."
+                                        },
+                                        "lastName": {
+                                            "type": "string",
+                                            "description": "Employee last name, preserving Unicode and empty strings."
+                                        },
+                                        "firstName": {
+                                            "type": "string",
+                                            "description": "Employee first name, preserving Unicode and empty strings."
+                                        },
+                                        "meritCycleId": {
+                                            "type": "string",
+                                            "description": "Opaque ID of the parent merit cycle."
+                                        },
+                                        "preferredName": {
+                                            "anyOf": [
+                                                {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "propertyNames": {
+                                                                "type": "string"
+                                                            },
+                                                            "additionalProperties": {}
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Preferred name as reported: ordinary text, null when absent, or an opaque structured object preserved because the provider schema and example disagree."
+                                        },
+                                        "eligibilityStatus": {
+                                            "type": "string",
+                                            "enum": [
+                                                "eligible",
+                                                "ineligible"
+                                            ],
+                                            "description": "Cycle-specific eligibility status, without inferring an exclusion reason."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "columns",
+                                        "currency",
+                                        "lastName",
+                                        "firstName",
+                                        "meritCycleId",
+                                        "preferredName",
+                                        "eligibilityStatus"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A merit cycle participant with cycle-specific planning data."
+                                },
+                                "description": "Employees in this provider page, including cycle-specific planning data; empty if none are returned."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for the same cycle; omitted when exhausted.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of merit cycle employees and its optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain meritCycleId using `list-merit-cycles`. Use this to browse cycle participants and their planning columns, not to retrieve an organization-wide employee directory. Pass nextCursor back as cursor for the same cycle. Limit is 1–100, default 25. Column keys and values are cycle-specific; preserve their type and structure rather than treating every value as text."
+            },
+            "filePath": "./pave/tools/list-merit-cycle-employees.ts",
+            "version": "b1f57e44ecc067d61394dab0d73491763f4d6cb756b93df9644a25b8472948b3",
+            "location": {
+                "js": "templates-zero/pave/tools/list-merit-cycle-employees/b1f57e44ecc067d61394dab0d73491763f4d6cb756b93df9644a25b8472948b3.cjs",
+                "ts": "templates-zero/pave/tools/list-merit-cycle-employees/b1f57e44ecc067d61394dab0d73491763f4d6cb756b93df9644a25b8472948b3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-merit-cycles",
+            "integrationId": "pave",
+            "description": "List one page of merit cycles, optionally filtered by lifecycle status and start instant.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_pave_listmeritcycles",
+            "output_schema_ref": "#/definitions/FunctionOutput_pave_listmeritcycles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_pave_listmeritcycles": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum cycles requested in this page; defaults to 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from a previous page under this connection and the same filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "description": "Only include cycles with this lifecycle status; omit for all statuses.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "finalized"
+                                ]
+                            },
+                            "startsAt": {
+                                "description": "Exact cycle start instant to filter by, with an explicit UTC marker or numeric offset; omit for no start filter.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Page size, opaque continuation cursor, and optional merit cycle filters."
+                    },
+                    "FunctionOutput_pave_listmeritcycles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque merit cycle identifier, usable in cycle-specific tools."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Cycle display name, preserved as ordinary Unicode text."
+                                        },
+                                        "endsAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Cycle end instant normalized to UTC with Z; fractional-second precision is preserved."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "inactive",
+                                                "finalized"
+                                            ],
+                                            "description": "Cycle lifecycle status reported by Pave."
+                                        },
+                                        "startsAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Cycle start instant normalized to UTC with Z; fractional-second precision is preserved."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Cycle creation instant normalized to UTC with Z; fractional-second precision is preserved."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "endsAt",
+                                        "status",
+                                        "startsAt",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A merit cycle with opaque identifiers and UTC instants."
+                                },
+                                "description": "Merit cycles in this provider page; empty when no cycles are returned."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for the next page; omitted when exhausted.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of merit cycles and its optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover cycle IDs and browse cycles. Use `get-merit-cycle` for a known ID, `list-merit-cycle-employees` for participants, and `get-merit-cycle-exchange-rates` for cycle currency conversion rates. Pass nextCursor back as cursor with the same filters to continue. Each call returns one page; limit is 1–100, default 25."
+            },
+            "filePath": "./pave/tools/list-merit-cycles.ts",
+            "version": "0e68953b28acf8c38cf2967fe487c6d75196d310e50c35df8282955af9e3a0c9",
+            "location": {
+                "js": "templates-zero/pave/tools/list-merit-cycles/0e68953b28acf8c38cf2967fe487c6d75196d310e50c35df8282955af9e3a0c9.cjs",
+                "ts": "templates-zero/pave/tools/list-merit-cycles/0e68953b28acf8c38cf2967fe487c6d75196d310e50c35df8282955af9e3a0c9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "test-connection",
+            "integrationId": "pave",
+            "description": "Call Pave's authenticated test endpoint and return its response message. Success does not establish access to every compensation-planning resource.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_pave_testconnection",
+            "output_schema_ref": "#/definitions/FunctionOutput_pave_testconnection",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_pave_testconnection": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed to check the configured Pave API key."
+                    },
+                    "FunctionOutput_pave_testconnection": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Text returned by the authenticated test endpoint, typically pong; not a guarantee of permissions for other resources."
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The message returned by the authenticated Pave connection check."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a lightweight API-key connection check. No resource ID is needed. A successful ping does not prove access to merit cycles or employee compensation data; use `list-merit-cycles` to check cycle access."
+            },
+            "filePath": "./pave/tools/test-connection.ts",
+            "version": "38bc2d23aaf0a08256937eaa7c5e47ddbe0d706c9b4b34a64effc56e66690a38",
+            "location": {
+                "js": "templates-zero/pave/tools/test-connection/38bc2d23aaf0a08256937eaa7c5e47ddbe0d706c9b4b34a64effc56e66690a38.cjs",
+                "ts": "templates-zero/pave/tools/test-connection/38bc2d23aaf0a08256937eaa7c5e47ddbe0d706c9b4b34a64effc56e66690a38.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

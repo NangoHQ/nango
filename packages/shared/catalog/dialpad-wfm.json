@@ -1,0 +1,1436 @@
+{
+    "providerConfigKey": "dialpad-wfm",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "list-activity-metrics",
+            "integrationId": "dialpad-wfm",
+            "description": "Return one page of activity performance metrics for a reporting interval, optionally restricted to selected agents.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_dialpad_wfm_listactivitymetrics",
+            "output_schema_ref": "#/definitions/FunctionOutput_dialpad_wfm_listactivitymetrics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_dialpad_wfm_listactivitymetrics": {
+                        "type": "object",
+                        "properties": {
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "Beginning of the reporting interval, with explicit UTC marker or offset and at most millisecond precision."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "End of the reporting interval, later than startAt, with explicit offset and at most millisecond precision. Provider boundary inclusion is retained."
+                            },
+                            "limit": {
+                                "description": "Maximum records in this page; defaults to 500.",
+                                "default": 500,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this query; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "agentEmails": {
+                                "description": "Agent email addresses whose data contributes to the report. Omit for no email filter; null and empty arrays are not accepted.",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^[^,]+$",
+                                    "description": "Agent email address, preserved verbatim and excluding commas."
+                                }
+                            },
+                            "includeDeletedAgents": {
+                                "description": "Whether deleted agents contribute to the report; defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "startAt",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reporting interval, optional agent filters, and continuation for one page of activity metrics."
+                    },
+                    "FunctionOutput_dialpad_wfm_listactivitymetrics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "startAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Beginning of this metric interval in UTC, preserving precision."
+                                        },
+                                        "endAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "End of this metric interval in UTC, preserving precision."
+                                        },
+                                        "activityName": {
+                                            "description": "Activity display name; null if explicitly unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "activityType": {
+                                            "description": "Provider activity classification, preserved without treating it as an identifier; null if unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "scheduledHours": {
+                                            "description": "Scheduled duration in hours; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeOnTask": {
+                                            "description": "Provider time-on-task fraction, not percentage points; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsOpened": {
+                                            "description": "Reported conversations opened in the interval; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsCommentedOn": {
+                                            "description": "Reported conversations commented on; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsOnHold": {
+                                            "description": "Provider conversations-on-hold count; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosed": {
+                                            "description": "Reported conversations closed; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "averageInteractionTime": {
+                                            "description": "Provider average interaction time, preserved in its original numeric unit because that unit is not documented; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "averageConversationTime": {
+                                            "description": "Provider average conversation time, preserved in its original numeric unit because that unit is not documented; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "wrongTaskSnapshots": {
+                                            "description": "Provider count of wrong-task snapshots; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerHour": {
+                                            "description": "Conversation closure rate per hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "adherenceScore": {
+                                            "description": "Provider adherence score without rescaling; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeInAdherence": {
+                                            "description": "Time and share in adherence; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration in seconds and its reported fractional share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeOutOfAdherence": {
+                                            "description": "Time and share out of adherence; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration in seconds and its reported fractional share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeInException": {
+                                            "description": "Time and share in exception; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration in seconds and its reported fractional share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "startAt",
+                                        "endAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One activity performance record for the exact interval returned by the provider."
+                                },
+                                "description": "One page of activity metric intervals in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the same query; omitted when exhausted.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of activity metrics and an optional opaque continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for on-demand activity performance reporting. Supply an interval and optional known agent emails. Continue by passing `nextCursor` as `cursor` with the same interval, filters, and limit. Each call returns at most 500 records. Use `list-daily-activity-metrics` only for calendar-day buckets in a named timezone; that reporting endpoint is deprecated."
+            },
+            "filePath": "./dialpad-wfm/tools/list-activity-metrics.ts",
+            "version": "a822821b2c860b51ebd27179923e0ce4846429c7e6ff2a28149d1e3303b74826",
+            "location": {
+                "js": "templates-zero/dialpad-wfm/tools/list-activity-metrics/a822821b2c860b51ebd27179923e0ce4846429c7e6ff2a28149d1e3303b74826.cjs",
+                "ts": "templates-zero/dialpad-wfm/tools/list-activity-metrics/a822821b2c860b51ebd27179923e0ce4846429c7e6ff2a28149d1e3303b74826.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-agent-metrics",
+            "integrationId": "dialpad-wfm",
+            "description": "Return one page of agent performance metrics for a reporting interval, optionally filtered by agent emails.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_dialpad_wfm_listagentmetrics",
+            "output_schema_ref": "#/definitions/FunctionOutput_dialpad_wfm_listagentmetrics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_dialpad_wfm_listagentmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "Beginning of the reporting interval, with explicit UTC marker or offset and at most millisecond precision."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "End of the reporting interval, later than startAt, with explicit offset and at most millisecond precision. Boundary inclusion follows the provider."
+                            },
+                            "limit": {
+                                "default": 500,
+                                "description": "Maximum records in this page; defaults to 500.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the previous page of this same query. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "agentEmails": {
+                                "uniqueItems": true,
+                                "description": "Agent email addresses to include. Omit to apply no email filter; an empty list and null are not accepted.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^[^,]+$",
+                                    "description": "Agent email address without commas."
+                                }
+                            },
+                            "includeDeletedAgents": {
+                                "default": false,
+                                "description": "Whether to include deleted agents; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "startAt",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reporting interval, optional agent filters, and pagination for one page of agent performance metrics."
+                    },
+                    "FunctionOutput_dialpad_wfm_listagentmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "startAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Beginning of this metric interval, normalized to UTC without precision loss."
+                                        },
+                                        "endAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "End of this metric interval, normalized to UTC without precision loss."
+                                        },
+                                        "agentName": {
+                                            "description": "Agent display name; null if the provider explicitly reports null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "agentEmail": {
+                                            "description": "Agent email identifying the reported agent; null if explicitly unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "scheduledHours": {
+                                            "description": "Scheduled duration in hours; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "utilisation": {
+                                            "description": "Provider utilisation fraction, not percentage points; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "totalConversationsClosed": {
+                                            "description": "Total conversations closed in this interval; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerHour": {
+                                            "description": "Provider conversation closure rate per hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerServiceHour": {
+                                            "description": "Provider conversation closure rate per service hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeOnTask": {
+                                            "description": "Provider time-on-task fraction, not percentage points; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "occupancy": {
+                                            "description": "Provider occupancy fraction, not percentage points; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "adherenceScore": {
+                                            "description": "Provider adherence score, preserved without rescaling; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "plannedOccupancy": {
+                                            "description": "Provider planned occupancy share and lost seconds; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "fraction": {
+                                                            "description": "Occupancy percentage represented as a fraction; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "secondsLost": {
+                                                            "description": "Lost time in seconds, as reported by the provider; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider occupancy share and lost time."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "actualOccupancy": {
+                                            "description": "Provider actual occupancy share and lost seconds; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "fraction": {
+                                                            "description": "Occupancy percentage represented as a fraction; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "secondsLost": {
+                                                            "description": "Lost time in seconds, as reported by the provider; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider occupancy share and lost time."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeInAdherence": {
+                                            "description": "Reported time and share in adherence; omitted if absent upstream and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration and corresponding share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeOutOfAdherence": {
+                                            "description": "Reported time and share out of adherence; omitted if absent upstream and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration and corresponding share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeInException": {
+                                            "description": "Reported time and share in exception; omitted if absent upstream and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Provider percentage represented as a fraction, for example 0.9333, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider duration and corresponding share."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "startAt",
+                                        "endAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-reported agent metric interval."
+                                },
+                                "description": "This page of agent metric intervals, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the same query; omitted when exhausted.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of agent performance metrics and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for on-demand agent performance reporting. Supply a reporting interval and, optionally, agent emails you already know. Pass `nextCursor` as `cursor` with the same interval, filters, and limit to continue. Each call returns at most 500 records. Use `list-daily-agent-metrics` only when you need calendar-day buckets in a named timezone; that reporting endpoint is deprecated."
+            },
+            "filePath": "./dialpad-wfm/tools/list-agent-metrics.ts",
+            "version": "b1e1e183d6d89375413057bedab73f3aae0ba9bab84476f4b8aeb6d73dc6fcb7",
+            "location": {
+                "js": "templates-zero/dialpad-wfm/tools/list-agent-metrics/b1e1e183d6d89375413057bedab73f3aae0ba9bab84476f4b8aeb6d73dc6fcb7.cjs",
+                "ts": "templates-zero/dialpad-wfm/tools/list-agent-metrics/b1e1e183d6d89375413057bedab73f3aae0ba9bab84476f4b8aeb6d73dc6fcb7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-daily-activity-metrics",
+            "integrationId": "dialpad-wfm",
+            "description": "Return activity performance metrics in timezone-local calendar-day buckets using the deprecated daily reporting endpoint.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_dialpad_wfm_listdailyactivitymetrics",
+            "output_schema_ref": "#/definitions/FunctionOutput_dialpad_wfm_listdailyactivitymetrics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_dialpad_wfm_listdailyactivitymetrics": {
+                        "type": "object",
+                        "properties": {
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "End instant, later than startAt and at most 90 elapsed days after it, with explicit offset and at most millisecond precision."
+                            },
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "Start instant with explicit offset and at most millisecond precision."
+                            },
+                            "timezone": {
+                                "default": "Etc/UTC",
+                                "description": "IANA zone controlling daily aggregation; defaults to Etc/UTC.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "agentEmails": {
+                                "uniqueItems": true,
+                                "description": "Agent email addresses whose data contributes to the report. Omit for no email filter; null and empty arrays are not accepted.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^[^,]+$",
+                                    "description": "An agent email address without commas, preserved exactly as supplied."
+                                }
+                            },
+                            "includeDeletedAgents": {
+                                "default": false,
+                                "description": "Whether deleted agents contribute to the report. Explicitly defaults to false in this tool; the legacy provider default is unspecified.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "endAt",
+                            "startAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A bounded instant range and optional filters for provider-computed daily activity reporting."
+                    },
+                    "FunctionOutput_dialpad_wfm_listdailyactivitymetrics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Local calendar date in the result timezone, not an instant."
+                                        },
+                                        "timeOnTask": {
+                                            "description": "Time-on-task fraction, for example 0.505 for 50.5%; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "activityName": {
+                                            "description": "Activity display name; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "activityType": {
+                                            "description": "Provider activity classification preserved verbatim; null if unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "adherenceScore": {
+                                            "description": "Provider adherence score preserved without rescaling; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "scheduledHours": {
+                                            "description": "Scheduled duration in hours; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeInAdherence": {
+                                            "description": "Time and fraction in adherence; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Reported duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Reported percentage represented as a fraction, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider-reported duration and its share of time."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeInException": {
+                                            "description": "Time and fraction in exception; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Reported duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Reported percentage represented as a fraction, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider-reported duration and its share of time."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "timeOutOfAdherence": {
+                                            "description": "Time and fraction out of adherence; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "seconds": {
+                                                            "description": "Reported duration in seconds; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "fraction": {
+                                                            "description": "Reported percentage represented as a fraction, not percentage points; null when unavailable.",
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Provider-reported duration and its share of time."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "wrongTaskSnapshots": {
+                                            "description": "Reported wrong-task snapshot count; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosed": {
+                                            "description": "Reported conversations closed; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsOnHold": {
+                                            "description": "Provider conversations-on-hold count; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsOpened": {
+                                            "description": "Reported conversations opened; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "averageInteractionTime": {
+                                            "description": "Provider average interaction time in its unspecified original numeric unit; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "averageConversationTime": {
+                                            "description": "Provider average conversation time in its unspecified original numeric unit; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsCommentedOn": {
+                                            "description": "Reported conversations commented on; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerHour": {
+                                            "description": "Provider conversation closure rate per hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "date"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-generated daily activity bucket."
+                                },
+                                "description": "All returned daily activity buckets flattened in provider order."
+                            },
+                            "timezone": {
+                                "type": "string",
+                                "description": "Effective IANA zone in which each bucket date is interpreted."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "timezone"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete daily activity report in the effective aggregation timezone."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use only for provider-computed daily buckets in a named timezone. Prefer `list-activity-metrics` for new interval-based reporting. Supply a range of at most 90 elapsed days and optional known agent emails. The result is one complete provider response without pagination."
+            },
+            "filePath": "./dialpad-wfm/tools/list-daily-activity-metrics.ts",
+            "version": "9bb69e9fbbf6e43fba567132978027e8b021683ee230920c858ead51b98e2dc3",
+            "location": {
+                "js": "templates-zero/dialpad-wfm/tools/list-daily-activity-metrics/9bb69e9fbbf6e43fba567132978027e8b021683ee230920c858ead51b98e2dc3.cjs",
+                "ts": "templates-zero/dialpad-wfm/tools/list-daily-activity-metrics/9bb69e9fbbf6e43fba567132978027e8b021683ee230920c858ead51b98e2dc3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-daily-agent-metrics",
+            "integrationId": "dialpad-wfm",
+            "description": "Return agent performance metrics in calendar-day buckets for a selected timezone. Uses the deprecated daily reporting endpoint; prefer interval-based agent metrics for new reporting.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_dialpad_wfm_listdailyagentmetrics",
+            "output_schema_ref": "#/definitions/FunctionOutput_dialpad_wfm_listdailyagentmetrics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_dialpad_wfm_listdailyagentmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "Start instant with explicit offset and at most millisecond precision. This is not a date-only bucket label."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "End instant, later than startAt and at most 90 elapsed days after it, with explicit offset and at most millisecond precision."
+                            },
+                            "timezone": {
+                                "default": "Etc/UTC",
+                                "description": "IANA timezone controlling the provider's calendar-day buckets; defaults to Etc/UTC.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "agentEmails": {
+                                "uniqueItems": true,
+                                "description": "Agent emails to include; omit for no email filter. Null and empty lists are not accepted.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^[^,]+$",
+                                    "description": "Agent email to include, without commas."
+                                }
+                            },
+                            "includeDeletedAgents": {
+                                "default": false,
+                                "description": "Whether to include deleted agents. This tool explicitly defaults to false; the deprecated provider endpoint does not document its default.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "startAt",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A bounded reporting interval, optional agent filters, and the timezone for daily aggregation."
+                    },
+                    "FunctionOutput_dialpad_wfm_listdailyagentmetrics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Calendar date of this bucket in the result timezone, not a UTC instant."
+                                        },
+                                        "agentName": {
+                                            "description": "Agent display name; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "occupancy": {
+                                            "description": "Occupancy fraction, for example 0.455 for 45.5%; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "agentEmail": {
+                                            "description": "Agent email; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "timeOnTask": {
+                                            "description": "Time-on-task fraction, for example 0.505 for 50.5%; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "utilisation": {
+                                            "description": "Utilisation fraction, for example 0.505 for 50.5%; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "scheduledHours": {
+                                            "description": "Scheduled duration in hours; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "totalConversationsClosed": {
+                                            "description": "Total reported conversations closed for the day; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerHour": {
+                                            "description": "Reported conversation closure rate per hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "conversationsClosedPerServiceHour": {
+                                            "description": "Reported conversation closure rate per service hour; null when unavailable.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "date"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-computed calendar-day bucket for an agent."
+                                },
+                                "description": "All returned daily agent buckets, flattened from the provider's grouped response and retaining its order."
+                            },
+                            "timezone": {
+                                "type": "string",
+                                "description": "Effective IANA timezone in which items[].date is interpreted."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "timezone"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete daily agent report and its effective calendar timezone, without continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use only when you need the provider's timezone-local daily aggregation. For current interval-based reporting use `list-agent-metrics`. Supply a range of at most 90 elapsed days and optional known agent emails. This returns the provider's whole response in one page, with no continuation."
+            },
+            "filePath": "./dialpad-wfm/tools/list-daily-agent-metrics.ts",
+            "version": "9cf061abc23de1186e487ba5e8c48f393ce62c793eaa6fa8ee6c4ee359299ac4",
+            "location": {
+                "js": "templates-zero/dialpad-wfm/tools/list-daily-agent-metrics/9cf061abc23de1186e487ba5e8c48f393ce62c793eaa6fa8ee6c4ee359299ac4.cjs",
+                "ts": "templates-zero/dialpad-wfm/tools/list-daily-agent-metrics/9cf061abc23de1186e487ba5e8c48f393ce62c793eaa6fa8ee6c4ee359299ac4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schedule-entries",
+            "integrationId": "dialpad-wfm",
+            "description": "Return one page of the published schedule, including shifts, scheduled tasks, and time off within a reporting interval.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_dialpad_wfm_listscheduleentries",
+            "output_schema_ref": "#/definitions/FunctionOutput_dialpad_wfm_listscheduleentries",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_dialpad_wfm_listscheduleentries": {
+                        "type": "object",
+                        "properties": {
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "End of the requested interval, later than startAt, with explicit offset and at most millisecond precision. Provider overlap and boundary rules apply."
+                            },
+                            "limit": {
+                                "description": "Maximum top-level entries per page. Defaults to 100; this tool conservatively caps requests at the documented provider default.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the unchanged schedule query; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$",
+                                "description": "Beginning of the requested interval, with explicit UTC marker or offset and at most millisecond precision."
+                            },
+                            "includeDeletedAgents": {
+                                "description": "Whether to include schedules for deleted agents; defaults to true, matching the provider.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "endAt",
+                            "startAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reporting interval and pagination options for the published schedule."
+                    },
+                    "FunctionOutput_dialpad_wfm_listscheduleentries": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider schedule-entry classification, currently illustrated as shift or time-off; not an invented resource identifier."
+                                        },
+                                        "endAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "End of the schedule entry in UTC, preserving precision and provider endpoint meaning."
+                                        },
+                                        "tasks": {
+                                            "description": "Ordered task segments within a shift; omitted if absent, null if explicitly null, and empty if explicitly empty.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Scheduled task display name.",
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "description": "Provider task classification, such as activity, break, or blocked-time; not a closed enum."
+                                                            },
+                                                            "endAt": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                                "description": "End of this scheduled task segment in UTC, preserving precision."
+                                                            },
+                                                            "taskId": {
+                                                                "description": "Opaque referenced task identifier, omitted when the provider supplies none, as in the blocked-time example.",
+                                                                "type": "string"
+                                                            },
+                                                            "startAt": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                                "description": "Beginning of this scheduled task segment in UTC, preserving precision."
+                                                            },
+                                                            "ticketGroups": {
+                                                                "description": "Ticket groups attached to the scheduled task; omitted if absent, and empty if explicitly empty.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "description": "Opaque ticket-group identifier in the connected system context.",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "name": {
+                                                                            "description": "Ticket-group display name.",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "connectedTicketingSystem": {
+                                                                            "description": "Provider name of the connected ticketing system, such as zendesk.",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false,
+                                                                    "description": "Ticket-group reference in the connected system."
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "type",
+                                                            "endAt",
+                                                            "startAt"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Ordered scheduled task segment within a shift."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "agentId": {
+                                            "type": "string",
+                                            "description": "Opaque scheduled agent identifier from surfer.id."
+                                        },
+                                        "startAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Beginning of the schedule entry in UTC, preserving precision."
+                                        },
+                                        "subtype": {
+                                            "description": "Provider time-off subtype, for example Holiday; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "agentEmail": {
+                                            "description": "Scheduled agent email; omitted if absent and null if explicitly unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "remoteSubtype": {
+                                            "description": "Time-off subtype from the connected external system, for example Annual Leave; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "shiftTemplate": {
+                                            "description": "Shift-template reference for a shift; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "description": "Opaque shift-template identifier.",
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "description": "Shift-template display name.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Published shift-template reference."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "endAt",
+                                        "agentId",
+                                        "startAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Published shift or time-off entry with its original interval."
+                                },
+                                "description": "This page of published schedule entries in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the same query; omitted when no next page exists.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of the published schedule and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect published shifts and time off without maintaining a replicated schedule. Supply the interval you need. Deleted agents' schedules are included by default; set includeDeletedAgents=false to exclude them. Continue by passing `nextCursor` as `cursor` with the same interval, inclusion choice, and limit. Each call returns at most 100 top-level schedule entries; task segments remain nested within their shift."
+            },
+            "filePath": "./dialpad-wfm/tools/list-schedule-entries.ts",
+            "version": "29a6a7da82bedc02f3aa82400067579d9928da96981e03b74c0978511efc854f",
+            "location": {
+                "js": "templates-zero/dialpad-wfm/tools/list-schedule-entries/29a6a7da82bedc02f3aa82400067579d9928da96981e03b74c0978511efc854f.cjs",
+                "ts": "templates-zero/dialpad-wfm/tools/list-schedule-entries/29a6a7da82bedc02f3aa82400067579d9928da96981e03b74c0978511efc854f.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

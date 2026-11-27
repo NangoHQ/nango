@@ -143,6 +143,27 @@ describe('PostgresStore', () => {
     });
 
     describe('upserting records', () => {
+        it('stores and updates records that belong to no sync', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const upsert = async (records: UnencryptedRecordData[]) => {
+                const formatted = formatRecords({ data: records, connectionId, model, syncJobId: 0 });
+                if (formatted.isErr()) {
+                    throw formatted.error;
+                }
+                return (await store.upsert({ records: formatted.value, connectionId, environmentId, model })).unwrap();
+            };
+
+            await expect(upsert([{ id: '1', name: 'John Doe' }])).resolves.toMatchObject({ addedKeys: ['1'] });
+            await expect(upsert([{ id: '1', name: 'Jane Doe' }])).resolves.toMatchObject({ updatedKeys: ['1'] });
+
+            await expect(db(RECORDS_TABLE).where({ connection_id: connectionId, model }).select('external_id', 'sync_id')).resolves.toStrictEqual([
+                { external_id: '1', sync_id: null }
+            ]);
+            await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ decrypted: { id: '1', name: 'Jane Doe' } });
+        });
+
         describe('should respect merging strategy', () => {
             it('when strategy = override', async () => {
                 const connectionId = rnd.number();

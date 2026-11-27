@@ -1,0 +1,38 @@
+---
+title: 'HuntAPI - How do I link my account?'
+sidebarTitle: 'HuntAPI'
+---
+
+## Overview
+
+To authenticate with HuntAPI, you need:
+
+1. **API Key** — an API key created in your HuntAPI dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A HuntAPI account. You can [sign up](https://app.huntapi.com/register) with an email address, Google or GitHub.
+
+### Step 1: Create an API key
+
+1. Sign in to the [HuntAPI dashboard](https://app.huntapi.com). In the left sidebar, click **API**, open the **API keys** tab, then click **New API key**.
+
+<img src="/api-integrations/huntapi/api_keys_page.png" alt="HuntAPI API keys tab with the New API key button"/>
+
+2. Enter a **Name** that identifies the integration and pick a **Category**. You can also set an expiry date, and request limits on the **Request limits** tab. Then click **Create API key**.
+
+<img src="/api-integrations/huntapi/create_api_key_dialog.png" alt="HuntAPI API key dialog with the Name, Category and Expires fields and the Create API key button"/>
+
+3. In the **API key created** dialog, click **Copy** and store the key. HuntAPI shows it only once: if you lose it, create a new key. Then click **Accept and continue**.
+
+<img src="/api-integrations/huntapi/api_key_created.png" alt="HuntAPI API key created dialog with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with HuntAPI.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with HuntAPI and rejects it if it is wrong.
+
+<img src="/api-integrations/huntapi/form.png" alt="HuntAPI Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>

@@ -13,7 +13,7 @@ import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInPlaygroundButton';
 import { useStore } from '@/store';
-import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
+import { getConnectionDisplayName, getEndUserEmail, isOwnTestConnection } from '@/utils/endUser';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
@@ -96,8 +96,7 @@ export const ConnectionShow = () => {
 
     const email = getEndUserEmail(connectionResponse.endUser, connectionResponse.connection.tags);
     const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
-    // The playground only uses connections tagged with the signed-in user's email.
-    const isOwnConnection = Boolean(user) && connectionResponse.connection.tags?.['end_user_email'] === user?.email;
+    const isOwnConnection = isOwnTestConnection(connectionResponse.connection.tags, user?.email);
 
     const basePath = `/${env}/connections/${encodeURIComponent(providerConfigKey || '')}/${encodeURIComponent(connectionId || '')}`;
     const activeSegment = getActiveTabSegment(location.pathname, basePath);

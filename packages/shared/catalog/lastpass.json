@@ -1,0 +1,203 @@
+{
+    "providerConfigKey": "lastpass",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Lastpass.",
+            "endpoint": null,
+            "input": "ActionInput_lastpass_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_lastpass_createuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_lastpass_createuser",
+                "ActionOutput_lastpass_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lastpass_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "duousername": {
+                                "type": "string"
+                            },
+                            "securidusername": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "password_reset_required": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_lastpass_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Lastpass.",
+            "endpoint": null,
+            "input": "ActionInput_lastpass_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_lastpass_deleteuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_lastpass_deleteuser",
+                "ActionOutput_lastpass_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_lastpass_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_lastpass_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Lastpass.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_lastpass_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_lastpass_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_lastpass_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -4,7 +4,7 @@
 
 # Integrations for AI agents
 
-Connect your AI agents to 1,300+ APIs with 10,000+ pre-built tools and Nango managed OAuth apps.
+Connect your AI agents to 1,300+ APIs with 27,000+ pre-built tools and Nango managed OAuth apps.
 
 [nango.dev](https://nango.dev) · [1,300+ APIs](https://nango.dev/api-integrations) · [Docs](https://nango.dev/docs/) · [Slack community](https://nango.dev/slack)
 
@@ -16,7 +16,7 @@ Connect your AI agents to 1,300+ APIs with 10,000+ pre-built tools and Nango man
 
 ## Nango
 
-Nango is an open-source platform for building agent integrations. It provides [10,000+ prebuilt tools across 1,300+ APIs](https://nango.dev/platform/mcp), with managed authentication and execution for tool calls, triggers, syncs, webhooks, and API proxy requests. Customize tools in TypeScript and sync external data into your app when your use case needs more.
+Nango is an open-source platform for building agent integrations. It provides [27,000+ prebuilt tools across 1,300+ APIs](https://nango.dev/platform/mcp), with managed authentication and execution for tool calls, triggers, syncs, webhooks, and API proxy requests. Customize tools in TypeScript and sync external data into your app when your use case needs more.
 
 **Used in production by ServiceNow, Replit, Ramp, Mercor, and hundreds more.**
 

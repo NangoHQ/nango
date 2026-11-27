@@ -1,0 +1,41 @@
+---
+title: 'ChartQuery - How do I link my account?'
+sidebarTitle: 'ChartQuery'
+---
+
+## Overview
+
+To authenticate with ChartQuery, you need:
+
+1. **API Key** - a ChartQuery API key.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A ChartQuery account. You can [sign up](https://app.chartquery.com/register) with an email address, Google or GitHub. No card is required.
+
+### Step 1: Create an API key
+
+1. Sign in to the [ChartQuery dashboard](https://app.chartquery.com).
+2. In the sidebar, click **API**, open the **API keys** tab and click **New API key**.
+
+<img src="/api-integrations/chartquery/api_keys_page.png" alt="ChartQuery API keys tab with the New API key button highlighted"/>
+
+3. Enter a **Name**, for example `Nango`, and pick a **Category**. You can also set request limits on the **Request limits** tab and an expiry date under **Expires**. Click **Create API key**.
+
+<img src="/api-integrations/chartquery/create_api_key_dialog.png" alt="ChartQuery API key dialog with the Name and Category fields and the Create API key button highlighted"/>
+
+4. In the **API key created** dialog, click **Copy**, then click **Accept and continue**. ChartQuery shows the key only once.
+
+<img src="/api-integrations/chartquery/api_key_created.png" alt="ChartQuery API key created dialog with the Copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with ChartQuery.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with ChartQuery and rejects it if it is wrong.
+
+<img src="/api-integrations/chartquery/form.png" alt="Nango Connect UI form for entering the ChartQuery API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to ChartQuery.

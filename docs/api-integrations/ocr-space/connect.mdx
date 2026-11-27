@@ -1,0 +1,37 @@
+---
+title: 'OCR.space - How do I link my account?'
+sidebarTitle: 'OCR.space'
+---
+
+## Overview
+
+To authenticate with OCR.space, you need:
+
+1. **API Key** — the OCR.space API key sent to your email address.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An email address. The free API key needs no account or password: OCR.space sends it by email.
+
+### Step 1: Get your API key
+
+1. Open the [free OCR API key page](https://ocr.space/ocrapi/freekey).
+2. Enter your email address. The other fields are optional.
+3. Complete the reCAPTCHA and click **SUBSCRIBE**.
+
+<img src="/api-integrations/ocr-space/free_key_signup_form.png" alt="OCR.space free API key form with the reCAPTCHA and the SUBSCRIBE button"/>
+
+4. Open the email **OCR.SPACE Free OCR API: Please Confirm Subscription** and click **Yes, subscribe me to the free OCR API list.**
+5. Open the email **Welcome! Here is your Free OCR API key** that arrives a few seconds later, and copy the API key from it.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with OCR.space.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/ocr-space/form.png" alt="OCR.space Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

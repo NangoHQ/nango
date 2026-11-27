@@ -1,0 +1,1448 @@
+{
+    "providerConfigKey": "kno-commerce",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make benchmark question definitions and their provider metadata available as catalog records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-benchmark-questions",
+            "output": [
+                "BenchmarkQuestions"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "QUESTIONS"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BenchmarkQuestions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BenchmarkQuestions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque benchmark question identifier within the provider catalog."
+                            },
+                            "text": {
+                                "description": "Benchmark question wording as ordinary Unicode text, omitted when not supplied.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Provider question type verbatim, omitted when not supplied.",
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "description": "Additional benchmark question attributes, including any choices or categorization, with provider keys, native values, and nulls retained; omitted when none are supplied.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "A native JSON attribute value, preserving nested objects, array order, and nulls.",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A benchmark question definition and its additional provider catalog attributes.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make survey response records available with survey references, typed answers, and additional source metadata.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-survey-responses",
+            "output": [
+                "SurveyResponses"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "RESPONSES"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SurveyResponses"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SurveyResponses": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque survey response identifier within the connected account."
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "description": "Native answer value, retaining text, numeric values, Booleans, selections, objects, and explicit null without stringification.",
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        },
+                                        "questionId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the answered question, with provider-defined scope."
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "questionId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An answered question and its native JSON value."
+                                },
+                                "description": "Answers with native value types retained; source array order is preserved when defined."
+                            },
+                            "metadata": {
+                                "description": "Other source response attributes keyed by provider name with native JSON types and nulls retained; unknown date-like values remain opaque.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "A native JSON value, including nested arrays, objects, and explicit null.",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    ]
+                                }
+                            },
+                            "surveyId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the survey answered, matching survey record identifiers."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "answers",
+                            "surveyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Survey response records with survey references, typed answers, and additional source metadata.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected account's accessible survey configurations available as records, including questions, logic, and display settings. Status selection is optional; omission retains the provider's live-survey default.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": "SyncMetadata_kno_commerce_syncsurveys",
+            "name": "sync-surveys",
+            "output": [
+                "Surveys"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "SURVEYS"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Surveys",
+                "SyncMetadata_kno_commerce_syncsurveys"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Surveys": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque survey identifier within the connected account."
+                            },
+                            "name": {
+                                "description": "Provider survey name when supplied; an empty name is retained.",
+                                "type": "string"
+                            },
+                            "logic": {
+                                "description": "Native structured branching or eligibility configuration; omitted when absent and explicit null retained.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/__schema0"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "description": "Provider lifecycle status without collapsing unknown states; omitted when absent.",
+                                "type": "string"
+                            },
+                            "questions": {
+                                "description": "Configured questions in provider order; omitted when absent and retained as an empty array when explicitly empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque question identifier in this survey."
+                                        },
+                                        "text": {
+                                            "description": "Question wording as ordinary Unicode text, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Provider question type, retained verbatim when supplied.",
+                                            "type": "string"
+                                        },
+                                        "configuration": {
+                                            "description": "Other provider question settings, including choices, with keys and JSON types preserved.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "A native JSON value, preserving nested keys, array order, and explicit null.",
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/definitions/__schema0"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A configured survey question with its native provider settings."
+                                }
+                            },
+                            "displaySettings": {
+                                "description": "Native structured display configuration with provider keys retained; omitted when absent and explicit null retained.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/__schema0"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible survey configuration, including its questions, logic, and display settings when supplied.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "SyncMetadata_kno_commerce_syncsurveys": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "description": "Provider survey lifecycle status defining the dataset. Omit to retain the provider default shown as live; other supported values require provider validation.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Optional lifecycle selection for the survey dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "delete-webhook-subscription",
+            "integrationId": "kno-commerce",
+            "description": "Delete an existing webhook subscription by ID, removing that notification-delivery registration. This does not delete survey or response data.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_deletewebhooksubscription",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_deletewebhooksubscription",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_deletewebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "webhookSubscriptionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing webhook subscription to delete, obtained from list-webhook-subscriptions on the same account."
+                            }
+                        },
+                        "required": [
+                            "webhookSubscriptionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the existing webhook subscription registration to delete."
+                    },
+                    "FunctionOutput_kno_commerce_deletewebhooksubscription": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the subscription whose deletion the provider accepted."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after the provider has established successful deletion; this does not guarantee cancellation of notifications already in flight."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-confirmed deletion of the requested webhook subscription registration."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-webhook-subscriptions` first to find the exact subscription ID. This removes the registration for that destination and its configured events, not survey or response records. No restoration operation is available here; in-flight notification behavior is provider-defined. If the result is uncertain, inspect the subscription list before attempting deletion again.",
+                "required_scopes": {
+                    "all": [
+                        "WEBHOOKS"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/delete-webhook-subscription.ts",
+            "version": "d035bc34f60a4d3a5e8160c0df014776a7196373863d86480fa9b12775efba04",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/delete-webhook-subscription/d035bc34f60a4d3a5e8160c0df014776a7196373863d86480fa9b12775efba04.cjs",
+                "ts": "templates-zero/kno-commerce/tools/delete-webhook-subscription/d035bc34f60a4d3a5e8160c0df014776a7196373863d86480fa9b12775efba04.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-attribution-analytics",
+            "integrationId": "kno-commerce",
+            "description": "Retrieve the provider's default attribution analytics report. This provider resource is deprecated and scheduled for removal; no replacement is documented.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_getattributionanalytics",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_getattributionanalytics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_getattributionanalytics": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Request the default attribution report without caller-defined filters."
+                    },
+                    "FunctionOutput_kno_commerce_getattributionanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensions": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "anyOf": [
+                                                    {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "description": "A native textual dimension value."
+                                                            },
+                                                            {
+                                                                "type": "number",
+                                                                "description": "A native numeric dimension value, not an inferred measure."
+                                                            },
+                                                            {
+                                                                "type": "boolean",
+                                                                "description": "A native boolean dimension value."
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "description": "Provider dimension names mapped to their native scalar values, such as channel labels when supplied; no dimension meaning is invented."
+                                        },
+                                        "metrics": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "description": "Provider numeric measure names mapped to native values or explicit null. Units and scale remain those of the provider; no percent, currency, or time conversion is inferred."
+                                        },
+                                        "metadata": {
+                                            "description": "Other row attributes that are not established dimensions or numeric measures, preserved structurally with provider keys; omitted when absent.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "$ref": "#/definitions/__schema0"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "dimensions",
+                                        "metrics"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One attribution result row with native dimensions, measures, and unmapped attributes."
+                                },
+                                "description": "Attribution result rows in source order. A flat summary can be represented as one row with no dimensions; the precise source layout is provisional."
+                            },
+                            "metadata": {
+                                "description": "Report-level context or measure descriptions when supplied, retaining native structure and provider-defined units; omitted when absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "$ref": "#/definitions/__schema0"
+                                }
+                            }
+                        },
+                        "required": [
+                            "rows"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The default attribution report, preserving provider-defined values without inferred units.",
+                        "definitions": {
+                            "__schema0": {
+                                "description": "A native JSON value, preserving nested structure and explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this only for existing attribution-reporting needs while the deprecated resource remains available. The tool requests the default report without invented date or dimension filters. For underlying survey answers use `list-survey-responses`. Treat returned metric names and dimension values as provider-defined and do not assume undocumented units.",
+                "required_scopes": {
+                    "all": [
+                        "ATTRIBUTION"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/get-attribution-analytics.ts",
+            "version": "e7980c326ea55ec170671b6485bce15fa34f4bcdb234d413a178dd66a733dd71",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/get-attribution-analytics/e7980c326ea55ec170671b6485bce15fa34f4bcdb234d413a178dd66a733dd71.cjs",
+                "ts": "templates-zero/kno-commerce/tools/get-attribution-analytics/e7980c326ea55ec170671b6485bce15fa34f4bcdb234d413a178dd66a733dd71.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-survey-response-count",
+            "integrationId": "kno-commerce",
+            "description": "Get the provider-reported survey response count for the connected account's accessible response collection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_getsurveyresponsecount",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_getsurveyresponsecount",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_getsurveyresponsecount": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters; reads the response count with the provider default scope."
+                    },
+                    "FunctionOutput_kno_commerce_getsurveyresponsecount": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported number of survey responses visible to this connected client under the count endpoint's default scope. It is not a page length or a synthesized estimate."
+                            }
+                        },
+                        "required": [
+                            "count"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider-reported survey response count."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you need a response count without retrieving answers. Use `list-survey-responses` to inspect the records. This tool applies no invented filters and does not promise a count consistent with a separate page read at another instant.",
+                "required_scopes": {
+                    "all": [
+                        "RESPONSES"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/get-survey-response-count.ts",
+            "version": "4a888837dd748229f7e28e6b764b72724652e2b04cfe371f8baeb0a110c3bda1",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/get-survey-response-count/4a888837dd748229f7e28e6b764b72724652e2b04cfe371f8baeb0a110c3bda1.cjs",
+                "ts": "templates-zero/kno-commerce/tools/get-survey-response-count/4a888837dd748229f7e28e6b764b72724652e2b04cfe371f8baeb0a110c3bda1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-benchmark-questions",
+            "integrationId": "kno-commerce",
+            "description": "List benchmark question definitions and their metadata.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_listbenchmarkquestions",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_listbenchmarkquestions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_listbenchmarkquestions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation returned by this tool for the same connection, if the provider paginates the catalog. Omit for the initial catalog page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Inputs for reading the benchmark question catalog."
+                    },
+                    "FunctionOutput_kno_commerce_listbenchmarkquestions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque benchmark question identifier in the provider catalog."
+                                        },
+                                        "text": {
+                                            "description": "Benchmark question wording as ordinary Unicode text, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Provider question type, preserved verbatim when supplied.",
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "Additional benchmark question metadata, including any choices or categorization, retaining provider keys and native JSON values. Omitted when no extra metadata is present.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "A native JSON value, retaining nested objects, arrays, and explicit null.",
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/definitions/__schema0"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A benchmark question definition and its provider metadata."
+                                },
+                                "description": "Benchmark question definitions in this provider page, preserving source order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation if another provider page exists; omitted for a complete unpaginated catalog or confirmed exhaustion.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of benchmark question definitions and their metadata.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for the benchmark question catalog, not a particular survey's question configuration. Use `list-surveys` for the latter. Omit cursor initially and pass nextCursor back as cursor if returned. Each call returns one provider page; if the provider returns the full catalog at once, no continuation is needed.",
+                "required_scopes": {
+                    "all": [
+                        "QUESTIONS"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/list-benchmark-questions.ts",
+            "version": "f0e03ee2621bf8cd6703938e74356d2c675cf36f8b1ce1c03ccc5afec3923206",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/list-benchmark-questions/f0e03ee2621bf8cd6703938e74356d2c675cf36f8b1ce1c03ccc5afec3923206.cjs",
+                "ts": "templates-zero/kno-commerce/tools/list-benchmark-questions/f0e03ee2621bf8cd6703938e74356d2c675cf36f8b1ce1c03ccc5afec3923206.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-survey-responses",
+            "integrationId": "kno-commerce",
+            "description": "Retrieve one cursor-paginated page of survey responses, with survey references and structured answers.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_listsurveyresponses",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_listsurveyresponses",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_listsurveyresponses": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from a previous call on this connection. Omit for the first response page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Retrieve one page of survey responses, optionally continuing a previous call."
+                    },
+                    "FunctionOutput_kno_commerce_listsurveyresponses": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque survey response identifier within the connected account."
+                                        },
+                                        "surveyId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the survey answered, suitable for matching `list-surveys` results."
+                                        },
+                                        "answers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "questionId": {
+                                                        "type": "string",
+                                                        "description": "Opaque identifier of the question answered, scoped as defined by the provider."
+                                                    },
+                                                    "value": {
+                                                        "description": "Answer in its native structured form: text, number, Boolean, selection array, object, or explicit null. No stringification or timestamp interpretation is applied.",
+                                                        "allOf": [
+                                                            {
+                                                                "$ref": "#/definitions/__schema0"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "questionId",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One question reference and its native answer value."
+                                            },
+                                            "description": "Answers in source order, preserving typed values and empty answers."
+                                        },
+                                        "metadata": {
+                                            "description": "Other provider response attributes keyed by source field name, retaining JSON types and explicit nulls. Undocumented date-like values remain opaque here.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "A native JSON value, preserving nested structure and explicit nulls.",
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/definitions/__schema0"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "surveyId",
+                                        "answers"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A survey response with question answers and additional provider attributes."
+                                },
+                                "description": "Survey response records from this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next page; omitted when the provider establishes there are no further results.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of survey responses and its optional continuation.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for submitted survey answers. Use `list-surveys` for question definitions and configuration, or `get-survey-response-count` when you only need the count. Omit cursor to start; pass nextCursor back as cursor on the same connection to continue. Each call returns one provider-sized page, not the entire response history.",
+                "required_scopes": {
+                    "all": [
+                        "RESPONSES"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/list-survey-responses.ts",
+            "version": "0c0d5f4f86f964c8ff2334889f0e2f8e50b010506303897aa360e11892bf9b25",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/list-survey-responses/0c0d5f4f86f964c8ff2334889f0e2f8e50b010506303897aa360e11892bf9b25.cjs",
+                "ts": "templates-zero/kno-commerce/tools/list-survey-responses/0c0d5f4f86f964c8ff2334889f0e2f8e50b010506303897aa360e11892bf9b25.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-surveys",
+            "integrationId": "kno-commerce",
+            "description": "List one page of surveys, including their questions, logic, and display settings, with optional status, text, and date filters.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_listsurveys",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_listsurveys",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_listsurveys": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum surveys requested for this page; defaults to 25. The provisional public maximum is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same connection, filters, and limit. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "search": {
+                                "description": "Text to match using the provider's survey search behavior; omit to apply no text filter.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "description": "Provider survey lifecycle status to include. Omission retains the provider default, shown as live; accepted non-live values are provider-defined.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "endDate": {
+                                "description": "Upper calendar-date filter in YYYY-MM-DD form. Provider boundary semantics require validation; omitted means no explicit upper bound.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "startDate": {
+                                "description": "Inclusive lower calendar-date filter in YYYY-MM-DD form. Which survey date it filters and boundary semantics require validation; omitted means no explicit lower bound.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation for one page of survey configurations."
+                    },
+                    "FunctionOutput_kno_commerce_listsurveys": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque survey identifier within the connected account."
+                                        },
+                                        "name": {
+                                            "description": "Survey name when supplied by the provider; empty names are retained.",
+                                            "type": "string"
+                                        },
+                                        "logic": {
+                                            "description": "Survey branching or eligibility configuration in its native structured form. Omitted when absent; explicit null is retained.",
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        },
+                                        "status": {
+                                            "description": "Provider lifecycle status, preserved without collapsing undocumented states.",
+                                            "type": "string"
+                                        },
+                                        "questions": {
+                                            "description": "Configured questions in provider order; omitted when unavailable, empty when explicitly empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque question identifier in the survey."
+                                                    },
+                                                    "text": {
+                                                        "description": "Question wording as ordinary text, when present.",
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "description": "Provider question type, retained verbatim when present.",
+                                                        "type": "string"
+                                                    },
+                                                    "configuration": {
+                                                        "description": "Other question settings, including choices when supplied, keyed by provider setting name. Native structured values and explicit nulls are retained.",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {
+                                                            "$ref": "#/definitions/__schema0"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A configured survey question and its provider settings."
+                                            }
+                                        },
+                                        "displaySettings": {
+                                            "description": "Provider display configuration as structured JSON, retaining keys and value types. Omitted when absent; explicit null is retained.",
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Survey configuration, including available questions, logic, and display settings."
+                                },
+                                "description": "Survey configurations in this provider page, retaining provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another page; omitted only when provider pagination establishes exhaustion.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of survey configurations and its continuation when available.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "allOf": [
+                                                        {
+                                                            "$ref": "#/definitions/__schema0"
+                                                        }
+                                                    ]
+                                                },
+                                                "description": "Ordered native JSON values."
+                                            },
+                                            {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                    "allOf": [
+                                                        {
+                                                            "$ref": "#/definitions/__schema0"
+                                                        }
+                                                    ]
+                                                },
+                                                "description": "Native JSON values keyed by property name."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "A native JSON value, including structured containers and explicit null."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to inspect survey configuration or find survey IDs. Omitted status uses the provider's live-survey default. Pass nextCursor back as cursor with the same filters and limit to continue. Use `list-survey-responses` for submitted answers, not survey configuration. Each call returns one page; limit is 1–100.",
+                "required_scopes": {
+                    "all": [
+                        "SURVEYS"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/list-surveys.ts",
+            "version": "4804ae99827acb2712b474bef9643b09458882e4554f45a8e3f51f8939c2712c",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/list-surveys/4804ae99827acb2712b474bef9643b09458882e4554f45a8e3f51f8939c2712c.cjs",
+                "ts": "templates-zero/kno-commerce/tools/list-surveys/4804ae99827acb2712b474bef9643b09458882e4554f45a8e3f51f8939c2712c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-webhook-subscriptions",
+            "integrationId": "kno-commerce",
+            "description": "Inspect existing webhook subscriptions, including their destination and subscribed survey event types, without registering notification delivery.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_kno_commerce_listwebhooksubscriptions",
+            "output_schema_ref": "#/definitions/FunctionOutput_kno_commerce_listwebhooksubscriptions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_kno_commerce_listwebhooksubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation returned by this tool for the same connected account, if the provider paginates subscriptions. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "List existing webhook subscriptions for the connected account."
+                    },
+                    "FunctionOutput_kno_commerce_listwebhooksubscriptions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque subscription identifier usable with delete-webhook-subscription."
+                                        },
+                                        "url": {
+                                            "description": "Configured event delivery destination when the provider exposes it; omitted when unavailable.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "enabled": {
+                                            "description": "Whether delivery is enabled, only when an explicit provider state supports an exact Boolean mapping; omitted otherwise.",
+                                            "type": "boolean"
+                                        },
+                                        "eventTypes": {
+                                            "description": "Provider event type names configured for this subscription, preserving source values and order; omitted when unavailable, empty when explicitly empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Provider event type name, unchanged from the subscription configuration."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Existing subscription metadata, excluding signing secrets."
+                                },
+                                "description": "Existing webhook subscriptions in this provider page, retaining source order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation when another provider page exists; omitted for a complete unpaginated list or confirmed exhaustion.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One complete provider page of existing webhook subscription metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to audit existing notification destinations or obtain a subscription ID for `delete-webhook-subscription`. This does not create or renew a subscription and does not reveal signing secrets. Omit cursor initially; if nextCursor is returned, pass it back as cursor on the same connection. Each call returns one provider page.",
+                "required_scopes": {
+                    "all": [
+                        "WEBHOOKS"
+                    ]
+                }
+            },
+            "filePath": "./kno-commerce/tools/list-webhook-subscriptions.ts",
+            "version": "2ec6b700796783d40738a5d03a32f82ffa9be909d9dbc3d698f035d37294dee6",
+            "location": {
+                "js": "templates-zero/kno-commerce/tools/list-webhook-subscriptions/2ec6b700796783d40738a5d03a32f82ffa9be909d9dbc3d698f035d37294dee6.cjs",
+                "ts": "templates-zero/kno-commerce/tools/list-webhook-subscriptions/2ec6b700796783d40738a5d03a32f82ffa9be909d9dbc3d698f035d37294dee6.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

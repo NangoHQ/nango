@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { CatalogReader } from './reader.js';
 import { generateCatalogFunctionUuid } from './uuid.js';
 
-import type { CatalogFunctionManifestEntry, FlowZeroJson, FunctionTriggerDefinition, ParsedNangoAction, RequiredScopes } from '@nangohq/types';
+import type { CatalogSource } from './reader.js';
+import type { CatalogFunctionManifestEntry, FlowsZeroJson, FlowZeroJson, FunctionTriggerDefinition, ParsedNangoAction, RequiredScopes } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const jsonSchema: JSONSchema7 = {
@@ -68,8 +69,16 @@ function integration(overrides: Partial<FlowZeroJson> = {}): FlowZeroJson {
     };
 }
 
+/** A catalog source over a whole manifest, like the catalog store reading flows.zero.json. */
+function sourceFor(manifest: FlowsZeroJson): CatalogSource {
+    return {
+        getEntry: (provider) => manifest.find((entry) => entry.providerConfigKey === provider) ?? null,
+        listProvidersWithFunctions: () => manifest.filter((entry) => entry.functions?.length).map((entry) => entry.providerConfigKey)
+    };
+}
+
 function readerFor(entry: FlowZeroJson): CatalogReader {
-    return new CatalogReader(() => [entry]);
+    return new CatalogReader(sourceFor([entry]));
 }
 
 const triggers: FunctionTriggerDefinition[] = [
@@ -104,7 +113,7 @@ describe('CatalogReader', () => {
             }
         ]);
         expect(reader.listActions('github')).toEqual([entry]);
-        expect(reader.getAction('github', 'create-issue')).toBe(entry);
+        expect(reader.getAction('github', 'create-issue')).toStrictEqual(entry);
     });
 
     it('read catalog manifest', () => {
@@ -210,15 +219,14 @@ describe('CatalogReader', () => {
         });
         const githubUuid = generateCatalogFunctionUuid({ provider: 'github', name: github.name });
         const gitlabUuid = generateCatalogFunctionUuid({ provider: 'gitlab', name: gitlab.name });
-        const reader = new CatalogReader(() => [
-            integration({ functions: [github] }),
-            integration({ providerConfigKey: 'gitlab', actions: [], functions: [gitlab] })
-        ]);
+        const reader = new CatalogReader(
+            sourceFor([integration({ functions: [github] }), integration({ providerConfigKey: 'gitlab', actions: [], functions: [gitlab] })])
+        );
 
-        expect(reader.getFunctionByUuid(githubUuid)).toBe(reader.getEntry('github', github.name));
-        expect(reader.getFunctionByUuid(githubUuid.toUpperCase())).toBe(reader.getEntry('github', github.name));
+        expect(reader.getFunctionByUuid(githubUuid)).toStrictEqual(reader.getEntry('github', github.name));
+        expect(reader.getFunctionByUuid(githubUuid.toUpperCase())).toStrictEqual(reader.getEntry('github', github.name));
         expect(reader.getFunctionByUuid(githubUuid)?.provider).toBe('github');
-        expect(reader.getFunctionByUuid(gitlabUuid)).toBe(reader.getEntry('gitlab', gitlab.name));
+        expect(reader.getFunctionByUuid(gitlabUuid)).toStrictEqual(reader.getEntry('gitlab', gitlab.name));
         expect(reader.getFunctionByUuid(gitlabUuid)?.provider).toBe('gitlab');
         expect(reader.getFunctionByUuid(generateCatalogFunctionUuid({ provider: 'github', name: 'unknown' }))).toBeUndefined();
         expect(reader.getFunctionByUuid('not-a-uuid')).toBeUndefined();
@@ -230,7 +238,7 @@ describe('CatalogReader', () => {
         const reader = readerFor(integration({ functions: [definition] }));
 
         expect(reader.getEntry('github', definition.name)).toMatchObject({ uuid, name: definition.name });
-        expect(reader.getFunctionByUuid(uuid)).toBe(reader.getEntry('github', definition.name));
+        expect(reader.getFunctionByUuid(uuid)).toStrictEqual(reader.getEntry('github', definition.name));
         expect(reader.getFunctionByUuid(generateCatalogFunctionUuid({ provider: 'github', name: definition.name }))).toBeUndefined();
     });
 
@@ -259,50 +267,50 @@ describe('CatalogReader', () => {
     it('rejects duplicate UUIDs globally', () => {
         const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'fetch_issue' });
         const definition = nativeFunction({ uuid });
-        const reader = new CatalogReader(() => [
-            integration({ functions: [definition] }),
-            integration({ providerConfigKey: 'gitlab', functions: [definition] })
-        ]);
+        const reader = new CatalogReader(
+            sourceFor([integration({ functions: [definition] }), integration({ providerConfigKey: 'gitlab', functions: [definition] })])
+        );
 
         expect(() => reader.getFunctionByUuid(uuid)).toThrow(`Duplicate catalog function UUID '${uuid}' across the catalog`);
     });
 
     it('isolates an invalid native entry to its own provider for provider-scoped lookups', () => {
-        const reader = new CatalogReader(() => [
-            integration({ functions: [nativeFunction({ uuid: 'not-a-uuid' })] }),
-            integration({ providerConfigKey: 'gitlab' })
-        ]);
+        const reader = new CatalogReader(
+            sourceFor([integration({ functions: [nativeFunction({ uuid: 'not-a-uuid' })] }), integration({ providerConfigKey: 'gitlab' })])
+        );
 
         expect(() => reader.listEntries('github')).toThrow("Invalid catalog function UUID for 'fetch_issue' in provider 'github'");
         expect(reader.getAction('gitlab', 'create-issue')?.name).toBe('create-issue');
     });
 
-    it('caches normalized entries and name lookups per provider', () => {
-        const loadManifest = vi.fn(() => [integration({ functions: [nativeFunction()] })]);
-        const reader = new CatalogReader(loadManifest);
+    it('builds a provider from the source on each call, and indexes UUIDs once', () => {
+        let entry = integration({ functions: [nativeFunction()] });
+        const source: CatalogSource = { getEntry: () => entry, listProvidersWithFunctions: () => ['github'] };
+        const listProvidersWithFunctions = vi.spyOn(source, 'listProvidersWithFunctions');
+        const reader = new CatalogReader(source);
         const entries = reader.listEntries('github');
-        const actions = reader.listActions('github');
 
-        expect(reader.listEntries('github')).toBe(entries);
-        expect(reader.listActions('github')).toBe(actions);
-        expect(reader.getEntry('github', 'fetch_issue')).toBe(entries[1]);
+        expect(reader.getEntry('github', 'fetch_issue')).toStrictEqual(entries[1]);
+        expect(reader.getAction('github', 'create-issue')).toStrictEqual(entries[0]);
         const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'fetch_issue' });
-        const byUuid = reader.getFunctionByUuid(uuid);
-        expect(byUuid).toBe(entries[1]);
-        expect(reader.getFunctionByUuid(uuid)).toBe(byUuid);
-        expect(reader.getAction('github', 'create-issue')).toBe(actions[0]);
-        expect(loadManifest).toHaveBeenCalledTimes(2);
+        expect(reader.getFunctionByUuid(uuid)).toStrictEqual(entries[1]);
+        expect(reader.getFunctionByUuid(uuid)).toStrictEqual(entries[1]);
+        expect(listProvidersWithFunctions).toHaveBeenCalledTimes(1);
+
+        // What the catalog store returns after evicting a provider and reading its file again
+        entry = integration({ functions: [nativeFunction({ description: 'Changed' })] });
+        expect(reader.getEntry('github', 'fetch_issue')).toMatchObject({ description: 'Changed' });
     });
 
-    it('caches empty results for unknown providers and returns undefined for unknown names', () => {
-        const loadManifest = vi.fn(() => [integration()]);
-        const reader = new CatalogReader(loadManifest);
+    it('returns new empty results for unknown providers and undefined for unknown names', () => {
+        const reader = readerFor(integration());
 
         expect(reader.listEntries('unknown')).toEqual([]);
         expect(reader.listActions('unknown')).toEqual([]);
+        // A new list each time, so a caller changing one can't change the next
+        expect(reader.listActions('unknown')).not.toBe(reader.listActions('unknown'));
         expect(reader.getEntry('unknown', 'fetch_issue')).toBeUndefined();
         expect(reader.getAction('unknown', 'create-issue')).toBeUndefined();
-        expect(loadManifest).toHaveBeenCalledTimes(1);
         expect(reader.getEntry('github', 'unknown')).toBeUndefined();
     });
 

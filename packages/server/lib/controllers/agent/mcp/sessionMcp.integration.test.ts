@@ -7,11 +7,12 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
-import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
+import { toolSearchOutputSchema } from '../../../services/agentSessionToolCatalog.service/index.js';
+import * as remoteMcpService from '../../../services/remoteMcp.service.js';
 import { runServer } from '../../../utils/tests.js';
-import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
 import type {
     AgentSessionToolSearchQueryResult,
@@ -622,18 +623,9 @@ describe('/session/:sessionId/mcp', () => {
                 { name: 'notion-search', description: 'Search the Notion workspace.', inputSchema: { type: 'object', properties: {} } },
                 { name: 'notion-fetch', description: 'Fetch a Notion page by its id.', inputSchema: { type: 'object', properties: {} } }
             ];
-            // Answers only for the notion-mcp connection, as the real lister only lists MCP servers.
-            const discoverMcpTools = vi
-                .spyOn(agentSessionMcpDiscoveryService, 'discoverMcpTools')
-                .mockImplementation(async ({ connections }) =>
-                    Promise.resolve(
-                        new Map(
-                            connections
-                                .filter((connection) => connection.integrationId === 'notion-mcp')
-                                .map((connection) => [connection.integrationId, { status: 'available' as const, tools: notionMcpTools }])
-                        )
-                    )
-                );
+            const remoteSession = vi
+                .spyOn(remoteMcpService, 'withRemoteMcpSession')
+                .mockResolvedValue({ logOperationId: undefined, result: Ok(notionMcpTools) });
             const { sessionId, token, mcpPath } = await createSession(apiKey, {
                 toolset: '*',
                 pinned_tools: { 'notion-mcp': ['notion-search'] },
@@ -658,9 +650,11 @@ describe('/session/:sessionId/mcp', () => {
             );
             expect(search.integrations['notion-mcp']).toBe('connected');
 
-            expect(
-                discoverMcpTools.mock.calls.filter(([{ connections }]) => connections.some((connection) => connection.integrationId === 'notion-mcp'))
-            ).toHaveLength(1);
+            expect(remoteSession).toHaveBeenCalledTimes(1);
+            expect(remoteSession).toHaveBeenCalledWith(
+                expect.objectContaining({ integrationId: 'notion-mcp', connectionId: 'notion-mcp-acme' }),
+                expect.any(Function)
+            );
         });
     });
 

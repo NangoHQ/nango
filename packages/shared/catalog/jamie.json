@@ -1,0 +1,2184 @@
+{
+    "providerConfigKey": "jamie",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make meeting records and their full detail available as a replicated dataset. A personal connection includes owned and shared meetings with private notes only where permitted; a workspace connection includes workspace meetings without private notes.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meetings",
+            "output": [
+                "Meetings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meetings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meetings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Jamie meeting ID."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Meeting title."
+                            },
+                            "startTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Meeting start instant normalized to UTC Z without losing fractional precision."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Opaque ID of the Jamie user who recorded the meeting."
+                            },
+                            "userEmail": {
+                                "type": "string",
+                                "description": "Email of the Jamie recording user."
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "markdown": {
+                                        "type": "string",
+                                        "description": "Full summary as ordinary Markdown text."
+                                    },
+                                    "html": {
+                                        "type": "string",
+                                        "description": "Full summary as HTML; render as untrusted HTML safely."
+                                    },
+                                    "short": {
+                                        "type": "string",
+                                        "description": "Brief one-line summary."
+                                    }
+                                },
+                                "required": [
+                                    "markdown",
+                                    "html",
+                                    "short"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Meeting summary in the provider's available text representations."
+                            },
+                            "transcript": {
+                                "type": "string",
+                                "description": "Full Markdown transcript with speaker labels preserved."
+                            },
+                            "participants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque participant ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Participant display name."
+                                        },
+                                        "email": {
+                                            "description": "Participant email, or null when unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "People detected speaking, not the invited calendar attendee list."
+                            },
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Action-item description."
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the action item is done."
+                                        },
+                                        "assignee": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Assignee display name."
+                                                        },
+                                                        "email": {
+                                                            "description": "Assignee email or null when unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name",
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Assigned person or null when unassigned."
+                                        }
+                                    },
+                                    "required": [
+                                        "text",
+                                        "completed",
+                                        "assignee"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Embedded action items without writable task IDs; use the tasks dataset for task identities."
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag name."
+                                        },
+                                        "color": {
+                                            "type": "string",
+                                            "description": "Provider tag color as a hex string."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "color"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Tags applied to the meeting, without tag IDs."
+                            },
+                            "event": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Internal calendar event ID, or null if unlinked.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "externalId": {
+                                        "description": "Opaque external calendar event ID, or null if unavailable.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Calendar title, falling back to meeting title."
+                                    },
+                                    "scheduledTime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Scheduled start instant normalized to UTC Z."
+                                    },
+                                    "endTime": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ],
+                                        "description": "Event end instant in UTC Z, or null when unavailable."
+                                    },
+                                    "attendees": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Attendee display name."
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "description": "Attendee email."
+                                                },
+                                                "responseStatus": {
+                                                    "description": "Provider RSVP value, usually accepted, declined, tentative or needsAction; null when unknown and other strings preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "organizer": {
+                                                    "type": "boolean",
+                                                    "description": "Whether this attendee organized the event."
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "responseStatus",
+                                                "organizer"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "description": "Invited people, whether or not they attended or spoke."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "externalId",
+                                    "title",
+                                    "scheduledTime",
+                                    "endTime",
+                                    "attendees"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Linked calendar context or provider fallback meeting data if unlinked."
+                            },
+                            "endTime": {
+                                "description": "Meeting end instant in UTC Z, null when unset and omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "generatedTitle": {
+                                "description": "AI-generated title, null when unset and omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "scratchpadNotes": {
+                                "description": "Private Markdown notes on personal owned meetings; null for personal shared/no-note cases, omitted for workspace records.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "startTime",
+                            "userId",
+                            "userEmail",
+                            "summary",
+                            "transcript",
+                            "participants",
+                            "tasks",
+                            "tags",
+                            "event"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Full Jamie meeting records with recorder references, summary, transcript, speakers, action items, tags and calendar context."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make tags owned by or shared with a personal connection available as a replicated dataset, preserving names and shared status.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-tags",
+            "output": [
+                "Tags"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "Personal"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Tags"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tags": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Jamie tag ID identifying this tag record."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Tag name usable as tagName in list-meetings."
+                            },
+                            "shared": {
+                                "type": "boolean",
+                                "description": "True when another user shared this tag with the connection user, false when the connection user owns it."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "shared"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Jamie tag owned by or shared with the personal connection user."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make meeting action items available as a replicated dataset, including completion, due dates, priority, assignee and source meeting. Personal connections include owned and shared tasks; workspace connections include workspace tasks. Requires either Personal or Workspace scope.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-tasks",
+            "output": [
+                "Tasks"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Tasks"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tasks": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Jamie task ID usable as taskId in update-task subject to write authority."
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Action-item description as ordinary text."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Opaque Jamie ID of the user who recorded the source meeting, not the assignee."
+                            },
+                            "dueDate": {
+                                "description": "Calendar due date in YYYY-MM-DD form, null when unset and omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "assignee": {
+                                "description": "Assigned person, null if unassigned and omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "description": "Opaque assignee person ID, or null when unavailable.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Assignee display name."
+                                            },
+                                            "email": {
+                                                "description": "Assignee email, or null when unavailable.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "email"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "priority": {
+                                "description": "Task priority or null when unset; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the action item is marked done."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Task creation instant normalized to UTC Z with fractional precision preserved."
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Opaque ID of the source meeting."
+                            },
+                            "meetingTitle": {
+                                "description": "Source meeting title, null when unset and omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "text",
+                            "userId",
+                            "completed",
+                            "createdAt",
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Jamie meeting action item, including its recorder, assignee, completion and source meeting."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "delete-meeting",
+            "integrationId": "jamie",
+            "description": "Permanently delete a meeting and its related data, including summary, transcript and tasks. Personal connections can delete only owned meetings; workspace connections can delete meetings owned by workspace members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_deletemeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_deletemeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_jamie_deletemeeting",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_deletemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the meeting to permanently delete, subject to the connection's ownership or workspace authority."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The meeting to permanently delete."
+                    },
+                    "FunctionOutput_jamie_deletemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque meeting ID confirmed deleted by Jamie."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only when Jamie confirms the deletion succeeded."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Provider's human-readable deletion confirmation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted",
+                            "message"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider confirmation that the meeting and its related data were permanently deleted."
+                    },
+                    "FunctionMetadata_jamie_deletemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "keyType": {
+                                "type": "string",
+                                "enum": [
+                                    "Personal",
+                                    "Workspace"
+                                ],
+                                "description": "The actual scope of the API key stored on this connection, set during connection setup."
+                            }
+                        },
+                        "required": [
+                            "keyType"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain the meeting ID from `list-meetings`, `list-workspace-meetings`, or `get-meeting`. This permanently removes the meeting and related summary, transcript and tasks and cannot be undone. Shared personal meetings cannot be deleted. A workspace connection can delete a meeting only when its owner belongs to that workspace. After an uncertain result, check with `get-meeting` before repeating.",
+                "required_scopes": {
+                    "any": [
+                        "Personal",
+                        "Workspace"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/delete-meeting.ts",
+            "version": "d862bf964c2ed0e2a4a352b832b410a481c10123b45da2c41f0d25f0250c9dfe",
+            "location": {
+                "js": "templates-zero/jamie/tools/delete-meeting/d862bf964c2ed0e2a4a352b832b410a481c10123b45da2c41f0d25f0250c9dfe.cjs",
+                "ts": "templates-zero/jamie/tools/delete-meeting/d862bf964c2ed0e2a4a352b832b410a481c10123b45da2c41f0d25f0250c9dfe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting",
+            "integrationId": "jamie",
+            "description": "Get a meeting's summary, transcript, participants, action items, tags and calendar context. A personal connection also returns private scratchpad notes for meetings it owns.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_getmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_getmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_jamie_getmeeting",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Jamie meeting ID obtained from a meeting list or search result."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the Jamie meeting to retrieve."
+                    },
+                    "FunctionOutput_jamie_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Jamie meeting ID."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Meeting title, preserved as supplied by Jamie."
+                            },
+                            "startTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Meeting start instant normalized to UTC with Z without losing fractional precision."
+                            },
+                            "endTime": {
+                                "description": "Meeting end instant in UTC with Z; null when unset and omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "generatedTitle": {
+                                "description": "AI-generated title; null when unset and omitted if not returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque Jamie recorder user ID."
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "description": "Recorder's email address."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "email"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Jamie user who recorded the meeting, not necessarily a participant or organizer."
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "markdown": {
+                                        "type": "string",
+                                        "description": "Meeting summary as ordinary Markdown text."
+                                    },
+                                    "html": {
+                                        "type": "string",
+                                        "description": "Meeting summary as HTML; consumers must render untrusted HTML safely."
+                                    },
+                                    "short": {
+                                        "type": "string",
+                                        "description": "Brief one-line meeting summary."
+                                    }
+                                },
+                                "required": [
+                                    "markdown",
+                                    "html",
+                                    "short"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Provider-generated summary in its available representations."
+                            },
+                            "transcript": {
+                                "type": "string",
+                                "description": "Full Markdown transcript, including bold speaker names and original text."
+                            },
+                            "scratchpadNotes": {
+                                "description": "Private Markdown notes on a personal connection; null for shared meetings or no notes, and omitted for workspace connections.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "participants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque participant ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Participant display name."
+                                        },
+                                        "email": {
+                                            "description": "Participant email, or null when unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A person detected speaking in the transcript."
+                                },
+                                "description": "People detected speaking in the transcript, distinct from invited attendees."
+                            },
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Action-item description."
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the action item is marked done."
+                                        },
+                                        "assignee": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Assignee display name."
+                                                        },
+                                                        "email": {
+                                                            "description": "Assignee email, or null if unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name",
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Assigned person, or null if unassigned."
+                                        }
+                                    },
+                                    "required": [
+                                        "text",
+                                        "completed",
+                                        "assignee"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An embedded action-item snapshot without a writable task ID."
+                                },
+                                "description": "Embedded action-item snapshots without task IDs; use a task list for writable identifiers."
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag name."
+                                        },
+                                        "color": {
+                                            "type": "string",
+                                            "description": "Provider tag hex color, such as #4A90D9."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "color"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An embedded meeting tag without a tag ID."
+                                },
+                                "description": "Tags applied to this meeting; these embedded values have no tag ID."
+                            },
+                            "event": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Internal Jamie calendar event ID, or null if not linked.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "externalId": {
+                                        "description": "Opaque external calendar provider event ID, or null if unavailable.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Calendar event title, falling back to meeting title."
+                                    },
+                                    "scheduledTime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Scheduled start instant normalized to UTC with Z."
+                                    },
+                                    "endTime": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ],
+                                        "description": "Event end instant normalized to UTC with Z, or null if unavailable."
+                                    },
+                                    "attendees": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Invited attendee name."
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "description": "Invited attendee email."
+                                                },
+                                                "responseStatus": {
+                                                    "description": "Provider RSVP status, usually accepted, declined, tentative or needsAction; null when unknown. Other provider values are preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "organizer": {
+                                                    "type": "boolean",
+                                                    "description": "Whether this attendee organized the event."
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "responseStatus",
+                                                "organizer"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A calendar invitee, not necessarily a speaker or actual attendee."
+                                        },
+                                        "description": "People invited to the calendar event, whether or not they spoke or attended."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "externalId",
+                                    "title",
+                                    "scheduledTime",
+                                    "endTime",
+                                    "attendees"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Calendar event context, falling back to meeting data when no calendar event is linked."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "startTime",
+                            "user",
+                            "summary",
+                            "transcript",
+                            "participants",
+                            "tasks",
+                            "tags",
+                            "event"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Full Jamie meeting content, recorder, detected speakers, action items, tags and calendar context."
+                    },
+                    "FunctionMetadata_jamie_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "keyType": {
+                                "type": "string",
+                                "enum": [
+                                    "Personal",
+                                    "Workspace"
+                                ],
+                                "description": "Type of Jamie API key stored on this connection, set when connecting the account."
+                            }
+                        },
+                        "required": [
+                            "keyType"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a meeting ID from `list-meetings`, `list-workspace-meetings`, or `search-meetings`. Use this tool for full content rather than the abbreviated list records. Access follows the connection: personal connections can read owned and shared meetings; workspace connections can read workspace meetings but never private scratchpad notes. To obtain editable action-item IDs, use `list-tasks` or `list-workspace-tasks`; embedded meeting tasks do not contain those IDs.",
+                "required_scopes": {
+                    "any": [
+                        "Personal",
+                        "Workspace"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/get-meeting.ts",
+            "version": "459fbcba767ce30bdf8379aaf9bfcabcc3fe39a54e775e8fa4d5cc658cd732f4",
+            "location": {
+                "js": "templates-zero/jamie/tools/get-meeting/459fbcba767ce30bdf8379aaf9bfcabcc3fe39a54e775e8fa4d5cc658cd732f4.cjs",
+                "ts": "templates-zero/jamie/tools/get-meeting/459fbcba767ce30bdf8379aaf9bfcabcc3fe39a54e775e8fa4d5cc658cd732f4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meetings",
+            "integrationId": "jamie",
+            "description": "List one page of owned and shared meetings, newest start time first, optionally restricted by start-time bounds or tag name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_listmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_listmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum meeting records in this page; defaults to 50.",
+                                "default": 50,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from this connection and the same meeting filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "tagName": {
+                                "description": "Tag name, not tag ID, used to filter meetings; omit for all available tags.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "startTimeTo": {
+                                "description": "Inclusive latest meeting start instant with an explicit UTC marker or offset; omit for no upper bound.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "startTimeFrom": {
+                                "description": "Inclusive earliest meeting start instant with an explicit UTC marker or offset; omit for no lower bound.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Page controls and optional tag-name and meeting-start bounds for personal meetings."
+                    },
+                    "FunctionOutput_jamie_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque meeting ID for get-meeting or delete-meeting."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Meeting title."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "Opaque ID of the user who recorded the meeting."
+                                        },
+                                        "endTime": {
+                                            "description": "Meeting end instant in UTC with Z, or null when unset; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "startTime": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Meeting start instant in UTC with Z, preserving fractional precision."
+                                        },
+                                        "generatedTitle": {
+                                            "description": "AI-generated title, null when unset; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "calendarEventId": {
+                                            "description": "Opaque linked Jamie calendar event ID, null when unlinked; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "userId",
+                                        "startTime"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A meeting summary accessible to the personal connection."
+                                },
+                                "description": "One page of meeting summaries in descending meeting start-time order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page with the same filters and connection; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One personal meeting page and its continuation cursor, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this tool to browse personal owned/shared meetings. Use `list-workspace-meetings` for team-wide browsing with a workspace connection, `search-meetings` for semantic content matches, and `get-meeting` for full details. Obtain a tag name from `list-tags` if needed. Pass nextCursor back as cursor with the same filters to continue; limit is 1–100, default 50.",
+                "required_scopes": {
+                    "all": [
+                        "Personal"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/list-meetings.ts",
+            "version": "e2c43b2effa1e25fb8e5fdab129fc4d92739a1e5218c558b9c73296691d95754",
+            "location": {
+                "js": "templates-zero/jamie/tools/list-meetings/e2c43b2effa1e25fb8e5fdab129fc4d92739a1e5218c558b9c73296691d95754.cjs",
+                "ts": "templates-zero/jamie/tools/list-meetings/e2c43b2effa1e25fb8e5fdab129fc4d92739a1e5218c558b9c73296691d95754.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-tags",
+            "integrationId": "jamie",
+            "description": "List all tags owned by or shared with the personal connection, including whether each tag is shared.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_listtags",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_listtags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_listtags": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are required to list personal tags."
+                    },
+                    "FunctionOutput_jamie_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Jamie tag ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag name usable as the tagName filter in list-meetings."
+                                        },
+                                        "shared": {
+                                            "type": "boolean",
+                                            "description": "True if another user shared this tag with the connection user; false if the user owns it."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "shared"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An owned or shared Jamie tag."
+                                },
+                                "description": "All tags available to the personal connection; no pagination or ordering guarantee."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of tags available to the personal connection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use with a personal connection to discover meeting tag names. Pass a returned name, not its ID, to tagName in `list-meetings`. The collection is returned in one response with no cursor. Workspace connections do not support tag listing.",
+                "required_scopes": {
+                    "all": [
+                        "Personal"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/list-tags.ts",
+            "version": "792675ee614e0af8083316b388c062f175dc0cc400bfe0ef807dfa1ffe609d02",
+            "location": {
+                "js": "templates-zero/jamie/tools/list-tags/792675ee614e0af8083316b388c062f175dc0cc400bfe0ef807dfa1ffe609d02.cjs",
+                "ts": "templates-zero/jamie/tools/list-tags/792675ee614e0af8083316b388c062f175dc0cc400bfe0ef807dfa1ffe609d02.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-tasks",
+            "integrationId": "jamie",
+            "description": "List one page of action items extracted from owned and shared meetings, newest creation time first, with completion, meeting and creation-time filters.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_listtasks",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_listtasks",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum tasks in this page; defaults to 50.",
+                                "default": 50,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from this connection and identical task filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "completed": {
+                                "description": "True returns completed tasks, false returns open tasks; omit to include both.",
+                                "type": "boolean"
+                            },
+                            "meetingId": {
+                                "description": "Opaque source meeting ID restricting the task collection; omit for all accessible meetings.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "createdAtTo": {
+                                "description": "Inclusive latest task creation instant, with explicit timezone offset; omit for no upper bound.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "createdAtFrom": {
+                                "description": "Inclusive earliest task creation instant, with explicit timezone offset; omit for no lower bound.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Page controls and combined filters for accessible personal tasks."
+                    },
+                    "FunctionOutput_jamie_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque task ID usable as taskId in update-task, subject to write access."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Action-item description as ordinary text."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "Opaque Jamie ID of the user who recorded the source meeting, not the assignee."
+                                        },
+                                        "dueDate": {
+                                            "description": "Calendar due date in YYYY-MM-DD format, null when unset; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "assignee": {
+                                            "description": "Assigned person, null if unassigned and omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "description": "Opaque assignee person ID, or null when unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Assignee display name."
+                                                        },
+                                                        "email": {
+                                                            "description": "Assignee email, or null when unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "priority": {
+                                            "description": "Task priority or null when unset; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "low",
+                                                        "medium",
+                                                        "high"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the task is marked done."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Task creation instant normalized to UTC Z without losing fractional precision."
+                                        },
+                                        "meetingId": {
+                                            "type": "string",
+                                            "description": "Opaque source meeting ID usable with get-meeting."
+                                        },
+                                        "meetingTitle": {
+                                            "description": "Source meeting title, null when unset and omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "text",
+                                        "userId",
+                                        "completed",
+                                        "createdAt",
+                                        "meetingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An action item from an owned or shared meeting."
+                                },
+                                "description": "One page of tasks in descending creation-time order, including shared read-only tasks."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page on the same connection and filters; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A single page of accessible tasks and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use with a personal connection to find action items and their writable IDs. For team-wide browsing use `list-workspace-tasks`. Pass a returned id as taskId to `update-task`; shared tasks are readable but not writable through a personal connection. A meetingId filter can come from `list-meetings` or `get-meeting`. Pass nextCursor back as cursor with unchanged filters; limit is 1–100, default 50.",
+                "required_scopes": {
+                    "all": [
+                        "Personal"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/list-tasks.ts",
+            "version": "97a256ab885e2d4b801284db4daa073719e3a9929633c3d6835492f6893b7edf",
+            "location": {
+                "js": "templates-zero/jamie/tools/list-tasks/97a256ab885e2d4b801284db4daa073719e3a9929633c3d6835492f6893b7edf.cjs",
+                "ts": "templates-zero/jamie/tools/list-tasks/97a256ab885e2d4b801284db4daa073719e3a9929633c3d6835492f6893b7edf.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-workspace-meetings",
+            "integrationId": "jamie",
+            "description": "List one page of workspace meetings, newest start time first, optionally filtered by recorder email and start-time bounds. Requires a workspace connection created by an administrator.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_listworkspacemeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_listworkspacemeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_listworkspacemeetings": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 50,
+                                "description": "Maximum meeting records in this page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token from this connection and identical filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userEmail": {
+                                "description": "Recorder's email to filter the workspace collection, not an attendee email; omit for all workspace users.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "startTimeTo": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive latest meeting start instant with an explicit timezone offset; omit for no upper bound.",
+                                "type": "string"
+                            },
+                            "startTimeFrom": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive earliest meeting start instant with an explicit timezone offset; omit for no lower bound.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Page controls and optional recorder and inclusive start-time filters for workspace meetings."
+                    },
+                    "FunctionOutput_jamie_listworkspacemeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque meeting ID usable with get-meeting or delete-meeting."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Meeting title."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "Opaque Jamie ID of the user who recorded the meeting."
+                                        },
+                                        "endTime": {
+                                            "description": "Meeting end instant in UTC with Z, null if unset and omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "startTime": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Meeting start instant in UTC with Z, without fractional precision loss."
+                                        },
+                                        "generatedTitle": {
+                                            "description": "AI-generated title, null if unset and omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "calendarEventId": {
+                                            "description": "Opaque linked Jamie calendar event ID, null if unlinked and omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "userId",
+                                        "startTime"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workspace meeting summary without full meeting content."
+                                },
+                                "description": "One page of workspace meeting summaries, newest start time first."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token scoped to this connection and filters; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One workspace meeting page and its optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for team-wide meeting browsing with a workspace connection. Use `list-meetings` for personal owned/shared browsing and tag-name filtering. Use `get-meeting` for full content. Pass nextCursor back as cursor with the same filters; limit is 1–100, default 50. Workspace access includes other members' meetings but not their private scratchpad notes.",
+                "required_scopes": {
+                    "all": [
+                        "Workspace"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/list-workspace-meetings.ts",
+            "version": "ff0d726deb4206d0f7af2602b71ab576a378838e1963964c3c6d34c69f3bd1bd",
+            "location": {
+                "js": "templates-zero/jamie/tools/list-workspace-meetings/ff0d726deb4206d0f7af2602b71ab576a378838e1963964c3c6d34c69f3bd1bd.cjs",
+                "ts": "templates-zero/jamie/tools/list-workspace-meetings/ff0d726deb4206d0f7af2602b71ab576a378838e1963964c3c6d34c69f3bd1bd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-workspace-tasks",
+            "integrationId": "jamie",
+            "description": "List one page of workspace action items, newest creation time first, optionally filtered by recorder email, creation time, completion or meeting. Requires an administrator-created workspace connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_listworkspacetasks",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_listworkspacetasks",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_listworkspacetasks": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum task records in this page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor for the same connection and filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "completed": {
+                                "description": "True includes only done tasks, false only open tasks; omit to include both states.",
+                                "type": "boolean"
+                            },
+                            "meetingId": {
+                                "description": "Opaque source meeting ID restricting the collection; omit for all workspace meetings.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userEmail": {
+                                "description": "Recording user's email restricting the workspace collection, not an assignee filter; omit for all users.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "createdAtTo": {
+                                "description": "Inclusive latest task creation instant with explicit timezone offset; omit for no upper bound.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "createdAtFrom": {
+                                "description": "Inclusive earliest task creation instant with explicit timezone offset; omit for no lower bound.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and opaque continuation cursor for one page of workspace tasks."
+                    },
+                    "FunctionOutput_jamie_listworkspacetasks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque task ID usable with update-task, subject to workspace membership."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Action-item description as ordinary text."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "Opaque recorder user ID, distinct from the task's assignee."
+                                        },
+                                        "dueDate": {
+                                            "description": "Calendar due date YYYY-MM-DD, null when unset and omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "assignee": {
+                                            "description": "Assigned person, null if unassigned and omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "description": "Opaque person ID or null if unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Assignee display name."
+                                                        },
+                                                        "email": {
+                                                            "description": "Assignee email or null if unavailable.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "priority": {
+                                            "description": "Task priority, null when unset and omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "low",
+                                                        "medium",
+                                                        "high"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "completed": {
+                                            "type": "boolean",
+                                            "description": "Whether the task is marked done."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Creation instant normalized to UTC Z without fractional precision loss."
+                                        },
+                                        "meetingId": {
+                                            "type": "string",
+                                            "description": "Opaque source meeting ID usable with get-meeting."
+                                        },
+                                        "meetingTitle": {
+                                            "description": "Source meeting title, null when unset and omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "text",
+                                        "userId",
+                                        "completed",
+                                        "createdAt",
+                                        "meetingId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workspace action item and its source meeting and recorder."
+                                },
+                                "description": "One page of workspace tasks, newest creation time first."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for this connection and filters; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One workspace task page with an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for team-wide action-item browsing with a workspace connection. Use `list-tasks` for personal owned/shared browsing. Obtain meeting IDs from `list-workspace-meetings` if filtering by meeting. Pass returned task id to `update-task`. Pass nextCursor back as cursor with the same filters; limit is 1–100, default 50. userEmail refers to the recording user, not the task assignee.",
+                "required_scopes": {
+                    "all": [
+                        "Workspace"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/list-workspace-tasks.ts",
+            "version": "df533fe1c9a0ee33c5e3c1c88fd14c1194bb40276f0f2c80d2343bcd47844106",
+            "location": {
+                "js": "templates-zero/jamie/tools/list-workspace-tasks/df533fe1c9a0ee33c5e3c1c88fd14c1194bb40276f0f2c80d2343bcd47844106.cjs",
+                "ts": "templates-zero/jamie/tools/list-workspace-tasks/df533fe1c9a0ee33c5e3c1c88fd14c1194bb40276f0f2c80d2343bcd47844106.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-meetings",
+            "integrationId": "jamie",
+            "description": "Find relevant text excerpts in owned and shared meetings using semantic similarity. Returns up to 40 relevance-ranked chunks, not a list of unique meetings.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_searchmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_searchmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_searchmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Ordinary text question or topic for semantic matching against meeting content."
+                            },
+                            "startTimeTo": {
+                                "description": "Inclusive latest source-meeting start instant, with explicit timezone offset; omit to retain Jamie's default upper-bound behavior.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "startTimeFrom": {
+                                "description": "Inclusive earliest source-meeting start instant, with explicit timezone offset; omit to retain Jamie's default lower-bound behavior.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            }
+                        },
+                        "required": [
+                            "query"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Semantic meeting search query and optional inclusive source-meeting start bounds."
+                    },
+                    "FunctionOutput_jamie_searchmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "maxItems": 40,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque matching chunk ID, not a meeting ID."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Matching text excerpt as ordinary decoded text."
+                                        },
+                                        "meetingId": {
+                                            "type": "string",
+                                            "description": "Opaque source meeting ID usable with get-meeting."
+                                        },
+                                        "meetingDate": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Provider source-meeting calendar date in YYYY-MM-DD form, kept as a date rather than an instant."
+                                        },
+                                        "meetingTitle": {
+                                            "description": "Source meeting title, or null if unset.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "text",
+                                        "meetingId",
+                                        "meetingDate",
+                                        "meetingTitle"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One relevance-ranked matching text chunk and its source meeting."
+                                },
+                                "description": "Matching chunks in provider relevance order; multiple chunks may reference one meeting, and no pagination is offered."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A single bounded set of semantic meeting search excerpts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for questions or topic matches in meeting content with a personal connection. Use `list-meetings` for chronological browsing or tag filters, and `get-meeting` with a result's meetingId for full context. Without date bounds, Jamie searches the last six months. Results are at most 40 chunks and may include several chunks from the same meeting; there is no continuation token. Narrow the query or bounds if needed.",
+                "required_scopes": {
+                    "all": [
+                        "Personal"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/search-meetings.ts",
+            "version": "8880775cee24dde15b5a2858f11401a7ab8ff2957fa0a5edf765a79a0e7a87b5",
+            "location": {
+                "js": "templates-zero/jamie/tools/search-meetings/8880775cee24dde15b5a2858f11401a7ab8ff2957fa0a5edf765a79a0e7a87b5.cjs",
+                "ts": "templates-zero/jamie/tools/search-meetings/8880775cee24dde15b5a2858f11401a7ab8ff2957fa0a5edf765a79a0e7a87b5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-task",
+            "integrationId": "jamie",
+            "description": "Partially update a task's text, completion state or both. Personal connections can update only owned tasks; workspace connections can update tasks owned by current workspace members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_jamie_updatetask",
+            "output_schema_ref": "#/definitions/FunctionOutput_jamie_updatetask",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_jamie_updatetask",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_jamie_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "description": "Replacement action-item text. Surrounding whitespace is trimmed; the resulting text must be 1–10,000 characters. Omit to preserve text; null or empty text cannot clear it.",
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "\\S"
+                            },
+                            "taskId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque task ID from a task list, writable under the current connection."
+                            },
+                            "completed": {
+                                "description": "True marks done and false reopens; omit to preserve completion. Null is not supported.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "taskId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A task ID and the text, completion state, or both to update; omitted fields remain unchanged.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "text"
+                                ],
+                                "properties": {
+                                    "text": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "completed"
+                                ],
+                                "properties": {
+                                    "completed": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_jamie_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque updated task ID confirmed by Jamie."
+                            },
+                            "text": {
+                                "description": "Updated trimmed task text, present only when text was supplied.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 10000
+                            },
+                            "completed": {
+                                "description": "Updated completion state, present only when completed was supplied.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Jamie's acknowledgment containing the task ID and only the supplied update fields.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "text"
+                                ],
+                                "properties": {
+                                    "text": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "completed"
+                                ],
+                                "properties": {
+                                    "completed": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionMetadata_jamie_updatetask": {
+                        "type": "object",
+                        "properties": {
+                            "keyType": {
+                                "type": "string",
+                                "enum": [
+                                    "Personal",
+                                    "Workspace"
+                                ],
+                                "description": "The authority of the API key stored on this connection: Personal or Workspace."
+                            }
+                        },
+                        "required": [
+                            "keyType"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "true",
+                "instructions": "Get taskId from the id field in `list-tasks` or `list-workspace-tasks`; embedded tasks from `get-meeting` have no editable IDs. Supply text to edit, completed:true to complete, or completed:false to reopen; at least one must be supplied. Omitted fields remain unchanged. Text is trimmed and must contain 1–10,000 characters after trimming. Shared tasks are read-only through personal connections. The result contains only the fields changed, not the full task.",
+                "required_scopes": {
+                    "any": [
+                        "Personal",
+                        "Workspace"
+                    ]
+                }
+            },
+            "filePath": "./jamie/tools/update-task.ts",
+            "version": "573955b84038d9def6daa4e8b0d0b52311ee856ac55223e29d5634fcd24206d6",
+            "location": {
+                "js": "templates-zero/jamie/tools/update-task/573955b84038d9def6daa4e8b0d0b52311ee856ac55223e29d5634fcd24206d6.cjs",
+                "ts": "templates-zero/jamie/tools/update-task/573955b84038d9def6daa4e8b0d0b52311ee856ac55223e29d5634fcd24206d6.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

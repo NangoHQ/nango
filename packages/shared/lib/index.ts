@@ -28,6 +28,7 @@ export * as signatureClient from './auth/signature.js';
 export * as awsSigV4Client from './auth/aws-sigv4.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/sandbox-api-key.js';
+export * from './services/agentSessionResults.js';
 export * from './services/functions/index.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
@@ -79,6 +80,8 @@ export {
     isTemplatesZeroPath
 } from './services/catalog/actions.js';
 export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/catalog/uuid.js';
+export { catalogStore, startCatalogFlagRefresh, stopCatalogFlagRefresh } from './services/catalog/store.js';
+export type { CatalogCounts } from './services/catalog/store.js';
 export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';

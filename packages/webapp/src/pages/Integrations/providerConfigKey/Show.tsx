@@ -6,8 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
+import { TestConnectionButton } from '@/components/patterns/TestConnectionButton';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
@@ -20,7 +19,6 @@ import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInP
 import { CatalogLogo } from '@/pages/Catalog/components/CatalogLogo';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 
@@ -31,7 +29,7 @@ const integrationLinkClassName =
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
-    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'settings');
     const [functionOpen, setFunctionOpen] = useState(false);
     const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
@@ -84,23 +82,15 @@ export const ShowIntegration: React.FC = () => {
                     <h1 className="truncate type-heading-sm text-text-strong">{displayName}</h1>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button asChild variant="ghost" size="md">
-                        <a href={integration.template.docs} target="_blank" rel="noreferrer">
-                            Docs <ArrowUpRight />
-                        </a>
-                    </Button>
-                    <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
-                    <PermissionGate condition={canCreateTestConnection} asChild>
-                        {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
-                                Add test connection
-                            </ButtonLink>
-                        )}
-                    </PermissionGate>
+                    <TestConnectionButton
+                        env={env}
+                        provider={integration.integration.provider}
+                        integrationId={integration.integration.unique_key}
+                        canCreate={canCreateTestConnection}
+                        size="md"
+                    />
                 </div>
             </header>
-
-            <AutoIdlingBanner />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                 <div className="flex items-center justify-between gap-4">
@@ -120,8 +110,16 @@ export const ShowIntegration: React.FC = () => {
                         <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkClassName}>
                             Connections
                         </Link>
-                        {canRunFunctions && !functionDrawerOpen && (
-                            <div className="ml-3">
+                        {integration.template.docs && (
+                            <>
+                                <Separator orientation="vertical" className="data-[orientation=vertical]:h-4" />
+                                <a href={integration.template.docs} target="_blank" rel="noreferrer" className={integrationLinkClassName}>
+                                    Setup guide <ArrowUpRight className="size-3.5" />
+                                </a>
+                            </>
+                        )}
+                        <div className="ml-3 flex items-center gap-2">
+                            {canRunFunctions && !functionDrawerOpen && (
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -130,8 +128,15 @@ export const ShowIntegration: React.FC = () => {
                                     <Play />
                                     Test run
                                 </Button>
-                            </div>
-                        )}
+                            )}
+                            <TryInPlaygroundButton
+                                provider={integration.integration.provider}
+                                integrationName={displayName}
+                                source="integration"
+                                variant="outline"
+                                size="sm"
+                            />
+                        </div>
                     </div>
                 </div>
                 <TabsContent value="functions">

@@ -1,0 +1,4429 @@
+{
+    "providerConfigKey": "strava-web",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a manual activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_createactivity",
+            "name": "create-activity",
+            "output": [
+                "ActionOutput_strava_web_createactivity"
+            ],
+            "scopes": [
+                "activity:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_createactivity",
+                "ActionOutput_strava_web_createactivity"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_createactivity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Activity name. Example: \"Morning Run\""
+                            },
+                            "sport_type": {
+                                "type": "string",
+                                "description": "Sport type. Example: \"Run\""
+                            },
+                            "start_date_local": {
+                                "type": "string",
+                                "description": "Start date in ISO 8601 format. Example: \"2026-07-17T10:00:00Z\""
+                            },
+                            "elapsed_time": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Elapsed time in seconds. Example: 3600"
+                            },
+                            "type": {
+                                "description": "Legacy sport type. Prefer sport_type.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Activity description.",
+                                "type": "string"
+                            },
+                            "distance": {
+                                "description": "Distance in meters. Example: 10000",
+                                "type": "number"
+                            },
+                            "trainer": {
+                                "description": "Whether the activity was on a trainer. 0 or 1.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "commute": {
+                                "description": "Whether the activity was a commute. 0 or 1.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "sport_type",
+                            "start_date_local",
+                            "elapsed_time"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_createactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "type": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "start_date": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "start_date_local": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "elapsed_time": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "moving_time": {
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "distance": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "trainer": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "commute": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search for popular segments within a bounding box.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_exploresegments",
+            "name": "explore-segments",
+            "output": [
+                "ActionOutput_strava_web_exploresegments"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_exploresegments",
+                "ActionOutput_strava_web_exploresegments"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_exploresegments": {
+                        "type": "object",
+                        "properties": {
+                            "bounds": {
+                                "type": "string",
+                                "description": "Bounding box in format lat1,lng1,lat2,lng2. Example: \"37.76,-122.51,37.78,-122.45\""
+                            },
+                            "activity_type": {
+                                "description": "Optional activity type filter. Accepts run or riding.",
+                                "type": "string",
+                                "enum": [
+                                    "run",
+                                    "riding"
+                                ]
+                            },
+                            "min_cat": {
+                                "description": "Optional minimum climb category filter.",
+                                "type": "number"
+                            },
+                            "max_cat": {
+                                "description": "Optional maximum climb category filter.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "bounds"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_exploresegments": {
+                        "type": "object",
+                        "properties": {
+                            "segments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "climb_category": {
+                                            "type": "number"
+                                        },
+                                        "climb_category_desc": {
+                                            "type": "string"
+                                        },
+                                        "avg_grade": {
+                                            "type": "number"
+                                        },
+                                        "start_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "end_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "elev_difference": {
+                                            "type": "number"
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "points": {
+                                            "type": "string"
+                                        },
+                                        "starred": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "segments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the time-series data streams (latlng, distance, altitude, heartrate, etc.) for an activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getactivitystreams",
+            "name": "get-activity-streams",
+            "output": [
+                "ActionOutput_strava_web_getactivitystreams"
+            ],
+            "scopes": [
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivitystreams",
+                "ActionOutput_strava_web_getactivitystreams"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getactivitystreams": {
+                        "type": "object",
+                        "properties": {
+                            "activityId": {
+                                "type": "number",
+                                "description": "Strava activity ID. Example: 19350267303"
+                            },
+                            "keys": {
+                                "description": "Stream types to request. Valid values: time, latlng, distance, altitude, velocity_smooth, heartrate, cadence, watts, temp, moving, grade_smooth. Defaults to [time, latlng, distance, altitude].",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "activityId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getactivitystreams": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {}
+                                },
+                                "series_type": {
+                                    "type": "string"
+                                },
+                                "original_size": {
+                                    "type": "number"
+                                },
+                                "resolution": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "data",
+                                "series_type",
+                                "original_size",
+                                "resolution"
+                            ],
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get an activity's heart rate and power zone distribution.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getactivityzones",
+            "name": "get-activity-zones",
+            "output": [
+                "ActionOutput_strava_web_getactivityzones"
+            ],
+            "scopes": [
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivityzones",
+                "ActionOutput_strava_web_getactivityzones"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getactivityzones": {
+                        "type": "object",
+                        "properties": {
+                            "activity_id": {
+                                "type": "number",
+                                "description": "Activity ID. Example: 19350154255"
+                            }
+                        },
+                        "required": [
+                            "activity_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getactivityzones": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "score": {
+                                    "type": "number"
+                                },
+                                "distribution_buckets": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "min": {
+                                                "type": "number"
+                                            },
+                                            "max": {
+                                                "type": "number"
+                                            },
+                                            "time": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "sensor_based": {
+                                    "type": "boolean"
+                                },
+                                "points": {
+                                    "type": "number"
+                                },
+                                "custom_zones": {
+                                    "type": "boolean"
+                                },
+                                "max": {
+                                    "type": "number"
+                                },
+                                "min": {
+                                    "type": "number"
+                                }
+                            },
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve an activity",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getactivity",
+            "name": "get-activity",
+            "output": [
+                "ActionOutput_strava_web_getactivity"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivity",
+                "ActionOutput_strava_web_getactivity"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Activity ID. Example: 19350154255"
+                            },
+                            "include_all_efforts": {
+                                "description": "Include all segment efforts in the response",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "moving_time": {
+                                "type": "number"
+                            },
+                            "elapsed_time": {
+                                "type": "number"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "start_date": {
+                                "type": "string"
+                            },
+                            "start_date_local": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get an athlete's recent, year-to-date, and all-time ride/run/swim totals.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getathletestats",
+            "name": "get-athlete-stats",
+            "output": [
+                "ActionOutput_strava_web_getathletestats"
+            ],
+            "scopes": [
+                "read",
+                "activity:read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathletestats",
+                "ActionOutput_strava_web_getathletestats"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getathletestats": {
+                        "type": "object",
+                        "properties": {
+                            "athlete_id": {
+                                "type": "number",
+                                "description": "The identifier of the athlete. Must be the authenticated athlete. Example: 943379048"
+                            }
+                        },
+                        "required": [
+                            "athlete_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getathletestats": {
+                        "type": "object",
+                        "properties": {
+                            "biggest_ride_distance": {
+                                "type": "number"
+                            },
+                            "biggest_climb_elevation_gain": {
+                                "type": "number"
+                            },
+                            "recent_ride_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "recent_run_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "recent_swim_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "ytd_ride_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "ytd_run_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "ytd_swim_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "all_ride_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "all_run_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "all_swim_totals": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "distance": {
+                                        "type": "number"
+                                    },
+                                    "moving_time": {
+                                        "type": "number"
+                                    },
+                                    "elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "elevation_gain": {
+                                        "type": "number"
+                                    },
+                                    "achievement_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the authenticated athlete's heart rate and power zones.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getathletezones",
+            "name": "get-athlete-zones",
+            "output": [
+                "ActionOutput_strava_web_getathletezones"
+            ],
+            "scopes": [
+                "profile:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathletezones",
+                "ActionOutput_strava_web_getathletezones"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getathletezones": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getathletezones": {
+                        "type": "object",
+                        "properties": {
+                            "heart_rate": {
+                                "type": "object",
+                                "properties": {
+                                    "custom_zones": {
+                                        "type": "boolean"
+                                    },
+                                    "zones": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "min": {
+                                                    "type": "number"
+                                                },
+                                                "max": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "min",
+                                                "max"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "custom_zones",
+                                    "zones"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "power": {
+                                "type": "object",
+                                "properties": {
+                                    "zones": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "min": {
+                                                    "type": "number"
+                                                },
+                                                "max": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "min",
+                                                "max"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "zones"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "heart_rate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get authenticated athlete.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getathlete",
+            "name": "get-athlete",
+            "output": [
+                "ActionOutput_strava_web_getathlete"
+            ],
+            "scopes": [
+                "read",
+                "profile:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathlete",
+                "ActionOutput_strava_web_getathlete"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getathlete": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getathlete": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "lastname": {
+                                "type": "string"
+                            },
+                            "bio": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "sex": {
+                                "type": "string"
+                            },
+                            "premium": {
+                                "type": "boolean"
+                            },
+                            "summit": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "badge_type_id": {
+                                "type": "number"
+                            },
+                            "weight": {
+                                "type": "number"
+                            },
+                            "profile_medium": {
+                                "type": "string"
+                            },
+                            "profile": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "ftp": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a club.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getclub",
+            "name": "get-club",
+            "output": [
+                "ActionOutput_strava_web_getclub"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getclub",
+                "ActionOutput_strava_web_getclub"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getclub": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The identifier of the club. Example: 1"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getclub": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "resource_state": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "profile_medium": {
+                                "type": "string"
+                            },
+                            "cover_photo": {
+                                "type": "string"
+                            },
+                            "cover_photo_small": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "activity_types": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "member_count": {
+                                "type": "number"
+                            },
+                            "featured": {
+                                "type": "boolean"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "membership": {
+                                "type": "string"
+                            },
+                            "admin": {
+                                "type": "boolean"
+                            },
+                            "owner": {
+                                "type": "boolean"
+                            },
+                            "following_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the distance/altitude/latlng streams for a route.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getroutestreams",
+            "name": "get-route-streams",
+            "output": [
+                "ActionOutput_strava_web_getroutestreams"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getroutestreams",
+                "ActionOutput_strava_web_getroutestreams"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getroutestreams": {
+                        "type": "object",
+                        "properties": {
+                            "route_id": {
+                                "description": "The identifier of the route. Example: \"1\"",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "route_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getroutestreams": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "anyOf": [
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "original_size": {
+                                    "type": "number"
+                                },
+                                "resolution": {
+                                    "type": "string"
+                                },
+                                "series_type": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a route.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getroute",
+            "name": "get-route",
+            "output": [
+                "ActionOutput_strava_web_getroute"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getroute",
+                "ActionOutput_strava_web_getroute"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getroute": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Route ID. Example: 1",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getroute": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "elevation_gain": {
+                                "type": "number"
+                            },
+                            "map": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "polyline": {
+                                        "type": "string"
+                                    },
+                                    "summary_polyline": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "sub_type": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "estimated_moving_time": {
+                                "type": "number"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "distance",
+                            "elevation_gain"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the distance/altitude/latlng streams for a segment.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getsegmentstreams",
+            "name": "get-segment-streams",
+            "output": [
+                "ActionOutput_strava_web_getsegmentstreams"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getsegmentstreams",
+                "ActionOutput_strava_web_getsegmentstreams"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getsegmentstreams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The identifier of the segment. Example: 432873"
+                            },
+                            "keys": {
+                                "description": "The types of streams to return. One or more of: distance, altitude, latlng, time, velocity_smooth, heartrate, cadence, watts. Defaults to distance, altitude, and latlng.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "distance",
+                                        "altitude",
+                                        "latlng",
+                                        "time",
+                                        "velocity_smooth",
+                                        "heartrate",
+                                        "cadence",
+                                        "watts"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getsegmentstreams": {
+                        "type": "object",
+                        "properties": {
+                            "distance": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "altitude": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "latlng": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "time": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "velocity_smooth": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "heartrate": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "cadence": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "watts": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "series_type": {
+                                        "type": "string"
+                                    },
+                                    "original_size": {
+                                        "type": "number"
+                                    },
+                                    "resolution": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a segment.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getsegment",
+            "name": "get-segment",
+            "output": [
+                "ActionOutput_strava_web_getsegment"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getsegment",
+                "ActionOutput_strava_web_getsegment"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getsegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The identifier of the segment. Example: 432873"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getsegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "activity_type": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "average_grade": {
+                                "type": "number"
+                            },
+                            "maximum_grade": {
+                                "type": "number"
+                            },
+                            "elevation_high": {
+                                "type": "number"
+                            },
+                            "elevation_low": {
+                                "type": "number"
+                            },
+                            "start_latlng": {
+                                "anyOf": [
+                                    {
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "end_latlng": {
+                                "anyOf": [
+                                    {
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "climb_category": {
+                                "type": "number"
+                            },
+                            "city": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "state": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "country": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "map": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "polyline": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "resource_state": {
+                                                "type": "number"
+                                            },
+                                            "summary_polyline": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "id"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "effort_count": {
+                                "type": "number"
+                            },
+                            "athlete_count": {
+                                "type": "number"
+                            },
+                            "hazardous": {
+                                "type": "boolean"
+                            },
+                            "star_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the processing status of an activity file upload.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_getuploadstatus",
+            "name": "get-upload-status",
+            "output": [
+                "ActionOutput_strava_web_getuploadstatus"
+            ],
+            "scopes": [
+                "activity:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getuploadstatus",
+                "ActionOutput_strava_web_getuploadstatus"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_getuploadstatus": {
+                        "type": "object",
+                        "properties": {
+                            "upload_id": {
+                                "type": "string",
+                                "description": "The identifier of the upload. Example: \"123456789\""
+                            }
+                        },
+                        "required": [
+                            "upload_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_getuploadstatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "id_str": {
+                                "type": "string"
+                            },
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "error": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "activity_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the comments on an activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listactivitycomments",
+            "name": "list-activity-comments",
+            "output": [
+                "ActionOutput_strava_web_listactivitycomments"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitycomments",
+                "ActionOutput_strava_web_listactivitycomments"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listactivitycomments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The identifier of the activity. Example: 19350154255"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listactivitycomments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "activity_id": {
+                                            "type": "number"
+                                        },
+                                        "post_id": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "mentions_metadata": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "athlete": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "resource_state": {
+                                                    "type": "number"
+                                                },
+                                                "firstname": {
+                                                    "type": "string"
+                                                },
+                                                "lastname": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "cursor": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the athletes who gave kudos on an activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listactivitykudoers",
+            "name": "list-activity-kudoers",
+            "output": [
+                "ActionOutput_strava_web_listactivitykudoers"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitykudoers",
+                "ActionOutput_strava_web_listactivitykudoers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listactivitykudoers": {
+                        "type": "object",
+                        "properties": {
+                            "activity_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Activity ID. Example: 19350154255"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Default: 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "activity_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listactivitykudoers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "firstname": {
+                                            "type": "string"
+                                        },
+                                        "lastname": {
+                                            "type": "string"
+                                        },
+                                        "profile": {
+                                            "type": "string"
+                                        },
+                                        "profile_medium": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "sex": {
+                                            "type": "string"
+                                        },
+                                        "premium": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the laps of an activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listactivitylaps",
+            "name": "list-activity-laps",
+            "output": [
+                "ActionOutput_strava_web_listactivitylaps"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitylaps",
+                "ActionOutput_strava_web_listactivitylaps"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listactivitylaps": {
+                        "type": "object",
+                        "properties": {
+                            "activity_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The identifier of the activity. Example: 19350154255"
+                            }
+                        },
+                        "required": [
+                            "activity_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listactivitylaps": {
+                        "type": "object",
+                        "properties": {
+                            "laps": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "activity": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "resource_state": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "athlete": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "resource_state": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "elapsed_time": {
+                                            "type": "number"
+                                        },
+                                        "moving_time": {
+                                            "type": "number"
+                                        },
+                                        "start_date": {
+                                            "type": "string"
+                                        },
+                                        "start_date_local": {
+                                            "type": "string"
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "start_index": {
+                                            "type": "number"
+                                        },
+                                        "end_index": {
+                                            "type": "number"
+                                        },
+                                        "total_elevation_gain": {
+                                            "type": "number"
+                                        },
+                                        "average_speed": {
+                                            "type": "number"
+                                        },
+                                        "max_speed": {
+                                            "type": "number"
+                                        },
+                                        "average_cadence": {
+                                            "type": "number"
+                                        },
+                                        "device_watts": {
+                                            "type": "boolean"
+                                        },
+                                        "average_watts": {
+                                            "type": "number"
+                                        },
+                                        "average_heartrate": {
+                                            "type": "number"
+                                        },
+                                        "max_heartrate": {
+                                            "type": "number"
+                                        },
+                                        "lap_index": {
+                                            "type": "number"
+                                        },
+                                        "split": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "laps"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List athlete activities.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listathleteactivities",
+            "name": "list-athlete-activities",
+            "output": [
+                "ActionOutput_strava_web_listathleteactivities"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteactivities",
+                "ActionOutput_strava_web_listathleteactivities"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listathleteactivities": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "before": {
+                                "description": "Seconds since UNIX epoch. Only return activities before this time.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "after": {
+                                "description": "Seconds since UNIX epoch. Only return activities after this time.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Maximum 200.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listathleteactivities": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "moving_time": {
+                                            "type": "number"
+                                        },
+                                        "elapsed_time": {
+                                            "type": "number"
+                                        },
+                                        "total_elevation_gain": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "sport_type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "workout_type": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "start_date": {
+                                            "type": "string"
+                                        },
+                                        "start_date_local": {
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "type": "string"
+                                        },
+                                        "utc_offset": {
+                                            "type": "number"
+                                        },
+                                        "location_city": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "location_state": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "location_country": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "achievement_count": {
+                                            "type": "number"
+                                        },
+                                        "kudos_count": {
+                                            "type": "number"
+                                        },
+                                        "comment_count": {
+                                            "type": "number"
+                                        },
+                                        "athlete_count": {
+                                            "type": "number"
+                                        },
+                                        "photo_count": {
+                                            "type": "number"
+                                        },
+                                        "map": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "summary_polyline": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "resource_state": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "resource_state"
+                                                    ],
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "trainer": {
+                                            "type": "boolean"
+                                        },
+                                        "commute": {
+                                            "type": "boolean"
+                                        },
+                                        "manual": {
+                                            "type": "boolean"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "visibility": {
+                                            "type": "string"
+                                        },
+                                        "flagged": {
+                                            "type": "boolean"
+                                        },
+                                        "gear_id": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "start_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "end_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "average_speed": {
+                                            "type": "number"
+                                        },
+                                        "max_speed": {
+                                            "type": "number"
+                                        },
+                                        "has_heartrate": {
+                                            "type": "boolean"
+                                        },
+                                        "average_heartrate": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "max_heartrate": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "heartrate_opt_out": {
+                                            "type": "boolean"
+                                        },
+                                        "display_hide_heartrate_option": {
+                                            "type": "boolean"
+                                        },
+                                        "elev_high": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "elev_low": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "upload_id": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "upload_id_str": {
+                                            "type": "string"
+                                        },
+                                        "external_id": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "from_accepted_tag": {
+                                            "type": "boolean"
+                                        },
+                                        "pr_count": {
+                                            "type": "number"
+                                        },
+                                        "total_photo_count": {
+                                            "type": "number"
+                                        },
+                                        "has_kudoed": {
+                                            "type": "boolean"
+                                        },
+                                        "suffer_score": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "distance",
+                                        "moving_time",
+                                        "elapsed_time",
+                                        "total_elevation_gain",
+                                        "type",
+                                        "start_date",
+                                        "start_date_local"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List athlete clubs.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listathleteclubs",
+            "name": "list-athlete-clubs",
+            "output": [
+                "ActionOutput_strava_web_listathleteclubs"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteclubs",
+                "ActionOutput_strava_web_listathleteclubs"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listathleteclubs": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listathleteclubs": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "profile_medium": {
+                                            "type": "string"
+                                        },
+                                        "profile": {
+                                            "type": "string"
+                                        },
+                                        "cover_photo": {
+                                            "type": "string"
+                                        },
+                                        "cover_photo_small": {
+                                            "type": "string"
+                                        },
+                                        "sport_type": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "member_count": {
+                                            "type": "number"
+                                        },
+                                        "featured": {
+                                            "type": "boolean"
+                                        },
+                                        "verified": {
+                                            "type": "boolean"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List athlete routes.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listathleteroutes",
+            "name": "list-athlete-routes",
+            "output": [
+                "ActionOutput_strava_web_listathleteroutes"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteroutes",
+                "ActionOutput_strava_web_listathleteroutes"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listathleteroutes": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The athlete ID. Must be the authenticated athlete. Example: 943379048"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page. Example: \"1\"",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Maximum 200. Example: 30",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listathleteroutes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "id_str": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "elevation_gain": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "sub_type": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "starred": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "estimated_moving_time": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "segments": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "id_str",
+                                        "name",
+                                        "distance",
+                                        "elevation_gain"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a club's administrators.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listclubadmins",
+            "name": "list-club-admins",
+            "output": [
+                "ActionOutput_strava_web_listclubadmins"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listclubadmins",
+                "ActionOutput_strava_web_listclubadmins"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listclubadmins": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The identifier of the club. Example: 1"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listclubadmins": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "firstname": {
+                                            "type": "string"
+                                        },
+                                        "lastname": {
+                                            "type": "string"
+                                        },
+                                        "profile_medium": {
+                                            "type": "string"
+                                        },
+                                        "profile": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "sex": {
+                                            "type": "string"
+                                        },
+                                        "premium": {
+                                            "type": "boolean"
+                                        },
+                                        "summit": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "resource_state"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a club's members.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listclubmembers",
+            "name": "list-club-members",
+            "output": [
+                "ActionOutput_strava_web_listclubmembers"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listclubmembers",
+                "ActionOutput_strava_web_listclubmembers"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listclubmembers": {
+                        "type": "object",
+                        "properties": {
+                            "club_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Club ID. Example: 1"
+                            },
+                            "page": {
+                                "description": "Page number. Defaults to 1.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "club_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listclubmembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "firstname": {
+                                            "type": "string"
+                                        },
+                                        "lastname": {
+                                            "type": "string"
+                                        },
+                                        "membership": {
+                                            "type": "string"
+                                        },
+                                        "admin": {
+                                            "type": "boolean"
+                                        },
+                                        "owner": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the authenticated athlete's efforts on a segment.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_listsegmentefforts",
+            "name": "list-segment-efforts",
+            "output": [
+                "ActionOutput_strava_web_listsegmentefforts"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listsegmentefforts",
+                "ActionOutput_strava_web_listsegmentefforts"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_listsegmentefforts": {
+                        "type": "object",
+                        "properties": {
+                            "segment_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "The identifier of the segment. Example: 432873"
+                            },
+                            "start_date_local": {
+                                "description": "ISO 8601 formatted date time. Filters efforts after this date.",
+                                "type": "string"
+                            },
+                            "end_date_local": {
+                                "description": "ISO 8601 formatted date time. Filters efforts before this date.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "required": [
+                            "segment_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_listsegmentefforts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "number"
+                                },
+                                "resource_state": {
+                                    "type": "number"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "activity": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "athlete": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "elapsed_time": {
+                                    "type": "number"
+                                },
+                                "moving_time": {
+                                    "type": "number"
+                                },
+                                "start_date": {
+                                    "type": "string"
+                                },
+                                "start_date_local": {
+                                    "type": "string"
+                                },
+                                "distance": {
+                                    "type": "number"
+                                },
+                                "start_index": {
+                                    "type": "number"
+                                },
+                                "end_index": {
+                                    "type": "number"
+                                },
+                                "device_watts": {
+                                    "type": "boolean"
+                                },
+                                "average_watts": {
+                                    "type": "number"
+                                },
+                                "average_cadence": {
+                                    "type": "number"
+                                },
+                                "average_heartrate": {
+                                    "type": "number"
+                                },
+                                "max_heartrate": {
+                                    "type": "number"
+                                },
+                                "segment": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "activity_type": {
+                                            "type": "string"
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "average_grade": {
+                                            "type": "number"
+                                        },
+                                        "maximum_grade": {
+                                            "type": "number"
+                                        },
+                                        "elevation_high": {
+                                            "type": "number"
+                                        },
+                                        "elevation_low": {
+                                            "type": "number"
+                                        },
+                                        "start_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "end_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "climb_category": {
+                                            "type": "number"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "hazardous": {
+                                            "type": "boolean"
+                                        },
+                                        "starred": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                },
+                                "kom_rank": {
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
+                                },
+                                "pr_rank": {
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
+                                },
+                                "achievements": {
+                                    "type": "array",
+                                    "items": {}
+                                },
+                                "hidden": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "id"
+                            ],
+                            "additionalProperties": {}
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the authenticated athlete's starred segments.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_liststarredsegments",
+            "name": "list-starred-segments",
+            "output": [
+                "ActionOutput_strava_web_liststarredsegments"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_liststarredsegments",
+                "ActionOutput_strava_web_liststarredsegments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_liststarredsegments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of items per page. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_liststarredsegments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "resource_state": {
+                                            "type": "number"
+                                        },
+                                        "activity_type": {
+                                            "type": "string"
+                                        },
+                                        "distance": {
+                                            "type": "number"
+                                        },
+                                        "average_grade": {
+                                            "type": "number"
+                                        },
+                                        "maximum_grade": {
+                                            "type": "number"
+                                        },
+                                        "elevation_high": {
+                                            "type": "number"
+                                        },
+                                        "elevation_low": {
+                                            "type": "number"
+                                        },
+                                        "start_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "end_latlng": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "climb_category": {
+                                            "type": "number"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "private": {
+                                            "type": "boolean"
+                                        },
+                                        "hazardous": {
+                                            "type": "boolean"
+                                        },
+                                        "starred": {
+                                            "type": "boolean"
+                                        },
+                                        "starred_date": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "total_elevation_gain": {
+                                            "type": "number"
+                                        },
+                                        "map": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "polyline": {
+                                                    "type": "string"
+                                                },
+                                                "resource_state": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "effort_count": {
+                                            "type": "number"
+                                        },
+                                        "athlete_count": {
+                                            "type": "number"
+                                        },
+                                        "star_count": {
+                                            "type": "number"
+                                        },
+                                        "athlete_segment_stats": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pr_elapsed_time": {
+                                                    "type": "number"
+                                                },
+                                                "pr_date": {
+                                                    "type": "string"
+                                                },
+                                                "effort_count": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "athlete_pr_effort": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "elapsed_time": {
+                                                    "type": "number"
+                                                },
+                                                "distance": {
+                                                    "type": "number"
+                                                },
+                                                "start_date": {
+                                                    "type": "string"
+                                                },
+                                                "pr_rank": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Star or unstar a segment for the authenticated athlete.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_starsegment",
+            "name": "star-segment",
+            "output": [
+                "ActionOutput_strava_web_starsegment"
+            ],
+            "scopes": [
+                "profile:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_starsegment",
+                "ActionOutput_strava_web_starsegment"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_starsegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "The identifier of the segment to star. Example: 432873"
+                            },
+                            "starred": {
+                                "type": "boolean",
+                                "description": "If true, star the segment; if false, unstar the segment."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "starred"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_starsegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "activity_type": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "average_grade": {
+                                "type": "number"
+                            },
+                            "maximum_grade": {
+                                "type": "number"
+                            },
+                            "elevation_high": {
+                                "type": "number"
+                            },
+                            "elevation_low": {
+                                "type": "number"
+                            },
+                            "start_latlng": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": [
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "number"
+                                            }
+                                        ],
+                                        "additionalItems": false,
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "end_latlng": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": [
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "number"
+                                            }
+                                        ],
+                                        "additionalItems": false,
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "climb_category": {
+                                "type": "number"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "hazardous": {
+                                "type": "boolean"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "effort_count": {
+                                "type": "number"
+                            },
+                            "athlete_count": {
+                                "type": "number"
+                            },
+                            "star_count": {
+                                "type": "number"
+                            },
+                            "map": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "polyline": {
+                                        "type": "string"
+                                    },
+                                    "resource_state": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "athlete_segment_stats": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "pr_elapsed_time": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "pr_date": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "effort_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "athlete_pr_effort": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "pr_elapsed_time": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "pr_date": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "effort_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "resource_state": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an activity.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_updateactivity",
+            "name": "update-activity",
+            "output": [
+                "ActionOutput_strava_web_updateactivity"
+            ],
+            "scopes": [
+                "activity:write",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_updateactivity",
+                "ActionOutput_strava_web_updateactivity"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_updateactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Activity ID. Example: 19350154661"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "trainer": {
+                                "type": "boolean"
+                            },
+                            "commute": {
+                                "type": "boolean"
+                            },
+                            "gear_id": {
+                                "type": "string"
+                            },
+                            "hide_from_home": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_updateactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "trainer": {
+                                "type": "boolean"
+                            },
+                            "commute": {
+                                "type": "boolean"
+                            },
+                            "gear_id": {
+                                "type": "string"
+                            },
+                            "hide_from_home": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update athlete profile fields.",
+            "endpoint": null,
+            "input": "ActionInput_strava_web_updateathlete",
+            "name": "update-athlete",
+            "output": [
+                "ActionOutput_strava_web_updateathlete"
+            ],
+            "scopes": [
+                "profile:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_updateathlete",
+                "ActionOutput_strava_web_updateathlete"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_strava_web_updateathlete": {
+                        "type": "object",
+                        "properties": {
+                            "weight": {
+                                "type": "number",
+                                "description": "The weight of the athlete in kilograms. Example: 70"
+                            }
+                        },
+                        "required": [
+                            "weight"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_strava_web_updateathlete": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "resource_state": {
+                                "type": "number"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "lastname": {
+                                "type": "string"
+                            },
+                            "profile_medium": {
+                                "type": "string"
+                            },
+                            "profile": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "sex": {
+                                "type": "string"
+                            },
+                            "premium": {
+                                "type": "boolean"
+                            },
+                            "summit": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "follower_count": {
+                                "type": "number"
+                            },
+                            "friend_count": {
+                                "type": "number"
+                            },
+                            "measurement_preference": {
+                                "type": "string"
+                            },
+                            "ftp": {
+                                "type": "number"
+                            },
+                            "weight": {
+                                "type": "number"
+                            },
+                            "clubs": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "bikes": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "shoes": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "resource_state",
+                            "firstname",
+                            "lastname",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync activities.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "activities",
+            "output": [
+                "Activity"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Activity"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Activity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "moving_time": {
+                                "type": "number"
+                            },
+                            "elapsed_time": {
+                                "type": "number"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "start_date": {
+                                "type": "string"
+                            },
+                            "start_date_local": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "utc_offset": {
+                                "type": "number"
+                            },
+                            "average_speed": {
+                                "type": "number"
+                            },
+                            "max_speed": {
+                                "type": "number"
+                            },
+                            "average_watts": {
+                                "type": "number"
+                            },
+                            "max_watts": {
+                                "type": "number"
+                            },
+                            "kilojoules": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "trainer": {
+                                "type": "boolean"
+                            },
+                            "commute": {
+                                "type": "boolean"
+                            },
+                            "manual": {
+                                "type": "boolean"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "flagged": {
+                                "type": "boolean"
+                            },
+                            "gear_id": {
+                                "type": "string"
+                            },
+                            "workout_type": {
+                                "type": "number"
+                            },
+                            "has_heartrate": {
+                                "type": "boolean"
+                            },
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "upload_id": {
+                                "type": "number"
+                            },
+                            "athlete_id": {
+                                "type": "string"
+                            },
+                            "map_id": {
+                                "type": "string"
+                            },
+                            "map_polyline": {
+                                "type": "string"
+                            },
+                            "map_summary_polyline": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync club activities.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "club-activities",
+            "output": [
+                "ClubActivity"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ClubActivity"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ClubActivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "moving_time": {
+                                "type": "number"
+                            },
+                            "elapsed_time": {
+                                "type": "number"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "workout_type": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "athlete": {
+                                "type": "object",
+                                "properties": {
+                                    "resource_state": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync clubs.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "clubs",
+            "output": [
+                "Club"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Club"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Club": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The club's unique identifier"
+                            },
+                            "resource_state": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "profile_medium": {
+                                "type": "string"
+                            },
+                            "cover_photo": {
+                                "type": "string"
+                            },
+                            "cover_photo_small": {
+                                "type": "string"
+                            },
+                            "sport_type": {
+                                "type": "string"
+                            },
+                            "activity_types": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "member_count": {
+                                "type": "number"
+                            },
+                            "featured": {
+                                "type": "boolean"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync gear.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "gear",
+            "output": [
+                "Gear"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read",
+                "profile:read_all"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Gear"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Gear": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "primary": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "brand_name": {
+                                "type": "string"
+                            },
+                            "model_name": {
+                                "type": "string"
+                            },
+                            "frame_type": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "nickname": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync routes.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "routes",
+            "output": [
+                "Route"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Route"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Route": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "elevation_gain": {
+                                "type": "number"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "type": {
+                                "type": "number"
+                            },
+                            "sub_type": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "timestamp": {
+                                "type": "number"
+                            },
+                            "map": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "polyline": {
+                                        "type": "string"
+                                    },
+                                    "summary_polyline": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the authenticated athlete's starred segments.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "starred-segments",
+            "output": [
+                "StarredSegment"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "StarredSegment"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StarredSegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "activity_type": {
+                                "type": "string"
+                            },
+                            "distance": {
+                                "type": "number"
+                            },
+                            "average_grade": {
+                                "type": "number"
+                            },
+                            "maximum_grade": {
+                                "type": "number"
+                            },
+                            "elevation_high": {
+                                "type": "number"
+                            },
+                            "elevation_low": {
+                                "type": "number"
+                            },
+                            "start_latlng": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "end_latlng": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "climb_category": {
+                                "type": "number"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "hazardous": {
+                                "type": "boolean"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "total_elevation_gain": {
+                                "type": "number"
+                            },
+                            "map": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "polyline": {
+                                        "type": "string"
+                                    },
+                                    "resource_state": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "effort_count": {
+                                "type": "number"
+                            },
+                            "athlete_count": {
+                                "type": "number"
+                            },
+                            "star_count": {
+                                "type": "number"
+                            },
+                            "athlete_segment_stats": {
+                                "type": "object",
+                                "properties": {
+                                    "pr_elapsed_time": {
+                                        "type": "number"
+                                    },
+                                    "pr_date": {
+                                        "type": "string"
+                                    },
+                                    "effort_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

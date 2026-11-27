@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { nanoid } from '@nangohq/utils';
 
 import { getTestDbClient } from '../db/helpers.test.js';
-import { isDuplicateTaskNameError } from '../errors.js';
+import { DuplicateTaskNameError, isDuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 import * as groupOverrides from './groupOverrides.js';
 import * as tasks from './tasks.js';
@@ -124,6 +124,10 @@ describe('Task', () => {
         expect(res.created.map((task) => task.name)).toEqual(['Override 2']);
         expect(res.discarded.map((discarded) => discarded.props.name)).toEqual(['Override capped', 'Default capped']);
         expect(res.created[0]?.groupMaxConcurrency).toBe(3);
+        expect(res.discarded).toMatchObject([
+            { reason: 'capped', error: { name: 'TaskCapExceededError', groupKey, cap: 2 } },
+            { reason: 'capped', error: { name: 'TaskCapExceededError', groupKey: defaultGroupKey, cap: 1 } }
+        ]);
 
         (await groupOverrides.upsert(db, { groupKey, taskCap: null })).unwrap();
         const afterClear = (await tasks.create(db, [{ ...props, groupKey, groupMaxConcurrency, name: 'Global cap' }], { groupTaskCap: 3 })).unwrap();
@@ -158,6 +162,7 @@ describe('Task', () => {
         expect(res.created).toHaveLength(1);
         expect(res.created[0]?.name).toBe(newName);
         expect(res.discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: existingName, reason: 'duplicate' }]);
+        expect(res.discarded[0]).toMatchObject({ error: expect.any(DuplicateTaskNameError) });
     });
     it('should distinguish capped from duplicate discards when onConflict is "skip"', async () => {
         const groupKey = nanoid();

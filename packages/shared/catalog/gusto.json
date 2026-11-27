@@ -1,0 +1,775 @@
+{
+    "providerConfigKey": "gusto",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates an employee in Gusto.",
+            "endpoint": null,
+            "input": "ActionInput_gusto_createemployee",
+            "name": "create-employee",
+            "output": [
+                "ActionOutput_gusto_createemployee"
+            ],
+            "scopes": [
+                "employees:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_createemployee",
+                "ActionOutput_gusto_createemployee"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gusto_createemployee": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "middleInitial": {
+                                "type": "string"
+                            },
+                            "preferredFirstName": {
+                                "type": "string"
+                            },
+                            "dateOfBirth": {
+                                "type": "string"
+                            },
+                            "ssn": {
+                                "type": "string"
+                            },
+                            "selfOnboarding": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "dateOfBirth"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gusto_createemployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Terminates an employee in Gusto.",
+            "endpoint": null,
+            "input": "ActionInput_gusto_terminateemployee",
+            "name": "terminate-employee",
+            "output": [
+                "ActionOutput_gusto_terminateemployee"
+            ],
+            "scopes": [
+                "employments:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_terminateemployee",
+                "ActionOutput_gusto_terminateemployee"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gusto_terminateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "effectiveDate": {
+                                "type": "string"
+                            },
+                            "runTerminationPayroll": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gusto_terminateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates an employee in Gusto.",
+            "endpoint": null,
+            "input": "ActionInput_gusto_updateemployee",
+            "name": "update-employee",
+            "output": [
+                "ActionOutput_gusto_updateemployee"
+            ],
+            "scopes": [
+                "employees:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_updateemployee",
+                "ActionOutput_gusto_updateemployee"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_gusto_updateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "middleInitial": {
+                                "type": "string"
+                            },
+                            "preferredFirstName": {
+                                "type": "string"
+                            },
+                            "dateOfBirth": {
+                                "type": "string"
+                            },
+                            "ssn": {
+                                "type": "string"
+                            },
+                            "twoPercentShareholder": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "version"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_gusto_updateemployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches all employees from Gusto",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees",
+                    "group": "Employees"
+                }
+            ],
+            "input": "SyncMetadata_gusto_employees",
+            "name": "employees",
+            "output": [
+                "GustoEmployee"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "employees:read",
+                "compensations:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GustoEmployee",
+                "SyncMetadata_gusto_employees"
+            ],
+            "version": "1.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GustoEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "work_email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "department_uuid": {
+                                "type": "string"
+                            },
+                            "manager_uuid": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "string"
+                            },
+                            "terminated": {
+                                "type": "boolean"
+                            },
+                            "onboarded": {
+                                "type": "boolean"
+                            },
+                            "onboarding_status": {
+                                "type": "string"
+                            },
+                            "date_of_birth": {
+                                "type": "string"
+                            },
+                            "has_ssn": {
+                                "type": "boolean"
+                            },
+                            "custom_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "company_custom_field_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "selection_options": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "company_custom_field_id",
+                                        "name",
+                                        "description",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "hire_date": {
+                                            "type": "string"
+                                        },
+                                        "payment_unit": {
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "hire_date",
+                                        "payment_unit",
+                                        "primary"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid",
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "work_email",
+                            "phone",
+                            "department",
+                            "department_uuid",
+                            "manager_uuid",
+                            "version",
+                            "terminated",
+                            "onboarded",
+                            "onboarding_status",
+                            "date_of_birth",
+                            "has_ssn",
+                            "custom_fields",
+                            "jobs"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gusto_employees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all employees from Gusto and maps them to the standard HRIS model",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees/unified",
+                    "group": "Unified HRIS API"
+                }
+            ],
+            "input": "SyncMetadata_gusto_unifiedemployees",
+            "name": "unified-employees",
+            "output": [
+                "StandardEmployee"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "employees:read",
+                "compensations:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_gusto_unifiedemployees"
+            ],
+            "version": "1.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StandardEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "employeeNumber": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "employmentType": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "FULL_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PART_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CONTRACTOR"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "INTERN"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TEMPORARY"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "OTHER"
+                                    }
+                                ]
+                            },
+                            "employmentStatus": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "ACTIVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TERMINATED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "ON_LEAVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUSPENDED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PENDING"
+                                    }
+                                ]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "type": "string"
+                            },
+                            "manager": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workLocation": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "OFFICE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "REMOTE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "HYBRID"
+                                            }
+                                        ]
+                                    },
+                                    "primaryAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "WORK"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "HOME"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "type"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "street": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "MOBILE"
+                                                }
+                                            ]
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "PERSONAL"
+                                                }
+                                            ]
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "providerSpecific": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "displayName",
+                            "department",
+                            "employmentType",
+                            "employmentStatus",
+                            "startDate",
+                            "workLocation",
+                            "addresses",
+                            "phones",
+                            "emails",
+                            "providerSpecific",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_gusto_unifiedemployees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

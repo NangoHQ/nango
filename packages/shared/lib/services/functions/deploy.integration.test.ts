@@ -108,7 +108,7 @@ describe('deployBundle instances', () => {
         };
         const deploy = async (functions: FunctionDeploymentArtifact[], reconciliationScope: FunctionReconciliationScope = { kind: 'environment' }) => {
             const reconciliation = (await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope })).unwrap();
-            return deployBundle({ accountId: account.id, environmentId: environment.id, environmentName: environment.name, reconciliation, orchestrator });
+            return deployBundle({ accountId: account.id, environmentId: environment.id, reconciliation, orchestrator });
         };
         const instances = () =>
             db.knex

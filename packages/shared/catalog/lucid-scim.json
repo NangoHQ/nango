@@ -1,0 +1,3439 @@
+{
+    "providerConfigKey": "lucid-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make available the SCIM org groups or teams selected by the connection, including names and returned user or subgroup membership.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Group"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Group"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Lucid org group or team ID."
+                            },
+                            "members": {
+                                "description": "Returned member list; org groups may contain users and subgroups, teams only users. Omission does not mean an empty membership.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member display label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned URI of the member resource.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A returned user or subgroup membership."
+                                }
+                            },
+                            "schemas": {
+                                "description": "SCIM schema URIs, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Name of the group or team, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A SCIM org group or team selected by the connection, including returned membership."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make available Lucid SCIM schema definitions and their attribute constraints for provisioning validation and discovery.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-schemas",
+            "output": [
+                "Schema"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Schema"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque schema identifier, normally a SCIM URN."
+                            },
+                            "name": {
+                                "description": "Provider schema name, if returned.",
+                                "type": "string"
+                            },
+                            "schemas": {
+                                "description": "URIs describing the schema resource, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "attributes": {
+                                "description": "Typed attribute definitions, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                }
+                            },
+                            "description": {
+                                "description": "Provider schema description, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Lucid SCIM schema definition and its attribute constraints for provisioning validation and discovery.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "SCIM attribute name.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM value type.",
+                                        "type": "string",
+                                        "enum": [
+                                            "string",
+                                            "boolean",
+                                            "decimal",
+                                            "integer",
+                                            "dateTime",
+                                            "reference",
+                                            "complex"
+                                        ]
+                                    },
+                                    "required": {
+                                        "description": "Whether the attribute requires a value.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "When values are returned by the provider.",
+                                        "type": "string",
+                                        "enum": [
+                                            "always",
+                                            "never",
+                                            "default",
+                                            "request"
+                                        ]
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether string comparison is case sensitive.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Attribute read/write behavior.",
+                                        "type": "string",
+                                        "enum": [
+                                            "readOnly",
+                                            "readWrite",
+                                            "immutable",
+                                            "writeOnly"
+                                        ]
+                                    },
+                                    "uniqueness": {
+                                        "description": "Uniqueness scope.",
+                                        "type": "string",
+                                        "enum": [
+                                            "none",
+                                            "server",
+                                            "global"
+                                        ]
+                                    },
+                                    "description": {
+                                        "description": "Provider attribute description.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether the attribute accepts multiple values.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested attribute definitions for complex values; omitted for leaves.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "A SCIM attribute definition and its provisioning constraints."
+                            }
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make available Lucid's non-deactivated SCIM users, including identity, administrative roles, enterprise profile, and group or team associations. Lucid excludes deactivated users from this source collection.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "LucidUser"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "LucidUser"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LucidUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Lucid user ID."
+                            },
+                            "name": {
+                                "description": "Structured personal name, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Administrative role names, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "title": {
+                                "description": "Job title, if returned.",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Whether the user can authenticate, if returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email entries, if returned; empty means none reported.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Stored email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "groups": {
+                                "description": "Returned group or team associations.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "groupId": {
+                                            "description": "Opaque group or team ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Associated group or team name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "schemas": {
+                                "description": "SCIM schema URIs, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "userName": {
+                                "description": "Login username, if returned.",
+                                "type": "string"
+                            },
+                            "enterprise": {
+                                "description": "Enterprise extension, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Assigned division.",
+                                        "type": "string"
+                                    },
+                                    "managerId": {
+                                        "description": "Manager's opaque Lucid user ID.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Assigned cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Assigned department.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Assigned organization.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "externalId": {
+                                "description": "Provisioning client's external identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed name, if returned.",
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "description": "Stored phone entries, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Phone label, currently work.",
+                                            "type": "string"
+                                        },
+                                        "number": {
+                                            "description": "Unmodified phone number text.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A non-deactivated Lucid SCIM user with identity, administrative roles, enterprise profile, and group or team associations."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-member-to-group",
+            "integrationId": "lucid-scim",
+            "description": "Add one user to an org group or team, or one subgroup to an org group, without replacing existing memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_addmembertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_addmembertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque destination org group or team ID."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque user ID, or subgroup ID for org groups only."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Destination and single user or subgroup membership to add."
+                    },
+                    "FunctionOutput_lucid_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Modified destination group or team ID."
+                            },
+                            "members": {
+                                "description": "Membership returned after the addition; omitted is not a verified full member list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member display label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned member resource URI.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One returned user or subgroup membership."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Returned destination name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Modified destination resource returned by Lucid after adding the membership."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups` and memberId from `list-users` or `list-groups`. The connection determines group versus team mode; teams only accept user members. Use `update-group` to replace the entire member list, and `remove-member-from-group` to remove one relationship. This adds an association, not a user or subgroup resource."
+            },
+            "filePath": "./lucid-scim/tools/add-member-to-group.ts",
+            "version": "eaa3f1d52985d1d46bc1d2fbd5ff302688663671988ce5ff6f497280ce9c1900",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/add-member-to-group/eaa3f1d52985d1d46bc1d2fbd5ff302688663671988ce5ff6f497280ce9c1900.cjs",
+                "ts": "templates-zero/lucid-scim/tools/add-member-to-group/eaa3f1d52985d1d46bc1d2fbd5ff302688663671988ce5ff6f497280ce9c1900.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "lucid-scim",
+            "description": "Create a SCIM org group or team, as selected by the connection. In team mode Lucid can restore a matching archived, closed team instead of creating a new one.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "memberIds": {
+                                "description": "Initial requested member IDs. Org groups support users or subgroups; teams support users only. Omission leaves provider behavior; [] explicitly supplies an empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque user or subgroup ID requested as an initial member."
+                                },
+                                "uniqueItems": true
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name to create, or matching archived closed team name to restore in team mode."
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create an org group or create/restore a team using the connection-selected mode."
+                    },
+                    "FunctionOutput_lucid_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the created group or created/restored team."
+                            },
+                            "members": {
+                                "description": "Membership returned after creation or restoration; not fabricated from the request.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque member user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member display label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned member resource URI.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A member returned by Lucid after creation or restoration."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Returned group or team name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The identity and resource details returned by Lucid, without asserting whether a team was newly created or restored."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this with the connection for the intended org group or team mode; there is no per-call mode selector. In team mode a matching archived, closed team may be restored, so success does not always mean a new identity. Use `update-group` for a known existing ID and `list-groups` to look up active names. Teams accept only user members; org groups also accept subgroup IDs."
+            },
+            "filePath": "./lucid-scim/tools/create-group.ts",
+            "version": "53ff6f886b8ab488a326127542141d6d79e264a6688c4927aa6a8cd2ffa77f16",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/create-group/53ff6f886b8ab488a326127542141d6d79e264a6688c4927aa6a8cd2ffa77f16.cjs",
+                "ts": "templates-zero/lucid-scim/tools/create-group/53ff6f886b8ab488a326127542141d6d79e264a6688c4927aa6a8cd2ffa77f16.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-user",
+            "integrationId": "lucid-scim",
+            "description": "Provision a Lucid user with email addresses and optional personal, administrative role, and enterprise profile attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_createuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_createuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Initial personal name; omitted leaves provider behavior.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted full personal name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Administrative roles to assign; [] supplies no administrative roles. Omission leaves provider behavior.",
+                                "uniqueItems": true,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "AccountAdmin",
+                                        "BillingAdmin",
+                                        "Developer",
+                                        "DocumentAdmin",
+                                        "EnterpriseShieldAdmin",
+                                        "TemplateAdmin"
+                                    ]
+                                }
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Whether the user can authenticate; omission uses the provider default.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label, such as work or home; omit to leave provider default.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Email address to store."
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary; omit to leave provider behavior.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An initial email entry."
+                                },
+                                "description": "Initial email entries; no primary address is chosen automatically."
+                            },
+                            "password": {
+                                "description": "Optional initial password, at least eight characters; never returned.",
+                                "writeOnly": true,
+                                "type": "string",
+                                "minLength": 8
+                            },
+                            "userName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "New user's username, usually their email."
+                            },
+                            "enterprise": {
+                                "description": "Enterprise profile attributes; omitted fields are not supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Assigned division.",
+                                        "type": "string"
+                                    },
+                                    "managerId": {
+                                        "description": "Manager's existing opaque Lucid user ID, obtainable from list-users.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "costCenter": {
+                                        "description": "Assigned cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Assigned department.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Assigned organization.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "externalId": {
+                                "description": "Provisioning client's external identifier.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed user name; omitted leaves provider behavior.",
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "description": "Initial work phone entries; [] explicitly supplies no entries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Only work numbers are supported; defaults to work.",
+                                            "default": "work",
+                                            "type": "string",
+                                            "const": "work"
+                                        },
+                                        "number": {
+                                            "type": "string",
+                                            "description": "Phone number text, sent without reformatting."
+                                        }
+                                    },
+                                    "required": [
+                                        "number"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An initial work phone entry."
+                                }
+                            }
+                        },
+                        "required": [
+                            "emails",
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Attributes for provisioning a new Lucid user."
+                    },
+                    "FunctionOutput_lucid_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Created user's opaque Lucid ID."
+                            },
+                            "roles": {
+                                "description": "Administrative role names returned by Lucid.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "active": {
+                                "description": "Whether the created user can authenticate, if returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email entries returned by Lucid.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email label.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Stored email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An email entry returned by Lucid."
+                                }
+                            },
+                            "userName": {
+                                "description": "Username returned by Lucid.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning client's identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed name returned by Lucid.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity and access summary from the created Lucid user, without the initial password."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to provision a new user, not to change an existing one; use `list-users` to check an email or external ID and `update-user` for an existing ID. Roles grant administrative access. A successful response establishes creation, not delivery of an invitation. Do not retry an uncertain creation blindly; look up the username or email first."
+            },
+            "filePath": "./lucid-scim/tools/create-user.ts",
+            "version": "20a59f8c8b5a3d998cb7bf19786321eba3565b5a8c027122fe7d166ed7a64113",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/create-user/20a59f8c8b5a3d998cb7bf19786321eba3565b5a8c027122fe7d166ed7a64113.cjs",
+                "ts": "templates-zero/lucid-scim/tools/create-user/20a59f8c8b5a3d998cb7bf19786321eba3565b5a8c027122fe7d166ed7a64113.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-group-or-archive-team",
+            "integrationId": "lucid-scim",
+            "description": "Delete an org group, or archive a team, according to the connection's token mode. An org group may need to have all members removed first.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_deletegrouporarchiveteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_deletegrouporarchiveteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_deletegrouporarchiveteam": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID to delete in org-group mode or archive in team mode; mode is fixed by the connection."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target org group or team for the connection-selected lifecycle change."
+                    },
+                    "FunctionOutput_lucid_scim_deletegrouporarchiveteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque target ID for the completed group deletion or team archival."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after provider-confirmed completion of the connection-selected effect; does not distinguish deleted from archived."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "completed"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-confirmed completion of group deletion or team archival."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the target ID from `list-groups` or `get-group` and verify that the connection is for the intended resource mode. Org-group connections delete the group; team connections archive the team instead. Use `update-group` with memberIds:[] only if you intentionally want to clear membership first. Team restoration may be possible through `create-group` using the matching archived, closed team name; org-group recovery is not documented."
+            },
+            "filePath": "./lucid-scim/tools/delete-group-or-archive-team.ts",
+            "version": "c1c4490537c12de151934000302ec6cedea17058006abbe7f917c6c388b17cfe",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/delete-group-or-archive-team/c1c4490537c12de151934000302ec6cedea17058006abbe7f917c6c388b17cfe.cjs",
+                "ts": "templates-zero/lucid-scim/tools/delete-group-or-archive-team/c1c4490537c12de151934000302ec6cedea17058006abbe7f917c6c388b17cfe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-user-permanently",
+            "integrationId": "lucid-scim",
+            "description": "Hard-delete a user from the Lucid account. Account owners and default document owners may not be deleted; deactivation is the provider-recommended alternative.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_deleteuserpermanently",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_deleteuserpermanently",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_deleteuserpermanently": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Lucid user ID to permanently delete."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The known Lucid user to permanently delete."
+                    },
+                    "FunctionOutput_lucid_scim_deleteuserpermanently": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID targeted by the successful deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after Lucid confirms successful hard deletion."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of a provider-confirmed permanent user deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Prefer `update-user` with active:false when the goal is to disable authentication. Use this only for intentional hard deletion of a known user ID from `list-users`, `create-user`, or stored provisioning data. This is not recoverable deactivation. Account owners and default document owners must have ownership reassigned before deletion is possible."
+            },
+            "filePath": "./lucid-scim/tools/delete-user-permanently.ts",
+            "version": "dee54917de8acc9ba2a90a98ebbcb59006f4a8f7418b543d373183eca50a6740",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/delete-user-permanently/dee54917de8acc9ba2a90a98ebbcb59006f4a8f7418b543d373183eca50a6740.cjs",
+                "ts": "templates-zero/lucid-scim/tools/delete-user-permanently/dee54917de8acc9ba2a90a98ebbcb59006f4a8f7418b543d373183eca50a6740.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "lucid-scim",
+            "description": "Get one SCIM org group or team, including returned user and subgroup membership, using the connection-selected resource mode.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of an org group or team accessible to this connection."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the org group or team to retrieve through this connection."
+                    },
+                    "FunctionOutput_lucid_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque org group or team ID."
+                            },
+                            "members": {
+                                "description": "Returned users and, for org groups, subgroups. Omitted membership is not an assertion of no members.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Member resource URI, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A returned user or subgroup membership."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Group or team name, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested org group or team and its returned membership details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain the ID from `list-groups` or `create-group`. Use this before replacing membership or deleting an org group. Teams support only user members; org groups can also contain subgroups. The connection's token determines which resource mode is accessible."
+            },
+            "filePath": "./lucid-scim/tools/get-group.ts",
+            "version": "c5b719699fc4ed3b15a57d462ab0dedfea259d3cf1eae1ff37a2d4a58529da3b",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/get-group/c5b719699fc4ed3b15a57d462ab0dedfea259d3cf1eae1ff37a2d4a58529da3b.cjs",
+                "ts": "templates-zero/lucid-scim/tools/get-group/c5b719699fc4ed3b15a57d462ab0dedfea259d3cf1eae1ff37a2d4a58529da3b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-schema",
+            "integrationId": "lucid-scim",
+            "description": "Get one Lucid SCIM resource schema with typed attribute definitions and constraints.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_getschema",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_getschema",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "schemaId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque schema resource ID from list-schemas, usually a complete urn:ietf:params:scim:... identifier, not a resource URL."
+                            }
+                        },
+                        "required": [
+                            "schemaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the Lucid SCIM schema to retrieve."
+                    },
+                    "FunctionOutput_lucid_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque schema ID, normally a SCIM URN."
+                            },
+                            "name": {
+                                "description": "Provider schema name, if returned.",
+                                "type": "string"
+                            },
+                            "schemas": {
+                                "description": "Schema-resource type URIs, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Schema-resource type URI."
+                                }
+                            },
+                            "attributes": {
+                                "description": "Typed attribute definitions, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                }
+                            },
+                            "description": {
+                                "description": "Provider schema description, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One Lucid SCIM resource schema with typed attribute definitions and constraints.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "SCIM attribute name.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM value type.",
+                                        "type": "string",
+                                        "enum": [
+                                            "string",
+                                            "boolean",
+                                            "decimal",
+                                            "integer",
+                                            "dateTime",
+                                            "reference",
+                                            "complex"
+                                        ]
+                                    },
+                                    "required": {
+                                        "description": "Whether a value is required.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "When the provider returns this attribute.",
+                                        "type": "string",
+                                        "enum": [
+                                            "always",
+                                            "never",
+                                            "default",
+                                            "request"
+                                        ]
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether string values are case sensitive.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Read and write behavior of the attribute.",
+                                        "type": "string",
+                                        "enum": [
+                                            "readOnly",
+                                            "readWrite",
+                                            "immutable",
+                                            "writeOnly"
+                                        ]
+                                    },
+                                    "uniqueness": {
+                                        "description": "Uniqueness scope for values.",
+                                        "type": "string",
+                                        "enum": [
+                                            "none",
+                                            "server",
+                                            "global"
+                                        ]
+                                    },
+                                    "description": {
+                                        "description": "Provider's attribute description.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether multiple values are allowed.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested definitions for complex attributes; absent for leaves.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "A typed SCIM attribute definition and its constraints."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a schema ID from `list-schemas`, normally its full URN, not a URL or endpoint path. Use this to check required attributes, mutability and uniqueness before provisioning or updating a resource."
+            },
+            "filePath": "./lucid-scim/tools/get-schema.ts",
+            "version": "5582754478127af1f3906d7d394dc600b7c14fc0c065f47faedd64623f46f344",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/get-schema/5582754478127af1f3906d7d394dc600b7c14fc0c065f47faedd64623f46f344.cjs",
+                "ts": "templates-zero/lucid-scim/tools/get-schema/5582754478127af1f3906d7d394dc600b7c14fc0c065f47faedd64623f46f344.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "lucid-scim",
+            "description": "Get Lucid's SCIM feature capabilities, filtering limits, documentation links and advertised authentication schemes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to inspect the connected Lucid service configuration."
+                    },
+                    "FunctionOutput_lucid_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "bulk": {
+                                "description": "Advertised bulk-operation capability and limits, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "etag": {
+                                "description": "Advertised ETag capability, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sort": {
+                                "description": "Advertised sorting capability, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "patch": {
+                                "description": "Advertised PATCH capability, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "description": "Advertised filter capability and result limit, if returned.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "schemas": {
+                                "description": "Returned service-configuration schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A returned service-configuration schema URI."
+                                }
+                            },
+                            "changePassword": {
+                                "description": "Advertised password-change capability, distinct from initial password creation.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether Lucid advertises this capability as supported; absent does not imply false.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum, when supplied; not a universal page size.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request, when supplied.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum bulk payload size in bytes, when supplied; unit mapping is provisional.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "documentationUri": {
+                                "description": "Link to Lucid SCIM documentation, if returned.",
+                                "type": "string"
+                            },
+                            "authenticationSchemes": {
+                                "description": "Authentication methods advertised by the service, if returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Human-readable scheme name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "SCIM authentication scheme type identifier.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the scheme is advertised as primary.",
+                                            "type": "boolean"
+                                        },
+                                        "specUri": {
+                                            "description": "URI of the authentication specification.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider's explanation of the scheme.",
+                                            "type": "string"
+                                        },
+                                        "documentationUri": {
+                                            "description": "Provider documentation URI for the scheme.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An authentication scheme advertised by Lucid."
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Lucid SCIM service capabilities, limits, documentation links and advertised authentication schemes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to inspect SCIM service capabilities before choosing provisioning behavior. Use `list-schemas` for resource attributes instead. Capability support does not itself expose a callable endpoint; in particular, do not assume bulk operations or password changes are available just because a configuration field exists."
+            },
+            "filePath": "./lucid-scim/tools/get-service-provider-config.ts",
+            "version": "9a8995de6842b28e1db8a2d837e76bd791a119d1c3af03e93787a4f378ea544e",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/get-service-provider-config/9a8995de6842b28e1db8a2d837e76bd791a119d1c3af03e93787a4f378ea544e.cjs",
+                "ts": "templates-zero/lucid-scim/tools/get-service-provider-config/9a8995de6842b28e1db8a2d837e76bd791a119d1c3af03e93787a4f378ea544e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "lucid-scim",
+            "description": "Look up one non-deactivated user by Lucid ID using the user collection's equality filter. This does not provide access to deactivated users.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Lucid user ID to look up among non-deactivated users."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Look up a non-deactivated user by an opaque Lucid user ID."
+                    },
+                    "FunctionOutput_lucid_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Lucid user ID."
+                            },
+                            "roles": {
+                                "description": "Returned administrative role names.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "active": {
+                                "description": "Whether this user can authenticate, if returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Returned email addresses, preserving labels and primary flags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Stored email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the email is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "profile": {
+                                "description": "Remaining typed profile attributes, when returned.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Structured personal name.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Formatted full name.",
+                                                "type": "string"
+                                            },
+                                            "givenName": {
+                                                "description": "Given name.",
+                                                "type": "string"
+                                            },
+                                            "familyName": {
+                                                "description": "Family name.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "title": {
+                                        "description": "Job title.",
+                                        "type": "string"
+                                    },
+                                    "groups": {
+                                        "description": "Returned group or team associations.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "groupId": {
+                                                    "description": "Opaque group or team ID.",
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "description": "Associated group or team name.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "schemas": {
+                                        "description": "Returned SCIM schema URIs.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "enterprise": {
+                                        "description": "Enterprise profile fields.",
+                                        "type": "object",
+                                        "properties": {
+                                            "division": {
+                                                "description": "Assigned division.",
+                                                "type": "string"
+                                            },
+                                            "managerId": {
+                                                "description": "Manager's opaque Lucid user ID.",
+                                                "type": "string"
+                                            },
+                                            "costCenter": {
+                                                "description": "Assigned cost center.",
+                                                "type": "string"
+                                            },
+                                            "department": {
+                                                "description": "Assigned department.",
+                                                "type": "string"
+                                            },
+                                            "organization": {
+                                                "description": "Assigned organization.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Stored work phone numbers.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Phone label, currently work.",
+                                                    "type": "string"
+                                                },
+                                                "number": {
+                                                    "description": "Unmodified phone number text.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "userName": {
+                                "description": "Login username, if returned.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning client's identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed user name, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The uniquely matching visible user with identity, access and grouped profile attributes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a user ID from `list-users` or `create-user`. This lookup cannot distinguish a deactivated user from an absent user. Use `list-users` for browsing or email/external-ID matching. A known deactivated ID can still be passed directly to `update-user`; do not interpret this lookup's absence as proof of deletion."
+            },
+            "filePath": "./lucid-scim/tools/get-user.ts",
+            "version": "018c1815cd7262c84619a183c76cbfccb9e427198563d559c9f0c54e6d0e7793",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/get-user/018c1815cd7262c84619a183c76cbfccb9e427198563d559c9f0c54e6d0e7793.cjs",
+                "ts": "templates-zero/lucid-scim/tools/get-user/018c1815cd7262c84619a183c76cbfccb9e427198563d559c9f0c54e6d0e7793.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "lucid-scim",
+            "description": "Return one page of SCIM groups: org groups or teams, as selected by the connection's bearer token. Optionally match an exact, case-sensitive display name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum records requested in one page; default and local maximum are 100.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this connection, displayName condition and limit; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "displayName": {
+                                "description": "Optional exact case-sensitive group or team name; omit to browse without filtering. Empty string is an explicit exact-name condition.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of connection-selected SCIM groups or teams, optionally by exact name."
+                    },
+                    "FunctionOutput_lucid_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Lucid org group or team ID."
+                                        },
+                                        "members": {
+                                            "description": "Returned membership; org groups may contain users or subgroups, while teams contain users only. Omission is not an empty membership assertion.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "memberId": {
+                                                        "type": "string",
+                                                        "description": "Opaque user or subgroup ID from member value."
+                                                    },
+                                                    "displayName": {
+                                                        "description": "Member display label, if returned.",
+                                                        "type": "string"
+                                                    },
+                                                    "resourceUrl": {
+                                                        "description": "Member resource URI from $ref, if returned.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "memberId"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A returned user or subgroup membership."
+                                            }
+                                        },
+                                        "schemas": {
+                                            "description": "SCIM schema URIs, if returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A SCIM schema URI."
+                                            }
+                                        },
+                                        "displayName": {
+                                            "description": "Org group or team name, if returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Lucid SCIM org group or team."
+                                },
+                                "description": "Groups or teams in the provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when the collection is exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of SCIM groups or teams and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find IDs before `get-group`, `update-group`, or membership changes. The connection selects whether these records are org groups or teams; this tool cannot switch modes. Continue with nextCursor as cursor using the same displayName and limit. Each page requests at most 100 groups."
+            },
+            "filePath": "./lucid-scim/tools/list-groups.ts",
+            "version": "32275e8d9caa8cb79193c9027bfae4c53de7c9cdfce14abc27885c3a6845bdde",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/list-groups/32275e8d9caa8cb79193c9027bfae4c53de7c9cdfce14abc27885c3a6845bdde.cjs",
+                "ts": "templates-zero/lucid-scim/tools/list-groups/32275e8d9caa8cb79193c9027bfae4c53de7c9cdfce14abc27885c3a6845bdde.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schemas",
+            "integrationId": "lucid-scim",
+            "description": "List Lucid's SCIM resource schemas and their typed attribute definitions in the provider's single response.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_listschemas",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_listschemas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_listschemas": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to list the schema collection."
+                    },
+                    "FunctionOutput_lucid_scim_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque schema ID, normally a SCIM URN."
+                                        },
+                                        "name": {
+                                            "description": "Provider's schema name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "schemas": {
+                                            "description": "URIs describing the schema resource itself, when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "attributes": {
+                                            "description": "Typed attribute definitions, when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/__schema0"
+                                            }
+                                        },
+                                        "description": {
+                                            "description": "Provider's schema description, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A SCIM resource schema published by Lucid."
+                                },
+                                "description": "Schema resources from the provider's response."
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported number of schemas, when returned.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The schema collection from one provider response, without the SCIM ListResponse envelope.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "SCIM attribute name.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM value type.",
+                                        "type": "string",
+                                        "enum": [
+                                            "string",
+                                            "boolean",
+                                            "decimal",
+                                            "integer",
+                                            "dateTime",
+                                            "reference",
+                                            "complex"
+                                        ]
+                                    },
+                                    "required": {
+                                        "description": "Whether the attribute is required.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "When the provider includes this attribute in resource responses.",
+                                        "type": "string",
+                                        "enum": [
+                                            "always",
+                                            "never",
+                                            "default",
+                                            "request"
+                                        ]
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether string comparison is case sensitive.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Whether the attribute can be read or changed.",
+                                        "type": "string",
+                                        "enum": [
+                                            "readOnly",
+                                            "readWrite",
+                                            "immutable",
+                                            "writeOnly"
+                                        ]
+                                    },
+                                    "uniqueness": {
+                                        "description": "Scope of the attribute's uniqueness constraint.",
+                                        "type": "string",
+                                        "enum": [
+                                            "none",
+                                            "server",
+                                            "global"
+                                        ]
+                                    },
+                                    "description": {
+                                        "description": "Provider description of the attribute.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether the attribute accepts multiple values.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Child definitions for a complex attribute; omitted for leaves.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "A typed SCIM attribute definition."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover schema IDs and writable, required or multivalued attributes before provisioning. Use `get-schema` for one known schema ID. The endpoint exposes no page controls; this returns the collection in its one provider response."
+            },
+            "filePath": "./lucid-scim/tools/list-schemas.ts",
+            "version": "b28b5e5d791e3bd3bfefd9dfc6a7fa7bc6f9a714d48eec1abe50a44a693257b5",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/list-schemas/b28b5e5d791e3bd3bfefd9dfc6a7fa7bc6f9a714d48eec1abe50a44a693257b5.cjs",
+                "ts": "templates-zero/lucid-scim/tools/list-schemas/b28b5e5d791e3bd3bfefd9dfc6a7fa7bc6f9a714d48eec1abe50a44a693257b5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "lucid-scim",
+            "description": "Return one page of users visible through SCIM, optionally matching an equality filter. Deactivated users are excluded by Lucid, including from reported totals.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum users requested in this page; defaults to 100. The local maximum is 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the same connection, filter, and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional equality condition. Omission lists users without a filter; non-optimized attributes may be slow.",
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            }
+                                        ],
+                                        "description": "Exact comparison value, serialized by the implementation into a SCIM eq expression."
+                                    },
+                                    "attribute": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "SCIM user attribute name, such as email, username, displayname, externalid, or a fully qualified extension attribute."
+                                    }
+                                },
+                                "required": [
+                                    "value",
+                                    "attribute"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of Lucid SCIM users with an optional equality condition."
+                    },
+                    "FunctionOutput_lucid_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Lucid user ID."
+                                        },
+                                        "name": {
+                                            "description": "Structured personal name; omitted if not returned.",
+                                            "type": "object",
+                                            "properties": {
+                                                "formatted": {
+                                                    "description": "Full formatted personal name.",
+                                                    "type": "string"
+                                                },
+                                                "givenName": {
+                                                    "description": "Given or first name.",
+                                                    "type": "string"
+                                                },
+                                                "familyName": {
+                                                    "description": "Family or last name.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "roles": {
+                                            "description": "Administrative role names unwrapped from role value objects; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Administrative role name."
+                                            }
+                                        },
+                                        "title": {
+                                            "description": "Job title; omitted if not returned.",
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "description": "Whether the user can authenticate to Lucid; omitted if not returned.",
+                                            "type": "boolean"
+                                        },
+                                        "emails": {
+                                            "description": "Email addresses, preserving order and primary markers; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Address label such as work or home.",
+                                                        "type": "string"
+                                                    },
+                                                    "address": {
+                                                        "description": "Email address from the provider value field.",
+                                                        "type": "string"
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this address is marked primary.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "One returned email address."
+                                            }
+                                        },
+                                        "groups": {
+                                            "description": "Returned group or team associations; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "groupId": {
+                                                        "description": "Opaque group or team ID.",
+                                                        "type": "string"
+                                                    },
+                                                    "displayName": {
+                                                        "description": "Name of the associated group or team.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "One returned group or team association."
+                                            }
+                                        },
+                                        "schemas": {
+                                            "description": "SCIM schema URIs describing this user; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "SCIM schema URI."
+                                            }
+                                        },
+                                        "userName": {
+                                            "description": "Login username, usually an email address; omitted if not returned.",
+                                            "type": "string"
+                                        },
+                                        "enterprise": {
+                                            "description": "Enterprise profile extension; omitted if not returned.",
+                                            "type": "object",
+                                            "properties": {
+                                                "division": {
+                                                    "description": "Assigned division.",
+                                                    "type": "string"
+                                                },
+                                                "managerId": {
+                                                    "description": "Opaque Lucid user ID of the manager.",
+                                                    "type": "string"
+                                                },
+                                                "costCenter": {
+                                                    "description": "Assigned cost center.",
+                                                    "type": "string"
+                                                },
+                                                "department": {
+                                                    "description": "Assigned department.",
+                                                    "type": "string"
+                                                },
+                                                "organization": {
+                                                    "description": "Assigned organization.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "externalId": {
+                                            "description": "Provisioning client's external identifier; omitted if not returned.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Displayed user name; omitted if not returned.",
+                                            "type": "string"
+                                        },
+                                        "phoneNumbers": {
+                                            "description": "Phone entries, currently work numbers only; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider phone label, currently work.",
+                                                        "type": "string"
+                                                    },
+                                                    "number": {
+                                                        "description": "Phone number as stored, without reformatting.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "One returned phone entry."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user visible through Lucid SCIM."
+                                },
+                                "description": "Users in this provider page, excluding deactivated users."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another page; omitted when exhausted.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported matching user count, excluding deactivated users; filtered retrieval is capped at 10,000.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of users and any continuation supported by the returned pagination metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse users or find their IDs before `update-user` or `delete-user-permanently`. Prefer email, username, display name, or external ID filters for fast lookups. Use `get-user` for a known user ID. Continue with nextCursor as cursor and keep the same filter and limit. Each call returns one page; filtered results are capped by Lucid at 10,000 users."
+            },
+            "filePath": "./lucid-scim/tools/list-users.ts",
+            "version": "ea8a995e1f5e4872ee50f2c4e11388d6193f4fcef28444e8f99a8c83978a8295",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/list-users/ea8a995e1f5e4872ee50f2c4e11388d6193f4fcef28444e8f99a8c83978a8295.cjs",
+                "ts": "templates-zero/lucid-scim/tools/list-users/ea8a995e1f5e4872ee50f2c4e11388d6193f4fcef28444e8f99a8c83978a8295.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-group",
+            "integrationId": "lucid-scim",
+            "description": "Remove one user or subgroup association from a connection-selected org group or team without deleting the member resource or replacing other memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_removememberfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_removememberfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque org group or team ID containing the membership."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the exact user or subgroup association to remove."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The destination group or team and the exact membership to remove."
+                    },
+                    "FunctionOutput_lucid_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Modified group or team ID."
+                            },
+                            "members": {
+                                "description": "Membership returned after removal; omitted does not assert an empty membership.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque remaining user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned member resource URI.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A remaining user or subgroup association."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Returned destination name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The modified group or team and the membership details returned by Lucid."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-group` to inspect membership and obtain the exact memberId. This removes only the association, not the user or subgroup itself. Use `update-group` with memberIds:[] to intentionally clear all membership, or `add-member-to-group` to add an association. Removing a member may revoke access granted by that membership."
+            },
+            "filePath": "./lucid-scim/tools/remove-member-from-group.ts",
+            "version": "1af145bfdfbaafd2b05da87c111661fca893588f6006ed72a4040103855d6fa2",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/remove-member-from-group/1af145bfdfbaafd2b05da87c111661fca893588f6006ed72a4040103855d6fa2.cjs",
+                "ts": "templates-zero/lucid-scim/tools/remove-member-from-group/1af145bfdfbaafd2b05da87c111661fca893588f6006ed72a4040103855d6fa2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "replace-group",
+            "integrationId": "lucid-scim",
+            "description": "Replace the writable name and membership of one connection-selected org group or team while retaining its identity.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_replacegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_replacegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_replacegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque org group or team ID to replace."
+                            },
+                            "memberIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque user or subgroup member ID."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired membership; [] means no members. Org groups allow user or subgroup IDs, teams only users."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Complete desired group or team name."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberIds",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete desired writable state of one connection-selected org group or team."
+                    },
+                    "FunctionOutput_lucid_scim_replacegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the replaced group or team."
+                            },
+                            "members": {
+                                "description": "Membership returned after replacement.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque user or subgroup member ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned member resource URI.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Returned user or subgroup membership association."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Returned group or team name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group or team resource returned after replacement."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `update-group` for partial changes or the membership tools for one association. This tool requires both the desired name and complete member list; members not supplied in that list are removed. Use `get-group` first when constructing the complete desired state. Teams accept only user members."
+            },
+            "filePath": "./lucid-scim/tools/replace-group.ts",
+            "version": "ce664a04a27dfc87eb98d0860f707baa4f68239bb5f7088b31114c448d1bedb8",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/replace-group/ce664a04a27dfc87eb98d0860f707baa4f68239bb5f7088b31114c448d1bedb8.cjs",
+                "ts": "templates-zero/lucid-scim/tools/replace-group/ce664a04a27dfc87eb98d0860f707baa4f68239bb5f7088b31114c448d1bedb8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "replace-user",
+            "integrationId": "lucid-scim",
+            "description": "Replace the writable SCIM user profile with a supplied complete profile. Unlike a partial update, omitted optional writable attributes are intended to be cleared or reset under Lucid's replacement semantics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_replaceuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_replaceuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_replaceuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Lucid user ID whose writable profile is replaced."
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Complete desired personal name; omitted components are not preserved.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Formatted full name.",
+                                                "type": "string"
+                                            },
+                                            "givenName": {
+                                                "description": "Given name.",
+                                                "type": "string"
+                                            },
+                                            "familyName": {
+                                                "description": "Family name.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "roles": {
+                                        "description": "Complete desired administrative-role list; [] explicitly clears roles.",
+                                        "uniqueItems": true,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "AccountAdmin",
+                                                "BillingAdmin",
+                                                "Developer",
+                                                "DocumentAdmin",
+                                                "EnterpriseShieldAdmin",
+                                                "TemplateAdmin"
+                                            ],
+                                            "description": "Administrative role to assign."
+                                        }
+                                    },
+                                    "title": {
+                                        "description": "Desired job title.",
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "description": "Desired authentication access; omission uses replacement default, not preservation.",
+                                        "type": "boolean"
+                                    },
+                                    "emails": {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Email label, if specified.",
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Desired email address."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether the email is primary, if specified.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "address"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Desired email entry."
+                                        },
+                                        "description": "Complete desired email list."
+                                    },
+                                    "userName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Desired login username."
+                                    },
+                                    "enterprise": {
+                                        "description": "Complete desired enterprise profile; omitted fields are not preserved.",
+                                        "type": "object",
+                                        "properties": {
+                                            "division": {
+                                                "description": "Desired division.",
+                                                "type": "string"
+                                            },
+                                            "managerId": {
+                                                "description": "Desired manager's opaque Lucid user ID.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "costCenter": {
+                                                "description": "Desired cost center.",
+                                                "type": "string"
+                                            },
+                                            "department": {
+                                                "description": "Desired department.",
+                                                "type": "string"
+                                            },
+                                            "organization": {
+                                                "description": "Desired organization.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "externalId": {
+                                        "description": "Desired external provisioning ID.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "description": "Desired displayed name; omission requests replacement default or removal.",
+                                        "type": "string"
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Complete work-phone list; [] explicitly clears it.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Supported label, defaulting to work.",
+                                                    "default": "work",
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                "number": {
+                                                    "type": "string",
+                                                    "description": "Phone number text."
+                                                }
+                                            },
+                                            "required": [
+                                                "number"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Desired work-phone entry."
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "emails",
+                                    "userName"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Complete writable profile. Omitted optional fields are not preserved; null is not accepted. Arrays are complete desired collections."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "profile"
+                        ],
+                        "additionalProperties": false,
+                        "description": "User identity and complete desired writable SCIM profile."
+                    },
+                    "FunctionOutput_lucid_scim_replaceuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Replaced user's opaque Lucid ID."
+                            },
+                            "roles": {
+                                "description": "Returned administrative-role names.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Returned administrative-role name."
+                                }
+                            },
+                            "active": {
+                                "description": "Authentication access, if returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email entries returned after replacement.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email label.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Stored email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this email is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Email entry returned after replacement."
+                                }
+                            },
+                            "userName": {
+                                "description": "Username returned after replacement.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning-client ID, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed name, if returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Stored user summary returned by Lucid after replacement."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `update-user` for ordinary partial changes. Use this only when you have the user's ID and intend a complete writable-profile replacement, including email and administrative-role state. Omitted optional attributes may be removed or reset. This cannot change the user's password. Read the current user through `get-user` or `list-users` first when it is visible."
+            },
+            "filePath": "./lucid-scim/tools/replace-user.ts",
+            "version": "8f1a45c400fff6d9e849013e5ad4778fa81f77a8fdce9ea1172cf73e80ef4ac6",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/replace-user/8f1a45c400fff6d9e849013e5ad4778fa81f77a8fdce9ea1172cf73e80ef4ac6.cjs",
+                "ts": "templates-zero/lucid-scim/tools/replace-user/8f1a45c400fff6d9e849013e5ad4778fa81f77a8fdce9ea1172cf73e80ef4ac6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "lucid-scim",
+            "description": "Partially modify a connection-selected org group or team name, or replace its membership. Omitted fields remain unchanged.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "memberIds": {
+                                        "description": "Complete desired membership; [] removes all members. Omission preserves existing membership.",
+                                        "uniqueItems": true,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque user or subgroup ID to include in the complete desired membership."
+                                        }
+                                    },
+                                    "displayName": {
+                                        "description": "Replacement group or team name; cannot be cleared.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Partial modifications; omitted fields are preserved and null is not accepted.",
+                                "minProperties": 1
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque group or team ID to modify."
+                            }
+                        },
+                        "required": [
+                            "changes",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group or team to modify and only the fields to change."
+                    },
+                    "FunctionOutput_lucid_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque modified group or team ID."
+                            },
+                            "members": {
+                                "description": "Membership returned after modification.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memberId": {
+                                            "type": "string",
+                                            "description": "Opaque user or subgroup ID."
+                                        },
+                                        "displayName": {
+                                            "description": "Returned member display label.",
+                                            "type": "string"
+                                        },
+                                        "resourceUrl": {
+                                            "description": "Returned member resource URI.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "memberId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A member returned after modification."
+                                }
+                            },
+                            "schemas": {
+                                "description": "Returned SCIM schema URIs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A returned SCIM schema URI."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Name returned after modification.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The modified group or team details returned by Lucid."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId from `list-groups` or `create-group`. Use `add-member-to-group` or `remove-member-from-group` for one association without replacing other members. Supplying memberIds here replaces the full member list; [] clears it. Org groups can include subgroups, teams cannot. Use `replace-group` only for complete replacement."
+            },
+            "filePath": "./lucid-scim/tools/update-group.ts",
+            "version": "dc7bfc62a0530ab9468bf88fbf28928540b36dbed75d8bae015b200e4f5f91ff",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/update-group/dc7bfc62a0530ab9468bf88fbf28928540b36dbed75d8bae015b200e4f5f91ff.cjs",
+                "ts": "templates-zero/lucid-scim/tools/update-group/dc7bfc62a0530ab9468bf88fbf28928540b36dbed75d8bae015b200e4f5f91ff.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "lucid-scim",
+            "description": "Partially modify a user's identity, personal and enterprise profile, administrative roles, or ability to authenticate. Omitted attributes remain unchanged; active:false deactivates the user without hard deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_lucid_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_lucid_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_lucid_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Lucid user ID to modify, including a previously known deactivated ID."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Partial personal-name changes; omitted subfields remain unchanged.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Replacement formatted name; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "givenName": {
+                                                "description": "Replacement given name; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "familyName": {
+                                                "description": "Replacement family name; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "roles": {
+                                        "description": "Complete replacement administrative-role list; [] removes all administrative roles.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "AccountAdmin",
+                                                "BillingAdmin",
+                                                "Developer",
+                                                "DocumentAdmin",
+                                                "EnterpriseShieldAdmin",
+                                                "TemplateAdmin"
+                                            ]
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "title": {
+                                        "description": "Replacement job title; null removes it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "active": {
+                                        "description": "False deactivates authentication; true requests authentication access. Omission leaves access unchanged.",
+                                        "type": "boolean"
+                                    },
+                                    "emails": {
+                                        "description": "Complete replacement email list; cannot be cleared by this tool.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address label, such as work; omitted label is not supplied.",
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Stored email address."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this address is primary; omitted flag is not supplied.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "address"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "userName": {
+                                        "description": "Replacement login username; cannot be cleared.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "enterprise": {
+                                        "description": "Partial enterprise changes; omitted subfields remain unchanged.",
+                                        "type": "object",
+                                        "properties": {
+                                            "division": {
+                                                "description": "Replacement division; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "managerId": {
+                                                "description": "Replacement manager's Lucid user ID; null removes the manager relationship.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "costCenter": {
+                                                "description": "Replacement cost center; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "department": {
+                                                "description": "Replacement department; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "organization": {
+                                                "description": "Replacement organization; null removes it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "externalId": {
+                                        "description": "Replacement provisioning-client ID; null removes it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "displayName": {
+                                        "description": "Replacement displayed name; null removes it; empty string is an explicit empty value.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Complete replacement work-phone list; [] removes all entries.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Supported phone label, defaulting to work.",
+                                                    "type": "string",
+                                                    "const": "work",
+                                                    "default": "work"
+                                                },
+                                                "number": {
+                                                    "type": "string",
+                                                    "description": "Unmodified phone number text."
+                                                }
+                                            },
+                                            "required": [
+                                                "number"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial changes. Omitted fields remain unchanged. Nullable optional scalars use null to remove the attribute; supplied arrays replace the entire collection."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a Lucid user and supply only the profile or authentication changes to apply."
+                    },
+                    "FunctionOutput_lucid_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Modified user's opaque Lucid ID."
+                            },
+                            "roles": {
+                                "description": "Administrative role names returned after modification.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "active": {
+                                "description": "Authentication access flag returned after modification.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email list returned after modification.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Stored email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "userName": {
+                                "description": "Username returned after modification.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "Provisioning-client ID, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Displayed name, if returned after modification.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity and authentication summary from the modified Lucid user resource."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain a user ID from `list-users` or `create-user`; a known deactivated ID can also be used directly. Supply only changes. Setting active to false blocks authentication; use true to request access again. Role and email arrays replace their existing collections. Use `replace-user` only for a complete writable-profile replacement, and `delete-user-permanently` only for hard deletion."
+            },
+            "filePath": "./lucid-scim/tools/update-user.ts",
+            "version": "6285e84ebaacf14f2ca3cba59ba5b1e6a78fd7704a84d66d819785bc4ab017f1",
+            "location": {
+                "js": "templates-zero/lucid-scim/tools/update-user/6285e84ebaacf14f2ca3cba59ba5b1e6a78fd7704a84d66d819785bc4ab017f1.cjs",
+                "ts": "templates-zero/lucid-scim/tools/update-user/6285e84ebaacf14f2ca3cba59ba5b1e6a78fd7704a84d66d819785bc4ab017f1.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

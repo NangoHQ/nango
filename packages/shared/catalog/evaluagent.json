@@ -1,0 +1,221 @@
+{
+    "providerConfigKey": "evaluagent",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of groups from evaluagent",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/groups"
+                }
+            ],
+            "input": "SyncMetadata_evaluagent_groups",
+            "name": "groups",
+            "output": [
+                "EvaluAgentGroup"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "EvaluAgentGroup",
+                "SyncMetadata_evaluagent_groups"
+            ],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "EvaluAgentGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "level": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "parent": {
+                                "type": "string"
+                            },
+                            "hasChildren": {
+                                "type": "boolean"
+                            },
+                            "isCustomReportingGroup": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "level",
+                            "active",
+                            "parent",
+                            "hasChildren",
+                            "isCustomReportingGroup"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_evaluagent_groups": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of roles from evaluagent",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/roles"
+                }
+            ],
+            "input": "SyncMetadata_evaluagent_roles",
+            "name": "roles",
+            "output": [
+                "EvaluAgentRole"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "EvaluAgentRole",
+                "SyncMetadata_evaluagent_roles"
+            ],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "EvaluAgentRole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_evaluagent_roles": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from evaluagent",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users"
+                }
+            ],
+            "input": "SyncMetadata_evaluagent_users",
+            "name": "users",
+            "output": [
+                "EvaluAgentUser"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "EvaluAgentUser",
+                "SyncMetadata_evaluagent_users"
+            ],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "EvaluAgentUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "forename": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "thirdPartyId": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "forename",
+                            "surname",
+                            "email",
+                            "username",
+                            "startDate",
+                            "active",
+                            "thirdPartyId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_evaluagent_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

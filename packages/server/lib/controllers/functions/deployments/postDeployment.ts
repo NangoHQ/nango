@@ -21,11 +21,10 @@ type DeploymentResponse = Response<PostFunctionDeployment['Reply'], RequestLocal
 const logger = getLogger('Server.PostFunctionDeployment');
 
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
     const result = await functionDeploymentService.deployTemplate({
         environment,
         account,
-        plan,
         body
     });
     if (result.isErr()) {
@@ -121,9 +120,6 @@ function sendDeployTemplateError(res: DeploymentResponse, error: DeployTemplateS
             return;
         case 'invalid_request':
             res.status(400).send({ error: { code: 'invalid_request', message: error.message } });
-            return;
-        case 'plan_limit':
-            res.status(400).send({ error: { code: error.code, message: error.message } });
             return;
         case 'non_runnable_template':
             if (error.cause) {

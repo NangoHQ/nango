@@ -1,0 +1,2125 @@
+{
+    "providerConfigKey": "a-leads",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected API key's bulk-file metadata, processing states, and available download locations available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-bulk-files",
+            "output": [
+                "BulkFiles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BulkFiles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BulkFiles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque bulk-file identifier."
+                            },
+                            "name": {
+                                "description": "Human-readable bulk-file name.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider's current file-processing state, if available.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "File creation instant normalized to UTC Z with exact source fractional-second precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "downloadUrl": {
+                                "description": "Provider's available download location, without a permanence or absolute-URL guarantee; omitted when unavailable.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bulk-file metadata, processing state, and available download location for the connected API key."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected account's previously searched lead records available as a replicated dataset, including person identity, professional context, and associated company references.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-saved-leads",
+            "output": [
+                "SavedLeads"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SavedLeads"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SavedLeads": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque search-document identifier for this person/company lead."
+                            },
+                            "country": {
+                                "description": "Person's country label.",
+                                "type": "string"
+                            },
+                            "fullName": {
+                                "description": "Person's full display name.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Associated professional position title.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Person's family name.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Human-readable person location.",
+                                "type": "string"
+                            },
+                            "personId": {
+                                "description": "Opaque person identifier, distinct from the document identifier.",
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "description": "Opaque associated company identifier.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Person's given name.",
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "description": "Associated company display name.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Professional summary as ordinary text.",
+                                "type": "string"
+                            },
+                            "linkedInUrl": {
+                                "description": "Person's LinkedIn profile URL.",
+                                "type": "string"
+                            },
+                            "companyDomain": {
+                                "description": "Associated company domain.",
+                                "type": "string"
+                            },
+                            "companyWebsite": {
+                                "description": "Associated company website.",
+                                "type": "string"
+                            },
+                            "companyKeywords": {
+                                "description": "Associated company's categories and keywords.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A company category or keyword."
+                                }
+                            },
+                            "companySizeRange": {
+                                "description": "Reported human-readable company size range.",
+                                "type": "string"
+                            },
+                            "connectionsCount": {
+                                "description": "Reported LinkedIn connection count, without an exactness guarantee.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "linkedInUsername": {
+                                "description": "Person's LinkedIn username.",
+                                "type": "string"
+                            },
+                            "companyDescription": {
+                                "description": "Company metadata description as ordinary text.",
+                                "type": "string"
+                            },
+                            "companyLinkedInUrl": {
+                                "description": "Associated company LinkedIn URL.",
+                                "type": "string"
+                            },
+                            "phoneNumberAvailable": {
+                                "description": "Whether phone enrichment is reported available; not the phone number itself.",
+                                "type": "boolean"
+                            },
+                            "companyHeadquartersAddress": {
+                                "description": "Formatted company headquarters address.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A previously searched person/company lead with identity, professional context, and company references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-enrich-companies",
+            "integrationId": "a-leads",
+            "description": "Submit a native company-search enrichment file request for up to 1,000 matching companies. Company enrichment costs 0.5 credit per company.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_batchenrichcompanies",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_batchenrichcompanies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_batchenrichcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Human-readable name for the requested bulk company file."
+                            },
+                            "filters": {
+                                "description": "Company, website, funding, and hiring criteria; omission means no restriction.",
+                                "type": "object",
+                                "properties": {
+                                    "dates": {
+                                        "description": "Corporate-event and posting calendar-date windows.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ipo",
+                                                "acquisition",
+                                                "jobPosting"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "from": {
+                                                    "description": "Starting YYYY-MM-DD calendar date.",
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                "through": {
+                                                    "description": "Ending YYYY-MM-DD calendar date.",
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "At least one calendar-date bound for a company event."
+                                        }
+                                    },
+                                    "lists": {
+                                        "description": "Include/exclude selections; unsupported exclusion combinations are rejected.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "organizations",
+                                                "companyDomains",
+                                                "headquartersLocations",
+                                                "companyTypes",
+                                                "sicCodes",
+                                                "naicsCodes",
+                                                "industries",
+                                                "companySizes",
+                                                "technologies",
+                                                "companyKeywords",
+                                                "websiteTopics",
+                                                "fundingRoundNames",
+                                                "ownershipStatuses",
+                                                "hiringTitles",
+                                                "hiringLocations",
+                                                "hiringEmploymentTypes",
+                                                "hiringSeniorityLevels"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "exclude": {
+                                                    "description": "Criterion values to exclude where supported.",
+                                                    "minItems": 1,
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "description": "A criterion value to exclude."
+                                                    }
+                                                },
+                                                "include": {
+                                                    "description": "Criterion values to include.",
+                                                    "minItems": 1,
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "description": "A criterion value to include."
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "At least one inclusion or exclusion selection."
+                                        }
+                                    },
+                                    "ranges": {
+                                        "description": "Numeric ranges. Revenue retains unspecified provider monetary units; bounce rate is percentage points; website visits are monthly and duration is seconds.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "annualRevenue",
+                                                "bounceRatePercent",
+                                                "globalRank",
+                                                "countryRank",
+                                                "categoryRank",
+                                                "pagesPerVisit",
+                                                "monthlyWebsiteVisits",
+                                                "visitDurationSeconds"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "maximum": {
+                                                    "description": "Upper numeric bound in the criterion's stated units.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "minimum": {
+                                                    "description": "Lower numeric bound in the criterion's stated units.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "At least one numeric bound for a company criterion."
+                                        }
+                                    },
+                                    "booleans": {
+                                        "description": "Explicit true/false characteristic restrictions; omit for no restriction.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "demoAvailable",
+                                                "downloadable",
+                                                "mobileAppsExist",
+                                                "pricingAvailable",
+                                                "documentationExists",
+                                                "freeTrialAvailable",
+                                                "onlineReviewsExist"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "boolean",
+                                            "description": "Required presence or absence of this company characteristic."
+                                        }
+                                    },
+                                    "lastFundingWindow": {
+                                        "description": "Provider-defined relative window for the latest funding announcement; evaluated by the provider at submission.",
+                                        "type": "string",
+                                        "enum": [
+                                            "past30Days",
+                                            "past60Days",
+                                            "past90Days",
+                                            "pastYear"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "searchType": {
+                                "default": "total",
+                                "description": "Select all matching company data, new data, or previously searched data.",
+                                "type": "string",
+                                "enum": [
+                                    "total",
+                                    "new",
+                                    "saved"
+                                ]
+                            },
+                            "maxCompanies": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000,
+                                "description": "Maximum companies requested for this native job; public maximum 1,000 is provisional."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "maxCompanies"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submit a named, bounded company enrichment file request with optional search criteria."
+                    },
+                    "FunctionOutput_a_leads_batchenrichcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque bulk-file identifier for get-bulk-file; establishes accepted submission, not completion or per-company enrichment success."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted company enrichment submission, identified by its bulk file ID."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a company intelligence file, not a single profile (`get-company`) or similar-company discovery (`search-similar-companies`). Maximum requested batch is 1,000 companies. Save the returned id and call `get-bulk-file` later. Submission is not file completion, and repeating it may create another billable file."
+            },
+            "filePath": "./a-leads/tools/batch-enrich-companies.ts",
+            "version": "d143183cd48af79ca7e63b5596b7401c90899b3256e81c4ebd516fae6b9a6ec3",
+            "location": {
+                "js": "templates-zero/a-leads/tools/batch-enrich-companies/d143183cd48af79ca7e63b5596b7401c90899b3256e81c4ebd516fae6b9a6ec3.cjs",
+                "ts": "templates-zero/a-leads/tools/batch-enrich-companies/d143183cd48af79ca7e63b5596b7401c90899b3256e81c4ebd516fae6b9a6ec3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-enrich-leads",
+            "integrationId": "a-leads",
+            "description": "Submit a native batch search and enrichment request for up to 1,000 matching leads, returning a bulk-file identifier rather than waiting for file completion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_batchenrichleads",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_batchenrichleads",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_batchenrichleads": {
+                        "type": "object",
+                        "properties": {
+                            "filters": {
+                                "description": "Typed lead/company criteria; omitted criteria impose no restriction.",
+                                "type": "object",
+                                "properties": {
+                                    "dates": {
+                                        "description": "Calendar-date windows, never converted to UTC instants.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ipo",
+                                                "acquisition",
+                                                "jobPosting"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "from": {
+                                                    "description": "Starting YYYY-MM-DD calendar date.",
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                "through": {
+                                                    "description": "Ending YYYY-MM-DD calendar date.",
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "One or both calendar-date bounds for a criterion."
+                                        }
+                                    },
+                                    "lists": {
+                                        "description": "Include/exclude selections; unsupported exclusions are rejected.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "jobTitles",
+                                                "skills",
+                                                "personLinkedInProfiles",
+                                                "personLocations",
+                                                "profileKeywords",
+                                                "certifications",
+                                                "managementLevels",
+                                                "departments",
+                                                "organizations",
+                                                "companyDomains",
+                                                "companyLinkedInProfiles",
+                                                "headquartersLocations",
+                                                "companyTypes",
+                                                "sicCodes",
+                                                "naicsCodes",
+                                                "industries",
+                                                "companySizes",
+                                                "technologies",
+                                                "companyKeywords",
+                                                "websiteTopics",
+                                                "fundingRoundNames",
+                                                "hiringTitles",
+                                                "hiringLocations",
+                                                "hiringEmploymentTypes",
+                                                "hiringSeniorityLevels",
+                                                "hiringFunctions",
+                                                "companyStatusComments"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "exclude": {
+                                                    "description": "Values to exclude where that exclusion is supported.",
+                                                    "minItems": 1,
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "description": "A criterion value to exclude."
+                                                    }
+                                                },
+                                                "include": {
+                                                    "description": "Values to include using provider matching semantics.",
+                                                    "minItems": 1,
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "description": "A criterion value to include."
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "One or both include/exclude selections for a criterion."
+                                        }
+                                    },
+                                    "ranges": {
+                                        "description": "Numeric ranges; experience/job durations are months, visits monthly, visit duration seconds, and bounce rate percentage points. Monetary units/currency are provider-defined and unspecified.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "annualRevenue",
+                                                "lastFundingAmount",
+                                                "jobDurationMonths",
+                                                "totalExperienceMonths",
+                                                "employeeReviewScore",
+                                                "bounceRatePercent",
+                                                "globalRank",
+                                                "countryRank",
+                                                "categoryRank",
+                                                "pagesPerVisit",
+                                                "monthlyWebsiteVisits",
+                                                "visitDurationSeconds"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "maximum": {
+                                                    "description": "Upper numeric bound in the selected criterion's units.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "minimum": {
+                                                    "description": "Lower numeric bound in the selected criterion's units.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "One or both numeric bounds for a criterion."
+                                        }
+                                    },
+                                    "booleans": {
+                                        "description": "Explicit required characteristic flags; omission means unrestricted.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "enum": [
+                                                "demoAvailable",
+                                                "downloadable",
+                                                "mobileAppsExist",
+                                                "pricingAvailable",
+                                                "documentationExists",
+                                                "freeTrialAvailable",
+                                                "onlineReviewsExist",
+                                                "isB2b",
+                                                "isPublic"
+                                            ]
+                                        },
+                                        "additionalProperties": {
+                                            "type": "boolean",
+                                            "description": "Required presence or absence of the named characteristic."
+                                        }
+                                    },
+                                    "personName": {
+                                        "description": "Free-text individual name.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "companyStatus": {
+                                        "description": "Restrict results by company lifecycle status.",
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "closed"
+                                        ]
+                                    },
+                                    "strictIndustries": {
+                                        "default": false,
+                                        "description": "Require exact industry matches rather than related industries.",
+                                        "type": "boolean"
+                                    },
+                                    "jobTitleMatchMode": {
+                                        "default": "contains",
+                                        "description": "Exact, substring, or semantic title matching.",
+                                        "type": "string",
+                                        "enum": [
+                                            "exact",
+                                            "contains",
+                                            "smart"
+                                        ]
+                                    },
+                                    "smartTitleSensitivity": {
+                                        "description": "Sensitivity only for smart title matching; default normal in smart mode.",
+                                        "type": "string",
+                                        "enum": [
+                                            "loose",
+                                            "normal",
+                                            "strict"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "maxLeads": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000,
+                                "description": "Maximum matching leads requested for this native job; public maximum 1,000 is provisional, not an unlimited-export flag."
+                            },
+                            "searchType": {
+                                "default": "total",
+                                "description": "Select all matching data, previously unsearched data, or previously searched data.",
+                                "type": "string",
+                                "enum": [
+                                    "total",
+                                    "new",
+                                    "saved"
+                                ]
+                            },
+                            "enrichPhone": {
+                                "default": false,
+                                "description": "Request phones; documented cost is 15 credits per lead with a phone.",
+                                "type": "boolean"
+                            },
+                            "enrichWorkEmail": {
+                                "default": false,
+                                "description": "Request work emails; documented cost is one credit per lead with an email.",
+                                "type": "boolean"
+                            },
+                            "enrichPersonalEmail": {
+                                "default": false,
+                                "description": "Request personal emails; documented bulk cost is one extra credit, totaling two when combined with work email.",
+                                "type": "boolean"
+                            },
+                            "includePartialLeads": {
+                                "default": false,
+                                "description": "Enrich partial leads without emails; documented cost is 0.5 credit per lead.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "maxLeads"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Matching criteria, maximum lead count, and explicit enrichment choices for one native batch submission."
+                    },
+                    "FunctionOutput_a_leads_batchenrichleads": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque bulk-file identifier for get-bulk-file; establishes submission acceptance, not completion or per-lead success."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted batch submission identifier; file processing completes separately."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a lead enrichment file, not one-page browsing (`search-leads`) or one person's email (`find-work-email`). Choose the credit-bearing enrichment options deliberately. Maximum requested batch is 1,000 leads. Save the returned id and call `get-bulk-file` later; `list-bulk-files` can recover earlier file IDs. Submission does not mean the file is finished or every lead was enriched."
+            },
+            "filePath": "./a-leads/tools/batch-enrich-leads.ts",
+            "version": "6bdf699ecbdeeea87f279c34575814969b5de3852414bc807bd8dc3d790dd194",
+            "location": {
+                "js": "templates-zero/a-leads/tools/batch-enrich-leads/6bdf699ecbdeeea87f279c34575814969b5de3852414bc807bd8dc3d790dd194.cjs",
+                "ts": "templates-zero/a-leads/tools/batch-enrich-leads/6bdf699ecbdeeea87f279c34575814969b5de3852414bc807bd8dc3d790dd194.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-reverse-email-lookup",
+            "integrationId": "a-leads",
+            "description": "Create an asynchronous lookup job to find a LinkedIn profile associated with an email address.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_createreverseemaillookup",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_createreverseemaillookup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_createreverseemaillookup": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address whose associated LinkedIn identity should be looked up, preserving case."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Email address to submit for an asynchronous reverse lookup."
+                    },
+                    "FunctionOutput_a_leads_createreverseemaillookup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque lookup job identifier to pass as lookupId to get-reverse-email-lookup."
+                            },
+                            "email": {
+                                "description": "Email returned for the lookup job.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider's initial job state, such as queued; not a completion guarantee."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted reverse-email lookup job, not a completed profile match."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to identify a person from a known email, not to assess deliverability; use `verify-email` for that. Save the returned id and call `get-reverse-email-lookup` later. This returns job acceptance rather than waiting for lookup completion. Do not blindly repeat submission after an ambiguous outcome because it may create another job."
+            },
+            "filePath": "./a-leads/tools/create-reverse-email-lookup.ts",
+            "version": "362b9c8f7949b0d203edf626e89ce054b03237dde60a60c8878c708c19b6e04b",
+            "location": {
+                "js": "templates-zero/a-leads/tools/create-reverse-email-lookup/362b9c8f7949b0d203edf626e89ce054b03237dde60a60c8878c708c19b6e04b.cjs",
+                "ts": "templates-zero/a-leads/tools/create-reverse-email-lookup/362b9c8f7949b0d203edf626e89ce054b03237dde60a60c8878c708c19b6e04b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "find-personal-email",
+            "integrationId": "a-leads",
+            "description": "Find a personal email associated with a LinkedIn profile. The documented cost is five credits only when an email is found.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_findpersonalemail",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_findpersonalemail",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_findpersonalemail": {
+                        "type": "object",
+                        "properties": {
+                            "linkedInProfile": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "LinkedIn profile URL or username for the person, passed as ordinary text."
+                            }
+                        },
+                        "required": [
+                            "linkedInProfile"
+                        ],
+                        "additionalProperties": false,
+                        "description": "LinkedIn identity to look up for a personal email."
+                    },
+                    "FunctionOutput_a_leads_findpersonalemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Found personal email address, or null when no address was found.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Personal-email lookup result, including an explicit null for no match."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a LinkedIn username or profile URL, available from `search-leads`. Use `find-work-email` for professional email or `verify-email` for a known address. A successful personal-email match costs five credits; null is a normal no-match result. Avoid repeating calls unnecessarily."
+            },
+            "filePath": "./a-leads/tools/find-personal-email.ts",
+            "version": "7e3cf5fd179ae3f22581c04a37df6579c75472fa79b9259f1089bfdcc20a252c",
+            "location": {
+                "js": "templates-zero/a-leads/tools/find-personal-email/7e3cf5fd179ae3f22581c04a37df6579c75472fa79b9259f1089bfdcc20a252c.cjs",
+                "ts": "templates-zero/a-leads/tools/find-personal-email/7e3cf5fd179ae3f22581c04a37df6579c75472fa79b9259f1089bfdcc20a252c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "find-phone-number",
+            "integrationId": "a-leads",
+            "description": "Find a person's phone number using a LinkedIn profile URL or username.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_findphonenumber",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_findphonenumber",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_findphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "linkedInProfile": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Person's LinkedIn profile URL or username, passed as ordinary text."
+                            }
+                        },
+                        "required": [
+                            "linkedInProfile"
+                        ],
+                        "additionalProperties": false,
+                        "description": "LinkedIn identity to use for phone discovery."
+                    },
+                    "FunctionOutput_a_leads_findphonenumber": {
+                        "type": "object",
+                        "properties": {
+                            "phoneNumber": {
+                                "description": "Found telephone number in provider formatting, or null if no number is found; no inferred country code is added.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "phoneNumber"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Phone discovery result, preserving provider telephone formatting."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a LinkedIn username or URL, such as one returned by `search-leads`. A null result is a normal no-match. Use `find-work-email` or `find-personal-email` for email enrichment instead. This may be chargeable enrichment; avoid blind repeat calls."
+            },
+            "filePath": "./a-leads/tools/find-phone-number.ts",
+            "version": "9601afbe61d7b6b9c411c8c95e8a955c98af78a62e69a0854d0f0a7e726be5c2",
+            "location": {
+                "js": "templates-zero/a-leads/tools/find-phone-number/9601afbe61d7b6b9c411c8c95e8a955c98af78a62e69a0854d0f0a7e726be5c2.cjs",
+                "ts": "templates-zero/a-leads/tools/find-phone-number/9601afbe61d7b6b9c411c8c95e8a955c98af78a62e69a0854d0f0a7e726be5c2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "find-work-email",
+            "integrationId": "a-leads",
+            "description": "Find a person's professional email from their name and company website. Optionally associate enrichment with an advanced-search document so it is stored for the account.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_findworkemail",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_findworkemail",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_findworkemail": {
+                        "type": "object",
+                        "properties": {
+                            "lastName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Person's family name as ordinary text; mapping resolves an inconsistent upstream description."
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Person's given name as ordinary text."
+                            },
+                            "documentId": {
+                                "description": "Optional id from search-leads for this exact person/company result. Including it stores enrichment for the account and changes repeat-credit behavior; omit for externally sourced people.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "companyWebsite": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company domain or website, such as abc-tech.com."
+                            }
+                        },
+                        "required": [
+                            "lastName",
+                            "firstName",
+                            "companyWebsite"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Person and company information for a professional email lookup, with optional search-document association."
+                    },
+                    "FunctionOutput_a_leads_findworkemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Found professional email, if provided; absence means the provider returned no address.",
+                                "type": "string"
+                            },
+                            "result": {
+                                "description": "Provider's finder outcome, preserved without inventing an outcome enum.",
+                                "type": "string"
+                            },
+                            "quality": {
+                                "description": "Provider's quality label, such as good.",
+                                "type": "string"
+                            },
+                            "catchAll": {
+                                "description": "Whether the provider reports catch-all behavior for the address/domain.",
+                                "type": "boolean"
+                            },
+                            "lastName": {
+                                "description": "Family name returned by the finder.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Given name returned by the finder.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Professional email finder results returned by A-Leads; unavailable optional fields are omitted."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `search-leads` first when possible and include its document ID to store the email and avoid repeat charges for the same data. Without a document ID, the email is not stored and every repeated query is charged. Use `find-personal-email` for a personal address or `verify-email` to assess a known address. Supply the person's given/family names and company website."
+            },
+            "filePath": "./a-leads/tools/find-work-email.ts",
+            "version": "35f118954fb5913d5cd3628a98b871fb9d57fb2298ef794073df31aefd3a67b3",
+            "location": {
+                "js": "templates-zero/a-leads/tools/find-work-email/35f118954fb5913d5cd3628a98b871fb9d57fb2298ef794073df31aefd3a67b3.cjs",
+                "ts": "templates-zero/a-leads/tools/find-work-email/35f118954fb5913d5cd3628a98b871fb9d57fb2298ef794073df31aefd3a67b3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-bulk-file",
+            "integrationId": "a-leads",
+            "description": "Get the current processing status and available download location of one bulk file.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_getbulkfile",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_getbulkfile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_getbulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque bulk-file identifier returned by a batch request or list-bulk-files."
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the bulk file whose current processing status should be read."
+                    },
+                    "FunctionOutput_a_leads_getbulkfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Requested bulk-file identifier, echoed for correlation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider's processing state, such as completed; open string preserves undocumented states."
+                            },
+                            "downloadUrl": {
+                                "description": "Provider-returned download location when available; not assumed permanent or guaranteed to be an absolute URL.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current bulk-file processing status and its download location when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an id from `batch-enrich-leads`, `batch-enrich-companies`, or `list-bulk-files`. This makes one status check and does not wait for completion or download bytes. If the file is still processing, check again later. A returned download location may be temporary; its lifetime is not documented."
+            },
+            "filePath": "./a-leads/tools/get-bulk-file.ts",
+            "version": "a96b4c3a05180d1aea85fb3ef10c87ca544ac87026a7e6ddd94e6f066ac5ba8f",
+            "location": {
+                "js": "templates-zero/a-leads/tools/get-bulk-file/a96b4c3a05180d1aea85fb3ef10c87ca544ac87026a7e6ddd94e6f066ac5ba8f.cjs",
+                "ts": "templates-zero/a-leads/tools/get-bulk-file/a96b4c3a05180d1aea85fb3ef10c87ca544ac87026a7e6ddd94e6f066ac5ba8f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-company",
+            "integrationId": "a-leads",
+            "description": "Get a company's profile, contact information, funding, workforce, web metrics, and news by company ID. Each call costs one credit.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_getcompany",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_getcompany",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "companyId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal company identifier returned by lead or similar-company search; do not interpret it as a number."
+                            }
+                        },
+                        "required": [
+                            "companyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company identifier for a single billable profile lookup."
+                    },
+                    "FunctionOutput_a_leads_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque company identifier."
+                            },
+                            "name": {
+                                "description": "Company display name.",
+                                "type": "string"
+                            },
+                            "news": {
+                                "description": "Company-related news articles.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Article URL.",
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "description": "Article summary or null if unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headline": {
+                                            "description": "Article headline as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "publishedAt": {
+                                            "description": "Article publication instant in UTC at whole-second precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A reported company-related news article."
+                                }
+                            },
+                            "ipoAt": {
+                                "description": "Reported IPO instant normalized to UTC, with whole-second precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "isB2b": {
+                                "description": "Whether the company primarily sells to businesses.",
+                                "type": "boolean"
+                            },
+                            "domain": {
+                                "description": "Company internet domain.",
+                                "type": "string"
+                            },
+                            "emails": {
+                                "description": "Reported company email addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Reported company email address."
+                                }
+                            },
+                            "status": {
+                                "description": "Provider's company lifecycle status, such as active.",
+                                "type": "string"
+                            },
+                            "website": {
+                                "description": "Company website address.",
+                                "type": "string"
+                            },
+                            "industry": {
+                                "description": "Primary industry label.",
+                                "type": "string"
+                            },
+                            "isPublic": {
+                                "description": "Whether the company is publicly listed.",
+                                "type": "boolean"
+                            },
+                            "keywords": {
+                                "description": "Company categories and keywords.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Company category or keyword."
+                                }
+                            },
+                            "sizeRange": {
+                                "description": "Human-readable employee-size range.",
+                                "type": "string"
+                            },
+                            "acquiredAt": {
+                                "description": "Reported acquisition instant normalized to UTC, with whole-second precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "executives": {
+                                "description": "Reported key executives.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fullName": {
+                                            "description": "Executive's full name.",
+                                            "type": "string"
+                                        },
+                                        "jobTitle": {
+                                            "description": "Executive's reported position title.",
+                                            "type": "string"
+                                        },
+                                        "personId": {
+                                            "description": "Opaque executive parent/person reference; relationship interpretation requires validation.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A reported key executive."
+                                }
+                            },
+                            "industries": {
+                                "description": "Provider-mapped industries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider-mapped industry label."
+                                }
+                            },
+                            "socialUrls": {
+                                "description": "Social profiles keyed by service name: twitter, youtube, facebook, instagram, or crunchbase.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Reported profile URL for the named social service."
+                                }
+                            },
+                            "webMetrics": {
+                                "description": "Metrics keyed by bounceRatePercent, globalRank, countryRank, categoryRank, pagesPerVisit, monthlyVisits, monthlyVisitsChange, totalVisitsChange, visitDurationSeconds, or popularityScore; undocumented change units are not interpreted.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Reported metric or null if unknown; no absent metric is synthesized.",
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "companyType": {
+                                "description": "Company legal or organizational type label.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Company profile description as ordinary text.",
+                                "type": "string"
+                            },
+                            "linkedInUrl": {
+                                "description": "Company LinkedIn URL.",
+                                "type": "string"
+                            },
+                            "capabilities": {
+                                "description": "Flags keyed by demoAvailable, downloadable, pricingAvailable, uniqueDomain, and uniqueWebsite.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Reported capability flag or null if unknown.",
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "headquarters": {
+                                "description": "Reported headquarters components; missing components are omitted.",
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "description": "Headquarters city.",
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "description": "Headquarters state or province.",
+                                        "type": "string"
+                                    },
+                                    "street": {
+                                        "description": "Headquarters street address.",
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "description": "Formatted full headquarters address.",
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "description": "Country name.",
+                                        "type": "string"
+                                    },
+                                    "regions": {
+                                        "description": "Provider's geographic region labels.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Provider geographic region label."
+                                        }
+                                    },
+                                    "location": {
+                                        "description": "Human-readable headquarters location.",
+                                        "type": "string"
+                                    },
+                                    "postalCode": {
+                                        "description": "Postal code, preserving leading zeros.",
+                                        "type": "string"
+                                    },
+                                    "countryCode2": {
+                                        "description": "Reported two-letter country code.",
+                                        "type": "string"
+                                    },
+                                    "countryCode3": {
+                                        "description": "Reported three-letter country code.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "phoneNumbers": {
+                                "description": "Reported company telephone numbers, preserving original formatting.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Reported company telephone number in its original formatting."
+                                }
+                            },
+                            "technologies": {
+                                "description": "Reported technologies used.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Reported technology used."
+                                }
+                            },
+                            "annualRevenue": {
+                                "description": "Provider-reported annual revenue; currency is unspecified, so do not assume USD.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "fundingRounds": {
+                                "description": "Reported funding history.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Funding round name.",
+                                            "type": "string"
+                                        },
+                                        "currency": {
+                                            "description": "Provider's currency code, or null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "amountRaised": {
+                                            "description": "Reported raised amount in the accompanying currency, or null if unknown; scaling requires validation.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "announcedDate": {
+                                            "description": "Announcement calendar date, unchanged from YYYY-MM-DD.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "leadInvestors": {
+                                            "description": "Lead investor names; an empty array remains empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Lead investor name."
+                                            }
+                                        },
+                                        "investorsCount": {
+                                            "description": "Number of investors, or null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A reported funding round."
+                                }
+                            },
+                            "websiteTopics": {
+                                "description": "Main website topics, or null when unknown.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Main website topic."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "employeesCount": {
+                                "description": "Reported employee count.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "employeeChanges": {
+                                "description": "Workforce statistics keyed by current, yearly, monthly, quarterly, yearlyPercent, monthlyPercent, and quarterlyPercent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "description": "Reported count change or percentage-point value, as identified by its key."
+                                }
+                            },
+                            "linkedInUsername": {
+                                "description": "Company LinkedIn username.",
+                                "type": "string"
+                            },
+                            "employeesByRegion": {
+                                "description": "Employee counts keyed by provider region names, with the employees_count_ prefix removed.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Reported employee count for this provider geographic category."
+                                }
+                            },
+                            "enrichedDescription": {
+                                "description": "Additional enriched company description.",
+                                "type": "string"
+                            },
+                            "metadataDescription": {
+                                "description": "Company website metadata description as ordinary text.",
+                                "type": "string"
+                            },
+                            "employeesBySeniority": {
+                                "description": "Employee counts keyed by provider seniority names, with the employees_count_ prefix removed.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Reported employee count for this provider seniority category."
+                                }
+                            },
+                            "lastFundingRoundName": {
+                                "description": "Name of the most recent funding round.",
+                                "type": "string"
+                            },
+                            "lastFundingAnnouncedAt": {
+                                "description": "Most recent funding announcement instant in UTC, at whole-second precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "linkedInFollowersCount": {
+                                "description": "Reported company LinkedIn follower count.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The matching company profile with normalized typed facts and original text."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a companyId from `search-leads` or `search-similar-companies`. This retrieves one company, not its employees. Each call costs one credit, including a repeated lookup; avoid unnecessary repeats."
+            },
+            "filePath": "./a-leads/tools/get-company.ts",
+            "version": "b24c006e7564915f941aa0bcc780d38601c8eb5fa32299e1a29ea81e1b1f8783",
+            "location": {
+                "js": "templates-zero/a-leads/tools/get-company/b24c006e7564915f941aa0bcc780d38601c8eb5fa32299e1a29ea81e1b1f8783.cjs",
+                "ts": "templates-zero/a-leads/tools/get-company/b24c006e7564915f941aa0bcc780d38601c8eb5fa32299e1a29ea81e1b1f8783.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-reverse-email-lookup",
+            "integrationId": "a-leads",
+            "description": "Get the current state and any available LinkedIn result for a previously submitted reverse-email lookup.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_getreverseemaillookup",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_getreverseemaillookup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_getreverseemaillookup": {
+                        "type": "object",
+                        "properties": {
+                            "lookupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque job id returned by create-reverse-email-lookup."
+                            }
+                        },
+                        "required": [
+                            "lookupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the previously submitted reverse-email lookup to inspect."
+                    },
+                    "FunctionOutput_a_leads_getreverseemaillookup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque reverse-email lookup identifier."
+                            },
+                            "email": {
+                                "description": "Email associated with the lookup.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider's current job status; open string to preserve pending, successful, and unsuccessful states."
+                            },
+                            "linkedInUrl": {
+                                "description": "Associated LinkedIn profile URL, omitted when no profile result is currently available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current reverse-email lookup state and any available LinkedIn result."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "First call `create-reverse-email-lookup` and retain its id. Use this tool once to inspect the job; if still pending, check again later rather than submitting another lookup. A returned LinkedIn URL is the lookup result, not a deliverability assessment."
+            },
+            "filePath": "./a-leads/tools/get-reverse-email-lookup.ts",
+            "version": "2998edbc0dee8ec9ca16a49a4c7b413ea518408a755a02a6b2c6634ce020f30a",
+            "location": {
+                "js": "templates-zero/a-leads/tools/get-reverse-email-lookup/2998edbc0dee8ec9ca16a49a4c7b413ea518408a755a02a6b2c6634ce020f30a.cjs",
+                "ts": "templates-zero/a-leads/tools/get-reverse-email-lookup/2998edbc0dee8ec9ca16a49a4c7b413ea518408a755a02a6b2c6634ce020f30a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-bulk-files",
+            "integrationId": "a-leads",
+            "description": "List bulk-file records associated with the connected API key.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_listbulkfiles",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_listbulkfiles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_listbulkfiles": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "List bulk files for the connected account without arguments."
+                    },
+                    "FunctionOutput_a_leads_listbulkfiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque bulk-file identifier for get-bulk-file."
+                                        },
+                                        "name": {
+                                            "description": "Human-readable file name, preserving empty strings if supplied by the provider.",
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "description": "File creation instant normalized to UTC Z while preserving source fractional-second precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Metadata for one bulk file; does not indicate processing readiness."
+                                },
+                                "description": "Bulk-file metadata associated with the connection's API key, in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete bulk-file metadata collection returned by A-Leads."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find earlier files or recover an ID after an ambiguous batch submission. Use `get-bulk-file` with an item's id for current processing state and download location. This returns the provider's complete unpaginated collection in one response; no cursor or API key argument is needed."
+            },
+            "filePath": "./a-leads/tools/list-bulk-files.ts",
+            "version": "75f060771ed19af3f5008465682348397596bee88fcc2d8f3e85388c6b13bafe",
+            "location": {
+                "js": "templates-zero/a-leads/tools/list-bulk-files/75f060771ed19af3f5008465682348397596bee88fcc2d8f3e85388c6b13bafe.cjs",
+                "ts": "templates-zero/a-leads/tools/list-bulk-files/75f060771ed19af3f5008465682348397596bee88fcc2d8f3e85388c6b13bafe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-similar-companies",
+            "integrationId": "a-leads",
+            "description": "Find one page of companies similar to one or more seed companies. Each call costs one credit.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_searchsimilarcompanies",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_searchsimilarcompanies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_searchsimilarcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested page size; default 10 and public maximum 100, subject to provider validation.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the same seed set and page size; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "companyIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$",
+                                    "description": "Seed company identifier, preserved as a decimal string."
+                                },
+                                "description": "Seed company identifiers; similarity is computed for this seed set, not separate per-ID outcomes. Public maximum 100 seeds is provisional.",
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "companyIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Seed companies and page controls for a single billable similarity search."
+                    },
+                    "FunctionOutput_a_leads_searchsimilarcompanies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque company identifier for get-company."
+                                        },
+                                        "name": {
+                                            "description": "Company display name.",
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "description": "Opaque provider similarity score or null; not treated as a probability or percentage.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "domain": {
+                                            "description": "Company domain.",
+                                            "type": "string"
+                                        },
+                                        "website": {
+                                            "description": "Company website address.",
+                                            "type": "string"
+                                        },
+                                        "industry": {
+                                            "description": "Reported company industry.",
+                                            "type": "string"
+                                        },
+                                        "keywords": {
+                                            "description": "Company categories and keywords.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Company category or keyword."
+                                            }
+                                        },
+                                        "headcount": {
+                                            "description": "Reported company_headcount metric; not substituted for employeesCount.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "sizeRange": {
+                                            "description": "Human-readable employee-size range.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Ordinary company metadata description.",
+                                            "type": "string"
+                                        },
+                                        "linkedInUrl": {
+                                            "description": "Company LinkedIn URL.",
+                                            "type": "string"
+                                        },
+                                        "employeesCount": {
+                                            "description": "Reported employees_count metric, distinct from headcount.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "headquartersAddress": {
+                                            "description": "Formatted headquarters address.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A similar company with the discovery metadata supplied by A-Leads."
+                                },
+                                "description": "Similar companies in provider order for this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for identical seeds and limit; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-ordered page of similar companies."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain seed company IDs from `search-leads` or `get-company`. Use this for similarity discovery, not detailed company intelligence; use `get-company` for a result's full profile. Continue with nextCursor as cursor and unchanged companyIds and limit. A call costs one credit and returns one page, with a default of 10 and maximum of 100 results."
+            },
+            "filePath": "./a-leads/tools/search-similar-companies.ts",
+            "version": "c8c8ea24e875a24d70ab5a2d79af5d3903c60dd2ce83cab25d0c46639eb07d13",
+            "location": {
+                "js": "templates-zero/a-leads/tools/search-similar-companies/c8c8ea24e875a24d70ab5a2d79af5d3903c60dd2ce83cab25d0c46639eb07d13.cjs",
+                "ts": "templates-zero/a-leads/tools/search-similar-companies/c8c8ea24e875a24d70ab5a2d79af5d3903c60dd2ce83cab25d0c46639eb07d13.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "verify-email",
+            "integrationId": "a-leads",
+            "description": "Assess a known email address and return provider validity, quality, catch-all, and email-service information.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_a_leads_verifyemail",
+            "output_schema_ref": "#/definitions/FunctionOutput_a_leads_verifyemail",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_a_leads_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address to assess; spelling and case are preserved."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A known email address to assess with A-Leads."
+                    },
+                    "FunctionOutput_a_leads_verifyemail": {
+                        "type": "object",
+                        "properties": {
+                            "result": {
+                                "description": "Provider's assessment outcome, preserved as an open string.",
+                                "type": "string"
+                            },
+                            "isValid": {
+                                "description": "Provider's validity assessment, not a delivery guarantee.",
+                                "type": "boolean"
+                            },
+                            "quality": {
+                                "description": "Provider's email quality label.",
+                                "type": "string"
+                            },
+                            "catchAll": {
+                                "description": "Whether catch-all behavior is reported.",
+                                "type": "boolean"
+                            },
+                            "emailServiceProvider": {
+                                "description": "Provider's email-service label, such as google.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "The available provider assessment fields for the supplied email address."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a known address. Use `find-work-email` or `find-personal-email` to discover an address, or `create-reverse-email-lookup` to identify a LinkedIn profile from one. Verification is an assessment, not proof of delivery or consent to contact."
+            },
+            "filePath": "./a-leads/tools/verify-email.ts",
+            "version": "e561501af08f9473b74a68b97eb28007a26cc9a5f136ee96d78265eaa274abd2",
+            "location": {
+                "js": "templates-zero/a-leads/tools/verify-email/e561501af08f9473b74a68b97eb28007a26cc9a5f136ee96d78265eaa274abd2.cjs",
+                "ts": "templates-zero/a-leads/tools/verify-email/e561501af08f9473b74a68b97eb28007a26cc9a5f136ee96d78265eaa274abd2.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

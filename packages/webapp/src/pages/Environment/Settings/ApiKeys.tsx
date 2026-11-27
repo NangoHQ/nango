@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
+import { formatRelativeTime } from '@/utils/dates';
 import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
@@ -42,26 +43,6 @@ import {
 
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
 import type { ScopeGroup } from './scope-logic';
-
-function formatRelativeTime(dateStr: string | null): string {
-    if (!dateStr) return 'Never';
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    const diffMs = now - then;
-    const seconds = Math.floor(diffMs / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30);
-
-    if (seconds < 60) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${weeks}w ago`;
-    return `${months}mo ago`;
-}
 
 function formatFullDate(dateStr: string | null): string {
     if (!dateStr) return 'Never';
@@ -440,7 +421,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
 
 // ── Delete button with self-managed open state ─────────────────────
 
-const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }> = ({ displayName, onDelete }) => {
+const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => Promise<void> }> = ({ displayName, onDelete }) => {
     const [open, setOpen] = useState(false);
 
     return (
@@ -460,7 +441,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
                     <Trash2 />
                 </IconButton>
             }
-            onConfirm={onDelete}
+            onConfirm={() => onDelete().then(() => setOpen(false))}
             open={open}
             onOpenChange={setOpen}
         />
@@ -526,6 +507,7 @@ export const ApiKeys: React.FC = () => {
             } else {
                 toast({ title: 'Failed to delete API key', variant: 'error' });
             }
+            throw err;
         }
     };
 
@@ -595,7 +577,7 @@ export const ApiKeys: React.FC = () => {
                                                     <Pencil />
                                                 </IconButton>
                                             )}
-                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
+                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => handleDelete(key.id)} />}
                                         </div>
                                     </TableCell>
                                 )}

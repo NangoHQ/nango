@@ -1,0 +1,436 @@
+{
+    "providerConfigKey": "adobe",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-server-access-token",
+            "integrationId": "adobe",
+            "description": "Issue an Adobe server-to-server access token for User Management API access using the connection's client credentials.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_adobe_createserveraccesstoken",
+            "output_schema_ref": "#/definitions/FunctionOutput_adobe_createserveraccesstoken",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_adobe_createserveraccesstoken": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Issue a token using the connection credentials; no input parameters are accepted."
+                    },
+                    "FunctionOutput_adobe_createserveraccesstoken": {
+                        "type": "object",
+                        "properties": {
+                            "tokenType": {
+                                "description": "Provider token type, when supplied.",
+                                "type": "string"
+                            },
+                            "accessToken": {
+                                "type": "string",
+                                "description": "Secret bearer credential to pass unchanged to the intended Adobe API client."
+                            },
+                            "expiresInSeconds": {
+                                "description": "Provider-reported token validity duration in seconds; omitted if unavailable rather than guessed.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "accessToken"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Secret Adobe server-to-server access token and available provider-reported token metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use only when a developer explicitly needs a token for an external Adobe API client. Ordinary tools authenticate automatically and do not require this call. Treat the result as a secret and do not put it in logs or user-visible text.",
+                "required_scopes": {
+                    "all": [
+                        "AdobeID",
+                        "openid",
+                        "user_management_sdk"
+                    ]
+                }
+            },
+            "filePath": "./adobe/tools/create-server-access-token.ts",
+            "version": "d79e4e009845bb04b16a42d1597a6eb105793fcf8cdc47ddbf23c3166a8fdb2f",
+            "location": {
+                "js": "templates-zero/adobe/tools/create-server-access-token/d79e4e009845bb04b16a42d1597a6eb105793fcf8cdc47ddbf23c3166a8fdb2f.cjs",
+                "ts": "templates-zero/adobe/tools/create-server-access-token/d79e4e009845bb04b16a42d1597a6eb105793fcf8cdc47ddbf23c3166a8fdb2f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-current-user",
+            "integrationId": "adobe",
+            "description": "Get identity claims for the person represented by a user-authenticated Adobe connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_adobe_getcurrentuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_adobe_getcurrentuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_adobe_getcurrentuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed; reads the connected person."
+                    },
+                    "FunctionOutput_adobe_getcurrentuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Opaque subject identifier projected by openid.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Full name if profile claims are available.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address if email claims are available.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Family name if available.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Given name if available.",
+                                "type": "string"
+                            },
+                            "accountType": {
+                                "description": "individual maps from ind; organization maps from ent. Omitted if not supplied.",
+                                "type": "string",
+                                "enum": [
+                                    "individual",
+                                    "organization"
+                                ]
+                            },
+                            "countryCode": {
+                                "description": "Two-character address country code if address claims are available.",
+                                "type": "string"
+                            },
+                            "emailVerified": {
+                                "description": "Whether Adobe reports the email verified; absent is not false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Identity claims Adobe projects for the connected person."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for the connected person's identity, not organization directory administration. Use `get-user` for an arbitrary organization user. Additional consented profile, email and address scopes determine which optional claims Adobe returns.",
+                "required_scopes": {
+                    "all": [
+                        "openid"
+                    ]
+                }
+            },
+            "filePath": "./adobe/tools/get-current-user.ts",
+            "version": "14ffa1713a92f24f555a596902e2f695d3663d5593eade855ff904644d04ab25",
+            "location": {
+                "js": "templates-zero/adobe/tools/get-current-user/14ffa1713a92f24f555a596902e2f695d3663d5593eade855ff904644d04ab25.cjs",
+                "ts": "templates-zero/adobe/tools/get-current-user/14ffa1713a92f24f555a596902e2f695d3663d5593eade855ff904644d04ab25.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-openid-configuration",
+            "integrationId": "adobe",
+            "description": "Get Adobe IMS discovery endpoints and supported authentication capabilities.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_adobe_getopenidconfiguration",
+            "output_schema_ref": "#/definitions/FunctionOutput_adobe_getopenidconfiguration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_adobe_getopenidconfiguration": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed to retrieve Adobe IMS OpenID configuration."
+                    },
+                    "FunctionOutput_adobe_getopenidconfiguration": {
+                        "type": "object",
+                        "properties": {
+                            "issuer": {
+                                "description": "Advertised token issuer URL.",
+                                "type": "string"
+                            },
+                            "keysUrl": {
+                                "description": "Advertised JSON Web Key Set URL.",
+                                "type": "string"
+                            },
+                            "tokenEndpoint": {
+                                "description": "Advertised token endpoint URL.",
+                                "type": "string"
+                            },
+                            "claimsSupported": {
+                                "description": "Advertised identity claim names.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised identity claim name."
+                                }
+                            },
+                            "scopesSupported": {
+                                "description": "Advertised identity scopes, not a complete product permission catalog.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised identity scope."
+                                }
+                            },
+                            "userInfoEndpoint": {
+                                "description": "Advertised user-information endpoint URL.",
+                                "type": "string"
+                            },
+                            "revocationEndpoint": {
+                                "description": "Advertised token-revocation endpoint URL.",
+                                "type": "string"
+                            },
+                            "grantTypesSupported": {
+                                "description": "Advertised OAuth grant types.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised OAuth grant type."
+                                }
+                            },
+                            "authorizationEndpoint": {
+                                "description": "Advertised authorization endpoint URL.",
+                                "type": "string"
+                            },
+                            "subjectTypesSupported": {
+                                "description": "Advertised subject identifier types.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised subject identifier type."
+                                }
+                            },
+                            "responseTypesSupported": {
+                                "description": "Advertised OAuth response type values.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised OAuth response type value."
+                                }
+                            },
+                            "idTokenSigningAlgorithmsSupported": {
+                                "description": "Advertised ID-token signing algorithms.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised ID-token signing algorithm."
+                                }
+                            },
+                            "tokenEndpointAuthMethodsSupported": {
+                                "description": "Advertised token-endpoint client authentication methods.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An advertised token-endpoint client authentication method."
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Adobe IMS discovery endpoints and authentication capabilities as advertised by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect Adobe's OpenID issuer and advertised endpoints. Use `list-id-token-keys` for signing keys. Discovery data does not itself validate a token."
+            },
+            "filePath": "./adobe/tools/get-openid-configuration.ts",
+            "version": "2986787e34d2d38b2c6c434602a9033ebe94af77bc937727432912beef6012c0",
+            "location": {
+                "js": "templates-zero/adobe/tools/get-openid-configuration/2986787e34d2d38b2c6c434602a9033ebe94af77bc937727432912beef6012c0.cjs",
+                "ts": "templates-zero/adobe/tools/get-openid-configuration/2986787e34d2d38b2c6c434602a9033ebe94af77bc937727432912beef6012c0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-id-token-keys",
+            "integrationId": "adobe",
+            "description": "List Adobe IMS public signing keys in directly usable JWK form.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_adobe_listidtokenkeys",
+            "output_schema_ref": "#/definitions/FunctionOutput_adobe_listidtokenkeys",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_adobe_listidtokenkeys": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Read the fixed Adobe IMS public signing key set without parameters."
+                    },
+                    "FunctionOutput_adobe_listidtokenkeys": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "e": {
+                                            "description": "RSA exponent in standard JWK base64url representation.",
+                                            "type": "string"
+                                        },
+                                        "n": {
+                                            "description": "RSA modulus in standard JWK base64url representation; retained for exact cryptographic interoperability.",
+                                            "type": "string"
+                                        },
+                                        "alg": {
+                                            "description": "Standard JWK signing algorithm, such as RS256.",
+                                            "type": "string"
+                                        },
+                                        "kid": {
+                                            "description": "JWK key identifier used to select the verification key.",
+                                            "type": "string"
+                                        },
+                                        "kty": {
+                                            "description": "Standard JWK key type, such as RSA.",
+                                            "type": "string"
+                                        },
+                                        "use": {
+                                            "description": "Standard JWK intended use, such as sig.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An Adobe IMS public signing key in standard JWK form."
+                                },
+                                "description": "Public JWK records from Adobe's single key-set response."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete advertised Adobe IMS public signing key set; this does not validate a token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use when implementing ID-token signature verification. Match the token's key id and algorithm to a returned key and validate the token's claims separately. Use `get-openid-configuration` for issuer and endpoint discovery."
+            },
+            "filePath": "./adobe/tools/list-id-token-keys.ts",
+            "version": "aa2d9cfe43b725d6baa049ef6e09fdfde7b7d6e26d9e883370e429ef58e804fc",
+            "location": {
+                "js": "templates-zero/adobe/tools/list-id-token-keys/aa2d9cfe43b725d6baa049ef6e09fdfde7b7d6e26d9e883370e429ef58e804fc.cjs",
+                "ts": "templates-zero/adobe/tools/list-id-token-keys/aa2d9cfe43b725d6baa049ef6e09fdfde7b7d6e26d9e883370e429ef58e804fc.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

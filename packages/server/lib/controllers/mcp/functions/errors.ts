@@ -53,7 +53,6 @@ export function deployTemplateServiceErrorToMcp(error: DeployTemplateServiceErro
         case 'integration_not_found':
         case 'template_not_found':
         case 'ambiguous_function':
-        case 'plan_limit':
         case 'template_already_deployed':
             return new PublicMcpError(error.message);
         case 'non_runnable_template':
