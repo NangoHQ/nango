@@ -8,13 +8,13 @@
 ## Introduction
 
 Source: https://nango.dev/docs/getting-started/intro-to-nango.md
-Description: The tool calling layer for AI agents across 1,400+ APIs.
+Description: The tool calling layer for AI agents across 1,500+ APIs.
 
 ## What is Nango?
 
 Nango is the tool calling layer for AI agents.
 
-It makes your agents powerful with tools, and smart with context, across [1,400+ APIs](/integrations/overview).
+It makes your agents powerful with tools, and smart with context, across [1,500+ APIs](/integrations/overview).
 
 Your agent gets a catalog of 27,000+ pre-built tools with built-in auth, Nango-managed OAuth apps, a token-efficient execution engine for fast and secure tool calls, and built-in governance, observability, and audit logs for every call.
 
@@ -35,7 +35,7 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
     One integration gives your agent access to every API in Nango: [Quickstart](/getting-started/quickstart)
   </Step>
 
-  <Step id="access-apis" title="Your agent acts across 1,400+ APIs">
+  <Step id="access-apis" title="Your agent acts across 1,500+ APIs">
     Your users connect their accounts through Nango Auth. Your agent searches the catalog, finds the right tools, and calls them on the user's behalf, without ever seeing credentials.
   </Step>
 
@@ -48,7 +48,7 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 
 <CardGroup cols={3}>
   <Card title="Tool calling for AI agents" icon="robot" href="/guides/tools/overview">
-    Give agents pre-built tools for 1,400+ APIs, scoped per user and agent.
+    Give agents pre-built tools for 1,500+ APIs, scoped per user and agent.
   </Card>
 
   <Card title="Context sync" icon="brain" href="/guides/syncs/overview">
@@ -99,7 +99,7 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 ## Quickstart
 
 Source: https://nango.dev/docs/getting-started/quickstart.md
-Description: Give your AI agent access to 1,400+ APIs, including Gmail, Slack, and Notion
+Description: Give your AI agent access to 1,500+ APIs, including Gmail, Slack, and Notion
 
 This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own agent. Your agent gets one MCP server with tools for every API you enable, and asks your users to connect their accounts when it needs them.
 
@@ -401,9 +401,9 @@ These resources help agents discover Nango docs, provider slugs, API shapes, and
 ## Agent sessions
 
 Source: https://nango.dev/docs/guides/agent-sessions.md
-Description: Connect your AI agent to 1,400+ APIs.
+Description: Connect your AI agent to 1,500+ APIs.
 
-Agent sessions are an optimized interface for AI agents to use integrations. Connect your agent to Nango once through MCP to access 1,400+ APIs.
+Agent sessions are an optimized interface for AI agents to use integrations. Connect your agent to Nango once through MCP to access 1,500+ APIs.
 
 - **27,000+ ready-to-use tools.** Nango keeps them up to date and improves them using insights from hundreds of millions of production calls.
 - **Fewer tokens.** On-demand tool search and concise tool responses keep the agent's context small.
@@ -1024,7 +1024,7 @@ Description: Let users connect their external accounts to your app or agent
 
 Nango gives you one interface for API authorization and handles each provider's quirks.
 
-- **1,400+ APIs** — From OAuth 2.0 and API keys to custom auth
+- **1,500+ APIs** — From OAuth 2.0 and API keys to custom auth
 - **Add APIs on demand** — Ask Nango to add any API in &lt;48h, or [contribute it yourself](/integrations/contribute-or-request-api)
 - **Nango-managed OAuth apps** — Use our pre-approved OAuth apps, or bring your own
 - **Pre-built UI with your branding** — Provider-specific forms, end-user guides to find API keys, and built-in validation
@@ -14879,7 +14879,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-1,400+ APIs & 27,000+ pre-built tools.
+1,500+ APIs & 27,000+ pre-built tools.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
@@ -15477,7 +15477,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 
 Add a `<api>.mdx` file (e.g. `github.mdx`) for your API to the `docs/integrations/all` folder. Check out [other examples](/integrations/overview) to fill out the content of the documentation page.
 
-Reference the page in the `docs/docs.json` file in the `1,400+ APIs & Integrations` group in alphabetical order.
+Reference the page in the `docs/docs.json` file in the `1,500+ APIs & Integrations` group in alphabetical order.
 
 ### Submit a pull request
 
