@@ -690,7 +690,8 @@ describe('parse', () => {
             { provider: 'mailgun', missing: 'MAILGUN_API_KEY' },
             { provider: 'smtp', missing: 'SMTP_URL' },
             { provider: 'http', missing: 'EMAIL_HTTP_URL' },
-            { provider: 'ses', missing: 'AWS_REGION' }
+            { provider: 'ses', missing: 'AWS_REGION' },
+            { provider: 'ses', missing: 'EMAIL_SES_FROM' }
         ];
         for (const { provider, missing } of missingCases) {
             it(`should throw when EMAIL_PROVIDER=${provider} is set without ${missing}`, () => {
@@ -707,8 +708,8 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { EMAIL_SES_TIMEOUT_MS: '0' })).toThrow('EMAIL_SES_TIMEOUT_MS');
         });
 
-        it('should accept EMAIL_PROVIDER=ses with AWS_REGION', () => {
-            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_REGION: 'us-east-1' });
+        it('should accept EMAIL_PROVIDER=ses with AWS_REGION and EMAIL_SES_FROM', () => {
+            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_REGION: 'us-east-1', EMAIL_SES_FROM: 'noreply@example.com' });
             expect(res.EMAIL_PROVIDER).toBe('ses');
         });
 
@@ -719,6 +720,7 @@ describe('parse', () => {
                     EMAIL_PROVIDER: provider,
                     EMAIL_HTTP_URL: 'https://api.example.com/send',
                     AWS_REGION: 'us-east-1',
+                    EMAIL_SES_FROM: 'noreply@example.com',
                     SMTP_URL: 'smtp://localhost',
                     MAILGUN_API_KEY: 'key'
                 });

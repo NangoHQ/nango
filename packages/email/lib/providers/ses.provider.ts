@@ -11,12 +11,17 @@ import type { EmailProvider } from '../provider.js';
  */
 export class SesEmailProvider implements EmailProvider<void> {
     private client: SESv2Client;
+    private from: string;
 
     constructor() {
         if (!envs.AWS_REGION) {
             throw new Error('AWS_REGION is required to send emails through AWS SES');
         }
+        if (!envs.EMAIL_SES_FROM) {
+            throw new Error('EMAIL_SES_FROM is required to send emails through AWS SES');
+        }
         this.client = new SESv2Client({ region: envs.AWS_REGION });
+        this.from = envs.EMAIL_SES_FROM;
     }
 
     async send(email: string, subject: string, html: string): Promise<void> {
@@ -24,7 +29,7 @@ export class SesEmailProvider implements EmailProvider<void> {
         // up signups and invites indefinitely. The signal bounds the whole send, retries included.
         await this.client.send(
             new SendEmailCommand({
-                FromEmailAddress: envs.SMTP_FROM,
+                FromEmailAddress: this.from,
                 Destination: { ToAddresses: [email] },
                 Content: {
                     Simple: {
@@ -32,7 +37,7 @@ export class SesEmailProvider implements EmailProvider<void> {
                         Body: { Html: { Data: html, Charset: 'UTF-8' } }
                     }
                 },
-                ...(envs.AWS_SES_CONFIGURATION_SET ? { ConfigurationSetName: envs.AWS_SES_CONFIGURATION_SET } : {})
+                ...(envs.EMAIL_SES_CONFIGURATION_SET ? { ConfigurationSetName: envs.EMAIL_SES_CONFIGURATION_SET } : {})
             }),
             { abortSignal: AbortSignal.timeout(envs.EMAIL_SES_TIMEOUT_MS) }
         );

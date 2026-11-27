@@ -7552,12 +7552,12 @@ Nango sends transactional email for signup verification, password resets, team i
 | `EMAIL_PROVIDER` | Variables | Notes |
 |---|---|---|
 | `smtp` | `SMTP_URL` | Any SMTP server, for example `smtps://user:pass@email-smtp.eu-west-1.amazonaws.com:465` |
-| `ses` | `AWS_REGION`, optional `AWS_SES_CONFIGURATION_SET` and `EMAIL_SES_TIMEOUT_MS` (default `10000`) | AWS SES API, authenticated with the default AWS credential chain |
+| `ses` | `AWS_REGION`, `EMAIL_SES_FROM`, optional `EMAIL_SES_CONFIGURATION_SET` and `EMAIL_SES_TIMEOUT_MS` (default `10000`) | AWS SES API, authenticated with the default AWS credential chain |
 | `mailgun` | `MAILGUN_API_KEY`, `MAILGUN_URL` | `MAILGUN_URL` is the regional API base URL, for example `https://api.eu.mailgun.net` |
 | `http` | `EMAIL_HTTP_URL`, `EMAIL_HTTP_BODY`, optional `EMAIL_HTTP_HEADERS` | Any mail API that accepts JSON over HTTP, such as SendGrid, Resend, or Postmark |
 | `none` | | Logs each email instead of sending it |
 
-`SMTP_FROM` sets the sender for every provider and defaults to `Nango <noreply@email.nango.dev>`. Set it to an address on a domain your provider can send from. When `EMAIL_PROVIDER` is set, the server refuses to start until that provider's required variables are present.
+`SMTP_FROM` sets the sender for SMTP, Mailgun and HTTP, and defaults to `Nango <noreply@email.nango.dev>`. Set it to an address on a domain your provider can send from. SES uses `EMAIL_SES_FROM` instead, which has no default. When `EMAIL_PROVIDER` is set, the server refuses to start until that provider's required variables are present.
 
 <Note>
 `EMAIL_PROVIDER` is optional. Without it, Nango picks the first configured provider in the order `MAILGUN_API_KEY`, `SMTP_URL`, `EMAIL_HTTP_URL`, and logs a warning if more than one is set. AWS SES is never picked this way, so it always needs `EMAIL_PROVIDER=ses`.
@@ -7585,10 +7585,10 @@ Grant the workload's role permission to send from your verified identity:
 }
 ```
 
-Leave out the configuration set resource if you don't set `AWS_SES_CONFIGURATION_SET`.
+Leave out the configuration set resource if you don't set `EMAIL_SES_CONFIGURATION_SET`.
 
 <Warning>
-The `SMTP_FROM` address or its domain must be a verified identity in SES, in the same region as `AWS_REGION`. While your SES account is in the sandbox, SES only delivers to verified recipient addresses, so invitations to anyone else fail. Request production access before inviting your team.
+The `EMAIL_SES_FROM` address or its domain must be a verified identity in SES, in the same region as `AWS_REGION`. While your SES account is in the sandbox, SES only delivers to verified recipient addresses, so invitations to anyone else fail. Request production access before inviting your team.
 </Warning>
 
 ### Pre-built integrations catalog

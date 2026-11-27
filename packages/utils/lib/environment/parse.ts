@@ -749,7 +749,8 @@ const ENVS_SHAPE = z.object({
     EMAIL_PROVIDER: z.enum(EMAIL_PROVIDERS).optional(),
 
     // AWS SES (EMAIL_PROVIDER=ses). Region comes from AWS_REGION, credentials from the default AWS credential chain.
-    AWS_SES_CONFIGURATION_SET: z.string().optional(),
+    EMAIL_SES_FROM: z.string().optional(), // sender address; must be a verified SES identity
+    EMAIL_SES_CONFIGURATION_SET: z.string().optional(),
     EMAIL_SES_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(10_000), // whole send, retries included
 
     // Mailgun
@@ -1287,7 +1288,7 @@ function checkInternalAuthKeyPair(
 export const EMAIL_PROVIDER_ENVS = {
     mailgun: { required: ['MAILGUN_API_KEY'], inferred: true },
     smtp: { required: ['SMTP_URL'], inferred: true },
-    ses: { required: ['AWS_REGION'], inferred: false },
+    ses: { required: ['AWS_REGION', 'EMAIL_SES_FROM'], inferred: false },
     http: { required: ['EMAIL_HTTP_URL'], inferred: true },
     none: { required: [], inferred: false }
 } as const satisfies Record<EmailProviderName, { required: readonly (keyof z.infer<typeof ENVS_SHAPE>)[]; inferred: boolean }>;

@@ -5,8 +5,8 @@ import { SesEmailProvider } from './ses.provider.js';
 
 const mockEnvs = vi.hoisted(() => ({
     AWS_REGION: 'eu-west-1' as string | undefined,
-    AWS_SES_CONFIGURATION_SET: undefined as string | undefined,
-    SMTP_FROM: 'Nango <noreply@example.com>',
+    EMAIL_SES_CONFIGURATION_SET: undefined as string | undefined,
+    EMAIL_SES_FROM: 'Nango <noreply@example.com>' as string | undefined,
     EMAIL_SES_TIMEOUT_MS: 10_000
 }));
 
@@ -14,7 +14,8 @@ vi.mock('../env.js', () => ({ envs: mockEnvs }));
 
 function resetEnvs() {
     mockEnvs.AWS_REGION = 'eu-west-1';
-    mockEnvs.AWS_SES_CONFIGURATION_SET = undefined;
+    mockEnvs.EMAIL_SES_CONFIGURATION_SET = undefined;
+    mockEnvs.EMAIL_SES_FROM = 'Nango <noreply@example.com>';
     mockEnvs.EMAIL_SES_TIMEOUT_MS = 10_000;
 }
 
@@ -45,7 +46,7 @@ describe('SesEmailProvider', () => {
     });
 
     it('includes the configuration set when one is configured', async () => {
-        mockEnvs.AWS_SES_CONFIGURATION_SET = 'nango-transactional';
+        mockEnvs.EMAIL_SES_CONFIGURATION_SET = 'nango-transactional';
         const sendMock = vi.spyOn(SESv2Client.prototype, 'send').mockResolvedValue({ MessageId: 'abc' } as never);
 
         await new SesEmailProvider().send('user@example.com', 'Verify your email', '<p>Hi</p>');
@@ -62,6 +63,12 @@ describe('SesEmailProvider', () => {
         mockEnvs.AWS_REGION = undefined;
 
         expect(() => new SesEmailProvider()).toThrow('AWS_REGION is required to send emails through AWS SES');
+    });
+
+    it('throws when EMAIL_SES_FROM is unset', () => {
+        mockEnvs.EMAIL_SES_FROM = undefined;
+
+        expect(() => new SesEmailProvider()).toThrow('EMAIL_SES_FROM is required to send emails through AWS SES');
     });
 
     it('passes an abort signal so the send is bounded', async () => {
