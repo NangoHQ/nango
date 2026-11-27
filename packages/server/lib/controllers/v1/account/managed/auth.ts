@@ -1,3 +1,5 @@
+import * as z from 'zod';
+
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
@@ -21,7 +23,7 @@ interface FinalizeManagedAuthParams {
     res: Response;
     authorizedUser: User;
     organizationId?: string | undefined;
-    workos: Pick<WorkOS, 'organizations'>;
+    workos: Pick<WorkOS, 'get'>;
     state?: string | undefined;
     responseMode?: 'json' | 'redirect';
 }
@@ -207,20 +209,22 @@ export async function finalizeManagedAuthentication({
             isNewTeam = false;
             account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else if (organizationId) {
-            const organization = await workos.organizations.getOrganization(organizationId);
+            // The organization's WorkOS external ID, set by Nango in the WorkOS dashboard to the account UUID,
+            // decides which account SSO users join.
+            const linkedAccount = await getAccountLinkedToOrganization(workos, organizationId);
+            if (!linkedAccount) {
+                report(new Error('sso_organization_not_linked'), { organizationId });
+                clearManagedAuthEmailVerification(req);
+                req.audit = { ...req.audit, managedSignup: false };
 
-            const resAccount = await accountService.getOrCreateAccount(
-                organization.name,
-                state?.acquisition,
-                signupAdvertisingFromRequest(req, authorizedUser.email)
-            );
-            if (!resAccount) {
-                res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
+                const signinUrl = new URL('/signin', basePublicUrl);
+                signinUrl.searchParams.set('error', 'sso_organization_not_linked');
+                respondWithSuccess(res, signinUrl.href, responseMode);
                 return;
             }
 
-            account = resAccount.account;
-            isNewTeam = resAccount.created;
+            account = linkedAccount;
+            isNewTeam = false;
             await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
@@ -311,6 +315,20 @@ export async function finalizeManagedAuthentication({
     req.audit = { ...req.audit, managedSignup: isNewUser };
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
+}
+
+const workosOrganizationSchema = z.object({ external_id: z.string().uuid().nullish() });
+
+/**
+ * WorkOS SDK 6.x drops `external_id` from organizations, so read the raw API response.
+ */
+async function getAccountLinkedToOrganization(workos: Pick<WorkOS, 'get'>, organizationId: string): Promise<DBTeam | null> {
+    const { data } = await workos.get<unknown>(`/organizations/${encodeURIComponent(organizationId)}`);
+    const parsed = workosOrganizationSchema.safeParse(data);
+    if (!parsed.success || !parsed.data.external_id) {
+        return null;
+    }
+    return await accountService.getAccountByUUID(parsed.data.external_id);
 }
 
 function respondWithSuccess(res: Response, url: string, responseMode: 'json' | 'redirect') {
