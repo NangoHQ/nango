@@ -7,6 +7,7 @@ import { Alert, AlertDescription, Button, COPY_BUTTON_RESET_MS, copyText } from 
 
 import { CodeBlock, COLLAPSED_MAX_LENGTH } from '@/components/ui/CodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { usePageVisible } from '@/hooks/usePageVisible';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
@@ -164,13 +165,12 @@ export const ShowOperation: React.FC<{ operationId: string; actions: React.React
         return pl;
     }, [operation?.meta, operation?.request, operation?.response, operation?.error]);
 
-    useInterval(
-        () => {
-            // Auto refresh
+    const pageVisible = usePageVisible(() => {
+        if (isLive) {
             trigger();
-        },
-        isLive ? 5000 : null
-    );
+        }
+    });
+    useInterval(trigger, isLive && pageVisible ? 5000 : null);
 
     if (loading) {
         return (
