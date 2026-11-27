@@ -1,0 +1,44 @@
+---
+title: 'Xendit - How do I link my account?'
+sidebarTitle: 'Xendit'
+---
+
+## Overview
+
+To authenticate with Xendit, you need:
+
+1. **Secret API key** - a secret API key from your Xendit dashboard.
+
+This guide shows you how to generate it.
+
+### Prerequisites
+
+- A Xendit account. You can [sign up](https://dashboard.xendit.co/register/) and use Test Mode right away; Live Mode needs your business to be verified first.
+
+### Step 1: Generate a secret API key
+
+Xendit keeps separate keys for Test Mode and Live Mode. Generate the key in the mode you want to connect.
+
+1. Sign in to the [Xendit dashboard](https://dashboard.xendit.co/) and switch to Test Mode or Live Mode.
+2. Go to **Settings** > **Developers** > **API Keys** ([open](https://dashboard.xendit.co/settings/developers#api-keys)).
+3. Under **Secret keys**, click **Generate secret key**.
+
+<img src="/api-integrations/xendit/api_keys_page.png" alt="Xendit API Keys page with the Generate secret key button highlighted"/>
+
+4. Enter an **API key name**.
+5. Set the permission (**None**, **Read** or **Write**) for each product your app uses. **Balance** **Read** also needs **Read** on a matching product.
+6. Click **Generate key**, then confirm with your password or authenticator code.
+
+<img src="/api-integrations/xendit/generate_api_key_dialog.png" alt="Xendit Generate API key dialog with an API key name, Money-in products and Balance set to Read, and the Generate key button highlighted"/>
+
+7. Copy the secret key and store it securely.
+
+### Step 2: Enter your secret API key in the Connect UI
+
+1. Open the form where you need to authenticate with Xendit.
+2. Enter your **Secret API key** in the designated field. There is no password field: Xendit only needs the key.
+3. Click **Connect**. Nango checks the key with Xendit and rejects it if it is wrong.
+
+<img src="/api-integrations/xendit/form.png" alt="Nango Connect UI form for entering the Xendit secret API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Xendit.

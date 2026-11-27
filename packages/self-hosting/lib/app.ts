@@ -2,7 +2,7 @@ import './tracer.js';
 
 import { setTimeout } from 'node:timers/promises';
 
-import { destroyHostedTelemetryDb } from '@nangohq/hosted-telemetry';
+import { destroyHostedTelemetryDb, hostedTelemetry } from '@nangohq/hosted-telemetry';
 import { metrics, once, report } from '@nangohq/utils';
 
 import { boot as bootCloud } from './cloud/boot.js';
@@ -32,6 +32,7 @@ let api: Server;
 let clickhouse: ClickHouseClient | undefined;
 let bookkeeper: { abort: () => Promise<void> } | undefined;
 let uploadTelemetry: { abort: () => Promise<void> } | undefined;
+let activeConnections: { abort: () => Promise<void> } | undefined;
 const DAEMON_STOP_TIMEOUT_MS = 5_000;
 
 try {
@@ -44,6 +45,7 @@ try {
     } else {
         const installation = await bootInstallation();
         uploadTelemetry = installation.uploadTelemetry;
+        activeConnections = installation.activeConnections;
         server = createInstallationServer(installation);
     }
 
@@ -67,12 +69,17 @@ const close = once(() => {
     logger.info('Closing...');
     const bookkeeperStopped = bookkeeper?.abort();
     const uploadTelemetryStopped = uploadTelemetry?.abort();
+    const activeConnectionsStopped = activeConnections?.abort();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
         // A page being sent can take minutes when Nango is slow. It is sent again later, so we do not wait for it.
-        await Promise.race([Promise.all([uploadTelemetryStopped, bookkeeperStopped]), setTimeout(DAEMON_STOP_TIMEOUT_MS, undefined, { ref: false })]);
+        await Promise.race([
+            Promise.all([uploadTelemetryStopped, activeConnectionsStopped, bookkeeperStopped]),
+            setTimeout(DAEMON_STOP_TIMEOUT_MS, undefined, { ref: false })
+        ]);
         await destroyCloudDb();
         await clickhouse?.close();
+        await hostedTelemetry.shutdown();
         await destroyHostedTelemetryDb();
 
         logger.close();

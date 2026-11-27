@@ -26495,6 +26495,34 @@ marketstack:
             example: q7v2************************h3k9
             doc_section: '#step-1-copy-your-api-access-key'
 
+martllm:
+    display_name: MartLLM
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.martllm.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/balance
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/martllm
+    docs_connect: https://nango.dev/docs/api-integrations/martllm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your MartLLM API key.
+            pattern: '^ull_[A-Za-z0-9_-]{20,}$'
+            example: ull_Vq8m***********************************3kTz
+            doc_section: '#step-1-copy-your-api-key'
+
 mcp-generic:
     display_name: MCP Server OAuth2 (Generic)
     categories:
@@ -44321,6 +44349,36 @@ xai:
             example: xai-******************************************************
             pattern: 'xai-[A-Za-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+xendit:
+    display_name: Xendit
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.xendit.co
+        retry:
+            after:
+                - 'rate-limit-reset'
+            remaining: 'rate-limit-remaining'
+    credentials_verification_script: xenditCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/xendit
+    docs_connect: https://nango.dev/docs/api-integrations/xendit/connect
+    credentials:
+        username:
+            type: string
+            title: Secret API key
+            description: Your Xendit secret API key (test or live).
+            secret: true
+            example: xnd_H8GV****************************************************************fw_D
+            pattern: '^xnd_[A-Za-z0-9_+/=]+$'
+            doc_section: '#step-1-generate-a-secret-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
 
 xero:
     display_name: Xero
