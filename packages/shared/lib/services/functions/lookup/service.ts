@@ -4,6 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 import { getCatalogFunctionByUuid } from '../../catalog/actions.js';
 import { isCatalogFunctionUuid } from '../../catalog/uuid.js';
 import configService from '../../config.service.js';
+import * as inlineFunctionService from '../inline/service.js';
+import { isInlineFunctionUuid } from '../inline/uuid.js';
 import * as functionConfigService from '../models/functions.js';
 import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
@@ -14,6 +16,7 @@ import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
 import type { FunctionRow } from './models/listing.js';
 import type {
     DBFunctionConfigVersion,
+    FunctionLimits,
     FunctionListType,
     IntegrationConfig,
     ListedNangoActionFunction,
@@ -21,6 +24,7 @@ import type {
     NangoFunctionTemplate
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { JSONSchema7 } from 'json-schema';
 
 export type ResolvedFunction = {
     uuid: string;
@@ -30,6 +34,30 @@ export type ResolvedFunction = {
     | { kind: 'deployed'; integration: Pick<IntegrationConfig, 'unique_key' | 'provider'> & { id: number }; definition: DBFunctionConfigVersion }
     | { kind: 'catalog'; definition: CatalogFunctionDefinition }
 );
+
+export const INLINE_FUNCTION_NAME = 'inline';
+
+// What the invoke path reads from a definition. Inline code takes no input and runs on demand.
+export interface InlineFunctionDefinition {
+    uuid: string;
+    version: string;
+    trigger: { kind: 'http' };
+    input_schema_ref: null;
+    json_schema: JSONSchema7;
+    limits: FunctionLimits;
+}
+
+export interface ResolvedInlineFunction {
+    kind: 'inline';
+    uuid: string;
+    name: typeof INLINE_FUNCTION_NAME;
+    enabled: true;
+    code: string;
+    description: string | null;
+    definition: InlineFunctionDefinition;
+    agentSessionId: string;
+    resultRecordId: string;
+}
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
 
@@ -201,9 +229,30 @@ export async function resolveFunctionByUuid({
 }: {
     environmentId: number;
     functionUuid: string;
-}): Promise<Result<ResolvedFunction | undefined>> {
+}): Promise<Result<ResolvedFunction | ResolvedInlineFunction | undefined>> {
     try {
         const uuid = functionUuid.toLowerCase();
+        if (isInlineFunctionUuid(uuid)) {
+            const inlineFunction = await inlineFunctionService.get(db.knex, { environmentId, uuid });
+            if (inlineFunction.isErr()) {
+                return Err(new Error('failed_to_get_function_by_uuid', { cause: inlineFunction.error }));
+            }
+            if (!inlineFunction.value) {
+                return Ok(undefined);
+            }
+            const { code, description, agentSessionId, resultRecordId } = inlineFunction.value;
+            return Ok({
+                kind: 'inline',
+                uuid,
+                name: INLINE_FUNCTION_NAME,
+                enabled: true,
+                code,
+                description,
+                definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} },
+                agentSessionId,
+                resultRecordId
+            });
+        }
         if (isCatalogFunctionUuid(uuid)) {
             const definition = getCatalogFunctionByUuid(uuid);
             return Ok(definition ? { kind: 'catalog', uuid: definition.uuid, name: definition.name, enabled: true, definition } : undefined);

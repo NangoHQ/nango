@@ -10,6 +10,7 @@ export const TASK_CAPABILITY_SCOPES = [
     'persist:telemetry',
     'persist:abort',
     'persist:sync-conflict',
+    'persist:agent-session-result',
     'jobs:putTask',
     'jobs:heartbeat',
     'api:connection:read',

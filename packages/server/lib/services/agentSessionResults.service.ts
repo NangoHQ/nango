@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import tracer from 'dd-trace';
+import * as z from 'zod/v4';
 
 import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
@@ -14,7 +15,7 @@ import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
 const STORED_RESULT_HINT =
-    'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_run_code with this result_id and JavaScript that reads `data` and returns only what you need.';
+    'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_query_result with this result_id and JavaScript that reads `result` and returns only what you need.';
 
 export interface StoredResultRef {
     integrationId: string;
@@ -57,7 +58,7 @@ export async function toolResultForAgent({
     data: unknown;
 }): Promise<unknown> {
     const bytes = Buffer.byteLength(JSON.stringify(data ?? null), 'utf8');
-    if (!session.metaTools.nangoRunCode || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
+    if (!session.metaTools.nangoQueryResult || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
         return data;
     }
 
@@ -92,8 +93,9 @@ export function encodeResultId(ref: StoredResultRef): string {
 export function decodeResultId(resultId: string): StoredResultRef | null {
     try {
         const parsed = JSON.parse(Buffer.from(resultId, 'base64url').toString('utf8')) as unknown;
-        if (Array.isArray(parsed) && parsed.length === 2 && typeof parsed[0] === 'string' && typeof parsed[1] === 'string') {
-            return { integrationId: parsed[0], recordId: parsed[1] };
+        const ref = z.tuple([z.string(), z.uuid()]).safeParse(parsed);
+        if (ref.success) {
+            return { integrationId: ref.data[0], recordId: ref.data[1] };
         }
     } catch {
         // not an id we issued

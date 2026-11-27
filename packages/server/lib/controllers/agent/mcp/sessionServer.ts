@@ -5,6 +5,7 @@ import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeDirectToolCall } from './directCall.js';
 import { executeTool } from './execute/execute.js';
 import { proxyTool } from './proxy/proxy.js';
+import { queryResultTool } from './queryResult/queryResult.js';
 import { buildSessionInstructions } from './sessionInstructions.js';
 import { callAgentSessionTool } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
@@ -13,7 +14,7 @@ import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.
 import type { RegisteredTool, RequestId } from '@modelcontextprotocol/server';
 import type { Result } from '@nangohq/utils';
 
-const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
+const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool, queryResultTool];
 
 /**
  * Without a declared input schema registerTool hands the callback its request extra, not the tool's
