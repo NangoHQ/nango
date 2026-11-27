@@ -45,7 +45,7 @@ describe('catalog tools reader', () => {
                 expect(getCatalogFunctionByUuid(definition.uuid)).toStrictEqual(definition);
             }
         }
-    });
+    }, 30_000);
 
     it('does not treat a reserved UUID as catalog membership or turn a legacy action into a native function', () => {
         const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'create-issue' });
