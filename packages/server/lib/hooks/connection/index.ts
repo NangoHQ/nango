@@ -87,4 +87,6 @@ export { default as idealPostcodesCredentialsVerification } from './providers/id
 export { default as flotiqCredentialsVerification } from './providers/flotiq/credentials-verification.js';
 export { default as htmlCssToImageCredentialsVerification } from './providers/html-css-to-image/credentials-verification.js';
 export { default as geokeoCredentialsVerification } from './providers/geokeo/credentials-verification.js';
+export { default as ngrokCredentialsVerification } from './providers/ngrok/credentials-verification.js';
+export { default as imgixCredentialsVerification } from './providers/imgix/credentials-verification.js';
 export { default as xenditCredentialsVerification } from './providers/xendit/credentials-verification.js';

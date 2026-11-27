@@ -1,0 +1,41 @@
+---
+title: 'Scrapfly - How do I link my account?'
+sidebarTitle: 'Scrapfly'
+---
+
+## Overview
+
+To authenticate with Scrapfly, you need:
+
+1. **API Key** — the LIVE or TEST API key of your Scrapfly project.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Scrapfly account. You can [sign up](https://scrapfly.io/register) for free, no credit card required.
+
+### Step 1: Copy your API key
+
+Each Scrapfly project has a LIVE key for live traffic and a TEST key for its test environment. Both work with Nango.
+
+1. Sign in to Scrapfly and open the [dashboard](https://scrapfly.io/dashboard).
+2. With **Live** selected in the toggle at the top, click **API Keys** in the top bar and copy the key marked **LIVE**. It starts with `scp-live-`.
+
+<img src="/api-integrations/scrapfly/live_api_key.png" alt="Scrapfly dashboard with Live selected and the API Keys popover showing the copy button for the LIVE API key"/>
+
+3. To use the TEST key instead, switch the toggle at the top to **Test**, click **API Keys** again and copy the key marked **TEST**. It starts with `scp-test-`.
+
+<img src="/api-integrations/scrapfly/test_api_key_created.png" alt="Scrapfly dashboard with Test selected and the API Keys popover showing the copy button for the TEST API key"/>
+
+To reset a key, go to **Projects**, open **Actions** for the project and click **Regenerate API Key**.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Scrapfly.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/scrapfly/form.png" alt="Scrapfly Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Scrapfly.

@@ -1,0 +1,43 @@
+---
+title: 'imgix - How do I link my account?'
+sidebarTitle: 'imgix'
+---
+
+## Overview
+
+To authenticate with imgix, you need:
+
+1. **API Key** — an imgix Management API key.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- An imgix account. You can [sign up](https://dashboard.imgix.com/signup) for a free 30-day trial, no credit card required.
+
+### Step 1: Create an API key
+
+1. Sign in to the [imgix Dashboard](https://dashboard.imgix.com/sign-in).
+2. Open the [API Keys page](https://dashboard.imgix.com/api-keys) and click **Generate New Key**.
+
+<img src="/api-integrations/imgix/api_keys_page.png" alt="imgix API Keys page with the Generate New Key button" />
+
+3. Enter a name for the key.
+4. Under **Set up permissions**, select the permissions your integration needs, for example **Sources** to list and manage Sources. You can only grant permissions equal to or less than your own.
+5. Click **Generate New API Key**.
+
+<img src="/api-integrations/imgix/create_api_key_form.png" alt="imgix Add New API Key form with a key name and the Sources permission selected" />
+
+6. Click **Copy to Clipboard** and save the key. imgix won't show the full key again after you close this window.
+
+<img src="/api-integrations/imgix/api_key_created.png" alt="imgix API Key Created Successfully dialog" />
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with imgix.
+2. Enter your key in the **API Key** field.
+3. Submit the form. Nango checks the key with imgix and rejects it if it is invalid.
+
+<img src="/api-integrations/imgix/form.png" alt="imgix Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to imgix.

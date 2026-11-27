@@ -1,0 +1,82 @@
+---
+title: 'The Odds API'
+sidebarTitle: 'The Odds API'
+description: 'Integrate your application with The Odds API'
+---
+
+## 🚀 Quickstart
+
+Connect to The Odds API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _The Odds API_.
+    </Step>
+    <Step id="authorize-the-odds-api" title="Authorize The Odds API">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-odds-api" title="Call The Odds API">
+    Let's make your first request to The Odds API to list the available sports. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v4/sports" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v4/sports',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 The Odds API integration guides
+
+- [How do I link my account?](/api-integrations/the-odds-api/connect)  
+Copy your API key from The Odds API dashboard to connect your account.
+
+Official docs: [The Odds API v4 guide](https://the-odds-api.com/liveapi/guides/v4/)
+
+## 🧩 Pre-built syncs & tools for The Odds API
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/the-odds-api/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- For calls that need IPv6, set `baseUrlOverride` to `https://ipv6-api.the-odds-api.com`; Nango keeps the connection's credentials and headers. See [The Odds API v4 guide](https://the-odds-api.com/liveapi/guides/v4/).
+- Nango sends the key in the `x-api-key` header on every call. Calls that need it as the `apiKey` query parameter instead can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+
+---

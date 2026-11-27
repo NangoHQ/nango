@@ -1,0 +1,57 @@
+---
+title: 'Cloudsmith - How do I link my account?'
+sidebarTitle: 'Cloudsmith'
+---
+
+## Overview
+
+To authenticate with Cloudsmith, you need:
+
+1. **API Key** - A Cloudsmith personal API key, or the API key of a service account in your workspace.
+
+This guide will show you how to get one.
+
+### Prerequisites
+
+- A Cloudsmith account. You can [sign up](https://cloudsmith.com/pricing) on the free Core plan.
+- To create a service account, you need the Owner or Manager role in the workspace.
+
+### Step 1: Create an API key
+
+A personal API key acts as your user. A service account API key is not tied to a specific user. Both work with Nango.
+
+**Personal API key**
+
+1. Log in to [Cloudsmith](https://app.cloudsmith.com/login).
+2. Click your user icon in the top right corner, then click **Personal API keys**. If asked to confirm access, enter your password and click **Continue**.
+
+<img src="/api-integrations/cloudsmith/user_menu_personal_api_keys.png" alt="Personal API keys in the Cloudsmith user menu"/>
+
+3. Click **Create API key**, then click **Create API key** again in the dialog.
+
+<img src="/api-integrations/cloudsmith/create_personal_api_key.png" alt="Create API key button on the Cloudsmith Personal API keys page"/>
+
+4. Click the copy button next to the new key and store it somewhere safe.
+
+<img src="/api-integrations/cloudsmith/personal_api_key_created.png" alt="New Cloudsmith personal API key with its copy button"/>
+
+**Service account API key**
+
+1. In your workspace, go to **Accounts** -> **Services**.
+2. Click **Create service**, enter a name, keep the **Member** role and click **Create service**.
+
+<img src="/api-integrations/cloudsmith/create_service_account.png" alt="Create service form on the Cloudsmith Services page"/>
+
+3. Click the copy button next to the service account's API key and store it somewhere safe.
+
+<img src="/api-integrations/cloudsmith/service_account_api_key_created.png" alt="New Cloudsmith service account API key with its copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Cloudsmith.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cloudsmith/form.png" alt="Cloudsmith connection form in Nango's Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cloudsmith.
