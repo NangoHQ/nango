@@ -32,6 +32,16 @@ describe('computeLogsGridTemplate', () => {
         expect(template[4]).toBe('minmax(64px,1fr)');
     });
 
+    it('fits Type to its longest label with the panel closed', () => {
+        const template = tracks(
+            computeLogsGridTemplate([row({ operation: { type: 'agent_session', action: 'tool_search' } } as Partial<SearchOperationsData>)], {
+                panelOpen: false,
+                now
+            })
+        );
+        expect(template[3]).toBe(`${Math.ceil('Agent session tool search'.length * 7.2) + 20}px`);
+    });
+
     it('fits Type to its content while the panel is open, so Function gets the spare width', () => {
         const short = tracks(computeLogsGridTemplate([row({})], { panelOpen: true, now }))[3];
         const long = tracks(

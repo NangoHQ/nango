@@ -13,7 +13,6 @@ const EDGE_PADDING = 10;
 const TIME_ONLY_CHARS = 'HH:mm:ss'.length;
 const DURATION_WIDTH = 76;
 const STATUS_WIDTH = 104;
-const TYPE_WIDTH = 150;
 const PANEL_DURATION_WIDTH = 68;
 const PANEL_STATUS_WIDTH = 96;
 const PANEL_TEXT_MIN_WIDTH = 64;
@@ -32,18 +31,18 @@ export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpe
         timeOnly,
         Math.ceil(widest(rows, (row) => formatOperationTime(row.createdAt, now)) * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING
     );
+    const type = Math.max(
+        PANEL_TEXT_MIN_WIDTH,
+        Math.ceil(
+            widest(rows, (row) => {
+                const { type, action } = operationTypeLabel(row);
+                return `${type} ${action}`;
+            }) * SANS_CHAR_WIDTH
+        ) + CELL_PADDING
+    );
 
     if (panelOpen) {
         // The panel can leave the list ~400px. Timestamp, Type and Function shrink, or fixed widths push Function out of the card.
-        const type = Math.max(
-            PANEL_TEXT_MIN_WIDTH,
-            Math.ceil(
-                widest(rows, (row) => {
-                    const { type, action } = operationTypeLabel(row);
-                    return `${type} ${action}`;
-                }) * SANS_CHAR_WIDTH
-            ) + CELL_PADDING
-        );
         return [
             `minmax(${timeOnly}px,${timestamp}px)`,
             `${PANEL_DURATION_WIDTH}px`,
@@ -65,7 +64,7 @@ export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpe
         `${timestamp}px`,
         `${DURATION_WIDTH}px`,
         `${STATUS_WIDTH}px`,
-        `${TYPE_WIDTH}px`,
+        `${type}px`,
         `minmax(0,${integration}px)`,
         `minmax(${FUNCTION_MIN_WIDTH}px,1fr)`,
         `minmax(${CONNECTION_MIN_WIDTH}px,${connection}px)`
