@@ -1,0 +1,65 @@
+---
+title: 'Impact - How do I link my account?'
+sidebarTitle: 'Impact'
+---
+
+## Overview
+
+To authenticate with impact.com, you need an API access token, which has two values:
+
+1. **Account SID** — identifies the token. impact.com uses it as the username.
+2. **Auth Token** — the token's secret. impact.com uses it as the password.
+
+This guide shows you how to create an access token and copy both values.
+
+### Prerequisites
+
+- An impact.com Brand, Partner or Agency account.
+
+### Step 1: Open the API settings
+
+1. Sign in to [impact.com](https://app.impact.com/login.user).
+2. Open your user profile menu in the top navigation bar and select **Settings**. In an Agency account, select **Menu** → **Settings**.
+3. Under **Technical**, select **API**.
+
+<img src="/api-integrations/impact/settings_technical_api.png" alt="impact.com Account Settings with API selected under Technical" />
+
+### Step 2: Create an access token
+
+1. Select **Create Access Token** on the upper right of the page.
+
+<img src="/api-integrations/impact/create_access_token.png" alt="impact.com API page with the Create Access Token button" />
+
+2. Enter a **Token Name** and **Description**, keep the default (latest) **API Version**, then select **Next**.
+3. Select a **Primary Contact**, optionally add developer email addresses, then select **Next**.
+4. Toggle on the API categories your integration needs and select their scopes, for example **Accounts** with the **Get** scopes for read access.
+5. Select **Create**.
+
+<img src="/api-integrations/impact/select_scopes.png" alt="impact.com Create Access Token scopes with the Accounts category and its Get scopes selected" />
+
+### Step 3: Copy the Account SID and Auth Token
+
+1. Back on the API page, select your access token's card.
+2. Select **Credentials** in the left navigation.
+3. Copy the **Account SID**.
+
+<img src="/api-integrations/impact/copy_credentials.png" alt="impact.com access token Credentials page with the Account SID and Auth Token fields" />
+
+4. Select **Copy** next to **Auth Token** to copy it.
+
+<img src="/api-integrations/impact/token_credentials.png" alt="impact.com access token Credentials page with the Auth Token Copy button highlighted" />
+
+<Note>Legacy tokens created before April 2025 work too. Select the **Legacy Account Tokens** card on the API page (select **Enable Legacy Tokens** on the upper right if it is not visible), then **Credentials**. It has a Read/Write pair and a Read-Only pair: copy the Account SID and Auth Token of the same pair.</Note>
+
+<img src="/api-integrations/impact/legacy_token_created.png" alt="impact.com Legacy Account Tokens Credentials page with the Read/Write and Read-Only Account SID and Auth Token fields" />
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with impact.com.
+2. Enter the Account SID in the **Account SID** field.
+3. Enter the Auth Token in the **Auth Token** field.
+4. Submit the form. Nango checks the credentials with impact.com and rejects them if they are invalid.
+
+<img src="/api-integrations/impact/form.png" alt="Impact Connect UI form with the Account SID and Auth Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to impact.com.

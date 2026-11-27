@@ -1,0 +1,37 @@
+---
+title: 'TomTom - How do I link my account?'
+sidebarTitle: 'TomTom'
+---
+
+## Overview
+
+To authenticate with TomTom, you need:
+
+1. **API Key** — a TomTom API key from MyTomTom.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A TomTom account. The free plan includes API access, with no credit card needed; you can [sign up here](https://my.tomtom.com/).
+
+### Step 1: Copy your API key
+
+1. Sign in to [MyTomTom](https://my.tomtom.com/) and open [API & SDK Keys](https://my.tomtom.com/keys).
+2. Use the key MyTomTom created for you (**My First API key**), or click **Create Key**, enter a name, select the products the key should work with, and click **Create key**. Nango checks the key with a Search API request, so include **Search API** in the key's products.
+
+<img src="/api-integrations/tomtom/api_sdk_keys_page.png" alt="MyTomTom API & SDK Keys page with the Create Key button highlighted"/>
+
+3. In the **Key** column of your key's row, click the masked key value to copy the key.
+
+<img src="/api-integrations/tomtom/copy_api_key.png" alt="MyTomTom API & SDK Keys page with the key value in the Key column highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with TomTom.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/tomtom/form.png" alt="TomTom Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to TomTom.

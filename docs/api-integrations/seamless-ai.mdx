@@ -1,0 +1,82 @@
+---
+title: 'Seamless.AI'
+sidebarTitle: 'Seamless.AI'
+description: 'Integrate your application with the Seamless.AI API'
+---
+
+## 🚀 Quickstart
+
+Connect to Seamless.AI with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Seamless.AI_.
+    </Step>
+    <Step id="authorize-seamless-ai" title="Authorize Seamless.AI">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-seamless-ai-api" title="Call the Seamless.AI API">
+    Let's make your first request to the Seamless.AI API to get the user the API key belongs to. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/oauth/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/oauth/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Seamless.AI integration guides
+
+- [How do I link my account?](/api-integrations/seamless-ai/connect)  
+Create an API key to connect your Seamless.AI account.
+
+Official docs: [Seamless.AI API](https://docs.seamless.ai/api-catalog/overview)
+
+## 🧩 Pre-built syncs & tools for Seamless.AI
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/seamless-ai/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The MCP server is on the fixed host `https://mcp.seamless.ai`: send MCP requests to `/mcp` with `baseUrlOverride` set to `https://mcp.seamless.ai` and the headers `Content-Type: application/json` and `Accept: application/json, text/event-stream`; Nango keeps the connection's credentials. The key must be created with the MCP scope. See [Authentication](https://docs.seamless.ai/mcp/authentication).
+- Nango sends the key in the `Token` header to `https://api.seamless.ai` on every call. The docs also accept the same key in the `Token` header on the MCP server at `https://mcp.seamless.ai/mcp`: calls that reach it outside this connection can read the key from the connection's credentials (`credentials.apiKey`) and set the `Token` header themselves.
+
+---
