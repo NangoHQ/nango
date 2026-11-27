@@ -1,0 +1,39 @@
+---
+title: 'Ideal Postcodes - How do I link my account?'
+sidebarTitle: 'Ideal Postcodes'
+---
+
+## Overview
+
+To authenticate with Ideal Postcodes, you need:
+
+1. **API Key** — an API key from your Ideal Postcodes dashboard. It starts with `ak_`.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- An [Ideal Postcodes](https://account.ideal-postcodes.co.uk/users/sign_up) account. The free trial comes with 50 free credits and needs no credit card.
+
+### Step 1: Copy your API key
+
+1. Sign in to the [Ideal Postcodes dashboard](https://account.ideal-postcodes.co.uk).
+2. Click **Keys** in the left sidebar, then click the API key you want to use. The key created with your account holds the free trial credits.
+
+<img src="/api-integrations/ideal-postcodes/keys_page.png" alt="Ideal Postcodes dashboard Keys page with the API key that came with the free trial highlighted"/>
+
+3. In the **API Key** card, click **Copy**. The key starts with `ak_`.
+
+<img src="/api-integrations/ideal-postcodes/copy_api_key.png" alt="Ideal Postcodes API key page with the Copy button next to the API key highlighted"/>
+
+<Note>Leave the key's **Allowed URLs** empty. Ideal Postcodes rejects requests to a key with Allowed URLs when their Referer or Origin header does not match, which blocks server-side requests.</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Ideal Postcodes.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ideal-postcodes/form.png" alt="Ideal Postcodes Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Ideal Postcodes.

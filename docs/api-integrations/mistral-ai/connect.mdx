@@ -1,0 +1,59 @@
+---
+title: 'Mistral AI - How do I link my account?'
+sidebarTitle: 'Mistral AI'
+---
+
+## Overview
+
+To authenticate with Mistral AI, you need:
+
+1. **Region** — the Mistral API host your requests go to.
+2. **API Key** — a Mistral Studio API key or a service account API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Mistral AI account. You can sign up at [console.mistral.ai](https://console.mistral.ai/).
+
+### Step 1: Choose your region
+
+Mistral has a global API host and two regional ones. Select the value that matches where you want inference to run:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global (not region-specific) | `api.mistral.ai` |
+| EU | `api.eu.mistral.ai` |
+| US | `api.us.mistral.ai` |
+
+Use the global host when you do not need a specific inference location. Agents, Batch and the Files API are not available on the regional hosts. See [Regional inference](https://docs.mistral.ai/inference/regional-inference) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to [Mistral Studio](https://console.mistral.ai/), open [API Keys](https://console.mistral.ai/api-keys) and click **New key**.
+
+<img src="/api-integrations/mistral-ai/api_keys_page.png" alt="Mistral Studio API keys page with the New key button"/>
+
+2. Enter a **Key name**, optionally set an **Expiration**, and choose the **Connector and connection access scope**. Then click **New key**.
+
+<img src="/api-integrations/mistral-ai/create_key_dialog.png" alt="Mistral Studio Create new key panel with the Key name, Expiration and access scope fields"/>
+
+3. Copy the key. It is shown only once and cannot be retrieved after you close the dialog.
+
+<img src="/api-integrations/mistral-ai/api_key_created.png" alt="Mistral Studio API key created dialog with the button to copy the key"/>
+
+The key works only in the workspace it was created in.
+
+To connect as a service account instead, open the [Admin Console](https://admin.mistral.ai), go to **Workspaces**, open your workspace and select the **Service accounts** tab. Open the service account, click **Add new authentication**, choose **API key** and create the key, then click **Copy key**. A service account API key authenticates as the service account and has its roles.
+
+<img src="/api-integrations/mistral-ai/service_account_api_key_created.png" alt="Mistral Admin Console API key created dialog for a service account with the Copy key button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Mistral AI.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/mistral-ai/form.png" alt="Mistral AI connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Mistral AI.

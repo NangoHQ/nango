@@ -1,0 +1,44 @@
+---
+title: 'Flotiq - How do I link my account?'
+sidebarTitle: 'Flotiq'
+---
+
+## Overview
+
+To authenticate with Flotiq, you need:
+
+1. **API Key** — a Flotiq Application API key (read-write or read-only) or a User Defined API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Flotiq account. You can sign up at [editor.flotiq.com](https://editor.flotiq.com/register).
+
+### Step 1: Get an API key
+
+Every Flotiq account has two Application API keys, read-write and read-only. You can also create User Defined API keys restricted to specific content types and actions. How many User Defined keys you can create depends on your Flotiq plan.
+
+1. Sign in to the [Flotiq Panel](https://editor.flotiq.com) and open your Space.
+2. Select **API Keys** in the left menu.
+3. To use an Application API key, copy the **Read only API KEY** (or the **Read and write API KEY**) with the copy button next to it.
+
+<img src="/api-integrations/flotiq/application_api_keys.png" alt="Flotiq API Keys page with the copy button of the Read only API KEY highlighted"/>
+
+4. To use a User Defined API key instead, select **Add new API key** under **User defined API keys**. Enter a name, pick a content type and tick the actions the key may perform (for example **Read**), then select **Save**.
+
+<img src="/api-integrations/flotiq/user_defined_key_form.png" alt="Flotiq User defined API key form with a name, the Media content type, the Read action ticked and the Save button highlighted"/>
+
+5. The saved key now shows its token. Copy it with the copy button next to it.
+
+<img src="/api-integrations/flotiq/user_defined_api_key_created.png" alt="Saved Flotiq User defined API key with its copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Flotiq.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/flotiq/form.png" alt="Flotiq connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Flotiq.

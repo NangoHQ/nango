@@ -1,0 +1,55 @@
+---
+title: 'ngrok - How do I link my account?'
+sidebarTitle: 'ngrok'
+---
+
+## Overview
+
+To authenticate with ngrok, you need:
+
+1. **API Key** — an ngrok API key or access token.
+
+This guide will show you how to get one.
+
+### Prerequisites
+
+- An ngrok account. You can [sign up](https://dashboard.ngrok.com/signup) for free; the ngrok API is available to all ngrok users at no additional charge.
+
+### Step 1: Create an API key or access token
+
+Both kinds of key work. An API key can call the whole API. An access token (it starts with `ngrok_pat_`) can only do what its scopes allow.
+
+**To create an API key:**
+
+1. Sign in to the [ngrok dashboard](https://dashboard.ngrok.com) and go to **Settings** -> **Credentials**, then open the **API Keys** tab ([API Keys](https://dashboard.ngrok.com/api-keys)).
+2. Click **New API Key** (**Create API Key** if you have none yet).
+
+<img src="/api-integrations/ngrok/api_keys_page.png" alt="ngrok Credentials page with the API Keys tab open and the Create API Key button"/>
+
+3. Enter a description, keep yourself as the **Owner**, and click **Create API key**.
+
+<img src="/api-integrations/ngrok/new_api_key_dialog.png" alt="ngrok New API Key panel with the Description and Owner fields and the Create API key button"/>
+
+4. Copy the API key with the copy button. ngrok shows it only once.
+
+<img src="/api-integrations/ngrok/api_key_created.png" alt="ngrok Save your new Token dialog with the copy button next to the new API key"/>
+
+**To create an access token instead:**
+
+1. Open the **Access Tokens** tab ([Access Tokens](https://dashboard.ngrok.com/access-tokens)) and start a new access token.
+2. Enter a description, pick an expiration, and choose the scopes: full access, read-only, or custom. Give the token the scopes your integration needs.
+3. Save the token and copy its value with the copy button. ngrok shows it only once.
+
+<img src="/api-integrations/ngrok/access_token_created.png" alt="ngrok Access Token Created dialog with the copy button next to the new access token"/>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ngrok.
+2. Paste the API key or access token you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+Nango checks the key when you submit the form and rejects a wrong one.
+
+<img src="/api-integrations/ngrok/form.png" alt="ngrok Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to ngrok.

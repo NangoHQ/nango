@@ -78,6 +78,17 @@ export { default as zerobounceCredentialsVerification } from './providers/zerobo
 export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
 export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';
 export { default as batchdataCredentialsVerification } from './providers/batchdata/credentials-verification.js';
+export { default as hookdeckCredentialsVerification } from './providers/hookdeck/credentials-verification.js';
+export { default as nocodbCredentialsVerification } from './providers/nocodb/credentials-verification.js';
+export { default as mailboxvalidatorCredentialsVerification } from './providers/mailboxvalidator/credentials-verification.js';
+export { default as neverbounceCredentialsVerification } from './providers/neverbounce/credentials-verification.js';
+export { default as moosendCredentialsVerification } from './providers/moosend/credentials-verification.js';
+export { default as idealPostcodesCredentialsVerification } from './providers/ideal-postcodes/credentials-verification.js';
+export { default as flotiqCredentialsVerification } from './providers/flotiq/credentials-verification.js';
+export { default as htmlCssToImageCredentialsVerification } from './providers/html-css-to-image/credentials-verification.js';
+export { default as geokeoCredentialsVerification } from './providers/geokeo/credentials-verification.js';
+export { default as ngrokCredentialsVerification } from './providers/ngrok/credentials-verification.js';
+export { default as imgixCredentialsVerification } from './providers/imgix/credentials-verification.js';
 export { default as impactCredentialsVerification } from './providers/impact/credentials-verification.js';
 export { default as statuspalCredentialsVerification } from './providers/statuspal/credentials-verification.js';
 export { default as deeplCredentialsVerification } from './providers/deepl/credentials-verification.js';

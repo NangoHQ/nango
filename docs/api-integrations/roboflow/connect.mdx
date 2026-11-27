@@ -1,0 +1,44 @@
+---
+title: 'Roboflow - How do I link my account?'
+sidebarTitle: 'Roboflow'
+---
+
+## Overview
+
+To authenticate with Roboflow, you need:
+
+1. **Private API Key** — a private API key from your Roboflow workspace.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Roboflow account. The free Core plan includes API access; you can sign up at [app.roboflow.com](https://app.roboflow.com).
+
+### Step 1: Create a private API key
+
+1. Sign in to [Roboflow](https://app.roboflow.com) and open your workspace.
+2. Go to **Settings** > [**API Keys**](https://app.roboflow.com/settings/api).
+3. Under **Private API Key**, click **Generate New Key**.
+
+<img src="/api-integrations/roboflow/generate_new_key.png" alt="Roboflow API Keys settings page with the Generate New Key button under Private API Key"/>
+
+4. Enter a **Key Name** and click **Create API Key**.
+
+<img src="/api-integrations/roboflow/create_api_key_dialog.png" alt="Roboflow dialog for a new private API key with the Key Name field and the Create API Key button"/>
+
+5. Copy the key from the **API Key Created** dialog, then click **Done**.
+
+<img src="/api-integrations/roboflow/api_key_created.png" alt="Roboflow API Key Created dialog with the copy button for the new private API key"/>
+
+<Note>Use the private API key, not the publishable API key: the publishable key is limited to inference and model downloads.</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Roboflow.
+2. Enter your **Private API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/roboflow/form.png" alt="Roboflow connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Roboflow.
