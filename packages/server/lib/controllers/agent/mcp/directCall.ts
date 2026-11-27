@@ -1,12 +1,13 @@
 import { Err } from '@nangohq/utils';
 
 import { trackAgentSessionToolCall } from '../../../services/agentSessionAnalytics.service.js';
+import { directCallSchema } from '../../../services/agentSessionToolCatalog.service/index.js';
 import { formatMcpArgumentsError, PublicMcpError } from '../../mcp/utils.js';
-import { directCallSchema } from './directCallSchema.js';
 import { executeSessionTool } from './execute/execute.js';
 import { invalidArgumentsOf } from './sessionTool.js';
 
-import type { AgentSessionCallableTool, AgentSessionMcpContext } from './sessionTool.js';
+import type { AgentSessionCallableTool } from '../../../services/agentSessionToolCatalog.service/index.js';
+import type { AgentSessionMcpContext } from './sessionTool.js';
 import type { Result } from '@nangohq/utils';
 
 const WRAPPED_KEYS = new Set(['input', 'goal', 'intent']);

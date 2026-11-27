@@ -5,30 +5,14 @@ import { Err, metrics } from '@nangohq/utils';
 import { measureAgentSessionToolCall } from '../../../services/agentSessionAnalytics.service.js';
 import { formatMcpArgumentsError, InternalMcpError, jsonContent, jsonStructuredContent, mcpToolError, PublicMcpError } from '../../mcp/utils.js';
 
-import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
-import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { AgentSessionCallableTools, AgentSessionToolDefinition } from '../../../services/agentSessionToolCatalog.service/index.js';
+import type { CallToolResult } from '@modelcontextprotocol/server';
+import type { AgentSession, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 import type * as z from 'zod/v4';
 
 const MAX_TRACKED_INVALID_ARGUMENTS = 10;
-
-/** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
-export const MAX_TOOL_NAME_LENGTH = 64;
-
-export interface AgentSessionCallableTool {
-    integrationId: string;
-    name: string;
-    description: string;
-    /** A searchable tool answers to its name too, so being callable does not make a tool pinned. */
-    pinned: boolean;
-}
-
-/**
- * Every tool the session can run, keyed by the name it answers to. Built once per request, so a tool
- * resolves a name without rebuilding the session's naming.
- */
-export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallableTool>;
 
 /**
  * What an MCP server tool returned, already a valid tool result, so it reaches the agent as the
@@ -46,25 +30,17 @@ export interface AgentSessionMcpContext {
     callable: AgentSessionCallableTools;
 }
 
-// A meta tool the session puts in front of the agent
-export interface AgentSessionMcpTool {
-    name: string;
-    description: string;
-    inputSchema: z.ZodType;
-    /** Declared only by a tool whose result is an object. nango_execute returns whatever an action returns. */
-    outputSchema?: z.ZodType;
-    annotations?: ToolAnnotations;
-    isEnabled: (metaTools: AgentSessionMetaTools) => boolean;
+export interface AgentSessionMcpTool extends AgentSessionToolDefinition {
     handler: (args: unknown, context: AgentSessionMcpContext) => Promise<Result<unknown>>;
 }
 
-type AgentSessionMcpToolDefinition<TInputSchema extends z.ZodType> = Omit<AgentSessionMcpTool, 'handler' | 'inputSchema'> & {
+type AgentSessionMcpToolConfig<TInputSchema extends z.ZodType> = Omit<AgentSessionToolDefinition, 'inputSchema'> & {
     inputSchema: TInputSchema;
     onInvalidArguments?: (context: AgentSessionMcpContext, invalid: { args: unknown; error: z.ZodError }) => void;
     handler: (context: AgentSessionMcpContext & { args: z.output<TInputSchema> }) => Result<unknown> | Promise<Result<unknown>>;
 };
 
-export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: AgentSessionMcpToolDefinition<TInputSchema>): AgentSessionMcpTool {
+export function makeAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: AgentSessionMcpToolConfig<TInputSchema>): AgentSessionMcpTool {
     return {
         ...tool,
         async handler(args, context) {

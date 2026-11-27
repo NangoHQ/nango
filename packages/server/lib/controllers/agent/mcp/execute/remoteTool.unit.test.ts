@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { buildSessionTools } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { ProxyServiceError } from '../../../../services/proxy.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { buildSessionTools } from '../sessionServer.js';
 import { RemoteToolResult } from '../sessionTool.js';
 
 import type { ProxyServiceRequest, ProxyServiceResponse } from '../../../../services/proxy.service.js';

@@ -5,16 +5,14 @@ import { getProvider } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionProxyRequest } from '../../../../services/agentSessionAnalytics.service.js';
+import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
+import { proxyInputSchema, proxyToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
-import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
-import { proxyRequestOutputSchema } from '../../../../services/mcpProxySchema.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
-import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, invalidArgumentsOf } from '../sessionTool.js';
+import { invalidArgumentsOf, makeAgentSessionMcpTool } from '../sessionTool.js';
 import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';
-import { proxyInputSchema } from './schema.js';
 
 import type { McpProxyExecution } from '../../../../services/mcpProxy.service.js';
 import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js';
@@ -28,18 +26,8 @@ const invalidProxyArgsSchema = z.object({
     method: proxyInputSchema.shape.method.optional().catch(undefined)
 });
 
-export const proxyTool = defineAgentSessionMcpTool({
-    name: 'nango_proxy',
-    description: `Make an authenticated HTTP request to a provider API, on the connection this session resolved for the integration. The escape hatch for when no tool covers what you need, so search with nango_tool_search first and use this only if nothing fits. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}.`,
-    inputSchema: proxyInputSchema,
-    outputSchema: proxyRequestOutputSchema,
-    annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: false,
-        openWorldHint: true
-    },
-    isEnabled: (metaTools) => metaTools.nangoProxy,
+export const proxyTool = makeAgentSessionMcpTool({
+    ...proxyToolDefinition,
     onInvalidArguments: ({ session }, { args, error }) => {
         const { integration, method } = invalidProxyArgsSchema.safeParse(args).data ?? {};
         trackAgentSessionProxyRequest({

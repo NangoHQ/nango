@@ -5,7 +5,7 @@ import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxy
 import { TOOL_CALL_TIMEOUT_MS } from '../../../../services/remoteMcp.service.js';
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../../../mcp/utils.js';
 import { proxyErrorToMcp } from '../proxy/errors.js';
-import { connectionDeletedError } from '../sessionConnection.js';
+import { connectionDeletedError } from '../sessionConnectionErrors.js';
 
 import type { ActionExecutionError } from '../../../../services/action.service.js';
 import type { RemoteMcpError } from '../../../../services/remoteMcp.service.js';
