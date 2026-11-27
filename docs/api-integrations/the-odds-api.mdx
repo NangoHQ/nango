@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/the-odds-api/PreBuiltUseCases.
 ## API gotchas
 
 - For calls that need IPv6, set `baseUrlOverride` to `https://ipv6-api.the-odds-api.com`; Nango keeps the connection's credentials and headers. See [The Odds API v4 guide](https://the-odds-api.com/liveapi/guides/v4/).
-- Nango sends the key in the `x-api-key` header on every call. Calls that need it as the `apiKey` query parameter instead can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `x-api-key` header on every call. Calls that need it as the `apiKey` query parameter instead can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
 
 ---

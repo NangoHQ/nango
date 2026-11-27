@@ -78,6 +78,6 @@ import PreBuiltUseCases from "/snippets/generated/rollbar/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends the token in the `X-Rollbar-Access-Token` header on every call. The few endpoints that still take it as the deprecated `access_token` query or form parameter can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the token in the `X-Rollbar-Access-Token` header on every call. The few endpoints that still take it as the deprecated `access_token` query or form parameter can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
 
 ---

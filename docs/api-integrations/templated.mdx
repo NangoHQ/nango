@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/templated/PreBuiltUseCases.mdx
 ## API gotchas
 
 - Templated's MCP server is on `https://mcp.templated.io`, not the base URL host. Send MCP requests to `/mcp` through this connection with `baseUrlOverride: 'https://mcp.templated.io'`; Nango keeps the connection's credentials and headers. See [MCP Setup Guide](https://templated.io/docs/integrations/mcp/setup/).
-- Nango sends the key as `Authorization: Bearer <apiKey>` on every call. Calls that need it another way, such as the `apiKey` query parameter on the MCP server URL, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key as `Authorization: Bearer <apiKey>` on every call. Calls that need it another way, such as the `apiKey` query parameter on the MCP server URL, can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
 
 ---

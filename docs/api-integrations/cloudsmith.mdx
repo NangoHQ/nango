@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/cloudsmith/PreBuiltUseCases.md
 
 ## API gotchas
 
-- Nango sends the key in the `x-api-key` header on every call. Calls that need it another way, such as the `Authorization: token <key>` header, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `x-api-key` header on every call. Calls that need it another way, such as the `Authorization: token <key>` header, can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
 
 ---
