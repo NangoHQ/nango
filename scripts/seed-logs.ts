@@ -6,7 +6,7 @@ import db from '@nangohq/database';
 import { nanoid } from '@nangohq/utils';
 
 import type * as LogsModule from '@nangohq/logs';
-import type { MessageHTTPRequest, MessageRow, OperationList, OperationRow, OperationState } from '@nangohq/types';
+import type { ConcatOperationList, MessageHTTPRequest, MessageRow, OperationList, OperationRow, OperationState } from '@nangohq/types';
 
 // `meta` isn't indexed, so the id prefix is what --reset deletes by.
 const SEED_PREFIX = 'seed_';
@@ -513,7 +513,7 @@ function firstLine(op: OperationList, name: string | undefined, integration: Env
     }
 }
 
-function generate(target: Target, createdAt: number, now: number, durationCapMs: number): Generated {
+function generate(logs: typeof LogsModule, target: Target, createdAt: number, now: number, durationCapMs: number): Generated {
     const op = weighted(OPERATION_MIX);
     const finalState = weighted(STATE_MIX);
     const durationMs = Math.min(Math.round(fromQuantiles(DURATION_MS[op.type])), durationCapMs);
@@ -556,7 +556,7 @@ function generate(target: Target, createdAt: number, now: number, durationCapMs:
         source: 'internal',
         level: state === 'failed' || state === 'timeout' ? 'error' : 'info',
         type: 'operation',
-        message: '',
+        message: logs.operationTypeToMessage[`${op.type}:${op.action}` as ConcatOperationList],
         operation: op,
         state,
         accountId: target.account.id,
@@ -682,7 +682,7 @@ async function backfill(args: Args, targets: Target[], es: Client | null, logs: 
             const expected = ((targetRate(args.level, target, targets) * (to - from)) / 1000) * (hourWeight(t) / MEAN_WEEK_WEIGHT) * jitter * hourJitter;
             const n = Math.floor(expected) + (Math.random() < expected % 1 ? 1 : 0);
             for (let i = 0; i < n; i++) {
-                const g = generate(target, Math.floor(from + Math.random() * (to - from)), now, Infinity);
+                const g = generate(logs, target, Math.floor(from + Math.random() * (to - from)), now, Infinity);
                 stats.add(g);
                 await writer.add(g);
             }
@@ -747,7 +747,10 @@ async function live(args: Args, targets: Target[], logs: typeof LogsModule) {
     const later = (ms: number, fn: () => Promise<void>) => {
         const timer = setTimeout(() => {
             timers.delete(timer);
-            fn().catch((err: unknown) => console.error(err));
+            const pending = fn()
+                .catch((err: unknown) => console.error(err))
+                .finally(() => inflight.delete(pending));
+            inflight.add(pending);
         }, ms);
         timers.add(timer);
     };
@@ -755,7 +758,7 @@ async function live(args: Args, targets: Target[], logs: typeof LogsModule) {
     const spawn = async () => {
         const target = weighted(targets.map((t) => [t, t.share] as const));
         const now = Date.now();
-        const g = generate(target, now, Infinity, LIVE_MAX_DURATION_MS);
+        const g = generate(logs, target, now, Infinity, LIVE_MAX_DURATION_MS);
         const row: OperationRow = { ...g.operation, state: 'running', endedAt: null, error: undefined, level: 'info' };
         await logs.modelOperations.createOperation(row);
         running.set(row.id, row);
@@ -796,9 +799,7 @@ async function live(args: Args, targets: Target[], logs: typeof LogsModule) {
         }
         later(-Math.log(1 - Math.random()) * (1000 / rate), async () => {
             scheduleNext();
-            const spawning = spawn();
-            inflight.add(spawning);
-            await spawning.finally(() => inflight.delete(spawning));
+            await spawn();
         });
     };
 
