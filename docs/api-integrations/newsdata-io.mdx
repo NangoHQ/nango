@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/newsdata-io/PreBuiltUseCases.m
 
 ## API gotchas
 
-- Nango sends the key in the `X-ACCESS-KEY` header on every call. The WebSocket stream at `wss://ws.newsdata.io/ws/event` accepts it only as the `apikey` query parameter: read it from the connection's credentials (`credentials.apiKey`) and pass it there.
+- Nango sends the key in the `X-ACCESS-KEY` header on every call. The WebSocket stream at `wss://ws.newsdata.io/ws/event` accepts it only as the `apikey` query parameter: read it from the connection's credentials (`credentials.apiKey`) and add it as the `apikey` query parameter on the WebSocket URL themselves.
 
 ---
