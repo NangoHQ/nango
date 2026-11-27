@@ -4,9 +4,8 @@ import type { GeokeoResponse } from './types.js';
 // Statuses that mean the request reached Geokeo with a key it recognised
 const VALID_KEY_STATUSES = new Set(['OK', 'ZERO_RESULTS', 'OVER_QUERY_LIMIT']);
 // Statuses Geokeo returns when it rejects the key: ACCESS_DENIED for an unknown key (or one blocked by its IP or
-// HTTP-referrer restriction), INVALID_REQUEST when the api parameter is missing or invalid, and INTERNAL_SERVER_ERROR,
-// which an invalid key has also received on this endpoint
-const INVALID_KEY_STATUSES = new Set(['ACCESS_DENIED', 'INVALID_REQUEST', 'INTERNAL_SERVER_ERROR']);
+// HTTP-referrer restriction) and INVALID_REQUEST when the api parameter is missing or invalid
+const INVALID_KEY_STATUSES = new Set(['ACCESS_DENIED', 'INVALID_REQUEST']);
 
 export default async function execute(nango: Nango) {
     const { provider_config_key } = nango.getConnection();
@@ -33,6 +32,11 @@ export default async function execute(nango: Nango) {
 
     if (status && INVALID_KEY_STATUSES.has(status)) {
         throw new Error('Invalid credentials');
+    }
+
+    // a Geokeo outage, but an invalid key has also received it on this endpoint
+    if (status === 'INTERNAL_SERVER_ERROR') {
+        throw new Error('Geokeo returned INTERNAL_SERVER_ERROR, which it also returns for an invalid API key. Check the key, or try again later.');
     }
 
     if (status) {

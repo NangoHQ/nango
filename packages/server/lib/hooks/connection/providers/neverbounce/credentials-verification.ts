@@ -20,9 +20,10 @@ export default async function execute(nango: Nango) {
         throw new Error('Invalid credentials');
     }
 
-    // other statuses (general_failure, temp_unavail, throttle_triggered, bad_referrer) do not prove the key is wrong
-    if (status !== undefined && status !== 'success') {
-        throw new Error(`NeverBounce returned status ${status}${message ? `: ${message}` : ''}`);
+    // other statuses (general_failure, temp_unavail, throttle_triggered, bad_referrer) do not prove the key is wrong,
+    // and every NeverBounce response carries a status, so a body without one is unexpected
+    if (status !== 'success') {
+        throw new Error(status ? `NeverBounce returned status ${status}${message ? `: ${message}` : ''}` : 'Unexpected response from the NeverBounce API');
     }
 }
 

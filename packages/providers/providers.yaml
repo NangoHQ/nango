@@ -22094,8 +22094,10 @@ honeyhive:
         base_url: https://api.dp1.us.honeyhive.ai
         headers:
             authorization: Bearer ${apiKey}
-        connection_config:
-            projectId: ${connectionConfig.projectId}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/projects/${connectionConfig.projectId}/charts
     docs: https://nango.dev/docs/api-integrations/honeyhive
     docs_connect: https://nango.dev/docs/api-integrations/honeyhive/connect
     connection_config:

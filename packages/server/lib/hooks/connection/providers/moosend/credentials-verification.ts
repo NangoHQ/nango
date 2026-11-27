@@ -35,6 +35,10 @@ export default async function execute(nango: Nango) {
     if (body && typeof body.Error === 'string' && body.Error.length > 0) {
         throw new Error(`Moosend returned ${body.Error}`);
     }
+    // success is the documented `Code` 0 envelope, anything else is unexpected
+    if (body?.Code !== 0) {
+        throw new Error('Unexpected response from the Moosend API');
+    }
 }
 
 function errorBody(err: unknown): unknown {
