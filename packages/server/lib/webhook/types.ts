@@ -563,3 +563,45 @@ export interface DocusignWebhookEvent {
         envelopeSummary?: Record<string, unknown>;
     };
 }
+
+/** https://docs.incident.io/api-reference/webhooks */
+export interface IncidentIoWebhookPayload {
+    event_type: string;
+    [key: string]: unknown;
+}
+
+/** https://clerk.com/docs/webhooks/overview */
+export interface ClerkWebhookPayload {
+    type: string;
+    object: 'event';
+    data: Record<string, unknown>;
+    timestamp: number;
+    instance_id: string;
+}
+
+/** https://resend.com/docs/dashboard/webhooks/introduction */
+export interface ResendWebhookPayload {
+    type: string;
+    created_at: string;
+    data: Record<string, unknown>;
+}
+
+/** https://platform.openai.com/docs/guides/webhooks */
+export interface OpenAIWebhookPayload {
+    id: string;
+    object: 'event';
+    type: string;
+    created_at: number;
+    data: Record<string, unknown>;
+}
+
+/**
+ * The body of a PostHog webhook destination is a template the user can edit. The default one sends the
+ * captured event, whose name is `event.event`, for example `$pageview`.
+ * https://posthog.com/docs/data-pipelines/destinations/webhook
+ */
+export interface PostHogWebhookPayload {
+    event?: { uuid?: string; event?: string; distinct_id?: string; properties?: Record<string, unknown>; timestamp?: string; url?: string };
+    person?: Record<string, unknown>;
+    [key: string]: unknown;
+}

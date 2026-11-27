@@ -10283,6 +10283,9 @@ clerk:
                 content-type: application/json
             endpoints:
                 - /v1/jwks
+    webhook_routing_script: clerkWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/clerk
     docs_connect: https://nango.dev/docs/integrations/all/clerk/connect
     credentials:
@@ -23044,6 +23047,9 @@ incident-io:
                 content-type: application/json
             endpoints:
                 - /v1/identity
+    webhook_routing_script: incidentIoWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/incident-io
     docs_connect: https://nango.dev/docs/integrations/all/incident-io/connect
     credentials:
@@ -30543,6 +30549,9 @@ openai:
         retry:
             after:
                 - 'x-ratelimit-reset-requests'
+    webhook_routing_script: openaiWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/openai
     docs_connect: https://nango.dev/docs/integrations/all/openai/connect
     credentials:
@@ -33193,6 +33202,9 @@ posthog:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.posthog.com
+    webhook_routing_script: postHogWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/posthog
     docs_connect: https://nango.dev/docs/api-integrations/posthog/connect
     connection_config:
@@ -34655,6 +34667,9 @@ resend:
             method: GET
             endpoints:
                 - /domains?limit=1
+    webhook_routing_script: resendWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/resend
     docs_connect: https://nango.dev/docs/api-integrations/resend/connect
     credentials:
