@@ -2,11 +2,13 @@ import { useQueryState } from 'nuqs';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { DockedPanelLayout, DockedPanelMain } from '@nangohq/design-system';
+
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
-import { OperationDrawer } from './components/OperationDrawer';
+import { OperationPanel } from './components/OperationPanel';
 import { SearchAllOperations } from './components/SearchAllOperations';
 
 export const LogsShow: React.FC = () => {
@@ -42,16 +44,19 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="h-full">
+        <DashboardLayout className="h-full p-0">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>
 
-            <div key={env} className="flex flex-col h-full">
-                <SearchAllOperations onSelectOperation={onSelectOperation} />
-
-                {operationId && <OperationDrawer key={operationId} operationId={operationId} onClose={onSelectOperation} />}
-            </div>
+            <DockedPanelLayout key={env}>
+                <DockedPanelMain>
+                    <div className="flex h-full min-h-0 flex-col p-5">
+                        <SearchAllOperations onSelectOperation={onSelectOperation} selectedOperationId={operationId} />
+                    </div>
+                </DockedPanelMain>
+                {operationId && <OperationPanel operationId={operationId} onClose={() => void setOperationId(null)} />}
+            </DockedPanelLayout>
         </DashboardLayout>
     );
 };

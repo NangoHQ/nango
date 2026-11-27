@@ -55,6 +55,7 @@ export {
     DialogTitle,
     DialogTrigger
 } from './components/ui/dialog';
+export { DOCKED_PANEL_MIN_WIDTH, DockedPanel, DockedPanelLayout, DockedPanelMain, type DockedPanelProps } from './components/ui/docked-panel';
 export {
     InlineCode,
     type InlineCodeProps,

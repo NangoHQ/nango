@@ -248,14 +248,14 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
                 <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
-                    <thead className="grid sticky top-0 z-10 bg-surface-page">
+                    <thead className="grid sticky top-0 z-10 bg-surface-panel">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <th
                                             key={header.id}
-                                            className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
+                                            className="flex bg-surface-panel px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                             style={{
                                                 width: header.getSize() ? header.getSize() : 'auto'
                                             }}

@@ -1,5 +1,6 @@
 import { flexRender } from '@tanstack/react-table';
 
+import { cn } from '@/utils/utils';
 import { getLogsColumnStyle } from '../column-sizing';
 
 import type { SearchOperationsData } from '@nangohq/types';
@@ -11,11 +12,15 @@ export const OperationRow: React.FC<{
     virtualRow: VirtualItem;
     rowVirtualizer: Virtualizer<HTMLDivElement, HTMLTableRowElement>;
     onSelectOperation: (open: boolean, operationId: string) => void;
-}> = ({ row, virtualRow, rowVirtualizer, onSelectOperation }) => {
+    isSelected?: boolean;
+}> = ({ row, virtualRow, rowVirtualizer, onSelectOperation, isSelected = false }) => {
     return (
         <tr
-            data-state={row.getIsSelected() && 'selected'}
-            className="text-s text-text-muted transition-colors border-transparent border-b border-b-border-muted hover:bg-surface-page hover:text-text-strong hover:cursor-pointer flex absolute w-full"
+            data-state={isSelected ? 'selected' : undefined}
+            className={cn(
+                'text-s text-text-muted transition-colors border-transparent border-b border-b-border-muted hover:bg-surface-page hover:text-text-strong hover:cursor-pointer flex absolute w-full',
+                isSelected && 'bg-state-selected text-text-strong hover:bg-state-selected'
+            )}
             onClick={() => {
                 onSelectOperation(true, row.original.id);
             }}

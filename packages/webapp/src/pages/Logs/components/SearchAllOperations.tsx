@@ -28,6 +28,7 @@ import type { Table as ReactTable } from '@tanstack/react-table';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
+    selectedOperationId?: string | null;
 }
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
@@ -43,7 +44,7 @@ const parseSyncs = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withO
 const parseAgentSessions = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
 
-export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
+export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, selectedOperationId }) => {
     const env = useStore((state) => state.env);
 
     // The virtualizer will need a reference to the scrollable container element
@@ -268,8 +269,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="flex gap-2 justify-between">
-                <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap gap-2 justify-between">
+                <div className="flex-1 min-w-60">
                     <InputGroup>
                         <InputGroupAddon>
                             <Search />
@@ -284,7 +285,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         )}
                     </InputGroup>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <FilterMultiSelect
                         label="Status"
                         options={statusOptions}
@@ -370,7 +371,14 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         })}
                     </thead>
 
-                    {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
+                    {flatData.length > 0 && (
+                        <TableBody
+                            table={table}
+                            tableContainerRef={tableContainerRef}
+                            onSelectOperation={onSelectOperation}
+                            selectedOperationId={selectedOperationId}
+                        />
+                    )}
 
                     {flatData.length > 0 && hasNextPage && (
                         <Button onClick={onClickLoadMore} variant={'outline'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
@@ -415,7 +423,8 @@ const TableBody: React.FC<{
     table: ReactTable<SearchOperationsData>;
     tableContainerRef: React.RefObject<HTMLDivElement>;
     onSelectOperation: Props['onSelectOperation'];
-}> = ({ table, tableContainerRef, onSelectOperation }) => {
+    selectedOperationId: Props['selectedOperationId'];
+}> = ({ table, tableContainerRef, onSelectOperation, selectedOperationId }) => {
     const { rows } = table.getRowModel();
 
     // Important: Keep the row virtualizer in the lowest component possible to avoid unnecessary re-renders.
@@ -438,6 +447,7 @@ const TableBody: React.FC<{
                         key={row.original.id}
                         row={row}
                         onSelectOperation={onSelectOperation}
+                        isSelected={row.original.id === selectedOperationId}
                         virtualRow={virtualRow}
                         rowVirtualizer={rowVirtualizer}
                     />
