@@ -10864,19 +10864,33 @@ Source: https://nango.dev/docs/reference/backend/http-api/catalog/get-function.m
     "description": "Create an A, AAAA, CAA, CNAME, MX, NS, SRV or TXT record in a managed DNS domain.",
     "required_scopes": { "any": ["domain:create", "domain:update"] },
     "input_json_schema": {
-      "type": "object",
-      "properties": {
-        "domainName": { "type": "string", "minLength": 1, "description": "Parent managed DNS domain name." },
-        "type": { "type": "string", "enum": ["A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"] }
-      },
-      "required": ["domainName", "type"]
+      "$ref": "#/definitions/FunctionInput_digitalocean_createdomainrecord",
+      "definitions": {
+        "FunctionInput_digitalocean_createdomainrecord": {
+          "type": "object",
+          "properties": {
+            "domainName": { "type": "string", "minLength": 1, "description": "Parent managed DNS domain name." },
+            "type": { "type": "string", "enum": ["A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"], "description": "Type of DNS record to create." },
+            "name": { "type": "string", "minLength": 1, "description": "Provider host, alias or service name, such as @, www or _service._tcp." },
+            "data": { "type": "string", "description": "Record address, target or TXT content as ordinary text; empty text is retained for provider validation." }
+          },
+          "required": ["domainName", "type", "name", "data"]
+        }
+      }
     },
     "output_json_schema": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "Created record identifier." }
-      },
-      "required": ["id"]
+      "$ref": "#/definitions/FunctionOutput_digitalocean_createdomainrecord",
+      "definitions": {
+        "FunctionOutput_digitalocean_createdomainrecord": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "Created record identifier." },
+            "domainName": { "type": "string", "description": "Parent managed domain name." },
+            "type": { "type": "string", "description": "Created DNS record type." }
+          },
+          "required": ["id", "domainName", "type"]
+        }
+      }
     }
   }
 }
