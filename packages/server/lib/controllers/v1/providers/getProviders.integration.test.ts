@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { catalogStore, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
@@ -56,7 +56,9 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
 
         isSuccess(res.json);
-        const provider = res.json.data.find((item) => item.name === '3cx');
+        const withTemplates = new Set(catalogStore.listProviders());
+        const provider = res.json.data.find((item) => !withTemplates.has(item.name));
+        expect(provider).toBeDefined();
         expect(provider?.functionCounts).toStrictEqual({ tools: 0, syncs: 0 });
     });
 });
