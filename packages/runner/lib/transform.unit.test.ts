@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { exec } from './exec.js';
+import { compileTransform } from './transform.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
@@ -118,6 +119,25 @@ describe('exec in transform mode', () => {
 
         expect(error.type).toBe('invalid_inline_source');
         expect(error.payload).toEqual(payload);
+    });
+
+    it('rejects code that awaits something that never settles', async () => {
+        const error = await failure(`await new Promise(() => {}); return 1;`);
+
+        expect(error.type).toBe('invalid_inline_source');
+        expect(error.payload).toEqual({ message: 'The code awaited something that never settles' });
+    });
+
+    it.each([
+        ['a synchronous loop', `while (true) {}`],
+        ['a loop across awaits', `while (true) { await Promise.resolve(); }`]
+    ])('stops %s once it runs past the timeout', async (_name, code) => {
+        const transform = compileTransform({ code, filename: 'inline.cjs', timeoutMs: 50 });
+
+        await expect(transform.type === 'function' && transform.exec({} as never, { kind: 'invoke', input: null } as never)).rejects.toMatchObject({
+            code: 'inline_function_timeout',
+            payload: { message: 'The code ran longer than 0.05s. Do less work per call, such as filtering before sorting.' }
+        });
     });
 
     it('only runs functions in transform mode', async () => {
