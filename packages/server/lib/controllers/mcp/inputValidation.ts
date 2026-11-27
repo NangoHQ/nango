@@ -72,7 +72,12 @@ export function validateMcpActionInput(action: Exclude<ResolvedLegacyAction, { k
 
         // A string the schema accepts as a string type passes, even when it
         // fails a narrower constraint such as a pattern or an enum.
-        const isTypeMismatch = !validate(input) && (validate.errors ?? []).every((error) => TYPE_MISMATCH_KEYWORDS.has(error.keyword));
+        // Ajv also reports oneOf when several branches match, which is not a mismatch.
+        const isTypeMismatch =
+            !validate(input) &&
+            (validate.errors ?? []).every(
+                (error) => TYPE_MISMATCH_KEYWORDS.has(error.keyword) && !(error.keyword === 'oneOf' && error.params['passingSchemas'] !== null)
+            );
         if (isTypeMismatch) {
             return Err(new McpInputValidationError('invalid_input', ajv.errorsText(validate.errors, { dataVar: 'input' })));
         }

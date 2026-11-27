@@ -51,7 +51,8 @@ describe('validateMcpActionInput', () => {
     it.each([
         { type: 'string', pattern: '^[0-9]+$' },
         { type: 'string', enum: ['a', 'b'] },
-        { anyOf: [{ type: 'string', minLength: 50 }, { type: 'null' }] }
+        { anyOf: [{ type: 'string', minLength: 50 }, { type: 'null' }] },
+        { oneOf: [{ type: 'string' }, { type: 'string', minLength: 1 }] }
     ] as const)('lets a string through when the schema takes a string: %j', (schema) => {
         expect(validateMcpActionInput(deployed({ definitions: { Input: schema } } as JSONSchema7), 'not matching').isOk()).toBe(true);
     });
