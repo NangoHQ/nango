@@ -10,7 +10,7 @@ Connect to Databricks with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab -> _Configure New Integration_ -> _Databricks Account (OAuth)_. Enter the Client ID and Client Secret of your Databricks app connection (see the setup guide below).
+    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab -> _Configure New Integration_ -> _Databricks Account (OAuth)_. Enter the Client ID and Client Secret of your Databricks app connection (see the setup guide below), and add the API scopes your integration needs: `all-apis`, or narrower [API scopes](https://docs.databricks.com/api/account/scopes) such as `scim` for account users. Nango only requests `offline_access` by default, so without an API scope every call returns 403.
     </Step>
     <Step id="authorize" title="Authorize Databricks">
     Go to the **Connections** tab -> _Add Test Connection_. Select your cloud region and enter your Databricks account ID ([how to find them](/api-integrations/databricks-account-oauth/connect)), then click _Authorize_ and log in to Databricks as an account admin. Later, you'll let your users do the same directly from your app.

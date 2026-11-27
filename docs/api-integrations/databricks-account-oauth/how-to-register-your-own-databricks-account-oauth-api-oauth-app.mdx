@@ -20,7 +20,7 @@ This guide shows you how to register your own app with Databricks to obtain your
     2. Under **Redirect URLs**, add `https://api.nango.dev/oauth/callback`.
   </Step>
   <Step id="configure-scopes" title="Add the scopes">
-    1. Under **Access scopes**, click **Add scope** and select `all-apis`. It replaces the default `sql` scope.
+    1. Under **Access scopes**, click **Add scope** and add the API scopes your integration needs: `all-apis`, or narrower ones such as `scim`. Add the same scopes to your integration in Nango. They replace the default `sql` scope.
     2. Keep `offline_access` so Nango gets a refresh token. You can keep the default `openid`, `email` and `profile` scopes.
 
     See [Databricks' API scopes](https://docs.databricks.com/api/account/scopes) for narrower scopes.

@@ -12514,7 +12514,6 @@ databricks-account-oauth:
     authorization_url: https://${connectionConfig.region}/oidc/accounts/${connectionConfig.accountId}/v1/authorize
     token_url: https://${connectionConfig.region}/oidc/accounts/${connectionConfig.accountId}/v1/token
     default_scopes:
-        - all-apis
         - offline_access
     authorization_params:
         response_type: code
