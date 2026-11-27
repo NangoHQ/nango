@@ -38,14 +38,16 @@ describe('Connection service integration tests', () => {
         });
     });
 
-    describe('countActiveMonthlyConnections', () => {
-        // A month no other test writes executions into, so rows seeded elsewhere never land in the count.
+    describe('countActiveAndTotalConnections', () => {
+        // A month no other test writes executions into, so rows seeded elsewhere never land in the active count.
+        // The total has no such window, so it is asserted as a delta.
         const now = new Date('2031-03-15T10:00:00Z');
         const thisMonth = new Date('2031-03-03T00:00:00Z');
         const lastMonth = new Date('2031-02-27T00:00:00Z');
         const nextMonth = new Date('2031-04-01T00:00:00Z');
 
-        it('counts the connections that ran a function in the month, soft-deleted ones included, per production flag', async () => {
+        it('counts the connections that ran a function in the month, soft-deleted ones included, and the live total, per production flag', async () => {
+            const [productionBefore, otherBefore] = await connectionService.countActiveAndTotalConnections(now);
             const account = await createAccount();
             const prod = await createEnvironmentSeed(account.id, 'prod');
             const dev = await createEnvironmentSeed(account.id, 'dev');
@@ -66,7 +68,10 @@ describe('Connection service integration tests', () => {
             await ran(prod, 'never-ran', null);
             await ran(dev, 'dev-ran-this-month', thisMonth);
 
-            expect(await connectionService.countActiveMonthlyConnections(now)).toStrictEqual({ production: 3, other: 1 });
+            expect(await connectionService.countActiveAndTotalConnections(now)).toStrictEqual([
+                { isProduction: true, active: 3, total: productionBefore.total + 5 },
+                { isProduction: false, active: 1, total: otherBefore.total + 1 }
+            ]);
         });
     });
 

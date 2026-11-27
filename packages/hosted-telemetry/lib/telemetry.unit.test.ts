@@ -17,6 +17,7 @@ describe('hosted telemetry', () => {
 
         telemetry.histogram('nango.hosted_metric.active_concurrency', 3);
         telemetry.gauge('nango.hosted_metric.active_connections', 3);
+        telemetry.gauge('nango.hosted_metric.connections', 3);
         // @ts-expect-error a histogram is not a counter
         telemetry.increment('nango.hosted_metric.active_concurrency');
         // @ts-expect-error a histogram is not a gauge

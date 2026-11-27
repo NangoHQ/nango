@@ -706,7 +706,7 @@ const ENVS_SHAPE = z.object({
     FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: auditTrailDataPlaneScopesSchema,
     FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
     FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED: z.stringbool().optional().default(false),
-    FLAG_HOSTED_TELEMETRY_ACTIVE_CONNECTIONS_ENABLED: z.stringbool().optional().default(true),
+    FLAG_HOSTED_TELEMETRY_CONNECTIONS_ENABLED: z.stringbool().optional().default(true),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
