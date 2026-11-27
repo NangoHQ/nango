@@ -16,7 +16,7 @@ import type { AnalyticsEventProperties } from '@nangohq/types';
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
 
-export const OperationsToolbar: React.FC = () => {
+export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count }) => {
     const [search, setSearch] = useSearchQueryState();
     const filters = useLogsFilters();
 
@@ -105,6 +105,7 @@ export const OperationsToolbar: React.FC = () => {
                     defaultPreset={last24hPreset}
                 />
             </div>
+            <div className="flex items-center whitespace-nowrap type-text-regular-xs text-text-secondary">{count}</div>
         </div>
     );
 };

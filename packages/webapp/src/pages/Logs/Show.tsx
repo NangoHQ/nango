@@ -108,11 +108,8 @@ export const LogsShow: React.FC = () => {
             </Helmet>
 
             <div key={env} className="flex h-full min-h-0 flex-col gap-3 pt-5">
-                <div className="flex flex-col gap-2 px-5">
-                    <OperationsToolbar />
-                    <div className="flex justify-end type-text-regular-xs text-text-secondary">
-                        {formatQuantity(total)} {total === 1 ? 'log' : 'logs'} found
-                    </div>
+                <div className="px-5">
+                    <OperationsToolbar count={`${formatQuantity(total)} ${total === 1 ? 'log' : 'logs'} found`} />
                 </div>
                 <DockedPanelLayout>
                     <DockedPanelMain>
