@@ -17,8 +17,9 @@ import { envs } from './env.js';
 
 import type { NangoProps } from '@nangohq/types';
 
-function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
-    const killAfterMs = nangoProps?.lifecycle?.killAfterMs;
+// An inline function's kill deadline only bounds its code, so its token keeps the default lifetime to survive a queued dispatch.
+function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle' | 'execMode'>): number {
+    const killAfterMs = nangoProps?.execMode === 'transform' ? undefined : nangoProps?.lifecycle?.killAfterMs;
     return killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
 }
 
@@ -30,7 +31,7 @@ function jobsSigner() {
  * Mint a task-bound token for putTask/heartbeat. Uses the jobs Ed25519 key when configured,
  * otherwise the legacy HMAC signing key. Returns null when neither is set.
  */
-export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): Promise<string | null> {
+export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle' | 'execMode'>): Promise<string | null> {
     const expiresInSecs = taskExpiresInSecs(nangoProps);
     const signer = jobsSigner();
     if (signer) {
@@ -44,7 +45,7 @@ export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoPr
  * Uses the jobs Ed25519 key when configured, otherwise the legacy derived-Ed25519 dispatch token.
  */
 export async function mintRunnerDispatchToken(
-    args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle'> } | { nodeId: string }
+    args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle' | 'execMode'> } | { nodeId: string }
 ): Promise<string | null> {
     const signer = jobsSigner();
     if (signer) {
