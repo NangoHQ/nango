@@ -36,6 +36,7 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
+import type { GetPublicCatalogProvider, GetPublicCatalogProviders } from './catalog/api.js';
 import type { PostCliTelemetry } from './cli/api.js';
 import type { GetPublicClientMetadata } from './clientMetadata/http.api.js';
 import type {
@@ -197,6 +198,8 @@ export type PublicApiEndpoints =
     | PostPublicBasicAuthorization
     | GetPublicProviders
     | GetPublicProvider
+    | GetPublicCatalogProviders
+    | GetPublicCatalogProvider
     | GetPublicListIntegrations
     | GetPublicIntegration
     | DeletePublicIntegration

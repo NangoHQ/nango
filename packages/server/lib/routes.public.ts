@@ -24,6 +24,8 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { getPublicCatalogProvider } from './controllers/catalog/providers/getProvider.js';
+import { getPublicCatalogProviders } from './controllers/catalog/providers/getProviders.js';
 import { postCliTelemetry } from './controllers/cli/postTelemetry.js';
 import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
 import configController from './controllers/config.controller.js';
@@ -281,6 +283,13 @@ publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook).get(webhookIngressRateLimit, postWebhook);
+
+publicAPI.use('/catalog', jsonContentTypeMiddleware);
+publicAPI.route('/catalog/providers').get(rateLimiterMiddleware, getPublicCatalogProviders);
+publicAPI.route('/catalog/providers/:provider').get(rateLimiterMiddleware, getPublicCatalogProvider);
+publicAPI.use('/catalog', (_req, res) => {
+    res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
+});
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);

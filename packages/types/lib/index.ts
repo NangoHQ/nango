@@ -51,6 +51,7 @@ export type * from './billing/types.js';
 export type * from './billing/http.api.js';
 export type * from './usage/index.js';
 
+export type * from './catalog/api.js';
 export type * from './providers/api.js';
 export type * from './proxy/api.js';
 export type * from './result.js';

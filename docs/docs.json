@@ -537,6 +537,13 @@
                         ]
                       },
                       {
+                        "group": "Catalog",
+                        "pages": [
+                          "reference/backend/http-api/catalog/list-providers",
+                          "reference/backend/http-api/catalog/get-provider"
+                        ]
+                      },
+                      {
                         "group": "Providers",
                         "pages": [
                           "reference/backend/http-api/providers/list",
