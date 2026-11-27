@@ -20,6 +20,7 @@ export interface EditableInputProps {
     disabled?: boolean | string;
     canEdit?: boolean; // Permission to edit
     canRead?: boolean; // Permission to read
+    mono?: boolean;
 }
 
 export const EditableInput: React.FC<EditableInputProps> = ({
@@ -35,7 +36,8 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     hintText,
     disabled,
     canEdit = true,
-    canRead = true
+    canRead = true,
+    mono = false
 }) => {
     const [editing, setEditing] = useState(false);
     const [referenceValue, setReferenceValue] = useState(initialValue);
@@ -44,6 +46,8 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const editButtonRef = useRef<HTMLButtonElement>(null);
+    const returnFocusRef = useRef(false);
 
     const onEditClicked = () => {
         setEditing(true);
@@ -63,6 +67,13 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         el.setSelectionRange(end, end);
     }, [editing, onEditingChange]);
 
+    // The Edit button only exists again once editing ends and the save has settled.
+    useEffect(() => {
+        if (editing || loading || !returnFocusRef.current) return;
+        returnFocusRef.current = false;
+        editButtonRef.current?.focus();
+    }, [editing, loading]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const newValue = e.target.value;
         setValue(newValue);
@@ -75,6 +86,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     };
 
     const onCancelClicked = () => {
+        returnFocusRef.current = true;
         setEditing(false);
         setValue(referenceValue);
         setError(null);
@@ -96,6 +108,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
             }
         }
 
+        returnFocusRef.current = true;
         setLoading(true);
         setEditing(false);
         setError(null);
@@ -136,6 +149,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     <InputGroupInput
                         ref={inputRef}
                         id={id}
+                        mono={mono}
                         value={displayValue}
                         placeholder={editing ? placeHolder : undefined}
                         onChange={handleChange}
@@ -159,7 +173,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         <ConditionalTooltip condition={!!disabled && typeof disabled === 'string'} content={disabled} side="bottom">
                             <PermissionGate condition={canEdit} tooltipSide="bottom">
                                 {(allowed) => (
-                                    <InputGroupButton label="Edit" disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
+                                    <InputGroupButton ref={editButtonRef} label="Edit" disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
                                         <Pencil className="size-3.5" />
                                     </InputGroupButton>
                                 )}

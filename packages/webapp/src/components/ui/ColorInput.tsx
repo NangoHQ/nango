@@ -31,10 +31,10 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
 
         return (
             <InputGroup>
-                <InputGroupInput value={value} ref={ref} type="text" placeholder={placeholder} disabled={disabled} {...props} />
+                <InputGroupInput value={value} ref={ref} type="text" mono placeholder={placeholder} disabled={disabled} {...props} />
                 <InputGroupAddon>
                     <div
-                        className={cn('w-5 h-5 rounded-sm border-2 border-border-strong', disabled && 'opacity-50')}
+                        className={cn('size-3.5 rounded-ds-xs border-ds-hairline border-border-strong', disabled && 'opacity-50')}
                         style={{ backgroundColor: previewColor }}
                         title={`Color preview: ${previewColor}`}
                     />

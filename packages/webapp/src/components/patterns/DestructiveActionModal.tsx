@@ -1,25 +1,26 @@
+import { Trash2 } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
     Button,
-    Dialog,
-    DialogBody,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
     Field,
     FieldLabel,
     Input
 } from '@nangohq/design-system';
 
+import type { AlertDialogContentProps } from '@nangohq/design-system';
+
 interface DestructiveActionModalProps {
-    title: string;
+    title: React.ReactNode;
     description: React.ReactNode;
-    inputLabel: string;
     confirmationKeyword: string;
     confirmButtonText: string;
     cancelButtonText?: string;
@@ -27,19 +28,20 @@ interface DestructiveActionModalProps {
     onConfirm: () => Promise<unknown>;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    size?: AlertDialogContentProps['size'];
 }
 
 export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     title,
     description,
-    inputLabel,
     confirmationKeyword,
     confirmButtonText,
     cancelButtonText = 'Cancel',
     trigger,
     onConfirm,
     open,
-    onOpenChange
+    onOpenChange,
+    size
 }) => {
     const [confirmText, setConfirmText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,52 +84,48 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent
+        <AlertDialog open={open} onOpenChange={handleOpenChange}>
+            {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
+            <AlertDialogContent
+                size={size}
+                destructive
                 onEscapeKeyDown={(event) => {
                     if (isSubmitting) {
                         event.preventDefault();
                     }
                 }}
-                onInteractOutside={(event) => {
-                    if (isSubmitting) {
-                        event.preventDefault();
-                    }
-                }}
             >
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
-                <DialogBody>
-                    <form id={formId} onSubmit={(event) => void handleSubmit(event)}>
-                        <Field>
-                            <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
-                            <Input
-                                id={inputId}
-                                name="confirmation"
-                                value={confirmText}
-                                onChange={(event) => setConfirmText(event.target.value)}
-                                placeholder="Enter confirmation text"
-                                autoComplete="off"
-                                disabled={isSubmitting}
-                            />
-                        </Field>
-                    </form>
-                </DialogBody>
-
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button type="button" variant="outline" size="sm" disabled={isSubmitting}>
-                            {cancelButtonText}
-                        </Button>
-                    </DialogClose>
+                <AlertDialogHeader icon={<Trash2 />}>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
+                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <form id={formId} className="px-4 pb-4" onSubmit={(event) => void handleSubmit(event)}>
+                    <Field>
+                        <FieldLabel htmlFor={inputId}>
+                            <span>
+                                Type <code className="type-code-regular-sm">{confirmationKeyword}</code> to confirm
+                            </span>
+                        </FieldLabel>
+                        <Input
+                            id={inputId}
+                            name="confirmation"
+                            mono
+                            value={confirmText}
+                            onChange={(event) => setConfirmText(event.target.value)}
+                            autoComplete="off"
+                            spellCheck={false}
+                            disabled={isSubmitting}
+                        />
+                    </Field>
+                </form>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isSubmitting}>{cancelButtonText}</AlertDialogCancel>
                     <Button type="submit" form={formId} variant="danger" size="sm" loading={isSubmitting} disabled={!isConfirmed}>
+
                         {confirmButtonText}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 };

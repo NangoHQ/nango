@@ -1,33 +1,45 @@
+import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '../../lib/cn';
 
+import type { VariantProps } from 'class-variance-authority';
+
 /**
  * Card — a bordered surface panel with an optional header / content / footer (Figma "Card").
  *
- * Only the `md`, Default look is implemented: Figma also defines `sm`/`xs` sizes and a `Hover`
+ * Only the `md` size is implemented, in `default` and `danger` variants: Figma also defines `sm`/`xs` sizes and a `Hover`
  * state, but no consumer uses them yet — add them (as a `size`/`state` variant) when one does.
  */
-const Card = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'> & { selected?: boolean }>(({ className, selected, ...props }, ref) => (
-    <div
-        ref={ref}
-        data-slot="card"
-        className={cn(
-            'bg-surface-panel text-text-strong flex flex-col overflow-hidden rounded-ds-xs border-ds-1',
-            selected ? 'border-border-selected' : 'border-border-default',
-            className
-        )}
-        {...props}
-    />
+const cardVariants = cva('bg-surface-panel text-text-strong flex flex-col overflow-hidden rounded-ds-md border-ds-1 shadow-container-panel', {
+    variants: {
+        variant: {
+            default: 'border-border-default',
+            danger: 'border-border-danger-subtle'
+        },
+        selected: {
+            true: 'border-border-selected',
+            false: ''
+        }
+    },
+    defaultVariants: { variant: 'default', selected: false }
+});
+
+type CardProps = React.ComponentProps<'div'> & VariantProps<typeof cardVariants>;
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, selected, ...props }, ref) => (
+    <div ref={ref} data-slot="card" className={cn(cardVariants({ variant, selected }), className)} {...props} />
 ));
 Card.displayName = 'Card';
 
-/** Title + description, with an optional right-aligned action (Figma "Card Header", spacing/4 padding). */
 const CardHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
     <div
         ref={ref}
         data-slot="card-header"
-        className={cn('grid auto-rows-min grid-rows-[auto_auto] items-start gap-x-2 gap-y-1 p-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]', className)}
+        className={cn(
+            'grid auto-rows-min grid-rows-[auto_auto] items-start gap-x-2 gap-y-1 px-5 py-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]',
+            className
+        )}
         {...props}
     />
 ));
@@ -56,16 +68,20 @@ const CardAction = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>
 ));
 CardAction.displayName = 'CardAction';
 
-/** Figma "Card Content" — spacing/4 padding, no top (the header provides the top gap). */
+/** No top padding: the header provides the top gap. */
 const CardContent = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="card-content" className={cn('px-4 pb-4', className)} {...props} />
+    <div ref={ref} data-slot="card-content" className={cn('px-5 pb-5', className)} {...props} />
 ));
 CardContent.displayName = 'CardContent';
 
-/** Figma "Card Footer" — muted bg, top border + spacing/4 padding. */
 const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="card-footer" className={cn('flex items-center bg-surface-panel-muted border-t border-border-muted p-4', className)} {...props} />
+    <div
+        ref={ref}
+        data-slot="card-footer"
+        className={cn('flex items-center bg-surface-panel-muted border-t border-border-muted py-3 pr-3 pl-5', className)}
+        {...props}
+    />
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
+export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, cardVariants, type CardProps };

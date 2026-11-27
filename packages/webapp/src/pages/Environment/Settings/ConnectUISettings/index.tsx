@@ -1,13 +1,13 @@
 import { useForm } from '@tanstack/react-form';
-import { Info, Lock } from 'lucide-react';
-import React, { useRef } from 'react';
+import { CircleAlert, Lock, Monitor, Moon, Sun } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Button, Field, FieldDescription, FieldError, FieldLabel, LinkButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle, FieldError, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { ColorInput } from '@/components/ui/ColorInput';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Switch } from '@/components/ui/Switch';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -15,63 +15,65 @@ import { useCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
-import SettingsContent from '../components/SettingsContent';
+import { SettingsCard } from '../components/SettingsCard';
 import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
-import type { Theme } from '@nangohq/types';
+import type { ConnectUISettings as ConnectUISettingsValues, Theme } from '@nangohq/types';
+import type { ReactNode } from 'react';
 
-// ReactFormExtendedApi requires 12 type arguments... using `any` for form and form fields in the extracted components for pragmatic reasons
-// eslint-disable @typescript-eslint/no-explicit-any
-const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
-    <>
-        <form.Field name="theme.light.primary">
-            {(field: any) => (
-                <Field>
-                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
-                        Primary (Light theme)
-                    </FieldLabel>
-                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
-                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
-                </Field>
-            )}
-        </form.Field>
+type PreviewTheme = 'light' | 'dark';
 
-        <form.Field name="theme.dark.primary">
-            {(field: any) => (
-                <Field>
-                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
-                        Primary (Dark theme)
-                    </FieldLabel>
-                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
-                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
-                </Field>
-            )}
-        </form.Field>
-    </>
+const GROWTH_ADDON_NOTE = 'Available with the Growth add-on.';
+
+const OS_DARK_QUERY = '(prefers-color-scheme: dark)';
+
+function previewThemeFor(theme: Theme | undefined): PreviewTheme {
+    if (theme === 'light' || theme === 'dark') {
+        return theme;
+    }
+    return window.matchMedia(OS_DARK_QUERY).matches ? 'dark' : 'light';
+}
+
+const THEME_DESCRIPTIONS: Record<Theme, string> = {
+    system: 'Follows the user’s OS.',
+    light: 'Always light, whatever the user’s OS.',
+    dark: 'Always dark, whatever the user’s OS.'
+};
+
+const StackedRow: React.FC<{ label: string; description: string; htmlFor?: string; children: ReactNode }> = ({ label, description, htmlFor, children }) => (
+    <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-0.5">
+            <label htmlFor={htmlFor} className="type-text-medium-sm text-text-default">
+                {label}
+            </label>
+            <span className="type-text-regular-xs text-text-secondary">{description}</span>
+        </div>
+        {children}
+    </div>
 );
-
-const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
-    <form.Field name="showWatermark">
-        {(field: any) => (
-            <Field orientation="inline" className="gap-5">
-                <FieldLabel htmlFor={field.name}>Show &quot;Secured by Nango&quot;</FieldLabel>
-                <Switch
-                    id={field.name}
-                    name={field.name}
-                    checked={field.state.value}
-                    onCheckedChange={(checked) => field.handleChange(checked)}
-                    onBlur={field.handleBlur}
-                    disabled={disabled}
-                />
-            </Field>
-        )}
-    </form.Field>
-);
-// eslint-enable @typescript-eslint/no-explicit-any
 
 export const ConnectUISettings = () => {
-    const toast = useToast();
+    const env = useStore((state) => state.env);
+    const { data: connectUISettings, isError } = useConnectUISettings(env);
+
+    if (isError && !connectUISettings) {
+        return (
+            <Alert variant="danger">
+                <CircleAlert />
+                <AlertTitle>Couldn&apos;t load Connect UI settings</AlertTitle>
+                <AlertDescription>Refresh the page to try again.</AlertDescription>
+            </Alert>
+        );
+    }
+    if (!connectUISettings) {
+        return <Skeleton className="h-[280px] w-full" />;
+    }
+    return <ConnectUISettingsForm saved={connectUISettings.data} />;
+};
+
+const ConnectUISettingsForm: React.FC<{ saved: ConnectUISettingsValues }> = ({ saved }) => {
+    const { toast } = useToast();
     const env = useStore((state) => state.env);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
@@ -79,21 +81,30 @@ export const ConnectUISettings = () => {
     const { can } = usePermissions();
     const canManageConnectUI = can('account:connect_ui:update');
 
-    const { data: connectUISettings } = useConnectUISettings(env);
-    const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
+    const { mutate: updateConnectUISettings, isPending } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
+
+    const [previewTheme, setPreviewTheme] = useState<PreviewTheme>(() => previewThemeFor(saved.defaultTheme));
+    const previewThemeRef = useRef(previewTheme);
+    const [separateDarkChoice, setSeparateDarkChoice] = useState<boolean>();
+    const separateDark = separateDarkChoice ?? saved.theme.dark.primary !== saved.theme.light.primary;
 
     const noPlanAvailable = !globalEnv.features.plan || !plan;
     const canCustomizeTheme = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_customize_connect_ui_theme ?? false);
     const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_disable_connect_ui_watermark ?? false);
 
+    const sendToPreview = (values: ConnectUISettingsValues | undefined) => {
+        if (values) {
+            connectUIPreviewRef.current?.sendSettingsChanged({ ...values, defaultTheme: previewThemeRef.current });
+        }
+    };
+
     const form = useForm({
-        defaultValues: connectUISettings?.data,
+        defaultValues: saved,
         listeners: {
             onChange: (state) => {
-                // Send settings changed event to the iFrame
-                if (state.formApi.state.isValid && connectUIPreviewRef.current) {
-                    connectUIPreviewRef.current.sendSettingsChanged(state.formApi.state.values);
+                if (state.formApi.state.isValid) {
+                    sendToPreview(state.formApi.state.values);
                 }
             },
             onChangeDebounceMs: 100
@@ -102,110 +113,203 @@ export const ConnectUISettings = () => {
             updateConnectUISettings(state.formApi.state.values, {
                 onSuccess: () => {
                     state.formApi.reset();
+                    setSeparateDarkChoice(undefined);
+                    toast({ title: 'Connect UI settings saved', variant: 'success' });
                 },
                 onError: () => {
-                    toast.toast({
-                        title: 'Failed to update Connect UI settings',
-                        variant: 'error'
-                    });
+                    toast({ title: 'Failed to update Connect UI settings', variant: 'error' });
                 }
             });
         }
     });
 
+    const choosePreviewTheme = (theme: PreviewTheme) => {
+        previewThemeRef.current = theme;
+        setPreviewTheme(theme);
+        sendToPreview(form.state.values);
+    };
+
+    useEffect(() => {
+        const query = window.matchMedia(OS_DARK_QUERY);
+        const onOsThemeChange = (event: MediaQueryListEvent) => {
+            if (form.getFieldValue('defaultTheme') !== 'system') {
+                return;
+            }
+            const theme: PreviewTheme = event.matches ? 'dark' : 'light';
+            previewThemeRef.current = theme;
+            setPreviewTheme(theme);
+            const values = form.state.values;
+            if (values) {
+                connectUIPreviewRef.current?.sendSettingsChanged({ ...values, defaultTheme: theme });
+            }
+        };
+        query.addEventListener('change', onOsThemeChange);
+        return () => query.removeEventListener('change', onOsThemeChange);
+    }, [form]);
+
+    const themeLocked = !canCustomizeTheme || !canManageConnectUI;
+    const watermarkLocked = !canDisableWatermark || !canManageConnectUI;
+
     return (
-        <SettingsContent title="Connect UI">
-            <div className="flex w-full h-[635px] gap-6">
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        void form.handleSubmit();
-                    }}
-                    className="w-fit flex flex-col gap-10 text-nowrap"
-                >
-                    <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,500px)_400px]">
+            <form.Subscribe selector={(state) => [state.canSubmit, JSON.stringify(state.values) !== JSON.stringify(saved)] as const}>
+                {([canSubmit, isDirty]) => (
+                    <SettingsCard
+                        title="Appearance"
+                        dirty={isDirty}
+                        invalid={!canSubmit}
+                        saving={isPending}
+                        canEdit={canManageConnectUI}
+                        onSave={() => form.handleSubmit()}
+                        onDiscard={() => {
+                            form.reset();
+                            setSeparateDarkChoice(undefined);
+                            choosePreviewTheme(previewThemeFor(form.state.values?.defaultTheme));
+                        }}
+                    >
                         <form.Field name="defaultTheme">
                             {(field) => (
-                                <Field>
-                                    <FieldLabel htmlFor={field.name}>Default theme</FieldLabel>
-                                    <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
-                                        <SelectTrigger id={field.name} className="w-full text-sm px-2.5 gap-2">
-                                            <SelectValue placeholder="Default theme" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="system">System</SelectItem>
-                                            <SelectItem value="light">Light</SelectItem>
-                                            <SelectItem value="dark">Dark</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FieldDescription className="whitespace-normal">
-                                        Override it per session from the{' '}
-                                        <LinkButton asChild size="sm">
-                                            <a
-                                                href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Frontend SDK
-                                            </a>
-                                        </LinkButton>
-                                        .
-                                    </FieldDescription>
-                                </Field>
+                                <StackedRow label="Theme" description={THEME_DESCRIPTIONS[field.state.value ?? 'system']}>
+                                    <div>
+                                        <SegmentedControl
+                                            aria-label="Connect UI theme"
+                                            value={field.state.value}
+                                            onValueChange={(value) => {
+                                                field.handleChange(value as Theme);
+                                                choosePreviewTheme(previewThemeFor(value as Theme));
+                                            }}
+                                            disabled={!canManageConnectUI}
+                                        >
+                                            <SegmentedControlItem value="system" icon={<Monitor />}>
+                                                System
+                                            </SegmentedControlItem>
+                                            <SegmentedControlItem value="light" icon={<Sun />}>
+                                                Light
+                                            </SegmentedControlItem>
+                                            <SegmentedControlItem value="dark" icon={<Moon />}>
+                                                Dark
+                                            </SegmentedControlItem>
+                                        </SegmentedControl>
+                                    </div>
+                                </StackedRow>
                             )}
                         </form.Field>
 
-                        {canCustomizeTheme && <ThemeColorPickers disabled={false} form={form} />}
-                        {canDisableWatermark && <WatermarkToggle disabled={false} form={form} />}
-
-                        <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
-                            {([canSubmit, isDirty]) => (
-                                <PermissionGate asChild condition={canManageConnectUI}>
-                                    {(allowed) => (
-                                        <div className="self-start">
-                                            <Button
-                                                type="submit"
-                                                variant="primary"
-                                                size="md"
-                                                disabled={!canSubmit || !isDirty || !allowed}
-                                                loading={isUpdatingConnectUISettings}
-                                            >
-                                                Save
-                                            </Button>
+                        <StackedRow
+                            label="Brand color"
+                            description={canCustomizeTheme ? 'Buttons and links.' : GROWTH_ADDON_NOTE}
+                            htmlFor="theme.light.primary"
+                        >
+                            <form.Field name="theme.light.primary">
+                                {(field) => (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="w-50">
+                                            <ColorInput
+                                                id={field.name}
+                                                aria-label={separateDark ? 'Light mode brand color' : undefined}
+                                                value={field.state.value}
+                                                onChange={(e) => {
+                                                    field.handleChange(e.target.value);
+                                                    if (!separateDark) {
+                                                        form.setFieldValue('theme.dark.primary', e.target.value);
+                                                    }
+                                                }}
+                                                onBlur={field.handleBlur}
+                                                disabled={themeLocked}
+                                            />
+                                        </div>
+                                        {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
+                                    </div>
+                                )}
+                            </form.Field>
+                            <label className="flex w-fit cursor-pointer items-center gap-2 type-text-regular-sm text-text-secondary">
+                                <Checkbox
+                                    checked={separateDark}
+                                    disabled={themeLocked}
+                                    onCheckedChange={(checked) => {
+                                        const on = checked === true;
+                                        setSeparateDarkChoice(on);
+                                        if (!on) {
+                                            form.setFieldValue('theme.dark.primary', form.getFieldValue('theme.light.primary'));
+                                        }
+                                    }}
+                                />
+                                Use a different color in dark mode
+                            </label>
+                            {separateDark && (
+                                <form.Field name="theme.dark.primary">
+                                    {(field) => (
+                                        <div className="flex flex-col gap-2">
+                                            <div className="w-50">
+                                                <ColorInput
+                                                    id={field.name}
+                                                    aria-label="Dark mode brand color"
+                                                    value={field.state.value}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    onBlur={field.handleBlur}
+                                                    disabled={themeLocked}
+                                                />
+                                            </div>
+                                            {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
                                         </div>
                                     )}
-                                </PermissionGate>
+                                </form.Field>
                             )}
-                        </form.Subscribe>
+                        </StackedRow>
+
+                        <form.Field name="showWatermark">
+                            {(field) => (
+                                <StackedRow label="Nango branding" description={canDisableWatermark ? '“Secured by Nango” footer.' : GROWTH_ADDON_NOTE}>
+                                    <label className="flex w-fit cursor-pointer items-center gap-2 type-text-regular-sm text-text-default">
+                                        <Switch
+                                            id={field.name}
+                                            checked={field.state.value}
+                                            onCheckedChange={(checked) => field.handleChange(checked)}
+                                            onBlur={field.handleBlur}
+                                            disabled={watermarkLocked}
+                                        />
+                                        Show footer badge
+                                    </label>
+                                </StackedRow>
+                            )}
+                        </form.Field>
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
-                            <div className="bg-surface-panel p-6 flex flex-col gap-6">
-                                <div className="flex text-body-medium-regular gap-2 items-center">
-                                    <Lock size="16" />
-                                    <span>Advanced Customization</span>
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Info size="14" />
-                                        </TooltipTrigger>
-                                        <TooltipContent side="bottom">Available with the Growth add-on</TooltipContent>
-                                    </Tooltip>
-                                </div>
-
-                                {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
-                                {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
-
-                                <ButtonLink to={`/team/billing#plans`} variant="outline" target="_blank">
+                            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-muted pt-5">
+                                <span className="inline-flex items-center gap-2 type-text-regular-sm text-text-secondary">
+                                    <Lock className="size-4" />
+                                    Some appearance options need the Growth add-on.
+                                </span>
+                                <ButtonLink to="/team/billing#plans" variant="outline">
                                     Get the Growth add-on
                                 </ButtonLink>
                             </div>
                         )}
-                    </div>
-                </form>
-                <div className="w-full min-h-full flex justify-end items-center">
-                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px] border border-border-muted rounded-md" />
+                    </SettingsCard>
+                )}
+            </form.Subscribe>
+
+            <div className="flex flex-col gap-2 xl:sticky xl:top-6">
+                <ConnectUIPreview ref={connectUIPreviewRef} themeOverride={previewTheme} className="h-145 w-full rounded-ds-md" />
+                <div className="flex items-center justify-between gap-3">
+                    <span className="type-text-regular-xs text-text-muted">Live preview, unsaved changes included.</span>
+                    <SegmentedControl
+                        size="sm"
+                        aria-label="Preview theme"
+                        value={previewTheme}
+                        onValueChange={(value) => {
+                            if (value) choosePreviewTheme(value as PreviewTheme);
+                        }}
+                    >
+                        <SegmentedControlItem value="light" icon={<Sun />}>
+                            Light
+                        </SegmentedControlItem>
+                        <SegmentedControlItem value="dark" icon={<Moon />}>
+                            Dark
+                        </SegmentedControlItem>
+                    </SegmentedControl>
                 </div>
             </div>
-        </SettingsContent>
+        </div>
     );
 };

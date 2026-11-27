@@ -1,133 +1,126 @@
 import { ArrowUpRight, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, FieldLabel, SecretInput } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    AlertTitle,
+    CopyButton,
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+    SecretInput
+} from '@nangohq/design-system';
 
-import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate';
-import { Spinner } from '@/components/ui/Spinner';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { SettingsCard, SettingsRow } from './components/SettingsCard';
+
+const MIGRATION_GUIDE_URL = 'https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
-    const environmentAndAccount = data?.environmentAndAccount;
+    const environment = data?.environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const { can } = usePermissions();
     const canReadEnvironmentKey = can('environment:settings:read_secret');
     const canEditEnvironment = can('environment:settings:update');
 
-    const [loading, setLoading] = useState(false);
+    const [savingHmac, setSavingHmac] = useState(false);
 
-    const onHmacEnabled = async (isChecked: boolean) => {
-        setLoading(true);
-        try {
-            await patchEnvironmentAsync({ hmac_enabled: isChecked });
-        } catch {
-            toast({ title: 'There was an issue updating the HMAC', variant: 'error' });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (!environmentAndAccount) {
+    if (!environment) {
         return null;
     }
 
+    const onHmacEnabled = async (checked: boolean) => {
+        setSavingHmac(true);
+        try {
+            await patchEnvironmentAsync({ hmac_enabled: checked });
+            toast({ title: checked ? 'HMAC required' : 'HMAC no longer required', variant: 'success' });
+        } catch {
+            toast({ title: 'There was an issue updating the HMAC', variant: 'error' });
+        } finally {
+            setSavingHmac(false);
+        }
+    };
+
     return (
-        <SettingsContent title="Deprecated authorization">
+        <div className="flex flex-col gap-5">
             <Alert variant="warning">
                 <TriangleAlert />
-                <AlertTitle>Public key and HMAC authorization are deprecated</AlertTitle>
-                <AlertDescription>Move to Connect sessions before these methods are removed.</AlertDescription>
+                <AlertTitle>Public key and HMAC are deprecated</AlertTitle>
+                <AlertDescription>Move to Connect sessions before they&apos;re removed.</AlertDescription>
                 <AlertActions>
                     <AlertButton asChild>
-                        <a href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" target="_blank" rel="noopener noreferrer">
+                        <a href={MIGRATION_GUIDE_URL} target="_blank" rel="noopener noreferrer">
                             Migration guide
                             <ArrowUpRight />
                         </a>
                     </AlertButton>
                 </AlertActions>
             </Alert>
-            <SettingsGroup
-                label={
-                    <div className="flex gap-1.5">
-                        Public key
-                        <DocsIconLink
-                            href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key"
-                            label="Public key migration documentation"
-                        />
-                    </div>
-                }
-            >
-                <fieldset className="flex flex-col gap-4">
-                    <SecretInput
-                        name="publicKey"
-                        value={environmentAndAccount.environment.public_key}
-                        canReveal={canReadEnvironmentKey}
-                        disabledReason={PERMISSION_DENIED_REASON}
-                    />
-                </fieldset>
-            </SettingsGroup>
-            <SettingsGroup
-                label={
-                    <div className="flex gap-1.5">
-                        HMAC
-                        <DocsIconLink href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" label="HMAC migration documentation" />
-                    </div>
-                }
-            >
-                <div className="flex flex-col gap-7">
-                    <div className="flex items-start justify-between">
-                        <label htmlFor={'hmac_enabled'} className={`text-sm`}>
-                            Enabled
-                        </label>
-                        <div className="flex gap-2 items-center">
-                            {loading && <Spinner />}
-                            <PermissionGate condition={canEditEnvironment}>
-                                {(allowed) => (
-                                    <Switch
-                                        name="hmac_enabled"
-                                        checked={environmentAndAccount.environment.hmac_enabled}
-                                        onCheckedChange={(checked) => onHmacEnabled(!!checked)}
-                                        disabled={!allowed}
-                                    />
-                                )}
-                            </PermissionGate>
-                        </div>
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="hmac_key">HMAC key</FieldLabel>
-                        <EditableInput
-                            id="hmac_key"
-                            placeholder="*****"
-                            secret
-                            initialValue={environmentAndAccount.environment.hmac_key || ''}
-                            onSave={async (value) => {
-                                try {
-                                    await patchEnvironmentAsync({ hmac_key: value });
-                                    toast({ title: 'Successfully updated', variant: 'success' });
-                                } catch (err) {
-                                    toast({ title: 'Failed to update', variant: 'error' });
-                                    throw err;
-                                }
-                            }}
-                            canEdit={canEditEnvironment}
-                        />
+            <SettingsCard title="Frontend credentials">
+                <SettingsRow label="Public key" htmlFor="public_key">
+                    {canReadEnvironmentKey ? (
+                        <InputGroup>
+                            <InputGroupInput id="public_key" mono value={environment.public_key} readOnly />
+                            <InputGroupAddon align="inline-end">
+                                <CopyButton value={environment.public_key} />
+                            </InputGroupAddon>
+                        </InputGroup>
+                    ) : (
+                        <SecretInput id="public_key" value={environment.public_key} canReveal={false} disabledReason={PERMISSION_DENIED_REASON} />
+                    )}
+                </SettingsRow>
+                <SettingsRow label="Require HMAC" htmlFor="hmac_enabled">
+                    <div className="flex items-center gap-2 md:pt-1.5">
+                        <PermissionGate condition={canEditEnvironment}>
+                            {(allowed) => (
+                                <Switch
+                                    id="hmac_enabled"
+                                    checked={environment.hmac_enabled}
+                                    onCheckedChange={(checked) => void onHmacEnabled(checked)}
+                                    disabled={!allowed || savingHmac}
+                                />
+                            )}
+                        </PermissionGate>
+                        <span className="type-text-regular-sm text-text-default" aria-hidden>
+                            {environment.hmac_enabled ? 'On' : 'Off'}
+                        </span>
                     </div>
-                </div>
-            </SettingsGroup>
-        </SettingsContent>
+                </SettingsRow>
+                <SettingsRow label="HMAC key" htmlFor="hmac_key">
+                    <EditableInput
+                        id="hmac_key"
+                        placeholder="*****"
+                        secret
+                        mono
+                        initialValue={environment.hmac_key || ''}
+                        onSave={async (value) => {
+                            try {
+                                await patchEnvironmentAsync({ hmac_key: value });
+                                toast({ title: 'HMAC key updated', variant: 'success' });
+                            } catch (err) {
+                                toast({ title: 'Failed to update HMAC key', variant: 'error' });
+                                throw err;
+                            }
+                        }}
+                        canEdit={canEditEnvironment}
+                    />
+                </SettingsRow>
+            </SettingsCard>
+        </div>
     );
 };

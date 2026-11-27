@@ -1,6 +1,6 @@
 import type { ConnectUIProps } from '@nangohq/frontend';
 
-export function createConnectUIPreviewIFrame({ baseURL, apiURL, sessionToken, lang }: ConnectUIProps) {
+export function createConnectUIPreviewIFrame({ baseURL, apiURL, sessionToken, lang, themeOverride }: ConnectUIProps) {
     const url = new URL(baseURL || 'https://connect.nango.dev');
     // Connect UI's built assets use relative paths: they only resolve when the document path ends with '/'.
     if (!url.pathname.endsWith('/')) {
@@ -16,6 +16,10 @@ export function createConnectUIPreviewIFrame({ baseURL, apiURL, sessionToken, la
 
     if (lang) {
         url.searchParams.set('lang', lang);
+    }
+
+    if (themeOverride) {
+        url.searchParams.set('theme', themeOverride);
     }
 
     if (sessionToken) {

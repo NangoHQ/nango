@@ -24,9 +24,8 @@ export const Default: Story = {
                 <DestructiveActionModal
                     open={open}
                     onOpenChange={setOpen}
-                    title="Delete GitHub integration"
-                    description="This will permanently delete all connections and synced data for this integration."
-                    inputLabel='Type "github" to confirm'
+                    title="Delete the GitHub integration?"
+                    description="This permanently deletes its connections and synced records."
                     confirmationKeyword="github"
                     confirmButtonText="Delete"
                     onConfirm={() => setOpen(false)}

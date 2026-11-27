@@ -5,6 +5,7 @@ import { Button } from '@nangohq/design-system';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { usePermissions } from '@/hooks/usePermissions';
+import { EnvironmentDeleteDescription } from './EnvironmentDeleteDescription';
 
 interface DeleteButtonProps {
     environmentName: string;
@@ -22,18 +23,18 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
 
     const button = (
         <Button variant="danger" disabled={isDisabled}>
-            <Trash2 strokeWidth={1} size={18} />
-            <span>Delete environment</span>
+            <Trash2 />
+            Delete
         </Button>
     );
 
     const modal = (
         <DestructiveActionModal
-            title="Proceed carefully!"
-            description="This action is destructive & irreversible. It will delete all API credentials, connection metadata, synced records & various configurations linked to this environment."
-            inputLabel={`To confirm, type your current environment's name (${environmentName}) below:`}
+            title={`Delete the ${environmentName} environment?`}
+            description={<EnvironmentDeleteDescription env={environmentName} />}
+            size="lg"
             confirmationKeyword={environmentName}
-            confirmButtonText="Delete Environment"
+            confirmButtonText="Delete environment"
             trigger={disabledReason ? undefined : button}
             onConfirm={onDelete}
             open={open}

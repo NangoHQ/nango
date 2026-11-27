@@ -67,6 +67,14 @@ const RedirectPreservingLocation = ({ to }: { to: string }) => {
     return <Navigate to={{ pathname: to, search: location.search, hash: location.hash }} replace />;
 };
 
+const RedirectToEnvironmentSettings = () => {
+    const storeEnv = useStore((state) => state.env);
+    const location = useLocation();
+    const { env = storeEnv, section, subPath } = useParams();
+    const pathname = ['', env, 'environment-settings', section, subPath].filter((segment) => segment !== undefined).join('/');
+    return <Navigate to={{ pathname, search: location.search, hash: location.hash }} replace />;
+};
+
 const RedirectWithEnv = ({ path }: { path: string }) => {
     const env = useStore((state) => state.env);
     const params = useParams<Record<string, string>>();
@@ -425,13 +433,18 @@ const routes: RouteObject[] = [
                         ]
                     },
                     {
+                        // Explicit params, not a `/*` splat: Sentry's route naming recurses forever on splat routes.
                         path: 'environment-settings',
-                        element: <EnvironmentSettings />,
-                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
+                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle,
+                        children: [
+                            { index: true, element: <EnvironmentSettings /> },
+                            { path: ':section', element: <EnvironmentSettings /> },
+                            { path: ':section/:subPath', element: <EnvironmentSettings /> }
+                        ]
                     },
                     {
                         path: 'project-settings',
-                        element: <Navigate to="/environment-settings" />
+                        element: <RedirectToEnvironmentSettings />
                     },
                     // Backward compat redirects for old env-prefixed URLs
                     {
@@ -452,6 +465,14 @@ const routes: RouteObject[] = [
                     }
                 ]
             }
+        ]
+    },
+    {
+        path: '/environment-settings',
+        children: [
+            { index: true, element: <RedirectToEnvironmentSettings /> },
+            { path: ':section', element: <RedirectToEnvironmentSettings /> },
+            { path: ':section/:subPath', element: <RedirectToEnvironmentSettings /> }
         ]
     },
     {

@@ -79,7 +79,7 @@ export const Layout: React.FC = () => {
                     <FocusTrap active={!isPending} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
-                                className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                                className="flex-1 w-full bg-surface text-text-primary rounded-[calc(var(--radius-md)-1px)] -only:rounded-b-none overflow-y-auto outline-none"
                                 id="connect-ui-dialog-content"
                                 tabIndex={-1}
                             >
@@ -126,7 +126,7 @@ export const Layout: React.FC = () => {
                     <FocusTrap active={!isPending} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
-                                className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                                className="flex-1 w-full bg-surface text-text-primary sm:rounded-[calc(var(--radius-md)-1px)] -only:rounded-b-none overflow-y-auto outline-none"
                                 id="connect-ui-dialog-content"
                                 tabIndex={-1}
                             >

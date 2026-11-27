@@ -235,6 +235,12 @@ describe('toggleGroup', () => {
         expect(result).not.toContain('environment:integrations:create');
     });
 
+    it('unchecking a group whose scopes were all picked one by one clears them', () => {
+        const all = allGroupScopes(integrations);
+        const result = toggleGroup(integrations, [...all, 'environment:deploy']);
+        expect(result).toEqual(['environment:deploy']);
+    });
+
     it('preserves other scopes when toggling group', () => {
         const result = toggleGroup(integrations, ['environment:deploy']);
         expect(result).toContain('environment:integrations:*');

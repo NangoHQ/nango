@@ -1,17 +1,18 @@
-import { ArrowUpRight, ExternalLink, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, Info } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, InlineCode } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { usePermissions } from '@/hooks/usePermissions';
-import { APIError } from '@/utils/api';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { SettingsCard } from './components/SettingsCard';
+import { apiErrorMessage } from './utils';
+
+const CALLBACK_DOCS_URL = 'https://nango.dev/docs/guides/auth/setup#custom-oauth-callback-url-optional';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -24,77 +25,58 @@ export const BackendSettings: React.FC = () => {
     const { can } = usePermissions();
     const canEditEnvironment = can('environment:settings:update');
 
-    const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     if (!environmentAndAccount) {
         return null;
     }
 
+    const saveCallbackUrl = async (value: string) => {
+        try {
+            await patchEnvironmentAsync({ callback_url: value });
+            toast({ title: 'Callback URL updated', variant: 'success' });
+        } catch (err) {
+            toast({ title: apiErrorMessage(err, 'Failed to update callback URL'), variant: 'error' });
+            throw err;
+        }
+    };
+
     return (
-        <SettingsContent title="Auth callback">
-            <SettingsGroup
-                label={
-                    <>
-                        <div className="flex gap-1.5">
-                            Callback URL
-                            <Link
-                                className="flex gap-2 items-center"
-                                target="_blank"
-                                to="https://nango.dev/docs/guides/auth/setup#custom-oauth-callback-url-optional"
-                            >
-                                <ExternalLink strokeWidth={1} size={18} />
-                            </Link>
-                        </div>
-                    </>
-                }
-            >
-                <div className="flex flex-col gap-2">
-                    <EditableInput
-                        id="callback_url"
-                        placeholder="https://api.nango.dev/oauth/callback"
-                        initialValue={environmentAndAccount.environment.callback_url}
-                        onEditingChange={setIsEditingCallbackUrl}
-                        onSave={async (value) => {
-                            try {
-                                await patchEnvironmentAsync({ callback_url: value });
-                                toast({ title: 'Successfully updated', variant: 'success' });
-                            } catch (err) {
-                                if (err instanceof APIError) {
-                                    toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
-                                } else {
-                                    toast({ title: 'Failed to update', variant: 'error' });
-                                }
-                                // Throw for EditableInput
-                                throw err;
-                            }
-                        }}
-                        canEdit={canEditEnvironment}
-                    />
-                    {isEditingCallbackUrl && (
-                        <Alert variant="warning">
-                            <TriangleAlert />
-                            <AlertDescription>
-                                <span>
-                                    Changing the callback URL requires an active <InlineCode>308</InlineCode> redirect and updating the registered callback URL
-                                    with all OAuth API providers. Otherwise authorization attempts will fail.
-                                </span>
-                            </AlertDescription>
-                            <AlertActions>
-                                <AlertButton asChild>
-                                    <a
-                                        href="https://nango.dev/docs/guides/auth/setup#custom-oauth-callback-url-optional"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        View docs
-                                        <ArrowUpRight />
-                                    </a>
-                                </AlertButton>
-                            </AlertActions>
-                        </Alert>
-                    )}
-                </div>
-            </SettingsGroup>
-        </SettingsContent>
+        <SettingsCard
+            title={
+                <span className="inline-flex items-center gap-1.5">
+                    Callback URL
+                    <DocsIconLink href={CALLBACK_DOCS_URL} label="Callback URL documentation" />
+                </span>
+            }
+        >
+            <EditableInput
+                id="callback_url"
+                mono
+                initialValue={environmentAndAccount.environment.callback_url}
+                onEditingChange={setIsEditing}
+                onSave={saveCallbackUrl}
+                canEdit={canEditEnvironment}
+            />
+            {isEditing && (
+                <Alert variant="info">
+                    <Info />
+                    <AlertDescription>
+                        <span>
+                            Changing the callback URL requires an active <InlineCode>308</InlineCode> redirect and updating the registered callback URL with all
+                            OAuth API providers. Otherwise authorization attempts will fail.
+                        </span>
+                    </AlertDescription>
+                    <AlertActions>
+                        <AlertButton asChild>
+                            <a href={CALLBACK_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                                View docs
+                                <ArrowUpRight />
+                            </a>
+                        </AlertButton>
+                    </AlertActions>
+                </Alert>
+            )}
+        </SettingsCard>
     );
 };

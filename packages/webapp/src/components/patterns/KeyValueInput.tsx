@@ -1,7 +1,7 @@
-import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { IconButton, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
+import { Button, CopyButton, IconButton, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 
@@ -18,10 +18,15 @@ interface KeyValueInputProps {
     placeholderValue?: string;
     disabled?: boolean;
     isSecret?: boolean;
+    mono?: boolean;
+    columnLabels?: [string, string];
+    /** Shows an "add" button with this label instead of keeping an empty row at the end. */
+    addLabel?: string;
 }
 
 let nextId = 0;
 const generateId = () => nextId++;
+const emptyPair = (): KeyValuePair => ({ id: generateId(), key: '', value: '' });
 
 export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     initialValues = {},
@@ -29,13 +34,19 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     placeholderKey = 'Key',
     placeholderValue = 'Value',
     disabled = false,
-    isSecret = false
+    isSecret = false,
+    mono = false,
+    columnLabels,
+    addLabel
 }) => {
-    const showEmptyRow = !disabled;
+    const autoRow = !disabled && !addLabel;
 
     const buildPairsFromValues = (values: Record<string, string>): KeyValuePair[] => {
         const mapped = Object.entries(values).map(([key, value]) => ({ id: generateId(), key, value }));
-        return showEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
+        if (autoRow || (addLabel && !disabled && mapped.length === 0)) {
+            return [...mapped, emptyPair()];
+        }
+        return mapped;
     };
 
     const [pairs, setPairs] = useState<KeyValuePair[]>(() => buildPairsFromValues(initialValues));
@@ -49,22 +60,22 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
             lastReportedRef.current = initialValuesKey;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialValuesKey, showEmptyRow]);
+    }, [initialValuesKey, autoRow]);
 
     useEffect(() => {
         setPairs((prev) => {
             const last = prev[prev.length - 1];
             const hasTrailingEmpty = last && last.key === '' && last.value === '';
 
-            if (showEmptyRow && !hasTrailingEmpty) {
-                return [...prev, { id: generateId(), key: '', value: '' }];
+            if (autoRow && !hasTrailingEmpty) {
+                return [...prev, emptyPair()];
             }
-            if (!showEmptyRow && hasTrailingEmpty) {
+            if (!autoRow && !addLabel && hasTrailingEmpty) {
                 return prev.slice(0, -1);
             }
             return prev;
         });
-    }, [showEmptyRow]);
+    }, [autoRow, addLabel]);
 
     useEffect(() => {
         const newValues = pairs.reduce<Record<string, string>>((acc, curr) => {
@@ -86,16 +97,16 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
         setPairs((prev) => {
             const copy = prev.map((p) => ({ ...p }));
             copy[index][field] = field === 'key' ? value.replace(/\s/g, '') : value;
-            if (copy.length === index + 1 && copy[index][field] !== '') {
-                copy.push({ id: generateId(), key: '', value: '' });
+            if (autoRow && copy.length === index + 1 && copy[index][field] !== '') {
+                copy.push(emptyPair());
             }
             return copy;
         });
     };
 
     const onRemove = (index: number) => {
-        if (index === 0 && pairs.length === 1) {
-            setPairs([{ id: generateId(), key: '', value: '' }]);
+        if (autoRow && index === 0 && pairs.length === 1) {
+            setPairs([emptyPair()]);
         } else {
             setPairs((prev) => prev.filter((_, i) => i !== index));
         }
@@ -135,7 +146,9 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
         setPairs((prev) => {
             const copy = prev.filter((p) => p.key !== '' || p.value !== '');
             copy.push(...newPairs);
-            copy.push({ id: generateId(), key: '', value: '' });
+            if (autoRow) {
+                copy.push(emptyPair());
+            }
             return copy;
         });
     };
@@ -151,27 +164,38 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
 
     const [visibleSecrets, setVisibleSecrets] = useState<Record<number, boolean>>({});
 
-    const toggleSecretVisibility = (index: number) => {
-        setVisibleSecrets((prev) => ({ ...prev, [index]: !prev[index] }));
+    const toggleSecretVisibility = (id: number) => {
+        setVisibleSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+            {columnLabels && pairs.length > 0 && (
+                <div className="flex gap-2 type-label-xs uppercase text-text-muted">
+                    <span className="flex-1">{columnLabels[0]}</span>
+                    <span className="flex-1">{columnLabels[1]}</span>
+                    <span className="w-7 shrink-0" aria-hidden />
+                </div>
+            )}
             {pairs.map((pair, i) => {
                 const isDuplicate = Boolean(pair.key && keyCounts[pair.key] > 1);
+                const isEmpty = pair.key === '' && pair.value === '';
+                const revealed = Boolean(visibleSecrets[pair.id]);
                 return (
-                    <div key={pair.id} className="flex gap-3">
-                        <div className="flex-1">
+                    <div key={pair.id} className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">
                             <Input
                                 value={pair.key}
                                 onChange={(e) => onUpdate('key', e.target.value, i)}
                                 onPaste={onPaste}
                                 placeholder={placeholderKey}
                                 disabled={disabled}
+                                mono={mono}
+                                aria-label={columnLabels?.[0] ?? placeholderKey}
                                 aria-invalid={isDuplicate}
                             />
                         </div>
-                        <div className="flex flex-1">
+                        <div className="min-w-0 flex-1">
                             {isSecret ? (
                                 <InputGroup>
                                     <InputGroupInput
@@ -180,12 +204,15 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                         onPaste={onPaste}
                                         placeholder={placeholderValue}
                                         disabled={disabled}
-                                        type={visibleSecrets[i] ? 'text' : 'password'}
+                                        mono={mono}
+                                        aria-label={columnLabels?.[1] ?? placeholderValue}
+                                        type={revealed ? 'text' : 'password'}
                                     />
                                     <InputGroupAddon align="inline-end">
-                                        <InputGroupButton label="Toggle value visibility" onClick={() => toggleSecretVisibility(i)}>
-                                            {visibleSecrets[i] ? <EyeIcon /> : <EyeOffIcon />}
+                                        <InputGroupButton label="Show value" aria-pressed={revealed} onClick={() => toggleSecretVisibility(pair.id)}>
+                                            {revealed ? <EyeOffIcon /> : <EyeIcon />}
                                         </InputGroupButton>
+                                        <CopyButton value={pair.value} label={pair.key ? `Copy ${pair.key}` : 'Copy value'} disabled={pair.value === ''} />
                                     </InputGroupAddon>
                                 </InputGroup>
                             ) : (
@@ -195,17 +222,27 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                     onPaste={onPaste}
                                     placeholder={placeholderValue}
                                     disabled={disabled}
+                                    mono={mono}
+                                    aria-label={columnLabels?.[1] ?? placeholderValue}
                                 />
                             )}
-                            <div className={cn((pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}>
-                                <IconButton type="button" variant="danger-ghost" size="md" label="Remove entry" onClick={() => !disabled && onRemove(i)}>
-                                    <Trash2 />
-                                </IconButton>
-                            </div>
+                        </div>
+                        <div className={cn('shrink-0', disabled || (autoRow && isEmpty) ? 'invisible' : '')}>
+                            <IconButton type="button" variant="ghost" size="sm" label="Remove entry" onClick={() => !disabled && onRemove(i)}>
+                                <Trash2 />
+                            </IconButton>
                         </div>
                     </div>
                 );
             })}
+            {addLabel && !disabled && (
+                <div>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setPairs((prev) => [...prev, emptyPair()])}>
+                        <Plus />
+                        {addLabel}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };

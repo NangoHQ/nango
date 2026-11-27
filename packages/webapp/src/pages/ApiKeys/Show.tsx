@@ -150,14 +150,13 @@ const DeleteAccountApiKeyButton: React.FC<{
 
     return (
         <DestructiveActionModal
-            title="Delete Account API key"
+            title="Delete Account API key?"
             description={
                 <>
                     This action is irreversible. Any services using <strong className="text-text-strong">{apiKey.display_name}</strong> will lose account access
                     immediately.
                 </>
             }
-            inputLabel="To confirm, type the Account API key name below:"
             confirmationKeyword={apiKey.display_name}
             confirmButtonText="Delete Account API key"
             trigger={

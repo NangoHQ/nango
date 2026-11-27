@@ -156,17 +156,12 @@ export function toggleGroup(group: ScopeGroup, selectedScopes: string[]): string
     if (selectedScopes.includes('environment:*')) return selectedScopes;
     const wc = groupWildcard(group);
     const all = allGroupScopes(group);
-    if (wc && selectedScopes.includes(wc)) {
-        return selectedScopes.filter((s) => s !== wc);
-    } else if (wc) {
-        const cleaned = selectedScopes.filter((s) => !all.includes(s));
-        return [...cleaned, wc];
-    } else {
-        const allSelected = all.every((s) => selectedScopes.includes(s));
-        if (allSelected) {
-            return selectedScopes.filter((s) => !all.includes(s));
-        } else {
-            return Array.from(new Set([...selectedScopes, ...all]));
-        }
+    const allSelected = (wc && selectedScopes.includes(wc)) || all.every((s) => selectedScopes.includes(s));
+    if (allSelected) {
+        return selectedScopes.filter((s) => s !== wc && !all.includes(s));
     }
+    if (wc) {
+        return [...selectedScopes.filter((s) => !all.includes(s)), wc];
+    }
+    return Array.from(new Set([...selectedScopes, ...all]));
 }

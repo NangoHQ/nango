@@ -54,7 +54,6 @@ describe('DestructiveActionModal', () => {
                 <DestructiveActionModal
                     title="Proceed carefully!"
                     description="Irreversible action."
-                    inputLabel="Type old-dev to confirm"
                     confirmationKeyword="old-dev"
                     confirmButtonText="Delete Environment"
                     onConfirm={onConfirm}
@@ -90,12 +89,8 @@ describe('DestructiveActionModal', () => {
         expect(cancelBtn.disabled).toBe(true);
         expect(input.disabled).toBe(true);
 
-        const headerCloseBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>('[data-slot="dialog-close"]')).find((btn) => btn !== cancelBtn);
-        expect(headerCloseBtn).toBeDefined();
-
         act(() => {
             cancelBtn.click();
-            headerCloseBtn?.click();
             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         });
         expect(onOpenChange).not.toHaveBeenCalled();
@@ -120,7 +115,6 @@ describe('DestructiveActionModal', () => {
                 <DestructiveActionModal
                     title="Proceed carefully!"
                     description="Irreversible action."
-                    inputLabel="Type old-dev to confirm"
                     confirmationKeyword="old-dev"
                     confirmButtonText="Delete Environment"
                     onConfirm={onConfirm}

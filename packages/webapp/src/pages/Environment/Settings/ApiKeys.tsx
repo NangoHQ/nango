@@ -1,591 +1,505 @@
-import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, ChevronRight, CircleCheck, Copy, KeyRound, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import {
     Alert,
     AlertDescription,
     Button,
     CopyButton,
-    Dialog,
-    DialogBody,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    IconButton,
+    copyText,
+    Field,
+    FieldError,
     InlineCode,
-    Input
+    Input,
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+    LinkButton,
+    SecretInput
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { PERMISSION_DENIED_REASON } from '@/components/patterns/PermissionGate';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
-import { APIError } from '@/utils/api';
 import { formatRelativeTime } from '@/utils/dates';
 import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import SettingsContent from './components/SettingsContent';
-import {
-    allGroupScopes,
-    groupWildcard,
-    isScopeSelected,
-    renameLegacyScopes,
-    SCOPE_GROUPS,
-    toggleCredential as toggleCredentialFn,
-    toggleGroup as toggleGroupFn,
-    toggleScope as toggleScopeFn
-} from './scope-logic';
+import { countSelectedScopes, ScopesPicker } from './components/ScopesPicker';
+import { SettingsCard, SettingsRow } from './components/SettingsCard';
+import { renameLegacyScopes } from './scope-logic';
+import { apiErrorMessage, secretKeyEnvVar, settingsPath } from './utils';
 
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
-import type { ScopeGroup } from './scope-logic';
+
+const FULL_ACCESS = 'environment:*';
 
 function formatFullDate(dateStr: string | null): string {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-function countSelectedScopes(scopes: string[]): number {
-    if (scopes.includes('environment:*')) {
-        return SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).length, 0);
-    }
-    let count = 0;
-    for (const scope of scopes) {
-        if (scope.endsWith(':*')) {
-            const prefix = scope.slice(0, -1);
-            count += SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).filter((s) => s.startsWith(prefix)).length, 0);
-        } else {
-            count++;
-        }
-    }
-    return count;
+function isFullAccess(scopes: string[]): boolean {
+    return scopes.includes(FULL_ACCESS);
 }
 
-// ── Scope selector with dropdown + collapsible groups ───────────────
-
-interface ScopeSelectorProps {
-    selectedScopes: string[];
-    onChange: (scopes: string[]) => void;
-    disabled?: boolean;
-    hideLabel?: boolean;
+function accessLabel(scopes: string[]): string {
+    if (isFullAccess(scopes)) return 'Full access';
+    const count = countSelectedScopes(scopes);
+    return `Custom · ${count} scope${count === 1 ? '' : 's'}`;
 }
 
-const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange, disabled, hideLabel }) => {
-    const hasFullAccess = selectedScopes.includes('environment:*');
-    const isCustom = !hasFullAccess && selectedScopes.length > 0;
-    const permissionMode = hasFullAccess && !isCustom ? 'full' : 'custom';
+function sameScopes(a: string[], b: string[]): boolean {
+    return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+}
 
-    const isGroupWildcardSelected = (group: ScopeGroup) => {
-        const wc = groupWildcard(group);
-        return wc ? selectedScopes.includes(wc) : false;
-    };
+const KeyBreadcrumb: React.FC<{ current: string; onBack: () => void }> = ({ current, onBack }) => (
+    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 type-text-medium-md text-text-strong">
+        <button type="button" onClick={onBack} className="focus-default rounded-ds-xs type-text-regular-md text-text-secondary hover:text-text-default">
+            API keys
+        </button>
+        <ChevronRight className="size-3.5 shrink-0 text-icon-muted" />
+        <span aria-current="page" className="truncate">
+            {current}
+        </span>
+    </nav>
+);
 
-    const isGroupAllSelected = (group: ScopeGroup) => {
-        const all = allGroupScopes(group);
-        return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
-    };
-
-    const hasCredentialsScope = SCOPE_GROUPS.some((group) => group.items.some((item) => item.credentials && isScopeSelected(item.credentials, selectedScopes)));
-
-    const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
-
-    const countGroupTotal = (group: ScopeGroup): number => {
-        return group.items.reduce((acc, item) => acc + (item.credentials ? 2 : 1), 0);
-    };
-
-    const countGroupSelected = (group: ScopeGroup): number => {
-        if (isGroupWildcardSelected(group)) return countGroupTotal(group);
-        return group.items.reduce((acc, item) => {
-            const baseSelected = isScopeSelected(item.value, selectedScopes) || (!!item.credentials && isScopeSelected(item.credentials, selectedScopes));
-            const credSelected = !!item.credentials && isScopeSelected(item.credentials, selectedScopes);
-            return acc + (baseSelected ? 1 : 0) + (credSelected ? 1 : 0);
-        }, 0);
-    };
-
+const AccessFields: React.FC<{ scopes: string[]; onChange: (scopes: string[]) => void; readOnly: boolean; showEmptyError: boolean }> = ({
+    scopes,
+    onChange,
+    readOnly,
+    showEmptyError
+}) => {
+    const full = isFullAccess(scopes);
     return (
-        <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-                {!hideLabel && (
-                    <div className="flex items-center gap-1.5">
-                        <label className="text-body-medium-semi text-text-strong">Permission</label>
-                        <a
-                            href="https://nango.dev/docs/reference/backend/http-api/api-keys#scopes"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-text-muted hover:text-text-strong"
-                        >
-                            <ExternalLink strokeWidth={1} size={14} />
-                        </a>
-                    </div>
-                )}
-                <Select
-                    value={permissionMode}
-                    onValueChange={(v) => {
-                        if (v === 'full') {
-                            onChange(['environment:*']);
-                        } else {
-                            onChange([]);
-                        }
-                    }}
-                    disabled={disabled}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="full">Full access</SelectItem>
-                        <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            {permissionMode === 'custom' && (
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-body-medium-semi text-text-strong">
-                        Selected scopes<span className="text-status-danger-text">*</span>
-                    </label>
-                    <div className="max-h-[320px] overflow-y-auto flex flex-col px-1">
-                        {SCOPE_GROUPS.map((group) => {
-                            const groupSelected = isGroupAllSelected(group);
-                            const wildcardSelected = isGroupWildcardSelected(group);
-
-                            return (
-                                <div key={group.group} className="flex flex-col border-b border-border-muted last:border-b-0">
-                                    <div className="flex items-center gap-2 py-2">
-                                        <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                            <input
-                                                type="checkbox"
-                                                checked={groupSelected}
-                                                disabled={disabled}
-                                                ref={(el) => {
-                                                    if (el) el.indeterminate = !groupSelected && hasAnyChildSelected(group);
-                                                }}
-                                                onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
-                                                className="accent-brand shrink-0"
-                                            />
-                                            <span className="text-body-small-semi text-text-strong">{group.group}</span>
-                                        </label>
-                                        <span className="text-body-small-regular text-text-muted">
-                                            {countGroupSelected(group)}/{countGroupTotal(group)}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col pb-2">
-                                        {group.items.map((item) => (
-                                            <div key={item.value} className="flex flex-col">
-                                                <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={
-                                                            isScopeSelected(item.value, selectedScopes) ||
-                                                            (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
-                                                        }
-                                                        disabled={disabled || wildcardSelected}
-                                                        onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
-                                                        className="accent-brand shrink-0"
-                                                    />
-                                                    <span className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}>
-                                                        {item.label}
-                                                    </span>
-                                                </label>
-                                                {item.credentials && (
-                                                    <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isScopeSelected(item.credentials, selectedScopes)}
-                                                            disabled={disabled || wildcardSelected}
-                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
-                                                            className="accent-brand shrink-0"
-                                                        />
-                                                        <span
-                                                            className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}
-                                                        >
-                                                            {item.label}:with_credentials
-                                                        </span>
-                                                    </label>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
+        <>
+            <SettingsRow label="Access" htmlFor="key-access">
+                <div>
+                    <Select value={full ? 'full' : 'custom'} onValueChange={(v) => onChange(v === 'full' ? [FULL_ACCESS] : [])} disabled={readOnly}>
+                        <SelectTrigger id="key-access" aria-label="Access" className="h-8 w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="full">Full access</SelectItem>
+                            <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </SettingsRow>
+            {!full && (
+                <div className="border-t border-border-muted pt-5">
+                    <ScopesPicker selected={scopes} onChange={onChange} readOnly={readOnly} showEmptyError={showEmptyError} />
                 </div>
             )}
-            {permissionMode === 'custom' && hasCredentialsScope && (
-                <Alert variant="warning" size="compact">
-                    <TriangleAlert />
-                    <AlertDescription>
-                        <span>
-                            Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends
-                            that need them.
-                        </span>
-                    </AlertDescription>
-                </Alert>
-            )}
-        </div>
+        </>
     );
 };
 
-// ── Create dialog ───────────────────────────────────────────────────
-
-interface CreateApiKeyDialogProps {
-    env: string;
-    onCreated: () => void;
-    disabled?: boolean;
-}
-
-const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated, disabled }) => {
-    const [open, setOpen] = useState(false);
-    const [displayName, setDisplayName] = useState('');
-    const [selectedScopes, setSelectedScopes] = useState<string[]>(['environment:*']);
-    const { toast } = useToast();
-    const { mutateAsync: createApiKey, isPending } = useCreateApiKey(env);
-
-    const hasNoScopes = selectedScopes.length === 0;
-
-    const handleCreate = async () => {
-        if (!displayName.trim()) {
-            toast({ title: 'Display name is required', variant: 'error' });
-            return;
-        }
-        if (hasNoScopes) {
-            toast({ title: 'Select at least one scope or choose Full access', variant: 'error' });
-            return;
-        }
-        try {
-            await createApiKey({
-                display_name: displayName.trim(),
-                scopes: selectedScopes
-            });
-            setOpen(false);
-            setDisplayName('');
-            setSelectedScopes(['environment:*']);
-            toast({ title: 'API Key successfully created.', variant: 'success' });
-            onCreated();
-        } catch (err) {
-            if (err instanceof APIError) {
-                toast({ title: (err.json as any)?.error?.message ?? 'Failed to create API key', variant: 'error' });
-            } else {
-                toast({ title: 'Failed to create API key', variant: 'error' });
-            }
-        }
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="primary" disabled={disabled}>
-                    <Key strokeWidth={1} size={16} />
-                    Create new API key
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>Create API Key</DialogTitle>
-                </DialogHeader>
-                <DialogBody>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="api-key-name" className="text-body-medium-semi text-text-strong">
-                                Display name<span className="text-status-danger-text">*</span>
-                            </label>
-                            <Input
-                                id="api-key-name"
-                                placeholder="e.g. Production backend"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                            />
-                        </div>
-                        <ScopeSelector selectedScopes={selectedScopes} onChange={setSelectedScopes} />
-                    </div>
-                </DialogBody>
-                <DialogFooter>
-                    <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-                        Cancel
-                    </Button>
-                    <Button size="sm" onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
-                        Create API Key
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-// ── Key configuration page ──────────────────────────────────────────
-
-interface KeyConfigProps {
+interface KeyPageProps {
     apiKey: ApiKeyListItem;
     env: string;
     onBack: () => void;
     canReadSecret: boolean;
     canManageKeys: boolean;
+    canDeleteKeys: boolean;
 }
 
-const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys }) => {
-    const [editedScopes, setEditedScopes] = useState<string[]>(() => renameLegacyScopes(apiKey.scopes));
-    const [editedName, setEditedName] = useState<string>(apiKey.display_name);
-    const [secretRevealed, setSecretRevealed] = useState(false);
+const KeyPage: React.FC<KeyPageProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys, canDeleteKeys }) => {
+    const savedScopes = renameLegacyScopes(apiKey.scopes);
+    const [scopes, setScopes] = useState<string[]>(savedScopes);
+    const [name, setName] = useState(apiKey.display_name);
+    const [deleteOpen, setDeleteOpen] = useState(false);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
+    const { mutateAsync: deleteApiKey } = useDeleteApiKey(env);
     const { toast } = useToast();
 
-    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(renameLegacyScopes(apiKey.scopes).sort());
-    const nameChanged = editedName.trim() !== apiKey.display_name;
-    const hasChanges = scopesChanged || nameChanged;
-    const hasNoScopes = editedScopes.length === 0;
+    const nameChanged = name.trim() !== apiKey.display_name;
+    const scopesChanged = !sameScopes(scopes, savedScopes);
+    const nameError = name.trim() ? null : 'Give the key a name.';
 
-    const masked = `····${apiKey.secret.slice(-4)}`;
-
-    const handleSave = async () => {
-        if (hasNoScopes) {
-            toast({ title: 'Select at least one scope or choose Full access', variant: 'error' });
-            return;
-        }
+    const onSave = async () => {
         try {
-            const updates: { keyId: number; scopes?: string[]; display_name?: string } = { keyId: apiKey.id };
-            if (scopesChanged) {
-                updates.scopes = editedScopes;
-            }
-            if (nameChanged) {
-                updates.display_name = editedName.trim();
-            }
-            await updateApiKey(updates);
-            toast({ title: 'API Key successfully updated.', variant: 'success' });
+            await updateApiKey({
+                keyId: apiKey.id,
+                ...(nameChanged && { display_name: name.trim() }),
+                ...(scopesChanged && { scopes })
+            });
+            toast({ title: 'API key updated', variant: 'success' });
         } catch (err) {
-            if (err instanceof APIError) {
-                toast({ title: (err.json as any)?.error?.message ?? 'Failed to update API key', variant: 'error' });
-            } else {
-                toast({ title: 'Failed to update API key', variant: 'error' });
-            }
+            toast({ title: apiErrorMessage(err, 'Failed to update API key'), variant: 'error' });
+        }
+    };
+
+    const onDelete = async () => {
+        try {
+            await deleteApiKey(apiKey.id);
+            toast({ title: 'API key deleted', variant: 'success' });
+            onBack();
+        } catch (err) {
+            toast({ title: apiErrorMessage(err, 'Failed to delete API key'), variant: 'error' });
         }
     };
 
     return (
-        <SettingsContent title="Key configuration">
-            <div className="flex flex-col gap-6">
-                <div className="grid grid-cols-[200px_1fr] items-center gap-y-6">
-                    <label className="text-body-medium-semi text-text-secondary">Name</label>
-                    {canManageKeys ? (
-                        <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
-                    ) : (
-                        <span className="text-body-medium-regular text-text-strong">{apiKey.display_name}</span>
-                    )}
-
-                    <label className="text-body-medium-semi text-text-secondary">ID</label>
-                    <div className="relative">
-                        <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                            <CopyButton size="sm" value={apiKey.uuid} />
-                        </div>
-                    </div>
-
-                    <label className="text-body-medium-semi text-text-secondary">Secret</label>
-                    <div className="relative">
-                        <Input
-                            value={secretRevealed && canReadSecret ? apiKey.secret : masked}
-                            disabled
-                            className="font-mono bg-surface-canvas text-text-muted pr-20"
+        <div className="flex max-w-205 flex-col gap-5">
+            <div className="flex flex-col gap-1">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <KeyBreadcrumb current={apiKey.display_name} onBack={onBack} />
+                    {canDeleteKeys && (
+                        <DestructiveActionModal
+                            title="Delete API key?"
+                            description={
+                                <>
+                                    Any service using <strong className="text-text-strong">{apiKey.display_name}</strong> loses access immediately. This
+                                    can&apos;t be undone.
+                                </>
+                            }
+                            confirmationKeyword={apiKey.display_name}
+                            confirmButtonText="Delete API key"
+                            trigger={
+                                <Button variant="danger-ghost" size="sm">
+                                    <Trash2 />
+                                    Delete API key
+                                </Button>
+                            }
+                            onConfirm={onDelete}
+                            open={deleteOpen}
+                            onOpenChange={setDeleteOpen}
                         />
-                        {canReadSecret && (
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setSecretRevealed((r) => !r)}>
-                                    {secretRevealed ? <EyeOff /> : <Eye />}
-                                </IconButton>
-                                <CopyButton size="sm" value={apiKey.secret} />
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
-
-                <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} disabled={!canManageKeys} />
-
-                {canManageKeys && (
-                    <div className="flex gap-2 pt-2">
-                        <Button variant="outline" onClick={onBack}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSave} loading={isPending} disabled={!hasChanges || hasNoScopes}>
-                            Save
-                        </Button>
-                    </div>
-                )}
+                <p className="type-text-regular-xs text-text-muted">
+                    Created <span className="text-text-secondary">{formatFullDate(apiKey.created_at)}</span> · Last used{' '}
+                    <span className="text-text-secondary" title={formatFullDate(apiKey.last_used_at)}>
+                        {formatRelativeTime(apiKey.last_used_at)}
+                    </span>
+                </p>
             </div>
-        </SettingsContent>
+
+            <SettingsCard
+                dirty={nameChanged || scopesChanged}
+                invalid={!!nameError || scopes.length === 0}
+                saving={isPending}
+                canEdit={canManageKeys}
+                onSave={onSave}
+                onDiscard={() => {
+                    setName(apiKey.display_name);
+                    setScopes(savedScopes);
+                }}
+            >
+                <SettingsRow label="Name" htmlFor="key-name">
+                    <Field data-invalid={!!nameError}>
+                        <Input id="key-name" value={name} onChange={(e) => setName(e.target.value)} disabled={!canManageKeys} aria-invalid={!!nameError} />
+                        {nameError && <FieldError>{nameError}</FieldError>}
+                    </Field>
+                </SettingsRow>
+                <SettingsRow label="Key ID" htmlFor="key-id">
+                    <InputGroup>
+                        <InputGroupInput id="key-id" mono value={apiKey.uuid} readOnly />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton value={apiKey.uuid} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                </SettingsRow>
+                <SettingsRow label="API key" htmlFor="key-secret">
+                    <SecretInput id="key-secret" value={apiKey.secret} canReveal={canReadSecret} disabledReason={PERMISSION_DENIED_REASON} />
+                </SettingsRow>
+                <AccessFields scopes={scopes} onChange={setScopes} readOnly={!canManageKeys} showEmptyError />
+            </SettingsCard>
+        </div>
     );
 };
 
-// ── Delete button with self-managed open state ─────────────────────
+const CreateKeyPage: React.FC<{ env: string; onBack: () => void; onCreated: (key: ApiKeyListItem) => void }> = ({ env, onBack, onCreated }) => {
+    const [name, setName] = useState('');
+    const [scopes, setScopes] = useState<string[]>([FULL_ACCESS]);
+    const [touched, setTouched] = useState(false);
+    const { mutateAsync: createApiKey, isPending } = useCreateApiKey(env);
+    const { toast } = useToast();
 
-const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => Promise<void> }> = ({ displayName, onDelete }) => {
-    const [open, setOpen] = useState(false);
+    const nameError = touched && !name.trim() ? 'Give the key a name.' : null;
 
-    return (
-        <DestructiveActionModal
-            title="Delete API Key"
-            description={
-                <>
-                    This action is irreversible. Any services using the key <strong className="text-text-strong">{displayName}</strong> will lose access
-                    immediately.
-                </>
-            }
-            inputLabel="To confirm, type the key name below:"
-            confirmationKeyword={displayName}
-            confirmButtonText="Delete API Key"
-            trigger={
-                <IconButton label="Delete API key" variant="danger-ghost" size="sm">
-                    <Trash2 />
-                </IconButton>
-            }
-            onConfirm={() => onDelete().then(() => setOpen(false))}
-            open={open}
-            onOpenChange={setOpen}
-        />
-    );
-};
-
-// ── Managed secret key (env var) ────────────────────────────────────
-
-const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ secretKey, env }) => {
-    const [revealed, setRevealed] = useState(false);
-    const masked = `····${secretKey.slice(-4)}`;
+    const onCreate = async () => {
+        setTouched(true);
+        if (!name.trim() || scopes.length === 0) return;
+        try {
+            const res = await createApiKey({ display_name: name.trim(), scopes });
+            onCreated(res.data);
+        } catch (err) {
+            toast({ title: apiErrorMessage(err, 'Failed to create API key'), variant: 'error' });
+        }
+    };
 
     return (
-        <SettingsContent title="API Keys">
-            <div className="flex flex-col gap-4 py-4">
-                <div className="text-body-small-regular text-text-secondary">
-                    This key is managed via the <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> environment variable.
-                </div>
-                <div>
-                    <label className="text-body-small-semi text-text-strong block mb-1.5">Secret Key</label>
-                    <div className="relative">
-                        <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-surface-canvas text-text-muted pr-20" />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setRevealed((r) => !r)}>
-                                {revealed ? <EyeOff /> : <Eye />}
-                            </IconButton>
-                            <CopyButton size="sm" value={secretKey} />
+        <div className="flex max-w-205 flex-col gap-5">
+            <KeyBreadcrumb current="New API key" onBack={onBack} />
+            <SettingsCard
+                footer={
+                    <>
+                        <span />
+                        <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={onBack}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" size="sm" onClick={() => void onCreate()} loading={isPending}>
+                                Create API key
+                            </Button>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </SettingsContent>
+                    </>
+                }
+            >
+                <SettingsRow label="Name" description="Name it after the service that uses it." htmlFor="key-name">
+                    <Field data-invalid={!!nameError}>
+                        <Input
+                            id="key-name"
+                            value={name}
+                            placeholder="e.g. Production backend"
+                            onChange={(e) => setName(e.target.value)}
+                            aria-invalid={!!nameError}
+                            autoFocus
+                        />
+                        {nameError && <FieldError>{nameError}</FieldError>}
+                    </Field>
+                </SettingsRow>
+                <AccessFields scopes={scopes} onChange={setScopes} readOnly={false} showEmptyError={touched} />
+            </SettingsCard>
+        </div>
     );
 };
 
-// ── Main component ──────────────────────────────────────────────────
+const CreatedKeyPage: React.FC<{ apiKey: ApiKeyListItem; env: string; onDone: () => void }> = ({ apiKey, env, onDone }) => {
+    const { toast } = useToast();
+    const envLine = `${secretKeyEnvVar(env)}=${apiKey.secret}`;
 
-export const ApiKeys: React.FC = () => {
+    return (
+        <div className="flex max-w-205 flex-col gap-5">
+            <KeyBreadcrumb current={apiKey.display_name} onBack={onDone} />
+            <SettingsCard
+                footer={
+                    <>
+                        <span className="type-text-regular-xs text-text-muted">You can reveal it again later.</span>
+                        <Button variant="primary" size="sm" onClick={onDone}>
+                            Done
+                        </Button>
+                    </>
+                }
+            >
+                <Alert variant="success">
+                    <CircleCheck />
+                    <AlertDescription>API key created. Copy it into your backend.</AlertDescription>
+                </Alert>
+                <div className="flex flex-col gap-1.5">
+                    <label htmlFor="key-env-line" className="type-text-medium-sm text-text-default">
+                        Add to your <InlineCode>.env</InlineCode>
+                    </label>
+                    <InputGroup>
+                        <InputGroupInput id="key-env-line" mono value={envLine} readOnly />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton value={envLine} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <div>
+                        <LinkButton
+                            size="sm"
+                            leftIcon={<Copy />}
+                            onClick={() => {
+                                void copyText(apiKey.secret).then(
+                                    () => toast({ title: 'API key copied', variant: 'success' }),
+                                    () => toast({ title: 'Couldn’t copy. Select the value and copy it manually.', variant: 'error' })
+                                );
+                            }}
+                        >
+                            Copy key only
+                        </LinkButton>
+                    </div>
+                </div>
+            </SettingsCard>
+        </div>
+    );
+};
+
+const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string; canReadSecret: boolean }> = ({ secretKey, env, canReadSecret }) => (
+    <SettingsCard title="API key">
+        <p className="type-text-regular-sm text-text-secondary">
+            This key is managed through the <InlineCode>{secretKeyEnvVar(env)}</InlineCode> environment variable.
+        </p>
+        <SecretInput value={secretKey} canReveal={canReadSecret} disabledReason={PERMISSION_DENIED_REASON} aria-label="API key" />
+    </SettingsCard>
+);
+
+export const ApiKeys: React.FC<{ subPath?: string }> = ({ subPath }) => {
     const env = useStore((state) => state.env);
+    const navigate = useNavigate();
     const { data, isLoading } = useApiKeys(env);
     const { data: envData } = useEnvironment(env);
-    const { mutateAsync: deleteApiKey } = useDeleteApiKey(env);
-    const { toast } = useToast();
-    const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
+    const [createdKey, setCreatedKey] = useState<ApiKeyListItem | null>(null);
+
+    useEffect(() => {
+        // 'new' is still on screen for a render after the key is created, before the URL switches to its id.
+        if (createdKey && subPath !== 'new' && subPath !== String(createdKey.id)) {
+            setCreatedKey(null);
+        }
+    }, [subPath, createdKey]);
 
     const { can } = usePermissions();
     const canReadSecret = can('environment:settings:read_secret');
     const canManageKeys = can('environment:api_keys:update');
-    const canMakeActions = canReadSecret || canManageKeys;
+    const canCreateKeys = can('environment:api_keys:create');
+    const canDeleteKeys = can('environment:api_keys:delete');
     const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 
     const apiKeys = data?.data ?? [];
-    const selectedKey = selectedKeyId !== null ? apiKeys.find((k) => k.id === selectedKeyId) : null;
-
-    const handleDelete = async (keyId: number) => {
-        try {
-            await deleteApiKey(keyId);
-            setSelectedKeyId(null);
-            toast({ title: 'API key deleted', variant: 'success' });
-        } catch (err) {
-            if (err instanceof APIError) {
-                toast({ title: (err.json as any)?.error?.message ?? 'Failed to delete API key', variant: 'error' });
-            } else {
-                toast({ title: 'Failed to delete API key', variant: 'error' });
-            }
-            throw err;
-        }
+    const listPath = settingsPath(env, 'api-keys');
+    const backToList = () => {
+        setCreatedKey(null);
+        void navigate(listPath);
     };
 
     if (managedSecretKey) {
-        return <ManagedSecretKeyView secretKey={managedSecretKey} env={env} />;
+        return <ManagedSecretKeyView secretKey={managedSecretKey} env={env} canReadSecret={canReadSecret} />;
     }
 
-    if (selectedKey) {
-        return <KeyConfig apiKey={selectedKey} env={env} onBack={() => setSelectedKeyId(null)} canReadSecret={canReadSecret} canManageKeys={canManageKeys} />;
+    if (subPath === 'new') {
+        if (!canCreateKeys) {
+            return <Navigate replace to={listPath} />;
+        }
+        return (
+            <CreateKeyPage
+                env={env}
+                onBack={backToList}
+                onCreated={(key) => {
+                    setCreatedKey(key);
+                    void navigate(settingsPath(env, 'api-keys', key.id), { replace: true });
+                }}
+            />
+        );
+    }
+
+    if (subPath) {
+        if (createdKey && String(createdKey.id) === subPath) {
+            return <CreatedKeyPage apiKey={createdKey} env={env} onDone={backToList} />;
+        }
+        if (isLoading) {
+            return <Skeleton className="h-[200px] w-full" />;
+        }
+        const apiKey = apiKeys.find((k) => String(k.id) === subPath);
+        if (!apiKey) {
+            return <Navigate replace to={listPath} />;
+        }
+        return (
+            <KeyPage
+                key={apiKey.id}
+                apiKey={apiKey}
+                env={env}
+                onBack={backToList}
+                canReadSecret={canReadSecret}
+                canManageKeys={canManageKeys}
+                canDeleteKeys={canDeleteKeys}
+            />
+        );
+    }
+
+    if (isLoading) {
+        return <Skeleton className="h-[200px] w-full" />;
+    }
+
+    const createButton = canCreateKeys && (
+        <Button variant="primary" onClick={() => void navigate(settingsPath(env, 'api-keys', 'new'))}>
+            <Plus />
+            Create API key
+        </Button>
+    );
+
+    if (apiKeys.length === 0) {
+        return (
+            <div className="flex min-h-79 flex-col items-center justify-center gap-5 rounded-ds-xs border-ds-1 border-border-muted bg-surface-panel-muted px-10 pt-6 pb-10 text-center">
+                <span className="flex size-10 items-center justify-center rounded-ds-sm border-ds-1 border-border-default bg-surface-panel text-icon-default">
+                    <KeyRound className="size-5" />
+                </span>
+                <div className="flex flex-col items-center gap-1.5">
+                    <span className="type-heading-sm text-text-strong">No API keys in {env}</span>
+                    <span className="max-w-[422px] type-text-regular-md text-text-secondary">
+                        Your backend needs an API key to call the Nango API. Create one and scope it to what it needs.
+                    </span>
+                </div>
+                {createButton}
+            </div>
+        );
     }
 
     return (
-        <SettingsContent
-            title="API Keys"
-            action={
-                <PermissionGate condition={canManageKeys}>
-                    {(allowed) => <CreateApiKeyDialog env={env} onCreated={() => void 0} disabled={!allowed} />}
-                </PermissionGate>
-            }
-        >
-            {isLoading ? (
-                <div className="text-body-small-regular text-text-muted py-4">Loading API keys...</div>
-            ) : apiKeys.length === 0 ? (
-                <div className="text-body-small-regular text-text-muted py-4">No API keys yet. Create one to get started.</div>
-            ) : (
+        <div className="flex flex-col gap-5">
+            {createButton && <div className="flex justify-end">{createButton}</div>}
+            <div className="rounded bg-surface-panel">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Name</TableHead>
-                            <TableHead>Scopes</TableHead>
+                            <TableHead>API key</TableHead>
+                            <TableHead>Access</TableHead>
                             <TableHead>Created</TableHead>
                             <TableHead>Last used</TableHead>
-                            {canMakeActions && <TableHead>Action</TableHead>}
+                            <TableHead>
+                                <span className="sr-only">Open</span>
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {apiKeys.map((key) => (
-                            <TableRow key={key.id}>
-                                <TableCell>
-                                    <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(renameLegacyScopes(key.scopes))}</span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
-                                        {formatRelativeTime(key.created_at)}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
-                                        {formatRelativeTime(key.last_used_at)}
-                                    </span>
-                                </TableCell>
-                                {canMakeActions && (
+                        {apiKeys.map((key) => {
+                            const open = () => void navigate(settingsPath(env, 'api-keys', key.id));
+                            return (
+                                <TableRow
+                                    key={key.id}
+                                    tabIndex={0}
+                                    className="group cursor-pointer"
+                                    onClick={open}
+                                    onKeyDown={(e) => {
+                                        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                                            e.preventDefault();
+                                            open();
+                                        }
+                                    }}
+                                >
                                     <TableCell>
-                                        <div className="flex items-center gap-1">
-                                            {canReadSecret && <CopyButton size="sm" value={key.secret} />}
-                                            {canManageKeys && (
-                                                <IconButton
-                                                    label="Edit"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => setSelectedKeyId(key.id)}
-                                                    className="text-text-muted hover:text-text-strong"
-                                                >
-                                                    <Pencil />
-                                                </IconButton>
-                                            )}
-                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => handleDelete(key.id)} />}
-                                        </div>
+                                        <span className="type-text-medium-sm text-text-default">{key.display_name}</span>
                                     </TableCell>
-                                )}
-                            </TableRow>
-                        ))}
+                                    <TableCell>
+                                        <span className="inline-flex items-center gap-1 type-code-regular-xs text-text-secondary">
+                                            …{key.secret.slice(-4)}
+                                            {canReadSecret && (
+                                                // Copying must not also open the key.
+                                                <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                                                    <CopyButton value={key.secret} aria-label={`Copy API key for ${key.display_name}`} />
+                                                </span>
+                                            )}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="type-text-regular-sm text-text-secondary">{accessLabel(renameLegacyScopes(key.scopes))}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="type-code-regular-xs text-text-secondary">{formatFullDate(key.created_at)}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="type-text-regular-sm text-text-secondary" title={formatFullDate(key.last_used_at)}>
+                                            {formatRelativeTime(key.last_used_at)}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="w-8">
+                                        <ArrowRight className="size-3.5 text-icon-muted group-hover:text-icon-default" />
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
-            )}
-        </SettingsContent>
+            </div>
+        </div>
     );
 };
