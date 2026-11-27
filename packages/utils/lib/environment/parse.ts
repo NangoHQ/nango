@@ -745,8 +745,7 @@ const ENVS_SHAPE = z.object({
     // MAILGUN_API_KEY, SMTP_URL and EMAIL_HTTP_URL is set, so existing deployments keep working.
     EMAIL_PROVIDER: z.enum(['mailgun', 'smtp', 'ses', 'http', 'none']).optional(),
 
-    // AWS SES (EMAIL_PROVIDER=ses). Credentials come from the default AWS credential chain.
-    AWS_SES_REGION: z.string().optional(), // falls back to AWS_REGION
+    // AWS SES (EMAIL_PROVIDER=ses). Region comes from AWS_REGION, credentials from the default AWS credential chain.
     AWS_SES_CONFIGURATION_SET: z.string().optional(),
 
     // Mailgun
@@ -1275,10 +1274,7 @@ function checkInternalAuthKeyPair(
     }
 }
 
-type EmailProviderEnvs = Pick<
-    z.infer<typeof ENVS_SHAPE>,
-    'EMAIL_PROVIDER' | 'MAILGUN_API_KEY' | 'SMTP_URL' | 'EMAIL_HTTP_URL' | 'AWS_SES_REGION' | 'AWS_REGION'
->;
+type EmailProviderEnvs = Pick<z.infer<typeof ENVS_SHAPE>, 'EMAIL_PROVIDER' | 'MAILGUN_API_KEY' | 'SMTP_URL' | 'EMAIL_HTTP_URL' | 'AWS_REGION'>;
 
 /** Names of the env vars the explicitly chosen EMAIL_PROVIDER needs but does not have. */
 function requiredEmailProviderEnvs(envs: EmailProviderEnvs): (keyof EmailProviderEnvs)[] {
@@ -1291,7 +1287,7 @@ function requiredEmailProviderEnvs(envs: EmailProviderEnvs): (keyof EmailProvide
             // EMAIL_HTTP_BODY is already required alongside EMAIL_HTTP_URL by its own check
             return envs.EMAIL_HTTP_URL ? [] : ['EMAIL_HTTP_URL'];
         case 'ses':
-            return envs.AWS_SES_REGION || envs.AWS_REGION ? [] : ['AWS_SES_REGION'];
+            return envs.AWS_REGION ? [] : ['AWS_REGION'];
         case 'none':
         case undefined:
             return [];
@@ -1310,8 +1306,10 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
 
     // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
     // template. Fail here so a half-configured provider surfaces at startup instead of on the
-    // first email, and keep the error pointed at the var that is actually missing.
-    if (ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
+    // first email, and keep the error pointed at the var that is actually missing. Skipped when
+    // EMAIL_PROVIDER picks another provider, since the HTTP settings are then unused.
+    const httpProviderInUse = ctx.value.EMAIL_PROVIDER === undefined || ctx.value.EMAIL_PROVIDER === 'http';
+    if (httpProviderInUse && ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
         ctx.issues.push({
             code: 'custom',
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',

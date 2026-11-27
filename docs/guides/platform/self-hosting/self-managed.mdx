@@ -329,7 +329,7 @@ Nango sends transactional email for signup verification, password resets, team i
 | `EMAIL_PROVIDER` | Variables | Notes |
 |---|---|---|
 | `smtp` | `SMTP_URL` | Any SMTP server, for example `smtps://user:pass@email-smtp.eu-west-1.amazonaws.com:465` |
-| `ses` | `AWS_SES_REGION` (falls back to `AWS_REGION`), optional `AWS_SES_CONFIGURATION_SET` | AWS SES API, authenticated with the default AWS credential chain |
+| `ses` | `AWS_REGION`, optional `AWS_SES_CONFIGURATION_SET` | AWS SES API, authenticated with the default AWS credential chain |
 | `mailgun` | `MAILGUN_API_KEY`, `MAILGUN_URL` | `MAILGUN_URL` is the regional API base URL, for example `https://api.eu.mailgun.net` |
 | `http` | `EMAIL_HTTP_URL`, `EMAIL_HTTP_BODY`, optional `EMAIL_HTTP_HEADERS` | Any mail API that accepts JSON over HTTP, such as SendGrid, Resend, or Postmark |
 | `none` | | Logs each email instead of sending it |
@@ -365,7 +365,7 @@ Grant the workload's role permission to send from your verified identity:
 Leave out the configuration set resource if you don't set `AWS_SES_CONFIGURATION_SET`.
 
 <Warning>
-The `SMTP_FROM` address or its domain must be a verified identity in SES, in the same region as `AWS_SES_REGION`. While your SES account is in the sandbox, SES only delivers to verified recipient addresses, so invitations to anyone else fail. Request production access before inviting your team.
+The `SMTP_FROM` address or its domain must be a verified identity in SES, in the same region as `AWS_REGION`. While your SES account is in the sandbox, SES only delivers to verified recipient addresses, so invitations to anyone else fail. Request production access before inviting your team.
 </Warning>
 
 ### Pre-built integrations catalog

@@ -690,7 +690,7 @@ describe('parse', () => {
             { provider: 'mailgun', missing: 'MAILGUN_API_KEY' },
             { provider: 'smtp', missing: 'SMTP_URL' },
             { provider: 'http', missing: 'EMAIL_HTTP_URL' },
-            { provider: 'ses', missing: 'AWS_SES_REGION' }
+            { provider: 'ses', missing: 'AWS_REGION' }
         ];
         for (const { provider, missing } of missingCases) {
             it(`should throw when EMAIL_PROVIDER=${provider} is set without ${missing}`, () => {
@@ -698,15 +698,29 @@ describe('parse', () => {
             });
         }
 
-        it('should accept EMAIL_PROVIDER=ses with AWS_SES_REGION', () => {
-            const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_SES_REGION: 'eu-west-1' });
-            expect(res.EMAIL_PROVIDER).toBe('ses');
-            expect(res.AWS_SES_REGION).toBe('eu-west-1');
-        });
-
-        it('should accept EMAIL_PROVIDER=ses with only AWS_REGION', () => {
+        it('should accept EMAIL_PROVIDER=ses with AWS_REGION', () => {
             const res = parseEnvs(ENVS, { EMAIL_PROVIDER: 'ses', AWS_REGION: 'us-east-1' });
             expect(res.EMAIL_PROVIDER).toBe('ses');
+        });
+
+        const unusedHttpCases = ['ses', 'smtp', 'mailgun', 'none'];
+        for (const provider of unusedHttpCases) {
+            it(`should ignore a half-configured HTTP provider when EMAIL_PROVIDER=${provider}`, () => {
+                const res = parseEnvs(ENVS, {
+                    EMAIL_PROVIDER: provider,
+                    EMAIL_HTTP_URL: 'https://api.example.com/send',
+                    AWS_REGION: 'us-east-1',
+                    SMTP_URL: 'smtp://localhost',
+                    MAILGUN_API_KEY: 'key'
+                });
+                expect(res.EMAIL_PROVIDER).toBe(provider);
+            });
+        }
+
+        it('should still require EMAIL_HTTP_BODY when EMAIL_PROVIDER=http', () => {
+            expect(() => parseEnvs(ENVS, { EMAIL_PROVIDER: 'http', EMAIL_HTTP_URL: 'https://api.example.com/send' })).toThrow(
+                'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set'
+            );
         });
 
         it('should accept EMAIL_PROVIDER=none without any provider env', () => {

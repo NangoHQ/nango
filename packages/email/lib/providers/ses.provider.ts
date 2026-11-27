@@ -13,11 +13,10 @@ export class SesEmailProvider implements EmailProvider<void> {
     private client: SESv2Client;
 
     constructor() {
-        const region = envs.AWS_SES_REGION || envs.AWS_REGION;
-        if (!region) {
-            throw new Error('AWS_SES_REGION or AWS_REGION is required to send emails through AWS SES');
+        if (!envs.AWS_REGION) {
+            throw new Error('AWS_REGION is required to send emails through AWS SES');
         }
-        this.client = new SESv2Client({ region });
+        this.client = new SESv2Client({ region: envs.AWS_REGION });
     }
 
     async send(email: string, subject: string, html: string): Promise<void> {

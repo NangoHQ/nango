@@ -4,8 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SesEmailProvider } from './ses.provider.js';
 
 const mockEnvs = vi.hoisted(() => ({
-    AWS_SES_REGION: 'eu-west-1' as string | undefined,
-    AWS_REGION: undefined as string | undefined,
+    AWS_REGION: 'eu-west-1' as string | undefined,
     AWS_SES_CONFIGURATION_SET: undefined as string | undefined,
     SMTP_FROM: 'Nango <noreply@example.com>'
 }));
@@ -13,8 +12,7 @@ const mockEnvs = vi.hoisted(() => ({
 vi.mock('../env.js', () => ({ envs: mockEnvs }));
 
 function resetEnvs() {
-    mockEnvs.AWS_SES_REGION = 'eu-west-1';
-    mockEnvs.AWS_REGION = undefined;
+    mockEnvs.AWS_REGION = 'eu-west-1';
     mockEnvs.AWS_SES_CONFIGURATION_SET = undefined;
 }
 
@@ -54,23 +52,14 @@ describe('SesEmailProvider', () => {
         expect(command.input.ConfigurationSetName).toBe('nango-transactional');
     });
 
-    it('uses AWS_SES_REGION over AWS_REGION', async () => {
-        mockEnvs.AWS_REGION = 'us-east-1';
-
+    it('creates the client in AWS_REGION', async () => {
         await expect(new SesEmailProvider()['client'].config.region()).resolves.toBe('eu-west-1');
     });
 
-    it('falls back to AWS_REGION when AWS_SES_REGION is unset', async () => {
-        mockEnvs.AWS_SES_REGION = undefined;
-        mockEnvs.AWS_REGION = 'us-east-1';
+    it('throws when AWS_REGION is unset', () => {
+        mockEnvs.AWS_REGION = undefined;
 
-        await expect(new SesEmailProvider()['client'].config.region()).resolves.toBe('us-east-1');
-    });
-
-    it('throws when no region is configured', () => {
-        mockEnvs.AWS_SES_REGION = undefined;
-
-        expect(() => new SesEmailProvider()).toThrow('AWS_SES_REGION or AWS_REGION is required to send emails through AWS SES');
+        expect(() => new SesEmailProvider()).toThrow('AWS_REGION is required to send emails through AWS SES');
     });
 
     it('propagates SES errors', async () => {
