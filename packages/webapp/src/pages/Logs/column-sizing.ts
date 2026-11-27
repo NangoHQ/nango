@@ -27,16 +27,16 @@ function widest(rows: SearchOperationsData[], get: (row: SearchOperationsData) =
 }
 
 export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpen, now = new Date() }: { panelOpen: boolean; now?: Date }): string {
-    const timeChars = Math.max(
-        TIME_ONLY_CHARS,
-        widest(rows, (row) => formatOperationTime(row.createdAt, now))
+    const timeOnly = Math.ceil(TIME_ONLY_CHARS * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING;
+    const timestamp = Math.max(
+        timeOnly,
+        Math.ceil(widest(rows, (row) => formatOperationTime(row.createdAt, now)) * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING
     );
-    const timestamp = Math.ceil(timeChars * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING;
 
     if (panelOpen) {
-        // The panel can leave the list ~400px. Type and Function share it, or a fixed Type width pushes Function out of the card.
+        // The panel can leave the list ~400px. Timestamp, Type and Function shrink, or fixed widths push Function out of the card.
         return [
-            `${timestamp}px`,
+            `minmax(${timeOnly}px,${timestamp}px)`,
             `${PANEL_DURATION_WIDTH}px`,
             `${PANEL_STATUS_WIDTH}px`,
             `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`,

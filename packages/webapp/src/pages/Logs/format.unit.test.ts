@@ -19,4 +19,8 @@ describe('formatDuration', () => {
         expect(formatDuration(283)).toBe('283ms');
         expect(formatDuration(2345)).toBe('2.3s');
     });
+
+    it('shows a negative duration from out-of-order timestamps as zero', () => {
+        expect(formatDuration(-40)).toBe('0ms');
+    });
 });

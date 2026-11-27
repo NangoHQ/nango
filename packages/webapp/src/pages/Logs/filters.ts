@@ -9,7 +9,10 @@ const parseStates = parseAsArrayOf(parseAsStringLiteral(statusOptions.map((opt) 
     .withOptions({ history: 'push' });
 const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withDefault(['all']).withOptions({ history: 'push' });
 const parseIds = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
+const defaultPeriod = last24hPreset.toPeriod()!;
+const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',')
+    .withOptions({ history: 'push' })
+    .withDefault([defaultPeriod.from, defaultPeriod.to ?? new Date()]);
 
 export function useLogsFilters() {
     const [isLive, setLive] = useQueryState('live', parseLive);

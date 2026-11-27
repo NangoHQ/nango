@@ -25,6 +25,11 @@ describe('computeLogsGridTemplate', () => {
         expect(template.slice(3)).toEqual(['minmax(64px,1fr)', 'minmax(64px,1fr)']);
     });
 
+    it('lets a dated timestamp shrink to the time-only width while the panel is open', () => {
+        const template = tracks(computeLogsGridTemplate([row({ createdAt: '2026-11-25T09:00:00' })], { panelOpen: true, now }));
+        expect(template[0]).toMatch(/^minmax\(91px,\d+px\)$/);
+    });
+
     it('keeps the timestamp column wide enough for its header with no rows', () => {
         expect(tracks(computeLogsGridTemplate([], { panelOpen: false, now }))[0]).toBe(
             tracks(computeLogsGridTemplate([row({})], { panelOpen: false, now }))[0]

@@ -13,7 +13,7 @@ import type { SearchOperationsData } from '@nangohq/types';
 const Muted: React.FC = () => <span className="text-text-muted">—</span>;
 
 export const TimestampCell: React.FC<{ createdAt: string; now: Date }> = ({ createdAt, now }) => (
-    <span className="type-code-regular-xs text-text-secondary" title={formatDateToLogFormat(createdAt)}>
+    <span className="truncate type-code-regular-xs text-text-secondary" title={formatDateToLogFormat(createdAt)}>
         {formatOperationTime(createdAt, now)}
     </span>
 );
@@ -22,9 +22,10 @@ export const DurationCell: React.FC<{ operation: SearchOperationsData }> = ({ op
     if (!operation.startedAt || !operation.endedAt) {
         return <Muted />;
     }
+    const duration = formatDuration(new Date(operation.endedAt).getTime() - new Date(operation.startedAt).getTime());
     return (
-        <span className="type-code-regular-xs text-text-secondary">
-            {formatDuration(new Date(operation.endedAt).getTime() - new Date(operation.startedAt).getTime())}
+        <span className="truncate type-code-regular-xs text-text-secondary" title={duration}>
+            {duration}
         </span>
     );
 };

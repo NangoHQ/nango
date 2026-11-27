@@ -17,6 +17,7 @@ export function usePageVisible(onReturn?: () => void): boolean {
             }
         };
         document.addEventListener('visibilitychange', onChange);
+        setVisible(isVisible());
         return () => document.removeEventListener('visibilitychange', onChange);
     }, []);
 

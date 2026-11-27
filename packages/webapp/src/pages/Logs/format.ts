@@ -7,7 +7,8 @@ export function formatOperationTime(createdAt: string, now: Date): string {
     return format(date, isSameDay(date, now) ? 'HH:mm:ss' : 'MMM d HH:mm:ss');
 }
 
-export function formatDuration(ms: number): string {
+export function formatDuration(rawMs: number): string {
+    const ms = Math.max(0, rawMs);
     if (ms < 1000) {
         return `${Math.round(ms)}ms`;
     }
