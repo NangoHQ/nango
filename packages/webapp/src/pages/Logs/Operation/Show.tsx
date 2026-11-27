@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Check, Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -15,6 +16,7 @@ import { getRunTime } from '../../../utils/utils';
 import { OperationProperties, operationTypeLabel } from '../components/OperationProperties';
 import { OperationStatus } from '../components/OperationStatus';
 import { Elapsed } from '../operationCells';
+import { syncOperationIntoLists } from '../operationSync';
 import { Logs } from './components/Logs';
 
 import type { ApiError, OperationRow } from '@nangohq/types';
@@ -144,6 +146,13 @@ export const ShowOperation: React.FC<{ operationId: string; actions: React.React
     const { operation, loading, error, trigger } = useGetOperation(env, { operationId });
     const errorCode = error instanceof APIError ? (error.json as ApiError<string> | undefined)?.error?.code : undefined;
     const isNotFound = errorCode === 'not_found' || errorCode === 'invalid_uri_params';
+
+    const queryClient = useQueryClient();
+    useEffect(() => {
+        if (operation) {
+            syncOperationIntoLists(queryClient, env, operation);
+        }
+    }, [queryClient, env, operation]);
 
     const isLive = useMemo(() => {
         if (isNotFound) {

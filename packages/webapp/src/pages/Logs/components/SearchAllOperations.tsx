@@ -8,6 +8,7 @@ import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow }
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePageVisible } from '@/hooks/usePageVisible';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
+import { operationQueryKey } from '../../../hooks/useLogs';
 import { queryClient, useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
 import { APIError, apiFetch } from '../../../utils/api';
@@ -16,8 +17,9 @@ import { computeLogsGridTemplate } from '../column-sizing';
 import { defaultLimit, refreshInterval } from '../constants';
 import { useLogsFilters } from '../filters';
 import { ConnectionCell, DurationCell, FunctionCell, IntegrationCell, StatusCell, TimestampCell, TypeCell } from '../operationCells';
+import { operationsListKey } from '../operationSync';
 
-import type { SearchOperations, SearchOperationsData } from '@nangohq/types';
+import type { GetOperation, SearchOperations, SearchOperationsData } from '@nangohq/types';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
@@ -95,7 +97,7 @@ export const SearchAllOperations: React.FC<Props> = ({
      * - When you scroll back to the top we trim all the pages so they don't get refresh, and we re-enable the interval refresh
      */
     const queryKey = useMemo(
-        () => [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
+        () => [...operationsListKey(env), states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
         [env, states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch]
     );
     const { data, isLoading, isFetching, isFetchingNextPage, isPlaceholderData, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery<
@@ -201,6 +203,19 @@ export const SearchAllOperations: React.FC<Props> = ({
     }, [totalOperations, onTotalChange]);
 
     const flashIds = useArrivedIds(flatData, JSON.stringify(queryKey), !data || isPlaceholderData);
+
+    // The panel polls on its own interval. When the list sees the open operation change first, refresh the panel now.
+    const selectedState = selectedOperationId ? flatData.find((op) => op.id === selectedOperationId)?.state : undefined;
+    useEffect(() => {
+        if (!selectedOperationId || !selectedState) {
+            return;
+        }
+        const key = operationQueryKey(env, selectedOperationId);
+        const panel = queryClient.getQueryData<GetOperation['Success']>(key);
+        if (panel && panel.data.state !== selectedState) {
+            void queryClient.invalidateQueries({ queryKey: key });
+        }
+    }, [env, selectedOperationId, selectedState]);
 
     const now = new Date();
     const gridTemplate = computeLogsGridTemplate(flatData, { panelOpen, now });
