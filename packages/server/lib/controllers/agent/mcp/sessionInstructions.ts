@@ -49,9 +49,17 @@ ${howToRun}
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
 
     if (nangoQueryResult) {
-        sections.push(`## Large results
-- A result too large to return in full comes back as a result_id, with its shape and a sample of the first items.
-- Call nango_query_result with that result_id and JavaScript that reads the stored result from \`result\` and returns only what the task needs, such as the matching items or a count.
+        sections.push(`## Tool results
+- A tool result comes back with a result_id. When \`truncated\` is false, the tool's output is in \`data\`.
+- A result too large to return in full has \`truncated\` set to true, with its shape and a sample of the first items in place of \`data\`.
+- A result with no result_id could not be stored. Its output is in \`data\` in full, and nango_query_result cannot read it.
+- A failed tool call comes back as its error, with no result_id.${
+            nangoProxy
+                ? `
+- For nango_proxy, only the response body is stored. The status and headers stay as they are, and the output is in \`body.data\`. A response with a 4xx or 5xx status comes back as it is.`
+                : ''
+        }
+- Call nango_query_result with a result_id and JavaScript that reads the stored result from \`result\` and returns only what the task needs, such as the matching items or a count. It works on any result_id, but read \`data\` directly when it already has what you need.
 - The code is the body of an async function with only the language built-ins. It cannot call APIs or tools.
 - If the stored result is gone, call the tool that returned it again.`);
     }

@@ -173,6 +173,15 @@ describe('buildSessionInstructions', () => {
         expect(instructions).toContain('This session cannot connect an integration.');
     });
 
+    it('says where nango_proxy puts a stored body only when the session has nango_proxy', () => {
+        const withProxy = buildSessionInstructions(session({ metaTools: { ...ALL_META_TOOLS, nangoQueryResult: true } }));
+        const withoutProxy = buildSessionInstructions(session({ metaTools: { ...ALL_META_TOOLS, nangoProxy: false, nangoQueryResult: true } }));
+
+        expect(withProxy).toContain('`body.data`');
+        expect(withoutProxy).toContain('## Tool results');
+        expect(withoutProxy).not.toContain('`body.data`');
+    });
+
     it('does not send a search result to nango_execute when search is off', () => {
         const instructions = buildSessionInstructions(session({ metaTools: { ...ALL_META_TOOLS, nangoToolSearch: false } }));
 

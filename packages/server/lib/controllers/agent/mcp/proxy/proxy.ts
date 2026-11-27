@@ -6,6 +6,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionProxyRequest } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
+import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { proxyInputSchema, proxyToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
@@ -14,6 +15,7 @@ import { invalidArgumentsOf, makeAgentSessionMcpTool } from '../sessionTool.js';
 import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';
 
+import type { ResultToStore } from '../../../../services/agentSessionResults.service.js';
 import type { McpProxyExecution } from '../../../../services/mcpProxy.service.js';
 import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js';
 import type { Result } from '@nangohq/utils';
@@ -124,10 +126,23 @@ export const proxyTool = makeAgentSessionMcpTool({
                 return Err(proxyErrorToMcp({ error: result.error, integrationId }));
             }
 
-            return Ok(result.value);
+            return Ok(await withBodyStored({ output: result.value, environmentId: environment.id, plan, session, connection, logOperationId: logCtx?.id }));
         });
     }
 });
+
+/**
+ * Only the body is stored, so the status and headers, such as a pagination link, still come back as
+ * they are. A provider error is returned as is too, since the agent has to read it to recover.
+ */
+async function withBodyStored({ output, ...target }: { output: ProxyRequestOutput } & Omit<ResultToStore, 'toolName' | 'data'>): Promise<ProxyRequestOutput> {
+    if (output.status >= 400) {
+        return output;
+    }
+
+    const body = await toolResultForAgent({ ...target, toolName: 'nango_proxy', data: output.body });
+    return body ? { ...output, body: body as unknown as ProxyRequestOutput['body'] } : output;
+}
 
 interface ProxyRequestOutcome {
     provider?: string | undefined;

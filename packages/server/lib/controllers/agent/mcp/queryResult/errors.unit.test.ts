@@ -56,7 +56,7 @@ describe('queryRunErrorToMcp', () => {
         const { code, message } = mapped('agent_session_result_not_found', { message: 'The stored result was not found.' });
 
         expect(code).toBe('result_not_found');
-        expect(message).toContain('Call the tool that returned it again');
+        expect(message).toContain('call the tool that returned it again');
     });
 
     it('tells the agent to return less when the runner rejects the output size', () => {

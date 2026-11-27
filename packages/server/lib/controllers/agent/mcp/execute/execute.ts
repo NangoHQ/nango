@@ -17,6 +17,7 @@ import { invalidArgumentsOf, makeAgentSessionMcpTool, RemoteToolResult } from '.
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
@@ -142,7 +143,8 @@ export async function executeSessionTool({
         });
     }
 
-    const resultForAgent = (data: unknown) => toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data });
+    const resultForAgent = async (data: unknown, logOperationId: string | undefined) =>
+        (await toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data, logOperationId })) ?? data;
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
         // The same keys executeAction sets, so one concept is not queried under two names. It tags
@@ -201,7 +203,7 @@ export async function executeSessionTool({
             }
 
             track({ logOperationId: logCtx?.id, functionSource });
-            return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
+            return Ok(await resultForAgent('data' in result.value ? result.value.data : null, logCtx?.id));
         }
 
         const { logCtx, functionSource, result } = await executeAction({
@@ -225,7 +227,7 @@ export async function executeSessionTool({
         }
 
         track({ logOperationId: logCtx?.id, functionSource });
-        return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
+        return Ok(await resultForAgent('data' in result.value ? result.value.data : null, logCtx?.id));
     });
 }
 
@@ -302,8 +304,43 @@ async function executeRemoteTool({
         }
 
         track({ logOperationId, ...(result.value.isError ? { errorCode: 'tool_failed' } : {}) });
-        return Ok(new RemoteToolResult(result.value));
+
+        // A failed call is returned in full, since the agent has to read it to recover.
+        const data = result.value.isError ? undefined : remoteResultData(result.value);
+        const forAgent =
+            data === undefined ? null : await toolResultForAgent({ environmentId: environment.id, plan, session, connection, toolName, data, logOperationId });
+        return Ok(forAgent ?? new RemoteToolResult(result.value));
     });
+}
+
+/**
+ * What code over a stored MCP tool result reads: the structured content when the server sent it,
+ * otherwise the text, parsed when it is JSON. Undefined when the result holds an image or anything
+ * else code could not read, even next to structured content, so it is never stored or dropped.
+ */
+export function remoteResultData(result: CallToolResult): unknown {
+    const texts: string[] = [];
+    for (const block of result.content) {
+        if (block.type !== 'text') {
+            return undefined;
+        }
+        texts.push(block.text);
+    }
+
+    if (result.structuredContent) {
+        return result.structuredContent;
+    }
+
+    const values = texts.map(parseJsonOrText);
+    return values.length === 1 ? values[0] : values;
+}
+
+function parseJsonOrText(text: string): unknown {
+    try {
+        return JSON.parse(text) as unknown;
+    } catch {
+        return text;
+    }
 }
 
 function isEmptyObject(input: unknown): boolean {

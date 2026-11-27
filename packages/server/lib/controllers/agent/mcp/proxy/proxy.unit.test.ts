@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { records } from '@nangohq/records';
 import { NangoError, productTracking, withProductTrackingContext } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -13,8 +14,10 @@ import { proxyTool } from './proxy.js';
 
 import type { ProxyServiceResponse } from '../../../../services/proxy.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type { UpsertSummary } from '@nangohq/records';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { MockInstance } from 'vitest';
 
 const TOOLSET: AgentSessionCompiledToolset = {
     notion: {
@@ -33,14 +36,14 @@ const CONNECTIONS: AgentSessionResolvedConnections = {
     autosana: { integrationId: 'autosana', provider: 'autosana', connectionId: 'autosana-acme', internalConnectionId: 11, configId: 21 }
 };
 
-function context(): AgentSessionMcpContext {
+function context(metaTools: Partial<AgentSession['metaTools']> = {}): AgentSessionMcpContext {
     const session: AgentSession = {
         id: 'session-1',
         environmentId: 1,
         accountId: 1,
         resolvedConnections: CONNECTIONS,
         compiledToolset: TOOLSET,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} }, ...metaTools },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -438,5 +441,62 @@ describe('proxyTool analytics', () => {
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('http_status');
         expect(properties).toMatchObject({ integration_id: 'slack', error_code: 'integration_not_connected' });
+    });
+});
+
+describe('proxyTool large responses', () => {
+    let upsert: MockInstance<typeof records.upsert>;
+    const LARGE_BODY = { pages: Array.from({ length: 50 }, (_, i) => ({ id: `page_${i}`, text: 'x'.repeat(500) })) };
+
+    const callWithQueryResult = async () =>
+        await proxyTool.handler({ ...PURPOSE, integration: 'notion', method: 'GET', path: '/v1/pages' }, context({ nangoQueryResult: true }));
+
+    beforeEach(() => {
+        vi.spyOn(egressTelemetryRecorder, 'record').mockImplementation(vi.fn());
+        upsert = vi.spyOn(records, 'upsert').mockResolvedValue(Ok({} as UpsertSummary));
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('stores a large body and keeps the status and headers', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(LARGE_BODY)) });
+
+        const result = (await callWithQueryResult()).unwrap() as { status: number; headers: unknown; body: Record<string, unknown> };
+
+        expect(result.status).toBe(200);
+        expect(result.headers).toEqual({ 'content-type': 'application/json' });
+        expect(result.body).toMatchObject({ result_id: expect.any(String), truncated: true, shape: expect.stringContaining('pages: {') });
+        expect(result.body).not.toHaveProperty('pages');
+        expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
+    });
+
+    it('returns a small body in full with its result_id', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ id: 'page_1' })) });
+
+        const result = (await callWithQueryResult()).unwrap() as { status: number; body: unknown };
+
+        expect(result.status).toBe(200);
+        expect(result.body).toEqual({ result_id: expect.any(String), truncated: false, data: { id: 'page_1' } });
+        await vi.waitFor(() => expect(upsert).toHaveBeenCalled());
+    });
+
+    it('returns a large provider error in full, since the agent has to read it', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(LARGE_BODY, 500, 'upstream_error')) });
+
+        const result = (await callWithQueryResult()).unwrap() as { body: unknown };
+
+        expect(result.body).toEqual(LARGE_BODY);
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('returns a large body in full when nango_query_result is off', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(LARGE_BODY)) });
+
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages' });
+
+        expect((result.unwrap() as { body: unknown }).body).toEqual(LARGE_BODY);
+        expect(upsert).not.toHaveBeenCalled();
     });
 });

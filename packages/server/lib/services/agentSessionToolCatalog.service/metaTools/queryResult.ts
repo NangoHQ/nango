@@ -6,7 +6,7 @@ import type { AgentSessionToolDefinition } from '../types.js';
 
 export const queryResultInputSchema = z
     .object({
-        result_id: z.string().min(1).max(1024).describe('The result_id a tool returned in place of a result too large to return in full.'),
+        result_id: z.string().min(1).max(1024).describe('The result_id a tool result came back with.'),
         code: z
             .string()
             .min(1)
@@ -21,7 +21,7 @@ export const queryResultInputSchema = z
 export const queryResultToolDefinition = {
     name: 'nango_query_result',
     description:
-        'Run JavaScript over a tool result that was too large to return in full, and get back only what the code returns. Pass the result_id from that tool result. Use its shape and sample to write the code.',
+        'Run JavaScript over a stored tool result, and get back only what the code returns. Pass the result_id from that tool result. Use it for a truncated result, writing the code from its shape and sample, or to filter, count or combine a result instead of reading through it. What the code returns comes back with a result_id of its own.',
     inputSchema: queryResultInputSchema,
     annotations: {
         readOnlyHint: true,
