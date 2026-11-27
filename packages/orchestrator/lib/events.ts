@@ -18,6 +18,7 @@ class PgEventEmitter extends EventEmitter {
     private client: any = null;
     private connected: boolean = false;
     private shouldReconnect: boolean = true;
+    private reconnecting: Promise<void> | null = null;
 
     constructor(
         knex: knex.Knex,
@@ -31,72 +32,148 @@ class PgEventEmitter extends EventEmitter {
         this.channel = options.channel;
     }
 
+    /**
+     * Opens the dedicated LISTEN connection. Rejects when it can't connect.
+     * Once connected, a lost connection is re-opened in the background until disconnect() is called.
+     */
     async connect(): Promise<void> {
+        if (this.connected) {
+            return; // Already connected, no need to reconnect
+        }
+        this.shouldReconnect = true;
         try {
-            if (this.connected) {
-                return; // Already connected, no need to reconnect
-            }
-
-            this.client = await this.knex.client.acquireRawConnection();
-            await this.client.query(`LISTEN ${this.channel}`);
-            this.connected = true;
-
-            this.client.on('notification', (notification: { pid: number; channel: string; payload?: string }) => {
-                if (notification.payload) {
-                    super.emit(notification.payload);
-                }
-            });
-
-            this.client.on('error', (err: Error) => {
-                logger.error('PostgreSQL client error:', err);
-                this.connected = false;
-                super.emit('error', err);
-                this.reconnect();
-            });
-
-            this.client.on('end', () => {
-                logger.info('PostgreSQL connection ended');
-                this.connected = false;
-                this.reconnect();
-            });
-
-            super.emit('connected');
-            logger.info(`Successfully listening to channel: ${this.channel}`);
+            await this.listen();
         } catch (err) {
             logger.error('PostgreSQL connection error:', err);
-            super.emit('error', err);
-            this.reconnect();
+            this.emitError(err);
+            throw err;
         }
     }
 
-    private async reconnect(): Promise<void> {
+    private async listen(): Promise<void> {
+        const client = await this.knex.client.acquireRawConnection();
+
+        // Attach the handlers before the first query, so an error during LISTEN is never unhandled
+        client.on('notification', (notification: { pid: number; channel: string; payload?: string }) => {
+            if (notification.payload) {
+                super.emit(notification.payload);
+            }
+        });
+        client.on('error', (err: Error) => {
+            this.onConnectionLost(client, err);
+        });
+        client.on('end', () => {
+            this.onConnectionLost(client);
+        });
+
+        try {
+            await client.query(`LISTEN ${this.channel}`);
+        } catch (err) {
+            this.discard(client);
+            throw err;
+        }
+
         if (!this.shouldReconnect) {
+            // disconnect() was called while we were connecting
+            this.discard(client);
             return;
         }
-        try {
-            await retryWithBackoff(
-                () => {
-                    return this.connect();
-                },
-                {
-                    startingDelay: 100,
-                    timeMultiple: 3,
-                    numOfAttempts: 3
-                }
-            );
-        } catch (err) {
-            logger.error('Failed to reconnect to PostgreSQL:', err);
+
+        this.client = client;
+        this.connected = true;
+        super.emit('connected');
+        logger.info(`Successfully listening to channel: ${this.channel}`);
+    }
+
+    private onConnectionLost(client: any, err?: Error): void {
+        if (client !== this.client) {
+            // A client we already replaced or discarded: pg emits both 'error' and 'end' for one lost connection
+            return;
         }
+
+        if (err) {
+            logger.error('PostgreSQL client error:', err);
+        } else {
+            logger.info('PostgreSQL connection ended');
+        }
+
+        this.connected = false;
+        this.client = null;
+        this.discard(client);
+        if (err) {
+            this.emitError(err);
+        }
+        void this.reconnect();
+    }
+
+    private discard(client: any): void {
+        client.removeAllListeners('notification');
+        client.removeAllListeners('error');
+        client.removeAllListeners('end');
+        // pg turns an 'error' with no listener into an uncaught exception, so keep a no-op one on the dead client
+        client.on('error', () => {});
+        this.knex.client.destroyRawConnection(client).catch(() => {});
+    }
+
+    /**
+     * EventEmitter throws when 'error' is emitted with no listener.
+     * Inside a pg event handler that throw used to skip the reconnect, leaving the orchestrator
+     * running without LISTEN (it only emitted events locally) until it was restarted.
+     */
+    private emitError(err: unknown): void {
+        if (this.listenerCount('error') > 0) {
+            super.emit('error', err);
+        }
+    }
+
+    private reconnect(): Promise<void> {
+        if (!this.shouldReconnect) {
+            return Promise.resolve();
+        }
+        if (this.reconnecting) {
+            return this.reconnecting;
+        }
+
+        // Keep trying until it works or disconnect() is called: giving up leaves this process deaf to other orchestrators
+        const reconnecting = (async () => {
+            try {
+                await retryWithBackoff(
+                    async () => {
+                        if (!this.shouldReconnect || this.connected) {
+                            return;
+                        }
+                        await this.listen();
+                    },
+                    {
+                        startingDelay: 100,
+                        timeMultiple: 2,
+                        maxDelay: 10_000,
+                        numOfAttempts: Infinity,
+                        retry: (err: unknown, attemptNumber: number) => {
+                            logger.error(`Failed to reconnect to PostgreSQL (attempt ${attemptNumber}):`, err);
+                            return this.shouldReconnect;
+                        }
+                    }
+                );
+            } catch (err) {
+                logger.error('Failed to reconnect to PostgreSQL:', err);
+            } finally {
+                this.reconnecting = null;
+            }
+        })();
+        this.reconnecting = reconnecting;
+        return reconnecting;
     }
 
     async disconnect(): Promise<void> {
+        this.shouldReconnect = false;
         if (this.client) {
             try {
-                this.shouldReconnect = false;
-
                 this.client.removeAllListeners('notification');
                 this.client.removeAllListeners('error');
                 this.client.removeAllListeners('end');
+                // pg turns an 'error' with no listener into an uncaught exception
+                this.client.on('error', () => {});
 
                 if (this.connected) {
                     try {
@@ -106,7 +183,8 @@ class PgEventEmitter extends EventEmitter {
                     }
                 }
 
-                await this.knex.client.releaseConnection(this.client);
+                // A raw connection is not from the pool: releasing it would leave it open
+                await this.knex.client.destroyRawConnection(this.client);
 
                 this.connected = false;
                 this.client = null;
@@ -159,12 +237,12 @@ class PgEventEmitter extends EventEmitter {
             throw error;
         }
 
+        const client = this.client;
         try {
-            await this.client.query('SELECT pg_notify($1, $2)', [this.channel, payload]);
+            await client.query('SELECT pg_notify($1, $2)', [this.channel, payload]);
         } catch (err: any) {
             if (err.code === 'ECONNRESET' || err.code === 'ENOTCONN') {
-                this.connected = false;
-                this.reconnect();
+                this.onConnectionLost(client, err);
             }
             throw err;
         }
