@@ -71,14 +71,14 @@ describe('Exec', () => {
 
     describe('function with a stored agent session result', () => {
         const ref = { sessionId: '0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10', recordId: '5c1f7c0e-2f3a-4c59-8f0b-7a6f1d2e3b4c' };
-        const nangoProps = {
+        const propsWithoutRef = {
             ...getNangoProps(),
             scriptType: 'function' as const,
             syncId: undefined,
             syncJobId: undefined,
-            syncConfig: { sync_name: 'inline' } as DBSyncConfig,
-            agentSessionResult: ref
+            syncConfig: { sync_name: 'inline' } as DBSyncConfig
         };
+        const nangoProps = { ...propsWithoutRef, agentSessionResult: ref };
         const code = `
         exports.default = {
             type: 'function',
@@ -124,7 +124,7 @@ describe('Exec', () => {
             const getResult = vi.spyOn(PersistClient.prototype, 'getAgentSessionResult');
 
             const res = await exec({
-                nangoProps: { ...nangoProps, agentSessionResult: undefined },
+                nangoProps: propsWithoutRef,
                 code,
                 codeParams: { kind: 'invoke', input: { emails: ['a'] } }
             });
