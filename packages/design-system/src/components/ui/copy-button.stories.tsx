@@ -1,4 +1,4 @@
-import { COPY_BUTTON_SIZES, CopyButton } from './copy-button';
+import { COPY_BUTTON_ICONS, COPY_BUTTON_SIZES, CopyButton } from './copy-button';
 
 import type { CopyButtonProps } from './copy-button';
 import type { Meta, StoryObj } from '@storybook/react';
@@ -9,7 +9,8 @@ const meta: Meta<typeof CopyButton> = {
     parameters: { layout: 'padded' },
     args: { value: 'nango_sk_live_7f3a9c21', size: 'sm' },
     argTypes: {
-        size: { control: 'select', options: COPY_BUTTON_SIZES }
+        size: { control: 'select', options: COPY_BUTTON_SIZES },
+        icon: { control: 'select', options: COPY_BUTTON_ICONS }
     }
 };
 
@@ -49,4 +50,8 @@ export const Focus: Story = {
 /** Held in the copied state: check icon in icon-success, tooltip reading "Copied". */
 export const Copied: Story = {
     render: () => <Sizes extra={{ copied: true }} />
+};
+
+export const LinkIcon: Story = {
+    render: () => <Sizes extra={{ icon: 'link', label: 'Copy link' }} />
 };

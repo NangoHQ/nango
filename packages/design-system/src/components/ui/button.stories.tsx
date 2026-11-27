@@ -12,7 +12,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger-ghost', 'danger'] as const;
+const VARIANTS = ['primary', 'secondary', 'outline', 'outline-filled', 'ghost', 'danger-ghost', 'danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 
 type Variant = (typeof VARIANTS)[number];
@@ -69,6 +69,15 @@ const matrixStory = (variant: Variant): Story => ({
 export const Primary = matrixStory('primary');
 export const Secondary = matrixStory('secondary');
 export const Outline = matrixStory('outline');
+/** For a button floating over content, such as "Show all N lines" over a collapsed code block. */
+export const OutlineFilled: Story = {
+    name: 'outline-filled — sizes × states',
+    render: () => (
+        <div className="rounded-ds-sm bg-surface-panel-inset p-6">
+            <StateMatrix variant="outline-filled" />
+        </div>
+    )
+};
 export const Ghost = matrixStory('ghost');
 export const DangerGhost = matrixStory('danger-ghost');
 export const Danger = matrixStory('danger');

@@ -29,6 +29,7 @@ import type { Table as ReactTable } from '@tanstack/react-table';
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
     selectedOperationId?: string | null;
+    onLoadedIdsChange?: (ids: string[]) => void;
 }
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
@@ -44,7 +45,7 @@ const parseSyncs = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withO
 const parseAgentSessions = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
 
-export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, selectedOperationId }) => {
+export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, selectedOperationId, onLoadedIdsChange }) => {
     const env = useStore((state) => state.env);
 
     // The virtualizer will need a reference to the scrollable container element
@@ -177,6 +178,10 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation, select
     const flatData = useMemo<OperationRowType[]>(() => {
         return data?.pages?.flatMap((page) => page.data) ?? [];
     }, [data]);
+
+    useEffect(() => {
+        onLoadedIdsChange?.(flatData.map((op) => op.id));
+    }, [flatData, onLoadedIdsChange]);
 
     const [totalHumanReadable, totalOperations] = useMemo(() => {
         if (!data?.pages?.[0]?.pagination.total) {
@@ -437,6 +442,24 @@ const TableBody: React.FC<{
             typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
         overscan: 5
     });
+
+    useEffect(() => {
+        const container = tableContainerRef.current;
+        const index = selectedOperationId ? rows.findIndex((row) => row.original.id === selectedOperationId) : -1;
+        const item = rowVirtualizer.measurementsCache[index];
+        if (!container || !item) {
+            return;
+        }
+        // Row offsets start below the sticky header, which the virtualizer's own scrollToIndex doesn't account for.
+        const headerHeight = container.querySelector('thead')?.offsetHeight ?? 0;
+        if (item.start < container.scrollTop) {
+            container.scrollTop = item.start;
+        } else if (headerHeight + item.end > container.scrollTop + container.clientHeight) {
+            container.scrollTop = headerHeight + item.end - container.clientHeight;
+        }
+        // Only follow a change of selection, not every new page.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedOperationId]);
 
     return (
         <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>

@@ -1,4 +1,4 @@
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Link } from 'lucide-react';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { copyText } from '../../lib/clipboard';
@@ -11,6 +11,10 @@ import type { IconButtonProps } from './button';
 export const COPY_BUTTON_SIZES = ['xs', 'sm'] as const;
 export type CopyButtonSize = (typeof COPY_BUTTON_SIZES)[number];
 
+export const COPY_BUTTON_ICONS = ['copy', 'link'] as const;
+export type CopyButtonIcon = (typeof COPY_BUTTON_ICONS)[number];
+const ICONS = { copy: Copy, link: Link } satisfies Record<CopyButtonIcon, React.ComponentType>;
+
 export const COPY_BUTTON_RESET_MS = 1500;
 
 export interface CopyButtonProps extends Omit<IconButtonProps, 'variant' | 'size' | 'label' | 'children' | 'asChild' | 'loading' | 'onCopy'> {
@@ -20,16 +24,36 @@ export interface CopyButtonProps extends Omit<IconButtonProps, 'variant' | 'size
     size?: CopyButtonSize;
     /** Accessible name and resting tooltip. Make it specific when there are several on a screen, e.g. "Copy secret key". */
     label?: string;
+    /** Shorter resting tooltip, e.g. "Copy" next to an ID. `label` stays the accessible name. Defaults to `label`. */
+    tooltip?: string;
     /** Tooltip text and screen-reader announcement after a successful copy. */
     copiedLabel?: string;
     /** Forces the copied state — for when the copy happens elsewhere (e.g. a keyboard shortcut). Leave unset to let the button manage it. */
     copied?: boolean;
     /** Called after the value has been written to the clipboard. */
     onCopy?: (value: string) => void;
+    /** `link` when the value is a URL to share, e.g. "Copy link". */
+    icon?: CopyButtonIcon;
 }
 
 export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
-    ({ value, size: sizeProp, label = 'Copy', copiedLabel = 'Copied', copied: copiedProp, onCopy, onClick, disabled, className, ...props }, ref) => {
+    (
+        {
+            value,
+            size: sizeProp,
+            label = 'Copy',
+            tooltip = label,
+            copiedLabel = 'Copied',
+            copied: copiedProp,
+            onCopy,
+            onClick,
+            disabled,
+            className,
+            icon: iconName = 'copy',
+            ...props
+        },
+        ref
+    ) => {
         const insideInputGroup = useInsideInputGroup();
         const asInputGroupButton = insideInputGroup && sizeProp === undefined;
         const size = sizeProp ?? 'sm';
@@ -65,7 +89,8 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
             }
         };
 
-        const icon = copied ? <Check className="text-icon-success" /> : <Copy />;
+        const RestingIcon = ICONS[iconName];
+        const icon = copied ? <Check className="text-icon-success" /> : <RestingIcon />;
         const buttonProps = {
             ref,
             label,
@@ -89,7 +114,7 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
                             </IconButton>
                         )}
                     </TooltipTrigger>
-                    <TooltipContent>{copied ? copiedLabel : label}</TooltipContent>
+                    <TooltipContent>{copied ? copiedLabel : tooltip}</TooltipContent>
                 </Tooltip>
                 {/* Always mounted so screen readers register the region before its text changes. Kept outside the button: aria-label overrides its content. */}
                 <span role="status" aria-live="polite" className="sr-only">

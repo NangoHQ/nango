@@ -16,6 +16,7 @@ export {
 } from './components/ui/alert-dialog';
 export { Alert, AlertActions, AlertButton, type AlertButtonProps, AlertDescription, type AlertProps, AlertTitle, alertVariants } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
+export { StatusIndicator, type StatusIndicatorProps, statusIndicatorVariants } from './components/ui/status-indicator';
 export {
     Button,
     type ButtonProps,
@@ -27,7 +28,15 @@ export {
     ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
-export { COPY_BUTTON_RESET_MS, COPY_BUTTON_SIZES, CopyButton, type CopyButtonProps, type CopyButtonSize } from './components/ui/copy-button';
+export {
+    COPY_BUTTON_ICONS,
+    COPY_BUTTON_RESET_MS,
+    COPY_BUTTON_SIZES,
+    CopyButton,
+    type CopyButtonIcon,
+    type CopyButtonProps,
+    type CopyButtonSize
+} from './components/ui/copy-button';
 export {
     SplitButton,
     SplitButtonAction,

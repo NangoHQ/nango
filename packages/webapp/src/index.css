@@ -314,6 +314,6 @@
     background-color: var(--surface-code) !important;
 }
 
-.muted-code .mantine-Prism-code {
-    background-color: var(--surface-panel-muted) !important;
+.muted-code {
+    --surface-code: var(--surface-panel-muted);
 }

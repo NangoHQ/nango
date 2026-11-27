@@ -1,4 +1,4 @@
-import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ChevronDown, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Badge, Button, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
@@ -360,9 +360,6 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
 };
 
 const COLLAPSED_LINES = 20;
-const COLLAPSED_LENGTH = 2_000;
-// Prism highlights the whole block, so a large response freezes the page while it renders.
-const MAX_HIGHLIGHTED_LENGTH = 50_000;
 
 const Value: React.FC<{ value: unknown }> = ({ value }) => {
     if (typeof value === 'boolean') {
@@ -372,7 +369,7 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
         if (Object.keys(value).length === 0) {
             return <span className="text-body-small-regular text-text-muted">None</span>;
         }
-        return <CollapsibleCode language="json" code={JSON.stringify(value, null, 2)} />;
+        return <CodeBlock bare language="json" code={JSON.stringify(value, null, 2)} constrainHeight={false} collapsedLines={COLLAPSED_LINES} />;
     }
     if (typeof value === 'string' && /\s/.test(value)) {
         return <p className="whitespace-pre-wrap wrap-anywhere text-body-small-regular text-text-default">{value}</p>;
@@ -381,37 +378,6 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
         <code className="box-decoration-clone whitespace-pre-wrap break-all rounded-ds-xs border border-border-muted bg-surface-panel-muted px-1 py-0.5 font-mono text-[0.9em] text-text-default">
             {String(value)}
         </code>
-    );
-};
-
-const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapLines?: boolean }> = ({ code, language, wrapLines = false }) => {
-    const [expanded, setExpanded] = useState(false);
-    const lines = code.split('\n');
-    const long = lines.length > COLLAPSED_LINES || code.length > COLLAPSED_LENGTH;
-    // Highlighting runs over every line it is given, so a collapsed block only gets the lines it shows.
-    const collapsed = lines.slice(0, COLLAPSED_LINES).join('\n');
-    const shown = long && !expanded ? (collapsed.length > COLLAPSED_LENGTH ? `${collapsed.slice(0, COLLAPSED_LENGTH)}…` : collapsed) : code;
-
-    return (
-        <div className="flex flex-col items-start gap-2">
-            <div className="w-full">
-                <CodeBlock
-                    bare
-                    language={language}
-                    code={shown}
-                    copyValue={code}
-                    constrainHeight={false}
-                    wrapLines={wrapLines}
-                    syntaxHighlight={shown.length <= MAX_HIGHLIGHTED_LENGTH}
-                />
-            </div>
-            {long && (
-                <Button size="xs" variant="outline" onClick={() => setExpanded((open) => !open)}>
-                    {expanded ? <ChevronUp /> : <ChevronDown />}
-                    {expanded ? 'Show less' : 'Show more'}
-                </Button>
-            )}
-        </div>
     );
 };
 
@@ -428,7 +394,7 @@ const Section: React.FC<{ title: string; value: unknown; view: PayloadView; acti
                 <div className="col-span-2 grid grid-cols-subgrid">
                     {rows.length === 0 && <div className="col-span-2 py-2 text-body-small-regular text-text-secondary">Empty</div>}
                     {rows.map(([key, entry]) => (
-                        <div key={key} className="col-span-2 grid grid-cols-subgrid border-b border-border-muted py-2 last:border-b-0">
+                        <div key={key} className="col-span-2 grid grid-cols-subgrid py-2">
                             <span className="text-body-small-regular text-text-muted">{key}</span>
                             <div className="min-w-0 text-body-small-regular">
                                 <Value value={entry} />
@@ -438,10 +404,13 @@ const Section: React.FC<{ title: string; value: unknown; view: PayloadView; acti
                 </div>
             ) : (
                 <div className="col-span-2 min-w-0">
-                    <CollapsibleCode
+                    <CodeBlock
+                        bare
                         language={typeof value === 'string' ? 'bash' : 'json'}
                         code={typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2)}
                         wrapLines={typeof value === 'string'}
+                        constrainHeight={false}
+                        collapsedLines={COLLAPSED_LINES}
                     />
                 </div>
             )}

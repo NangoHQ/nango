@@ -53,6 +53,15 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-default'
                 ],
+                // The hover/pressed tokens are translucent: as a gradient they layer over the surface colour instead of replacing it.
+                'outline-filled': [
+                    'bg-surface-raised text-text-strong border-border-strong',
+                    'hover:bg-linear-to-b hover:from-interactive-outline-hover hover:to-interactive-outline-hover hover:border-border-stronger',
+                    'active:bg-linear-to-b active:from-interactive-outline-active active:to-interactive-outline-active',
+                    'disabled:bg-interactive-disabled disabled:bg-none disabled:text-text-disabled disabled:border-transparent',
+                    'aria-disabled:bg-interactive-disabled aria-disabled:bg-none aria-disabled:text-text-disabled aria-disabled:border-transparent',
+                    'focus-visible:shadow-focus-outline-default'
+                ],
                 // interactive/ghost → --interactive-ghost → bg-interactive-ghost
                 // text/secondary → --text-secondary → text-text-secondary
                 ghost: [

@@ -2,6 +2,7 @@ import { Prism } from '@mantine/prism';
 import { Calendar, Clock } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { getTokenPrismTheme } from '@/components/ui/prismTheme';
 import { Tag } from '@/components/ui/Tag';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
@@ -96,6 +97,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         language="json"
                         className="transparent-code"
                         colorScheme={darkMode ? 'dark' : 'light'}
+                        getPrismTheme={getTokenPrismTheme}
                         styles={() => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } };
                         }}
@@ -114,6 +116,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                             language="json"
                             className="transparent-code"
                             colorScheme={darkMode ? 'dark' : 'light'}
+                            getPrismTheme={getTokenPrismTheme}
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}

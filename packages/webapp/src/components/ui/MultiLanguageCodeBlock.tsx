@@ -6,6 +6,7 @@ import { Button, CopyButton } from '@nangohq/design-system';
 
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
+import { getTokenPrismTheme } from './prismTheme';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';
 
@@ -99,6 +100,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                     className="w-full min-w-0"
                     language={snippets[selectedSnippetIndex].language}
                     colorScheme={darkMode ? 'dark' : 'light'}
+                    getPrismTheme={getTokenPrismTheme}
                     noCopy={true}
                     highlightLines={Object.fromEntries(snippets[selectedSnippetIndex].highlightedLines?.map((line) => [line, highlight]) ?? [])}
                 >

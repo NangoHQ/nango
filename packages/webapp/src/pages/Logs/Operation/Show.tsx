@@ -1,44 +1,139 @@
-import { Prism } from '@mantine/prism';
-import { Calendar, Clock, ExternalLink } from 'lucide-react';
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Check, Copy, Maximize2, Minimize2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useInterval } from 'react-use';
 
-import { Alert, AlertDescription, CopyButton } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, COPY_BUTTON_RESET_MS, copyText } from '@nangohq/design-system';
 
+import { CodeBlock, COLLAPSED_MAX_LENGTH } from '@/components/ui/CodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
-import { OperationTag } from '../components/OperationTag';
-import { ProviderTag } from '../components/ProviderTag';
-import { StatusTag } from '../components/StatusTag';
+import { getRunTime } from '../../../utils/utils';
+import { OperationProperties, operationTypeLabel } from '../components/OperationProperties';
+import { OperationStatus } from '../components/OperationStatus';
 import { Logs } from './components/Logs';
 
-import type { ApiError } from '@nangohq/types';
+import type { ApiError, OperationRow } from '@nangohq/types';
 
-export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
+const PAYLOAD_COLLAPSED_LINES = 9;
+
+const PanelHeader: React.FC<{ actions: React.ReactNode; children?: React.ReactNode }> = ({ actions, children }) => (
+    <header className="sticky top-0 z-20 flex items-start gap-3 border-b border-border-muted bg-surface-panel px-6 py-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">{children}</div>
+        <div className="flex shrink-0 items-center gap-0.5">{actions}</div>
+    </header>
+);
+
+const OperationHeading: React.FC<{ operation: OperationRow }> = ({ operation }) => {
+    const { type, action } = operationTypeLabel(operation);
+    const duration = operation.endedAt && operation.startedAt ? getRunTime(operation.startedAt, operation.endedAt) : null;
+
+    return (
+        <>
+            <div className="flex type-text-regular-sm text-text-default">
+                <OperationStatus state={operation.state} />
+            </div>
+            <h2 className="flex min-w-0 items-baseline gap-1.5 type-text-medium-md text-text-strong">
+                <span className="shrink-0">{type}</span>
+                <span className="shrink-0 text-text-secondary">{action}</span>
+                {operation.syncConfigName && (
+                    <>
+                        <span aria-hidden className="text-text-muted">
+                            ·
+                        </span>
+                        <span className="truncate type-code-medium-md">{operation.syncConfigName}</span>
+                    </>
+                )}
+            </h2>
+            <div className="flex items-center gap-1.5 type-code-regular-sm text-text-secondary">
+                <span>{format(new Date(operation.createdAt), 'MMM d, yyyy, HH:mm:ss.SSS')}</span>
+                {duration && (
+                    <>
+                        <span aria-hidden>·</span>
+                        <span>{duration}</span>
+                    </>
+                )}
+            </div>
+        </>
+    );
+};
+
+const CopyTextButton: React.FC<{ value: string; label: string }> = ({ value, label }) => {
+    const [copied, setCopied] = useState(false);
+    const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    useEffect(() => () => clearTimeout(timer.current), []);
+
+    const onClick = async () => {
+        try {
+            await copyText(value);
+        } catch {
+            return;
+        }
+        setCopied(true);
+        clearTimeout(timer.current);
+        timer.current = setTimeout(() => setCopied(false), COPY_BUTTON_RESET_MS);
+    };
+
+    return (
+        <>
+            <Button variant="ghost" size="xs" aria-label={label} onClick={() => void onClick()}>
+                {copied ? <Check /> : <Copy />}
+                {copied ? 'Copied' : 'Copy'}
+            </Button>
+            <span role="status" aria-live="polite" className="sr-only">
+                {copied ? 'Copied' : ''}
+            </span>
+        </>
+    );
+};
+
+const Payload: React.FC<{ payload: Record<string, unknown> | null }> = ({ payload }) => {
+    const [expanded, setExpanded] = useState(false);
+    const json = useMemo(() => (payload ? JSON.stringify(payload, null, 2) : ''), [payload]);
+    const long = useMemo(() => json.length > COLLAPSED_MAX_LENGTH || json.split('\n').length > PAYLOAD_COLLAPSED_LINES, [json]);
+
+    return (
+        <section className="flex flex-col gap-2">
+            <div className="flex min-h-7 items-center justify-between gap-2">
+                <h3 className="type-label-md text-text-strong">Payload</h3>
+                {payload && (
+                    <div className="flex items-center gap-1">
+                        <CopyTextButton value={json} label="Copy payload" />
+                        {long && (
+                            <Button variant="ghost" size="xs" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+                                {expanded ? <Minimize2 /> : <Maximize2 />}
+                                {expanded ? 'Collapse' : 'Expand'}
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </div>
+            {payload ? (
+                <CodeBlock
+                    bare
+                    copyable={false}
+                    language="json"
+                    code={json}
+                    wrapLines
+                    constrainHeight={false}
+                    collapsedLines={PAYLOAD_COLLAPSED_LINES}
+                    expanded={expanded}
+                    onExpandedChange={setExpanded}
+                />
+            ) : (
+                <p className="type-text-regular-sm text-text-muted">No payload.</p>
+            )}
+        </section>
+    );
+};
+
+export const ShowOperation: React.FC<{ operationId: string; actions: React.ReactNode }> = ({ operationId, actions }) => {
     const env = useStore((state) => state.env);
     const { operation, loading, error, trigger } = useGetOperation(env, { operationId });
     const errorCode = error instanceof APIError ? (error.json as ApiError<string> | undefined)?.error?.code : undefined;
     const isNotFound = errorCode === 'not_found' || errorCode === 'invalid_uri_params';
-
-    const duration = useMemo<string>(() => {
-        if (!operation) {
-            return '';
-        }
-        if (!operation.endedAt || !operation.startedAt) {
-            return 'n/a';
-        }
-
-        return getRunTime(new Date(operation.startedAt).toISOString(), new Date(operation.endedAt).toISOString());
-    }, [operation]);
-
-    const createdAt = useMemo(() => {
-        return operation?.createdAt ? formatDateToLogFormat(operation?.createdAt) : 'n/a';
-    }, [operation?.createdAt]);
 
     const isLive = useMemo(() => {
         if (isNotFound) {
@@ -48,11 +143,8 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return !operation || !operation.endedAt || new Date(operation.endedAt).getTime() > Date.now() - 160_000;
     }, [operation, isNotFound]);
 
-    const sessionId = operation?.actor?.kind === 'session' ? operation.actor.id : null;
-    const isToolCall = operation?.operation.type === 'action' || operation?.operation.type === 'tool';
-
     const payload = useMemo(() => {
-        if (!operation?.meta && !operation?.request && !operation?.response) {
+        if (!operation?.meta && !operation?.request && !operation?.response && !operation?.error) {
             return null;
         }
 
@@ -65,12 +157,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         }
         if (operation.error) {
             pl.error = { message: operation.error.message };
-            if (operation.error.payload) {
+            if (operation.error.payload !== undefined) {
                 pl.error.payload = operation.error.payload;
             }
         }
         return pl;
-    }, [operation?.meta, operation?.request, operation?.response]);
+    }, [operation?.meta, operation?.request, operation?.response, operation?.error]);
 
     useInterval(
         () => {
@@ -80,159 +172,61 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         isLive ? 5000 : null
     );
 
-    const darkMode = useThemeStore(darkModeSelector);
-
     if (loading) {
         return (
-            <div className="py-6 px-6 flex flex-col gap-9">
-                <h3 className="text-xl font-semibold text-text-strong flex gap-4 items-center">Operation Details</h3>
-                <Skeleton className="w-[250px]" />
-                <Skeleton className="w-[250px]" />
-                <div className="mt-4">
-                    <h4 className="font-semibold text-sm mb-2">Payload</h4>
+            <>
+                <PanelHeader actions={actions}>
+                    <Skeleton className="w-[80px]" />
+                    <Skeleton className="w-[220px]" />
+                    <Skeleton className="w-[180px]" />
+                </PanelHeader>
+                <div className="flex flex-col gap-3 px-6 py-5">
+                    <Skeleton className="w-[250px]" />
+                    <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
                 </div>
-                <div className="mt-4">
-                    <h4 className="font-semibold text-sm mb-2">Logs</h4>
-                    <Skeleton className="w-[250px]" />
-                </div>
-            </div>
+            </>
         );
     }
 
     if (isNotFound) {
         return (
-            <div className="py-8 px-6 flex flex-col gap-2">
-                <h3 className="text-xl font-semibold text-text-strong">Operation not found</h3>
-                <p className="text-s text-text-muted">
+            <>
+                <PanelHeader actions={actions}>
+                    <h2 className="type-heading-sm text-text-strong">Operation not found</h2>
+                </PanelHeader>
+                <p className="px-6 py-5 type-text-regular-sm text-text-muted">
                     This operation doesn&apos;t exist or has expired. Logs are automatically cleared after the retention period.
                 </p>
-            </div>
+            </>
         );
     }
 
     if (error || !operation) {
         return (
-            <div className="py-8 px-6 flex flex-col gap-5">
-                <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
-                <Alert variant="danger">
-                    <AlertDescription>An error occurred</AlertDescription>
-                </Alert>
-            </div>
+            <>
+                <PanelHeader actions={actions}>
+                    <h2 className="type-heading-sm text-text-strong">Operation details</h2>
+                </PanelHeader>
+                <div className="px-6 py-5">
+                    <Alert variant="danger">
+                        <AlertDescription>An error occurred</AlertDescription>
+                    </Alert>
+                </div>
+            </>
         );
     }
 
     return (
-        <div className="py-8 px-6 flex flex-col gap-5 h-full">
-            <header className="flex gap-2 flex-col border-b border-b-border-muted pb-5">
-                <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
-                <div className="flex gap-3 items-center">
-                    <div className="flex">
-                        <StatusTag state={operation.state} />
-                    </div>
-                    <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
-                    <div className="flex gap-2 items-center">
-                        <Clock strokeWidth={1} size={18} />
-                        <div className="text-text-muted text-s pt-px font-code">{duration}</div>
-                    </div>
-                    <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
-                    <div className="flex gap-2 items-center">
-                        <Calendar strokeWidth={1} size={18} />
-                        <div className="text-text-muted text-s pt-px font-code">{createdAt}</div>
-                    </div>
-                </div>
-            </header>
-
-            <div className="flex gap-5 flex-wrap">
-                <div className="flex gap-2 items-center w-[30%]">
-                    <div className="font-semibold text-sm">Type</div>
-                    <div className="text-text-muted text-xs pt-px">
-                        <OperationTag message={operation.message} operation={operation.operation} actor={operation.actor} />
-                    </div>
-                </div>
+        <>
+            <PanelHeader actions={actions}>
+                <OperationHeading operation={operation} />
+            </PanelHeader>
+            <div className="flex flex-col gap-6 px-6 py-5">
+                <OperationProperties env={env} operation={operation} />
+                <Payload payload={payload} />
+                <Logs operation={operation} operationId={operationId} isLive={isLive} />
             </div>
-            <div className="flex gap-3 flex-wrap items-center">
-                <div className="flex gap-2 items-center max-w-[30%]">
-                    <div className="font-semibold text-sm">Integration</div>
-                    <div className="text-text-muted text-s font-code truncate">
-                        {operation.integrationName ? (
-                            <Link
-                                to={`/${env}/integrations/${operation.integrationName}`}
-                                target="_blank"
-                                className="flex gap-2.5 items-center hover:text-text-strong"
-                            >
-                                <ProviderTag msg={operation} />
-                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
-                            </Link>
-                        ) : (
-                            'n/a'
-                        )}
-                    </div>
-                </div>
-                <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
-                <div className="flex gap-2 items-center max-w-[30%]">
-                    <div className="font-semibold text-sm">Connection</div>
-                    <div className="text-text-muted text-s font-code truncate">
-                        {operation.connectionName ? (
-                            <Link
-                                to={`/${env}/connections/${operation.integrationName}/${operation.connectionName}`}
-                                target="_blank"
-                                className="flex gap-2.5 items-center hover:text-text-strong"
-                            >
-                                <div className="truncate">{operation.connectionName}</div>
-                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
-                            </Link>
-                        ) : (
-                            'n/a'
-                        )}
-                    </div>
-                </div>
-                <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
-                <div className="flex gap-2 items-center max-w-[30%]">
-                    <div className="font-semibold text-sm">{isToolCall ? 'Tool' : 'Script'}</div>
-                    <div className="text-text-muted text-s pt-px truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
-                </div>
-                {sessionId && (
-                    <>
-                        <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
-                        <div className="flex gap-2 items-center max-w-[30%]">
-                            <div className="font-semibold text-sm">Session</div>
-                            <div className="flex gap-1 items-center text-text-muted text-s font-code truncate">
-                                <div className="truncate">{sessionId}</div>
-                                <CopyButton value={sessionId} size="sm" inline />
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
-            <div className="">
-                <h4 className="font-semibold text-sm mb-2">Payload</h4>
-                {payload ? (
-                    <div
-                        className="text-text-muted text-sm bg-surface-code border border-border-muted rounded py-2 resize-y overflow-y-auto overflow-x-hidden"
-                        style={{
-                            minHeight: '100px',
-                            height: '30vh',
-                            maxHeight: '60vh',
-                            resize: 'vertical'
-                        }}
-                    >
-                        <Prism
-                            language="json"
-                            className="transparent-code"
-                            colorScheme={darkMode ? 'dark' : 'light'}
-                            styles={() => {
-                                return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
-                            }}
-                        >
-                            {JSON.stringify(payload, null, 2)}
-                        </Prism>
-                    </div>
-                ) : (
-                    <div className="text-text-muted text-xs bg-surface-code border border-border-muted rounded py-4 px-4">No payload.</div>
-                )}
-            </div>
-            <Logs operation={operation} operationId={operationId} isLive={isLive} />
-        </div>
+        </>
     );
 };
