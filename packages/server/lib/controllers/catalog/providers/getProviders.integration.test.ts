@@ -55,31 +55,31 @@ describe(`GET ${route}`, () => {
             docs_connect: null,
             setup_guide_url: expect.any(String),
             default_scopes: [],
-            instant_setup: expect.toBeOneOf(['nango-managed-app', null]),
+            setup: expect.toBeOneOf(['nango-managed-app', 'required']),
             function_counts: { tool: googleCalendarCounts?.tools ?? 0, sync: googleCalendarCounts?.syncs ?? 0 }
         });
     });
 
-    it('reports a Nango-managed app when shared credentials exist', async () => {
+    it('reports a Nango-managed app when shared credentials exist, and required setup otherwise', async () => {
         const before = await api.fetch(route, { method: 'GET', query: { search: 'asana', limit: 1 } });
         isSuccess(before.json);
-        expect(before.json.data[0]).toMatchObject({ name: 'asana', instant_setup: null });
+        expect(before.json.data[0]).toMatchObject({ name: 'asana', setup: 'required' });
 
         const sharedCredentials = await seeders.createSharedCredentialsSeed('asana');
         try {
             const after = await api.fetch(route, { method: 'GET', query: { search: 'asana', limit: 1 } });
             isSuccess(after.json);
-            expect(after.json.data[0]).toMatchObject({ name: 'asana', instant_setup: 'nango-managed-app' });
+            expect(after.json.data[0]).toMatchObject({ name: 'asana', setup: 'nango-managed-app' });
         } finally {
             await db.knex('providers_shared_credentials').where({ id: sharedCredentials.id }).delete();
         }
     });
 
-    it('reports no developer app for an API key provider', async () => {
+    it('reports no setup for an API key provider', async () => {
         const res = await api.fetch(route, { method: 'GET', query: { search: 'posthog', limit: 1 } });
 
         isSuccess(res.json);
-        expect(res.json.data[0]).toMatchObject({ name: 'posthog', instant_setup: 'no-dev-app' });
+        expect(res.json.data[0]).toMatchObject({ name: 'posthog', setup: 'none' });
     });
 
     it('paginates', async () => {

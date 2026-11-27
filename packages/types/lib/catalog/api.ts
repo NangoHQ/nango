@@ -1,6 +1,7 @@
 import type { ApiEndpoint } from '../api.js';
 import type { AuthModeType } from '../auth/api.js';
-import type { ProviderInstantSetup } from '../providers/api.js';
+
+export type ApiCatalogProviderSetup = 'nango-managed-app' | 'none' | 'required';
 
 export interface ApiCatalogProvider {
     name: string;
@@ -12,7 +13,7 @@ export interface ApiCatalogProvider {
     docs_connect: string | null;
     setup_guide_url: string | null;
     default_scopes: string[];
-    instant_setup: ProviderInstantSetup;
+    setup: ApiCatalogProviderSetup;
     function_counts: { tool: number; sync: number };
 }
 

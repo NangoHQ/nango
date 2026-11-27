@@ -4589,7 +4589,7 @@ components:
                 - docs_connect
                 - setup_guide_url
                 - default_scopes
-                - instant_setup
+                - setup
                 - function_counts
             properties:
                 name:
@@ -4619,14 +4619,14 @@ components:
                     type: array
                     items:
                         type: string
-                instant_setup:
-                    type: [string, 'null']
-                    enum: ['nango-managed-app', 'no-dev-app', null]
+                setup:
+                    type: string
+                    enum: ['nango-managed-app', 'none', 'required']
                     description: |
-                        Whether you can create the integration without extra setup.
-                        - `nango-managed-app`: Nango's managed OAuth app is available, so you don't need to register your own. Only on Nango Cloud, where Nango hosts managed apps.
-                        - `no-dev-app`: the API doesn't use a developer app. End users authorize or enter their credentials in Connect.
-                        - `null`: you need to register your own OAuth app or fill in required integration settings first.
+                        What you need to do before you create the integration.
+                        - `nango-managed-app`: nothing to register. Create the integration with Nango's managed OAuth app. Only on Nango Cloud, where Nango hosts managed apps.
+                        - `none`: nothing to set up. End users authorize or enter their own credentials in Connect.
+                        - `required`: register your own OAuth app or fill in required integration settings first. See `setup_guide_url` and `docs`.
                 function_counts:
                     type: object
                     required:
