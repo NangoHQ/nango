@@ -4799,7 +4799,10 @@ components:
                 type:
                     type: string
                     enum: [action, sync, tool]
-                    description: The function type. `action` is deprecated; call actions as tools.
+                    description: >
+                        The function type. Tools and actions are available on an integration as soon as you create it;
+                        call actions as tools. Syncs run only after you deploy them with `POST /functions/deployments`
+                        (`type: template`). `action` is deprecated.
                 description:
                     type: [string, 'null']
                 meta:
