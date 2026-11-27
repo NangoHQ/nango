@@ -57,9 +57,7 @@ export const TypeCell: React.FC<{ operation: SearchOperationsData }> = ({ operat
 };
 
 const Logo: React.FC<{ operation: SearchOperationsData }> = ({ operation }) =>
-    operation.providerName ? (
-        <IntegrationLogo provider={operation.providerName} className="-m-0.75 size-5.5 shrink-0 border-transparent bg-transparent p-0" />
-    ) : null;
+    operation.providerName ? <IntegrationLogo provider={operation.providerName} className="size-5 shrink-0 border-transparent bg-transparent p-0" /> : null;
 
 export const IntegrationCell: React.FC<{ operation: SearchOperationsData }> = ({ operation }) => {
     if (!operation.integrationName) {

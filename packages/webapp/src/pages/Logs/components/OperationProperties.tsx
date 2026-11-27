@@ -121,8 +121,7 @@ export const OperationProperties: React.FC<{ env: string; operation: OperationRo
                     copy={{ value: integrationName, label: 'Copy integration key' }}
                     filter={{ label: "Show only this integration's operations", kind: 'integration', onClick: () => void setIntegrations([integrationName]) }}
                 >
-                    {/* Provider logo SVGs pad their artwork inside the canvas. */}
-                    {providerName && <IntegrationLogo provider={providerName} className="-m-0.75 size-5.5 shrink-0 p-0 bg-transparent border-transparent" />}
+                    {providerName && <IntegrationLogo provider={providerName} className="size-4 shrink-0 p-0 bg-transparent border-transparent" />}
                     <Code>{integrationName}</Code>
                 </Property>
             )}
