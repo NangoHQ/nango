@@ -20,7 +20,8 @@ const validation = z
         levels: z.array(z.enum(modelMessages.logLevels)).min(1).max(4).optional(),
         cursorBefore: z.string().or(z.null()).optional(),
         cursorAfter: z.string().or(z.null()).optional(),
-        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional()
+        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
+        order: z.enum(['asc', 'desc']).optional()
     })
     .strict();
 
@@ -64,15 +65,17 @@ export const searchMessages = asyncWrapperWithEnvironment<SearchMessages>(async 
 
     const body: SearchMessages['Body'] = val.data;
     const filters = { parentId: body.operationId, states: body.states, search: body.search, period: body.period };
+    const goesBackInTime = body.order === 'asc' ? Boolean(body.cursorBefore) : Boolean(body.cursorAfter);
     const [rawOps, levelCounts] = await Promise.all([
         modelMessages.listMessages({
             ...filters,
             limit: body.limit!,
             levels: body.levels,
             cursorBefore: body.cursorBefore,
-            cursorAfter: body.cursorAfter
+            cursorAfter: body.cursorAfter,
+            order: body.order
         }),
-        body.cursorAfter ? undefined : modelMessages.countMessagesByLevel(filters)
+        goesBackInTime ? undefined : modelMessages.countMessagesByLevel(filters)
     ]);
 
     res.status(200).send({

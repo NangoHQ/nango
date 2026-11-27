@@ -66,11 +66,12 @@ export type SearchMessages = ApiEndpoint<{
         cursorBefore?: string | null | undefined;
         cursorAfter?: string | null | undefined;
         period?: SearchPeriod | undefined;
+        order?: 'asc' | 'desc' | undefined;
     };
     Success: {
         data: MessageRow[];
         pagination: { total: number; cursorBefore: string | null; cursorAfter: string | null };
-        // Ignores `levels` but follows every other filter. Omitted on `cursorAfter` pages.
+        // Ignores `levels` but follows every other filter. Omitted on pages that go back in time.
         levelCounts?: Record<LogLevel, number> | undefined;
     };
 }>;

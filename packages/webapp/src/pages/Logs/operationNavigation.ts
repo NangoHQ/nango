@@ -17,6 +17,8 @@ const KEYS: Record<string, NavigationDirection> = {
 
 // Menus, listboxes and dialogs use the arrow keys for their own items.
 const KEY_OWNERS = 'input, textarea, select, [contenteditable="true"], [role="menu"], [role="listbox"], [role="dialog"], [role="combobox"]';
+// The log list scrolls with the arrow keys, but leaves j and k to operation navigation.
+const ARROW_KEY_OWNERS = '[data-owns-arrow-keys]';
 
 export function navigationDirection(
     event: Pick<KeyboardEvent, 'key' | 'target' | 'defaultPrevented' | 'metaKey' | 'ctrlKey' | 'altKey' | 'shiftKey'>
@@ -28,7 +30,7 @@ export function navigationDirection(
     if (!direction) {
         return null;
     }
-    if (event.target instanceof Element && event.target.closest(KEY_OWNERS)) {
+    if (event.target instanceof Element && event.target.closest(event.key.startsWith('Arrow') ? `${KEY_OWNERS}, ${ARROW_KEY_OWNERS}` : KEY_OWNERS)) {
         return null;
     }
     return direction;

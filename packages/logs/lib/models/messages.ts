@@ -76,6 +76,7 @@ export async function listMessages(
         levels?: LogLevel[] | undefined;
         cursorBefore?: string | null | undefined;
         cursorAfter?: string | null | undefined;
+        order?: 'asc' | 'desc' | undefined;
     }
 ): Promise<ListMessages> {
     const query = buildMessagesQuery(opts);
@@ -84,13 +85,15 @@ export async function listMessages(
     }
 
     // Sort and cursor
+    const order = opts.order ?? 'desc';
     let cursor: any[] | undefined;
-    let sort: estypes.Sort = [{ createdAt: 'desc' }, { id: 'desc' }];
+    let sort: estypes.Sort = [{ createdAt: order }, { id: order }];
     if (opts.cursorBefore) {
         // search_before does not exist so we reverse the sort
         // https://github.com/elastic/elasticsearch/issues/29449
         cursor = parseCursor(opts.cursorBefore);
-        sort = [{ createdAt: 'asc' }, { id: 'asc' }];
+        const reversed = order === 'desc' ? 'asc' : 'desc';
+        sort = [{ createdAt: reversed }, { id: reversed }];
     } else if (opts.cursorAfter) {
         cursor = opts.cursorAfter ? parseCursor(opts.cursorAfter) : undefined;
     }
@@ -123,11 +126,19 @@ export async function listMessages(
         };
     }
 
+    let cursorAfter: string | null = null;
+    if (totalPage > 0) {
+        cursorAfter = createCursor(hits.hits[hits.hits.length - 1]!);
+    } else if (order === 'asc') {
+        // Oldest-first live polling pages forward from the last line. Other callers stop paging on null.
+        cursorAfter = opts.cursorAfter ?? null;
+    }
+
     return {
         count: total,
         items,
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
-        cursorAfter: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursorAfter
     };
 }
 

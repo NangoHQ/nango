@@ -1,27 +1,26 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowLeft, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useDebounce, useInterval, useMount } from 'react-use';
+import { useDebounce, useInterval } from 'react-use';
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Spinner } from '@/components/ui/Spinner';
-import { useStore } from '../../../../store';
-import { APIError, apiFetch } from '../../../../utils/api';
-import { calculateTableSizing } from '../../../../utils/table';
-import { formatQuantity } from '../../../../utils/utils';
-import { columns, defaultLimit } from '../constants';
-import { ShowMessage } from '../Message/Show';
-import { LogRow } from './LogRow';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useStore } from '@/store';
+import { APIError, apiFetch } from '@/utils/api';
+import { findScrollParent } from '@/utils/scroll';
+import { cn, formatQuantity } from '@/utils/utils';
+import { LOG_GRID, LogRow } from './LogRow';
 
 import type { LogLevel, MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
-import type { Table as ReactTable } from '@tanstack/react-table';
 
+const PAGE_SIZE = 50;
+const ROW_HEIGHT_PX = 33;
+
+type Order = NonNullable<SearchMessages['Body']['order']>;
 type LevelFilter = 'all' | LogLevel;
 const levelOptions: { value: LevelFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -38,37 +37,57 @@ function levelCount(counts: Record<LogLevel, number>, level: LevelFilter): numbe
     return counts[level];
 }
 
+function useScrollParent(listRef: React.RefObject<HTMLDivElement | null>) {
+    const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
+    const [offsetTop, setOffsetTop] = useState(0);
+
+    useLayoutEffect(() => {
+        const list = listRef.current;
+        const parent = list ? findScrollParent(list) : null;
+        setScrollParent(parent);
+        if (!list || !parent) {
+            return;
+        }
+        const measure = () => setOffsetTop(list.getBoundingClientRect().top - parent.getBoundingClientRect().top + parent.scrollTop);
+        measure();
+        // Content above the list (the payload) can grow and push the list down.
+        const observer = new ResizeObserver(measure);
+        for (const child of Array.from(parent.children)) {
+            observer.observe(child);
+        }
+        return () => observer.disconnect();
+    }, [listRef]);
+
+    return { scrollParent, offsetTop };
+}
+
 export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLive: boolean }> = ({ operation, operationId, isLive }) => {
     const env = useStore((state) => state.env);
-    const [message, setMessage] = useState<MessageRow>();
-
-    // The virtualizer will need a reference to the scrollable container element
-    const tableContainerRef = useRef<HTMLDivElement>(null);
-
-    // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
     const [level, setLevel] = useState<LevelFilter>('all');
+    const [order, setOrder] = useState<Order>('asc');
+    const [openId, setOpenId] = useState<string | null>(null);
 
-    // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
-    const [isScrollTop, setIsScrollTop] = useState(false);
+    useDebounce(() => setDebouncedSearch(search), 250, [search]);
 
-    const { data, isLoading, isFetching, fetchNextPage, fetchPreviousPage } = useInfiniteQuery<
+    const { data, isLoading, isFetching, isFetchingNextPage, fetchNextPage, fetchPreviousPage } = useInfiniteQuery<
         SearchMessages['Success'],
         SearchMessages['Errors'],
         { pages: SearchMessages['Success'][] },
         unknown[],
         { before: string | null } | { after: string | null } | null
     >({
-        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, level],
+        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, level, order],
         queryFn: async ({ pageParam, signal }) => {
             const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({
                     operationId,
-                    limit: defaultLimit,
+                    limit: PAGE_SIZE,
                     search: debouncedSearch,
                     levels: level === 'all' ? undefined : [level],
+                    order,
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
                     cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
                 } satisfies SearchMessages['Body']),
@@ -83,152 +102,158 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         initialPageParam: null,
         staleTime: isLive ? 0 : 10_000,
         gcTime: isLive ? 0 : 10_000,
-
-        getNextPageParam: (lastGroup) => {
-            return { after: lastGroup.pagination.cursorAfter };
-        },
-        getPreviousPageParam: (firstPage) => {
-            return { before: firstPage.pagination.cursorBefore };
-        },
-
-        // Do not changes those boolean they will refresh every pages ever loaded
+        getNextPageParam: (lastPage) => ({ after: lastPage.pagination.cursorAfter }),
+        getPreviousPageParam: (firstPage) => ({ before: firstPage.pagination.cursorBefore }),
+        // Refetching would reload every page ever loaded
         refetchOnWindowFocus: false,
         refetchOnMount: false
     });
 
-    const flatData = useMemo<MessageRow[]>(() => {
-        return data?.pages?.flatMap((page) => page.data) ?? [];
-    }, [data]);
+    const messages = useMemo<MessageRow[]>(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+
+    // Only the page at the newest edge carries the current total and counts.
+    const newestPage = order === 'asc' ? data?.pages.at(-1) : data?.pages[0];
+    const total = newestPage?.pagination.total ?? 0;
 
     // Kept across level switches, so the counts don't blank out while the new level loads
     const [levelCounts, setLevelCounts] = useState<Record<LogLevel, number>>();
     useEffect(() => {
-        const latest = data?.pages?.[0]?.levelCounts;
-        if (latest) {
-            setLevelCounts(latest);
+        if (newestPage?.levelCounts) {
+            setLevelCounts(newestPage.levelCounts);
         }
-    }, [data]);
+    }, [newestPage]);
 
-    const [totalHumanReadable, totalMessages] = useMemo(() => {
-        if (!data?.pages?.[0]?.pagination.total) {
-            return ['0', 0];
-        }
-        return [formatQuantity(data?.pages?.[0]?.pagination.total || 0), data?.pages?.[0]?.pagination.total || 0];
-    }, [data]);
+    const hasMore = messages.length < total;
+    const allLoaded = Boolean(data) && !hasMore;
 
     useInterval(
-        async () => {
-            await fetchPreviousPage({ cancelRefetch: true });
+        () => {
+            if (order === 'desc') {
+                void fetchPreviousPage({ cancelRefetch: false });
+            } else if (allLoaded) {
+                void fetchNextPage({ cancelRefetch: false });
+            }
         },
         isLive ? 5000 : null
     );
-    useMount(async () => {
-        // We can't use standard refetchOnMount because it will refresh every pages so we force refresh the first one
-        if (isLive) {
-            await fetchPreviousPage({ cancelRefetch: true });
-        }
+
+    const listRef = useRef<HTMLDivElement>(null);
+    const { scrollParent, offsetTop } = useScrollParent(listRef);
+    const sentinelRef = useInfiniteScroll({ hasNextPage: hasMore, isFetchingNextPage, fetchNextPage: () => fetchNextPage({ cancelRefetch: false }) });
+
+    const rowVirtualizer = useVirtualizer({
+        count: messages.length,
+        getScrollElement: () => scrollParent,
+        estimateSize: () => ROW_HEIGHT_PX,
+        getItemKey: (index) => messages[index]?.id ?? index,
+        overscan: 10,
+        scrollMargin: offsetTop
     });
 
-    // --- Table Display
-    const table = useReactTable({
-        data: flatData,
-        columns: columns,
-        getCoreRowModel: getCoreRowModel()
-    });
-
-    // auto compute headers width
-    const headers = table.getFlatHeaders();
-    useLayoutEffect(() => {
-        if (tableContainerRef.current) {
-            const initialColumnSizing = calculateTableSizing(headers, tableContainerRef.current?.clientWidth);
-            table.setColumnSizing(initialColumnSizing);
-        }
-    }, [headers]);
-
-    useDebounce(
-        () => {
-            setDebouncedSearch(search);
-        },
-        250,
-        [search]
-    );
-
-    // --- Infinite scroll
-    const totalFetched = flatData.length;
-    const fetchMoreOnBottomReached = useCallback(
-        (containerRefElement?: HTMLDivElement | null) => {
-            if (!containerRefElement) {
-                return;
-            }
-
-            const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
-            // once the user has scrolled within 200px of the bottom of the table, fetch more data if we can
-            if (scrollHeight - scrollTop - clientHeight < 10 && !isFetching && !isLoading && totalFetched < totalMessages) {
-                void fetchNextPage({ cancelRefetch: false });
-            }
-            if (scrollTop === 0 && isLive && !isScrollTop) {
-                setIsScrollTop(true);
-            } else if (scrollTop !== 0 && isScrollTop) {
-                setIsScrollTop(false);
-            }
-        },
-        [fetchNextPage, isLoading, isFetching, totalFetched, totalMessages, isLive, isScrollTop]
-    );
+    const pinnedToBottom = useRef(false);
     useEffect(() => {
-        fetchMoreOnBottomReached(tableContainerRef.current);
-    }, [fetchMoreOnBottomReached]);
+        if (!scrollParent) {
+            return;
+        }
+        const onScroll = () => {
+            pinnedToBottom.current = scrollParent.scrollHeight - scrollParent.scrollTop - scrollParent.clientHeight < 8;
+        };
+        scrollParent.addEventListener('scroll', onScroll, { passive: true });
+        return () => scrollParent.removeEventListener('scroll', onScroll);
+    }, [scrollParent]);
+    const lineCount = messages.length;
+    useLayoutEffect(() => {
+        if (order === 'asc' && isLive && pinnedToBottom.current && scrollParent) {
+            scrollParent.scrollTop = scrollParent.scrollHeight;
+        }
+    }, [lineCount, order, isLive, scrollParent]);
+
+    const revealId = useRef<string | null>(null);
+    // By default the virtualizer shifts the scroll by a resized row's growth, which would push the line just opened out of view.
+    rowVirtualizer.shouldAdjustScrollPositionOnItemSizeChange = (item, _delta, instance) =>
+        item.key !== revealId.current && item.start < (instance.scrollOffset ?? 0);
+    const onToggle = useCallback(
+        (id: string) => {
+            const next = openId === id ? null : id;
+            revealId.current = next;
+            setOpenId(next);
+            window.setTimeout(() => {
+                if (revealId.current === next) {
+                    revealId.current = null;
+                }
+            }, 500);
+        },
+        [openId]
+    );
+    const totalSize = rowVirtualizer.getTotalSize();
+    // Reruns on totalSize: the panel can't scroll to the line's end until the virtualizer measures it.
+    useLayoutEffect(() => {
+        const row = revealId.current ? listRef.current?.querySelector(`[data-log-id="${CSS.escape(revealId.current)}"]`) : null;
+        if (!row || !scrollParent) {
+            return;
+        }
+        const rowRect = row.getBoundingClientRect();
+        const viewRect = scrollParent.getBoundingClientRect();
+        // The panel's sticky header covers the top of the scroll area.
+        const visibleTop = scrollParent.querySelector('header')?.getBoundingClientRect().bottom ?? viewRect.top;
+        const overflow = rowRect.bottom - viewRect.bottom;
+        if (overflow > 0) {
+            scrollParent.scrollTop += Math.min(overflow, rowRect.top - visibleTop);
+        }
+    }, [openId, totalSize, scrollParent]);
+
+    const filtered = Boolean(debouncedSearch) || level !== 'all';
 
     return (
-        <div className="grow-0 overflow-hidden flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner />}</h4>
-                <div className="flex gap-2 text-text-strong text-xs">
-                    <div>
-                        {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
-                    </div>
-                    {operation.operation.type === 'sync' && operation.operation.action === 'run' && (
-                        <div>
-                            <ConditionalTooltip
-                                condition={true}
-                                content={
-                                    <>
-                                        Successfull HTTP logs are sampled to 10% to reduce noise.
-                                        <br /> Other logs are not sampled
-                                    </>
-                                }
-                            >
-                                (sampling is on)
-                            </ConditionalTooltip>
-                        </div>
-                    )}
-                </div>
+        <section className="flex flex-col gap-2">
+            <div className="flex min-h-7 items-center gap-2">
+                <h3 className="type-label-md text-text-strong">Logs</h3>
+                {data && (
+                    <span className="type-text-regular-sm text-text-muted">
+                        {formatQuantity(total)} {total === 1 ? 'log' : 'logs'}
+                    </span>
+                )}
+                {operation.operation.type === 'sync' && operation.operation.action === 'run' && (
+                    <span className="flex items-center type-text-regular-sm text-text-muted">
+                        <InfoTooltip size="sm">
+                            Only some successful HTTP calls are stored for sync runs. Errors, warnings and other lines are always stored.
+                        </InfoTooltip>
+                        Sampling is on
+                    </span>
+                )}
             </div>
-            <header className="flex gap-2 items-center">
-                <InputGroup className="grow">
-                    <InputGroupAddon>
-                        <Search />
-                    </InputGroupAddon>
-                    <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
-                    {search && (
-                        <InputGroupAddon align="inline-end">
-                            <InputGroupButton
-                                label="Clear search"
-                                variant={'ghost'}
-                                size={'icon-xs'}
-                                onClick={() => {
-                                    setDebouncedSearch('');
-                                    setSearch('');
-                                }}
-                            >
-                                <X />
-                            </InputGroupButton>
+
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="min-w-48 flex-1">
+                    <InputGroup>
+                        <InputGroupAddon>
+                            <Search />
                         </InputGroupAddon>
-                    )}
-                </InputGroup>
+                        <InputGroupInput value={search ?? ''} placeholder="Search logs…" onChange={(e) => setSearch(e.target.value)} />
+                        {search && (
+                            <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                    label="Clear search"
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={() => {
+                                        setDebouncedSearch('');
+                                        setSearch('');
+                                    }}
+                                >
+                                    <X />
+                                </InputGroupButton>
+                            </InputGroupAddon>
+                        )}
+                    </InputGroup>
+                </div>
                 <SegmentedControl
                     aria-label="Level"
                     value={level}
-                    onValueChange={(value) => setLevel(levelOptions.find((option) => option.value === value)?.value ?? 'all')}
+                    onValueChange={(value) => {
+                        setOpenId(null);
+                        setLevel(levelOptions.find((option) => option.value === value)?.value ?? 'all');
+                    }}
                 >
                     {levelOptions.map((option) => (
                         <SegmentedControlItem
@@ -241,109 +266,61 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         </SegmentedControlItem>
                     ))}
                 </SegmentedControl>
-            </header>
-            <div
-                style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
-                ref={tableContainerRef}
-                onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
-            >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
-                    <thead className="grid sticky top-0 z-10 bg-surface-panel">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <tr key={headerGroup.id} className="flex w-full">
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <th
-                                            key={header.id}
-                                            className="flex bg-surface-panel px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
-                                            style={{
-                                                width: header.getSize() ? header.getSize() : 'auto'
-                                            }}
-                                        >
-                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </th>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </thead>
-
-                    {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectMessage={setMessage} />}
-
-                    {isLoading && (
-                        <tbody>
-                            <tr>
-                                {table.getAllColumns().map((col, i) => {
-                                    return (
-                                        <td key={i} className="px-3 py-2.5">
-                                            <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        </tbody>
-                    )}
-
-                    {!isFetching && flatData.length <= 0 && (
-                        <tbody className="h-10">
-                            <tr className="hover:bg-transparent flex absolute w-full">
-                                <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
-                                    <div className="text-text-muted">No results.</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    )}
-                </table>
             </div>
 
-            <Sheet open={Boolean(message)} onOpenChange={() => setMessage(undefined)}>
-                <SheetContent
-                    side="right"
-                    hideCloseButton
-                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
-                >
-                    <SheetTitle className="sr-only">Message Details</SheetTitle>
-                    <div className="relative h-full select-text">
-                        <div className="absolute top-[26px] left-4">
-                            <SheetClose
-                                title="Close"
-                                className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-text-strong focus:text-text-strong"
+            <div className="overflow-hidden rounded border border-border-muted">
+                <div className={`${LOG_GRID} min-h-7 border-b border-border-muted bg-surface-panel-muted type-text-regular-xs text-text-secondary`}>
+                    <button
+                        type="button"
+                        className="focus-default -mx-1 flex w-fit cursor-pointer items-center gap-1 rounded-ds-xs px-1 outline-none hover:text-text-strong"
+                        aria-label={order === 'asc' ? 'Timestamp, oldest first. Show newest first' : 'Timestamp, newest first. Show oldest first'}
+                        onClick={() => {
+                            setOpenId(null);
+                            setOrder(order === 'asc' ? 'desc' : 'asc');
+                        }}
+                    >
+                        Timestamp
+                        {order === 'asc' ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+                    </button>
+                    <span>Level</span>
+                    <span>Message</span>
+                    <span className="text-right">Duration</span>
+                </div>
+
+                <div ref={listRef} data-owns-arrow-keys className="relative" style={{ height: rowVirtualizer.getTotalSize() }}>
+                    {rowVirtualizer.getVirtualItems().map((item) => {
+                        const message = messages[item.index];
+                        if (!message) {
+                            return null;
+                        }
+                        return (
+                            <div
+                                key={item.key}
+                                data-index={item.index}
+                                data-log-id={message.id}
+                                ref={rowVirtualizer.measureElement}
+                                className={cn('absolute left-0 top-0 w-full', item.index < messages.length - 1 && 'border-b border-border-muted')}
+                                style={{ transform: `translateY(${item.start - rowVirtualizer.options.scrollMargin}px)` }}
                             >
-                                <ArrowLeft strokeWidth={1} size={24} />
-                            </SheetClose>
-                        </div>
-                        {message && <ShowMessage message={message} />}
+                                <LogRow message={message} open={openId === message.id} onToggle={() => onToggle(message.id)} />
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {isLoading && (
+                    <div className={`${LOG_GRID} min-h-8`}>
+                        <Skeleton className="w-20" />
+                        <Skeleton className="w-10" />
+                        <Skeleton className="w-48" />
+                        <span />
                     </div>
-                </SheetContent>
-            </Sheet>
-        </div>
-    );
-};
-
-const TableBody: React.FC<{
-    table: ReactTable<MessageRow>;
-    tableContainerRef: React.RefObject<HTMLDivElement>;
-    onSelectMessage: (msg: MessageRow) => void;
-}> = ({ table, tableContainerRef, onSelectMessage }) => {
-    const { rows } = table.getRowModel();
-
-    // Important: Keep the row virtualizer in the lowest component possible to avoid unnecessary re-renders.
-    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-        count: rows.length,
-        estimateSize: () => 41,
-        getScrollElement: () => tableContainerRef.current,
-        // Measure dynamic row height, except in firefox because it measures table border height incorrectly
-        measureElement:
-            typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
-        overscan: 5
-    });
-
-    return (
-        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
-                return <LogRow key={row.original.id} row={row} virtualRow={virtualRow} rowVirtualizer={rowVirtualizer} onSelectMessage={onSelectMessage} />;
-            })}
-        </tbody>
+                )}
+                {!isFetching && messages.length === 0 && (
+                    <p className="px-3 py-2 type-text-regular-sm text-text-muted">{filtered ? 'No logs match' : 'No logs'}</p>
+                )}
+            </div>
+            {hasMore && <div ref={sentinelRef} className="h-px" />}
+        </section>
     );
 };
