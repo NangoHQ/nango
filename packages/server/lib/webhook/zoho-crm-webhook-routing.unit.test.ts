@@ -80,14 +80,15 @@ describe('Zoho CRM webhook routing', () => {
     it("routes by nangoConnectionId when the token matches that connection's secret", async () => {
         const { nango, getConnection, execute } = getNangoMock();
         const body = getBody();
+        const payload = getBody({}, ['token']);
 
         const result = await run(nango, body);
 
         expect(result.isOk()).toBe(true);
-        expect(result.unwrap()).toEqual({ content: { status: 'success' }, statusCode: 200, connectionIds: [CONNECTION_ID], toForward: body });
+        expect(result.unwrap()).toEqual({ content: { status: 'success' }, statusCode: 200, connectionIds: [CONNECTION_ID], toForward: payload });
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).toHaveBeenCalledWith({
-            payload: body,
+            payload,
             webhookTypeValue: 'Leads.insert',
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
@@ -109,7 +110,20 @@ describe('Zoho CRM webhook routing', () => {
         const result = await run(nango, body);
 
         expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledWith({ payload: body, connectionIdentifierValue: CONNECTION_ID, propName: 'connectionId' });
+        expect(execute).toHaveBeenCalledWith({
+            payload: getBody({}, ['module', 'operation', 'token']),
+            connectionIdentifierValue: CONNECTION_ID,
+            propName: 'connectionId'
+        });
+    });
+
+    it('does not pass the token on to functions or forwarding', async () => {
+        const { nango, execute } = getNangoMock();
+
+        const result = await run(nango, getBody());
+
+        expect(result.unwrap()).not.toHaveProperty('toForward.token');
+        expect(execute.mock.calls[0]?.[0].payload).not.toHaveProperty('token');
     });
 
     it('rejects a notify_url without nangoConnectionId', async () => {

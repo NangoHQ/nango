@@ -29,9 +29,11 @@ const route: WebhookHandler<ZohoCrmWebhookPayload> = async (nango, _headers, bod
         return Err(new NangoError('webhook_invalid_signature'));
     }
 
+    const { token: _token, ...payload } = body;
+
     const response = await nango.executeScriptForWebhooks({
-        payload: body,
-        ...(body.module && body.operation && { webhookTypeValue: `${body.module}.${body.operation}` }),
+        payload,
+        ...(payload.module && payload.operation && { webhookTypeValue: `${payload.module}.${payload.operation}` }),
         connectionIdentifierValue: nangoConnectionId,
         propName: 'connectionId'
     });
@@ -40,7 +42,7 @@ const route: WebhookHandler<ZohoCrmWebhookPayload> = async (nango, _headers, bod
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
-        toForward: body
+        toForward: payload
     });
 };
 
