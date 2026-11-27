@@ -15766,6 +15766,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `callingly` | Callingly | API_KEY | [docs](https://nango.dev/docs/api-integrations/callingly.md) | [connect](https://nango.dev/docs/api-integrations/callingly/connect.md) |  | communication, crm |
 | `callpage` | CallPage | API_KEY | [docs](https://nango.dev/docs/api-integrations/callpage.md) | [connect](https://nango.dev/docs/api-integrations/callpage/connect.md) |  | communication |
 | `callrail` | Callrail | API_KEY | [docs](https://nango.dev/docs/integrations/all/callrail.md) | [connect](https://nango.dev/docs/integrations/all/callrail/connect.md) |  | marketing |
+| `caly` | Caly | API_KEY | [docs](https://nango.dev/docs/api-integrations/caly.md) | [connect](https://nango.dev/docs/api-integrations/caly/connect.md) |  | productivity |
 | `campaign-cleaner` | Campaign Cleaner | API_KEY | [docs](https://nango.dev/docs/api-integrations/campaign-cleaner.md) | [connect](https://nango.dev/docs/api-integrations/campaign-cleaner/connect.md) |  | marketing |
 | `campayn` | Campayn | API_KEY | [docs](https://nango.dev/docs/api-integrations/campayn.md) | [connect](https://nango.dev/docs/api-integrations/campayn/connect.md) |  | marketing |
 | `candis` | Candis | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/candis.md) |  | [setup](https://nango.dev/docs/api-integrations/candis/how-to-register-your-own-candis-oauth-app.md) | accounting |

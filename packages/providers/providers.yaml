@@ -8073,6 +8073,33 @@ callrail:
             doc_section: '#step-1-finding-your-api-key'
     docs: https://nango.dev/docs/integrations/all/callrail
 
+caly:
+    display_name: Caly
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.trycaly.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset-default'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+    docs: https://nango.dev/docs/api-integrations/caly
+    docs_connect: https://nango.dev/docs/api-integrations/caly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Caly account
+            pattern: '^cal_[a-zA-Z0-9_]+$'
+            example: cal_xxxxxx
+            doc_section: '#step-1-find-your-api-key'
+
 campaign-cleaner:
     display_name: Campaign Cleaner
     categories:

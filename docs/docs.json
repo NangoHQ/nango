@@ -856,6 +856,7 @@
               "api-integrations/callingly",
               "api-integrations/callpage",
               "integrations/all/callrail",
+              "api-integrations/caly",
               "api-integrations/campaign-cleaner",
               "api-integrations/campayn",
               "api-integrations/candis",
