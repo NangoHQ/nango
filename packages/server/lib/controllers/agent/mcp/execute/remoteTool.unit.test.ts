@@ -319,7 +319,12 @@ describe('executeSessionTool on an MCP server tool with nango_query_result', () 
     it('stores it and returns a reference in place of the remote result', async () => {
         const executed = await executeWith({ content: [{ type: 'text', text: JSON.stringify(ISSUES) }], structuredContent: ISSUES });
 
-        expect(executed.unwrap()).toMatchObject({ result_id: expect.any(String), truncated: true, shape: expect.stringContaining('issues: {') });
+        expect(executed.unwrap()).toMatchObject({
+            result_id: expect.any(String),
+            truncated: true,
+            shape: expect.stringContaining('issues: {'),
+            sample: { issues: [expect.objectContaining({ id: 'ENG-0' }), expect.objectContaining({ id: 'ENG-1' }), '… 48 more items'] }
+        });
         expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
     });
 
@@ -341,6 +346,18 @@ describe('executeSessionTool on an MCP server tool with nango_query_result', () 
 
     it('passes a failed call through in full', async () => {
         const result: CallToolResult = { content: [{ type: 'text', text: 'x'.repeat(20_000) }], isError: true };
+
+        const executed = await executeWith(result);
+
+        expect(executed.unwrap()).toEqual(new RemoteToolResult(result));
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('passes through an image sent next to structured content, rather than storing the structured content alone', async () => {
+        const result: CallToolResult = {
+            content: [{ type: 'image', data: 'aGVsbG8=', mimeType: 'image/png' }],
+            structuredContent: ISSUES
+        };
 
         const executed = await executeWith(result);
 

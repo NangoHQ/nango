@@ -316,19 +316,19 @@ async function executeRemoteTool({
 /**
  * What code over a stored MCP tool result reads: the structured content when the server sent it,
  * otherwise the text, parsed when it is JSON. Undefined when the result holds an image or anything
- * else code could not read, so it is never stored.
+ * else code could not read, even next to structured content, so it is never stored or dropped.
  */
 export function remoteResultData(result: CallToolResult): unknown {
-    if (result.structuredContent) {
-        return result.structuredContent;
-    }
-
     const texts: string[] = [];
     for (const block of result.content) {
         if (block.type !== 'text') {
             return undefined;
         }
         texts.push(block.text);
+    }
+
+    if (result.structuredContent) {
+        return result.structuredContent;
     }
 
     const values = texts.map(parseJsonOrText);

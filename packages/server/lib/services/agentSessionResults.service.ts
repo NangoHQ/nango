@@ -131,7 +131,7 @@ async function tracedStore(params: ResultToStore & { recordId: string; bytes: nu
     const { session, toolName, bytes } = params;
     return await tracer.trace<Promise<Result<void>>>('server.agentSession.storeResult', async (span: Span) => {
         span.setTag('nango.agentSessionId', session.id).setTag('nango.actionName', toolName).setTag('nango.resultBytes', bytes);
-        const result = await insertResult(params).catch((err: unknown): Result<void> => Err(err instanceof Error ? err : new Error(String(err))));
+        const result = await insertResult(params).catch((err: unknown): Result<void> => Err(err));
         if (result.isErr()) {
             span.setTag('error', result.error);
             warnOnToolRun(params, 'Could not store the result, so nango_query_result cannot read it', { error: result.error });

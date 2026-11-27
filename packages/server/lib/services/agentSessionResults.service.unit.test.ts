@@ -105,6 +105,15 @@ describe('toolResultForAgent', () => {
         expect(decodeResultId(result?.['result_id'] as string)).toEqual({ integrationId: 'gmail', recordId: storedRecordId() });
     });
 
+    it.each([
+        ['at the inline limit in full', 0, false],
+        ['one byte over it truncated', 1, true]
+    ])('returns a result %s', async (_, extra, truncated) => {
+        const data = { text: 'a'.repeat(envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES - '{"text":""}'.length + extra) };
+
+        await expect(resultFor(data)).resolves.toMatchObject({ truncated });
+    });
+
     it('returns a small result before it is stored', async () => {
         mocks.upsert.mockReturnValue(new Promise(() => {}));
 

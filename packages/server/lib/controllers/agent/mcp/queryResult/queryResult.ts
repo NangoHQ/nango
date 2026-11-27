@@ -129,7 +129,8 @@ export const queryResultTool = makeAgentSessionMcpTool({
             });
             if (stored.kind === 'over_stored_limit') {
                 const limit = formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES);
-                void logCtx.error(`The code returned more than the ${limit} that can be stored`);
+                const outputBytes = Buffer.byteLength(JSON.stringify(output ?? null), 'utf8');
+                void logCtx.error(`The code returned ${outputBytes} bytes, over the ${limit} that can be stored`);
                 void logCtx.failed();
                 track({ integrationId, logOperationId: logCtx.id, errorCode: 'output_too_large' });
                 return Err(outputTooLargeError(limit));
