@@ -1,11 +1,10 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { Alert, AlertActions, AlertDescription, FieldLabel, Input } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, Badge, FieldLabel, Input } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useConnection } from '@/hooks/useConnections';
-import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
 import { JSON_DISPLAY_LIMIT } from '@/utils/json';
 
@@ -68,7 +67,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, in
                                             {field.name}
                                             {field.required && <span className="text-status-danger-text text-body-medium-regular">*</span>}
                                         </span>
-                                        <CatalogBadge variant="light">{field.type}</CatalogBadge>
+                                        <Badge>{field.type}</Badge>
                                     </div>
                                     {isObjectValue ? (
                                         <CodeBlock
@@ -111,7 +110,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, in
                                 {field.name}
                                 {field.required && <span className="text-status-danger-text text-body-medium-regular">*</span>}
                             </span>
-                            <CatalogBadge variant="light">{field.type}</CatalogBadge>
+                            <Badge>{field.type}</Badge>
                         </div>
                         {field.description && <p className="text-text-muted text-body-small-regular">{field.description}</p>}
                         <Input
