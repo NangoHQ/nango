@@ -234,6 +234,7 @@ describe('startFunction', () => {
         expect(args.code).toBe(code);
         expect(args.nangoProps.scriptType).toBe('function');
         expect(args.nangoProps.execMode).toBe('transform');
+        expect(args.nangoProps.lifecycle).toEqual({ interruptAfterMs: 10_000, killAfterMs: 10_000 });
         expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
         expect(logCtx.info).toHaveBeenCalledWith(
             "Starting function 'inline'",

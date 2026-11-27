@@ -153,7 +153,10 @@ export async function exec({
             if (nangoProps.execMode === 'transform' && nangoProps.scriptType !== 'function') {
                 throw new Error('Only a function can run in transform mode');
             }
-            const scriptExports = nangoProps.execMode === 'transform' ? { default: compileTransform({ code, filename }) } : loadModule({ code, filename });
+            const scriptExports =
+                nangoProps.execMode === 'transform'
+                    ? { default: compileTransform({ code, filename, timeoutMs: nangoProps.lifecycle?.killAfterMs }) }
+                    : loadModule({ code, filename });
 
             const def = scriptExports.default;
             const isZeroYaml = typeof def === 'object';

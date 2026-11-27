@@ -13,7 +13,7 @@ export class TransformTimeoutError extends SDKError {
     code = 'inline_function_timeout';
 }
 
-export const transformTimeoutMs = 10_000;
+const defaultTimeoutMs = 10_000;
 
 const AsyncFunction = vm.runInNewContext('(async function () {}).constructor') as new (...args: string[]) => unknown;
 
@@ -49,11 +49,11 @@ interface TransformState {
 export function compileTransform({
     code,
     filename,
-    timeoutMs = transformTimeoutMs
+    timeoutMs = defaultTimeoutMs
 }: {
     code: string;
     filename: string;
-    timeoutMs?: number;
+    timeoutMs?: number | undefined;
 }): CreateAnyResponse {
     let script: vm.Script;
     try {

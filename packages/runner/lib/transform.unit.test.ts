@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { exec } from './exec.js';
-import { compileTransform } from './transform.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
@@ -138,11 +137,11 @@ describe('exec in transform mode', () => {
     it.each([
         ['a synchronous loop', `while (true) {}`],
         ['a loop across awaits', `while (true) { await Promise.resolve(); }`]
-    ])('stops %s once it runs past the timeout', async (_name, code) => {
-        const transform = compileTransform({ code, filename: 'inline.cjs', timeoutMs: 50 });
+    ])('stops %s once it runs past the kill deadline', async (_name, code) => {
+        const res = await run(code, null, { lifecycle: { interruptAfterMs: 50, killAfterMs: 50 } });
 
-        await expect(transform.type === 'function' && transform.exec({} as never, { kind: 'invoke', input: null } as never)).rejects.toMatchObject({
-            code: 'inline_function_timeout',
+        expect(res.isErr() && res.error.toJSON()).toMatchObject({
+            type: 'inline_function_timeout',
             payload: { message: 'The code ran longer than 0.05s. Do less work per call, such as filtering before sorting.' }
         });
     });

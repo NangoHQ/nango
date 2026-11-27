@@ -44,6 +44,8 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
+const inlineFunctionTimeoutMs = 10_000;
+
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
@@ -168,7 +170,10 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         const nangoProps: NangoProps = {
             scriptType: 'function',
-            ...(fn.kind === 'inline' && { execMode: 'transform' as const }),
+            ...(fn.kind === 'inline' && {
+                execMode: 'transform' as const,
+                lifecycle: { interruptAfterMs: inlineFunctionTimeoutMs, killAfterMs: inlineFunctionTimeoutMs }
+            }),
             host: getApiUrl(),
             team: {
                 id: account.id,
