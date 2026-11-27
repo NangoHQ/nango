@@ -7,6 +7,7 @@ Maintenance and developer scripts for the monorepo. Run them from the **repo roo
 | Command | Script | Purpose |
 | --- | --- | --- |
 | `npm run seed:clickhouse` | `seed-clickhouse.ts` | Seed local ClickHouse with synthetic usage data for the billing/usage dashboard |
+| `npm run seed:logs` | `seed-logs.ts` | Seed local Elasticsearch with synthetic operations and log lines for the Logs page, or run a live feed |
 | `npm run docs:generate` | `docs-gen-snippets.ts`, `docs-generate-llms.ts` | Regenerate doc snippets and `llms.txt` |
 | `npm run changelog:providers` | `provider-changelog.ts` | Generate the provider changelog |
 | `npm run changelog:integrations` | `pre-built-integrations-changelog.ts` | Generate the pre-built-integrations changelog |
@@ -15,6 +16,40 @@ Maintenance and developer scripts for the monorepo. Run them from the **repo roo
 | `npm run internal-auth:key` | `generate-internal-auth-key.ts` | Print an Ed25519 key id, private key, and public-key list for jobs or server |
 
 One-off migrations live under `scripts/one-off/`, each with its own README.
+
+## `seed:logs` — local Logs page data
+
+Fills the local logs with operations and log lines shaped like production traffic, so the Logs page can be tested against realistic volume. Only the shape comes from production (7-day aggregates of type, action, state, duration, lines per operation, line type and level); every value is generated.
+
+```bash
+npm run seed:logs                          # remove seeded docs, backfill 3 days at medium (~2 min)
+npm run seed:logs -- --days 7 --level high # longer window, more traffic
+npm run seed:logs -- --no-reset            # append instead of removing earlier seeded docs
+npm run seed:logs -- --dry-run             # generate without writing, print the mix
+npm run seed:logs -- --live --level low    # keep adding operations until Ctrl+C
+npm run seed:logs -- --account 3 --env dev # another account or a single environment
+```
+
+**Traffic levels** are the busiest environment's rate; other environments get a ninth of it, like dev next to prod:
+
+| Level | Operations | Source |
+| --- | --- | --- |
+| `low` | ~1 every 16s | p90 production environment |
+| `medium` | ~1 every 2s | 10× low |
+| `high` | ~2 per second | p99 production environment |
+
+The backfill follows EU business hours (peak 08:00–18:00 Europe/Prague, nights at ~15%, weekends at 40%), averaging out to the level's rate over a week. Live mode runs at the flat rate. Each live operation starts as `running`, writes its lines as it goes and ends in its final state, with durations capped at 60s; Ctrl+C marks the ones still running as `cancelled`.
+
+Seeded operation IDs start with `seed_`, which is what the reset deletes by, so real local operations survive it. The reset removes seeded data from every account and environment, not only the ones `--account` and `--env` select. Integrations and connections are fake (20 integrations, hundreds of connection UUIDs), so links from an operation to its connection lead nowhere.
+
+**Prerequisites** — Elasticsearch running (`npm run dev:docker`), and to see the data in the webapp, in your root `.env`:
+
+```bash
+NANGO_LOGS_ENABLED=true
+NANGO_LOGS_ES_URL=http://localhost:9500
+```
+
+It targets the `test@nango.dev` account by default and refuses a non-local `NANGO_LOGS_ES_URL` unless you pass `--allow-remote`. Elasticsearch is a shared Docker container, so seeded logs show up in every worktree.
 
 ## `seed:clickhouse` — local usage/billing data
 
