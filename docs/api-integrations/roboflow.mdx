@@ -78,6 +78,6 @@ import PreBuiltUseCases from "/snippets/generated/roboflow/PreBuiltUseCases.mdx"
 
 - Hosted inference (running a model or workflow on an image or video) is on `https://serverless.roboflow.com`: set `baseUrlOverride` to that host, and Nango keeps the connection's credentials and headers. See [REST API](https://docs.roboflow.com/reference/platform/rest-api).
 - Dedicated Deployments are managed on `https://roboflow.cloud`: set `baseUrlOverride` to that host, and Nango keeps the connection's credentials and headers. See [REST API](https://docs.roboflow.com/reference/platform/rest-api).
-- Nango sends the key in the `authorization: Bearer` header on every call. Calls that need it another way (the legacy `api_key` query parameter or `api_key` body field) can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `authorization: Bearer` header on every call. Calls that need it another way (the legacy `api_key` query parameter or `api_key` body field) can read it from the connection's credentials (`credentials.apiKey`) and send it as that `api_key` parameter or body field on the request themselves.
 
 ---

@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/scrapingbee/PreBuiltUseCases.m
 
 ## API gotchas
 
-- Nango sends the key in the `Authorization: Bearer` header on every call. Calls that need it another way, such as the deprecated `api_key` query parameter, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `Authorization: Bearer` header on every call. Calls that need it another way, such as the deprecated `api_key` query parameter, can read it from the connection's credentials (`credentials.apiKey`) and send it as the `api_key` query parameter on the request themselves.
 
 ---

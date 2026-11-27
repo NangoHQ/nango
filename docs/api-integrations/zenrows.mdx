@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/zenrows/PreBuiltUseCases.mdx"
 ## API gotchas
 
 - Batch calls go to `https://async.api.zenrows.com`: set `baseUrlOverride` to that host, and Nango keeps the connection's credentials and headers. See [Zenrows API Authentication](https://docs.zenrows.com/authentication).
-- Nango sends the key as the `apikey` query parameter on every call. Calls that need it another way, such as the `X-API-Key` header Batch requires, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key as the `apikey` query parameter on every call. Calls that need it another way, such as the `X-API-Key` header Batch requires, can read it from the connection's credentials (`credentials.apiKey`) and send it in the `X-API-Key` header on the request themselves.
 
 ---
