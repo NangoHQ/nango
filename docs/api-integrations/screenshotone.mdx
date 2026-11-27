@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/screenshotone/PreBuiltUseCases
 
 ## API gotchas
 
-- Nango sends the access key in the `X-Access-Key` header on every call. Calls that need it another way (the `access_key` query parameter or POST body field, or a bearer token) can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
+- Nango sends the access key in the `X-Access-Key` header on every call. Calls that need it another way (the `access_key` query parameter or POST body field, or a bearer token) can read it from the connection's credentials (`credentials.apiKey`) and send it in that `access_key` parameter, body field or `Authorization: Bearer` header on the request themselves.
 
 ---

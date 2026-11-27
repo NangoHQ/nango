@@ -78,6 +78,6 @@ import PreBuiltUseCases from "/snippets/generated/scrapfly/PreBuiltUseCases.mdx"
 
 - Scrapfly's Cloud Browser runs on `https://browser.scrapfly.io`. Calls to it set `baseUrlOverride` to `https://browser.scrapfly.io`; Nango keeps the connection's credentials and headers. See [Getting Started with Cloud Browser](https://scrapfly.io/docs/cloud-browser-api/getting-started).
 - Scrapfly's MCP server runs on `https://mcp.scrapfly.io` at `/mcp`. Calls to it set `baseUrlOverride` to `https://mcp.scrapfly.io`; Nango keeps the connection's credentials and headers. See [MCP Authentication](https://scrapfly.io/docs/mcp/authentication).
-- Nango sends the key as the `key` query parameter and in the `x-scrapfly-api-key` header on every call. Calls that need it another way, such as the Cloud Browser's `api_key` query parameter or the MCP server's `Authorization: Bearer` header, can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
+- Nango sends the key as the `key` query parameter and in the `x-scrapfly-api-key` header on every call. Calls that need it another way, such as the Cloud Browser's `api_key` query parameter or the MCP server's `Authorization: Bearer` header, can read it from the connection's credentials (`credentials.apiKey`) and send it in that query parameter or header on the request themselves.
 
 ---

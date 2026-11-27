@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/abuseipdb/PreBuiltUseCases.mdx
 
 ## API gotchas
 
-- Nango sends the key in the `key` header on every call. Calls that need it another way, such as the lowercase `key` query or form parameter, can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
+- Nango sends the key in the `key` header on every call. Calls that need it another way, such as the lowercase `key` query or form parameter, can read it from the connection's credentials (`credentials.apiKey`) and send it as that `key` parameter on the request themselves.
 
 ---

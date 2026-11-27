@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/updown-io/PreBuiltUseCases.mdx
 
 ## API gotchas
 
-- Nango sends the key in the `X-API-KEY` header on every call. Calls that need it as the `api-key` query parameter can read it from the connection's credentials (`credentials.apiKey`) and set it there themselves.
+- Nango sends the key in the `X-API-KEY` header on every call. Calls that need it as the `api-key` query parameter can read it from the connection's credentials (`credentials.apiKey`) and add it as the `api-key` query parameter on the request themselves.
 
 ---
