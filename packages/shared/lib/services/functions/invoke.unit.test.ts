@@ -54,7 +54,9 @@ function inlineFunction(): ResolvedInlineFunction {
         enabled: true,
         code: 'return 1;',
         description: null,
-        definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
+        definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} },
+        agentSessionId: '7c8e1f2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b',
+        resultRecordId: '9d0e1f2a-3b4c-4d5e-9f6a-7b8c9d0e1f2a'
     };
 }
 

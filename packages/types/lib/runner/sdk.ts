@@ -53,6 +53,7 @@ export interface NangoProps {
         | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
+    agentSessionResult?: { sessionId: string; recordId: string };
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
