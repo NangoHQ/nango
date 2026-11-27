@@ -18,6 +18,7 @@ import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
 import { createFunctionFacade, instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import { createTelemetryRecorder } from './telemetry.js';
+import { compileTransform } from './transform.js';
 
 import type { Locks } from './sdk/locks.js';
 import type { CreateAnyResponse } from '@nangohq/runner-sdk';
@@ -51,6 +52,57 @@ function assertOutputSizeAllowed(output: unknown, additionalMessage?: string): v
             `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB).${additionalMessage ? ` ${additionalMessage}` : ''}`
         );
     }
+}
+
+function loadModule({ code, filename }: { code: string; filename: string }): ScriptExports {
+    const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}
+        return module.exports;
+    })();
+    `;
+    const sandbox: vm.Context = {
+        // disable console in the sandboxed code
+        constructor: undefined,
+        console: new Proxy(
+            {},
+            {
+                get: () => () => {} // Returns no-op function for any console method
+            }
+        ),
+        require: (moduleName: string) => {
+            switch (moduleName) {
+                case 'url':
+                case 'node:url':
+                    return url;
+                case 'crypto':
+                case 'node:crypto':
+                    return crypto;
+                case 'zod':
+                    return zod;
+                case 'botbuilder':
+                    return botbuilder;
+                case 'soap':
+                    return soap;
+                case 'unzipper':
+                    return unzipper;
+                default:
+                    throw new Error(`Module '${moduleName}' is not allowed`);
+            }
+        },
+        Buffer,
+        setTimeout,
+        Error,
+        URL,
+        URLSearchParams
+    };
+    Object.setPrototypeOf(sandbox, null);
+
+    const context = vm.createContext(sandbox, {
+        codeGeneration: {
+            strings: false,
+            wasm: false
+        }
+    });
+    return new vm.Script(wrappedCode, { filename }).runInContext(context) as ScriptExports;
 }
 
 export async function exec({
@@ -88,11 +140,6 @@ export async function exec({
 
     const functionNango = createFunctionFacade(nango);
 
-    const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}
-        return module.exports;
-    })();
-    `;
-
     const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.cjs`;
 
     return await tracer.trace<Promise<Result<RunnerOutput, ExecutionError>>>('nango.runner.exec', async (span) => {
@@ -103,53 +150,13 @@ export async function exec({
             .setTag('syncId', nangoProps.syncId);
 
         try {
-            const script = new vm.Script(wrappedCode, {
-                filename
-            });
-            const sandbox: vm.Context = {
-                // disable console in the sandboxed code
-                constructor: undefined,
-                console: new Proxy(
-                    {},
-                    {
-                        get: () => () => {} // Returns no-op function for any console method
-                    }
-                ),
-                require: (moduleName: string) => {
-                    switch (moduleName) {
-                        case 'url':
-                        case 'node:url':
-                            return url;
-                        case 'crypto':
-                        case 'node:crypto':
-                            return crypto;
-                        case 'zod':
-                            return zod;
-                        case 'botbuilder':
-                            return botbuilder;
-                        case 'soap':
-                            return soap;
-                        case 'unzipper':
-                            return unzipper;
-                        default:
-                            throw new Error(`Module '${moduleName}' is not allowed`);
-                    }
-                },
-                Buffer,
-                setTimeout,
-                Error,
-                URL,
-                URLSearchParams
-            };
-            Object.setPrototypeOf(sandbox, null);
-
-            const context = vm.createContext(sandbox, {
-                codeGeneration: {
-                    strings: false,
-                    wasm: false
-                }
-            });
-            const scriptExports = script.runInContext(context) as ScriptExports;
+            if (nangoProps.execMode === 'transform' && nangoProps.scriptType !== 'function') {
+                throw new Error('Only a function can run in transform mode');
+            }
+            const scriptExports =
+                nangoProps.execMode === 'transform'
+                    ? { default: compileTransform({ code, filename, timeoutMs: nangoProps.lifecycle?.killAfterMs }) }
+                    : loadModule({ code, filename });
 
             const def = scriptExports.default;
             const isZeroYaml = typeof def === 'object';

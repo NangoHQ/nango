@@ -69,6 +69,7 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
+    RUNNER_INLINE_FUNCTION_DURATION_MS = 'nango.runner.inlineFunction.duration_ms',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
     FUNCTION_DURATION_MS = 'nango.jobs.function.duration_ms',

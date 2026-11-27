@@ -4,6 +4,7 @@ import type { LambdaRequestType } from '@nangohq/types';
 
 export const nangoPropsSchema = z.object({
     scriptType: z.enum(['function', 'sync', 'action', 'webhook', 'on-event']),
+    execMode: z.enum(['module', 'transform']).optional(),
     host: z.string().optional(),
     secretKey: z.string().min(1),
     team: z.object({

@@ -5,12 +5,13 @@ import { Err, Ok } from '@nangohq/utils';
 import { NangoError } from '../../utils/error.js';
 import { getCatalogFunctionByUuid } from '../catalog/actions.js';
 import { generateCatalogFunctionUuid } from '../catalog/uuid.js';
+import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { invokeFunction, resolveFunctionConnection } from './invoke.js';
 import { clearFunctionInputValidatorCache } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { ResolvedFunction, resolveFunctionByUuid } from './lookup/service.js';
+import type { ResolvedFunction, ResolvedInlineFunction, resolveFunctionByUuid } from './lookup/service.js';
 import type * as logs from '@nangohq/logs';
 import type { DBConnection, DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
 
@@ -42,6 +43,19 @@ function catalogFunction(): ResolvedFunction {
     const definition = getCatalogFunctionByUuid(generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' }));
     if (!definition) throw new Error('Missing catalog fixture');
     return { kind: 'catalog', uuid: definition.uuid, name: definition.name, enabled: true, definition };
+}
+
+function inlineFunction(): ResolvedInlineFunction {
+    const uuid = '1c0de000-1111-8111-8111-111111111111';
+    return {
+        kind: 'inline',
+        uuid,
+        name: 'inline',
+        enabled: true,
+        code: 'return 1;',
+        description: null,
+        definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
+    };
 }
 
 function deployedFunction(): ResolvedFunction {
@@ -85,7 +99,12 @@ function deployedFunction(): ResolvedFunction {
     };
 }
 
-function invoke(fn = deployedFunction(), invocationType: 'wait' | 'no_wait' = 'wait', input: unknown = { modelId: 'owner/model' }, integrationId?: string) {
+function invoke(
+    fn: ResolvedFunction | ResolvedInlineFunction = deployedFunction(),
+    invocationType: 'wait' | 'no_wait' = 'wait',
+    input: unknown = { modelId: 'owner/model' },
+    integrationId?: string
+) {
     return invokeFunction({
         account: { id: 1 } as DBTeam,
         environment: { id: 2, name: 'dev' } as DBEnvironment,
@@ -284,6 +303,48 @@ describe('invokeFunction', () => {
         if (result.result.isOk()) throw new Error('Expected an error');
         expect(result.result.error.code).toBe('function_failed');
         expect(logCtx.failed).toHaveBeenCalledOnce();
+    });
+});
+
+describe('invokeFunction with an inline function', () => {
+    beforeEach(() => {
+        lookup.mockResolvedValue(Ok(inlineFunction()));
+        vi.spyOn(configService, 'getIntegrationSummary').mockResolvedValue({ provider: 'github', display_name: null });
+    });
+
+    it('runs it on the connection of the given integration, with no input and no concurrency limit', async () => {
+        const { result } = await invokeFunction({
+            account: { id: 1 } as DBTeam,
+            environment: { id: 2, name: 'dev' } as DBEnvironment,
+            connectionId: connection.connection_id,
+            integrationId: 'custom-github',
+            functionUuid: inlineFunction().uuid,
+            input: undefined,
+            request: { method: 'POST', path: '/test', headers: {}, query: {} },
+            invocationType: 'wait',
+            orchestrator: { invokeFunction: schedule } as unknown as Orchestrator
+        });
+
+        expect(result.unwrap()).toEqual({ data: { title: 'Issue' } });
+        expect(searchConnections).toHaveBeenCalledWith(expect.anything(), {
+            environmentId: 2,
+            filter: { connectionId: 'connection-1', integrationId: 'custom-github' },
+            limit: 2
+        });
+        expect(schedule).toHaveBeenCalledWith(
+            expect.objectContaining({
+                functionUuid: inlineFunction().uuid,
+                trigger: expect.objectContaining({ kind: 'http', input: null }),
+                maxConcurrency: 0
+            })
+        );
+    });
+
+    it('rejects input', async () => {
+        const { result } = await invoke(inlineFunction(), 'wait', { value: 1 }, 'custom-github');
+
+        expect(result.isErr() && result.error.code).toBe('validation_error');
+        expect(schedule).not.toHaveBeenCalled();
     });
 });
 
