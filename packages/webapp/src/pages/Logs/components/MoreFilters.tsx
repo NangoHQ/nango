@@ -55,17 +55,19 @@ export const MoreFilters: React.FC<{ filters: MoreFilter[] }> = ({ filters }) =>
         rows[(rows.indexOf(row as HTMLButtonElement) + step + rows.length) % rows.length]?.focus();
     };
 
+    const handleOpenChange = (next: boolean) => {
+        setOpen(next);
+        if (next) {
+            filters.forEach((filter) => prefetch(filter.category));
+        } else {
+            setOpenKey(null);
+        }
+    };
+
     return (
         <Popover.Root
             open={open}
-            onOpenChange={(next) => {
-                setOpen(next);
-                if (next) {
-                    filters.forEach((filter) => prefetch(filter.category));
-                } else {
-                    setOpenKey(null);
-                }
-            }}
+            onOpenChange={handleOpenChange}
             // Non-modal so the side pane's search can take focus without the list trapping it.
             modal={false}
         >
@@ -80,7 +82,7 @@ export const MoreFilters: React.FC<{ filters: MoreFilter[] }> = ({ filters }) =>
                 onKeyDown={(e) => {
                     if (e.key === 'ArrowDown' && !open) {
                         e.preventDefault();
-                        setOpen(true);
+                        handleOpenChange(true);
                     }
                 }}
             />

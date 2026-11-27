@@ -30,7 +30,7 @@ export const RemoteFilterMenu: React.FC<RemoteFilterMenuProps> = ({ label, categ
     const searchPending = search.trim() !== debouncedSearch;
     const capped = !debouncedSearch && (data?.data.length ?? 0) >= SERVER_OPTIONS_LIMIT;
 
-    // Selected values stay listed when the server's page or the search leaves them out, so they can be unticked.
+    // Selected values stay listed when the server's first page leaves them out, so they can be unticked.
     const options = useMemo(() => {
         const keys = data?.data.map((item) => item.key) ?? [];
         const missing = debouncedSearch ? [] : selected.filter((value) => !keys.includes(value));
