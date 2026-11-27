@@ -105,6 +105,34 @@ function loadModule({ code, filename }: { code: string; filename: string }): Scr
     return new vm.Script(wrappedCode, { filename }).runInContext(context) as ScriptExports;
 }
 
+class AgentSessionResultNotFoundError extends SDKError {
+    code = 'agent_session_result_not_found';
+}
+
+async function loadAgentSessionResult({
+    persistClient,
+    nangoProps,
+    ref
+}: {
+    persistClient: PersistClient;
+    nangoProps: NangoProps;
+    ref: NonNullable<NangoProps['agentSessionResult']>;
+}): Promise<unknown> {
+    const res = await persistClient.getAgentSessionResult({
+        environmentId: nangoProps.environmentId,
+        nangoConnectionId: nangoProps.nangoConnectionId,
+        sessionId: ref.sessionId,
+        recordId: ref.recordId
+    });
+    if (res.isErr()) {
+        throw res.error;
+    }
+    if (!res.value.record) {
+        throw new AgentSessionResultNotFoundError({ message: 'The stored result was not found. It may have been deleted with its session.' });
+    }
+    return res.value.record['data'];
+}
+
 export async function exec({
     nangoProps,
     code,
@@ -214,7 +242,11 @@ export async function exec({
                     throw new Error('Missing exec function');
                 }
 
-                const output = await def.exec(functionNango as any, codeParams as any);
+                const trigger = nangoProps.agentSessionResult
+                    ? { ...codeParams, input: await loadAgentSessionResult({ persistClient, nangoProps, ref: nangoProps.agentSessionResult }) }
+                    : codeParams;
+
+                const output = await def.exec(functionNango as any, trigger as any);
                 assertOutputSizeAllowed(output);
                 return Ok({
                     output: output ?? null,
