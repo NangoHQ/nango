@@ -141,7 +141,7 @@ export const WithCounts: Story = {
                     <SegmentedControlItem value="error" count={3}>
                         Error
                     </SegmentedControlItem>
-                    <SegmentedControlItem value="warn" count={0}>
+                    <SegmentedControlItem value="warn" count={0} disabled>
                         Warn
                     </SegmentedControlItem>
                     <SegmentedControlItem value="info" count="1.1K">
