@@ -1,11 +1,22 @@
 import { AxiosError } from 'axios';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getProxyRetryFromErr, getRetryFromBody, getRetryFromHeader } from './retry.js';
 import { getDefaultProxy } from './utils.test.js';
 
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Merge } from 'type-fest';
+
+// These tests compare exact waits after rounding epoch timestamps to seconds.
+// Freeze Date so scheduler delays cannot move the assertion across a boundary.
+beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.250Z'));
+});
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 function getDefaultError(value: Merge<Partial<AxiosError>, { response?: Partial<AxiosResponse> }>): AxiosError {
     const err = new AxiosError('test');
@@ -22,7 +33,12 @@ function getDefaultError(value: Merge<Partial<AxiosError>, { response?: Partial<
 
 describe('getProxyRetryFromErr', () => {
     describe('at', () => {
-        it('should retry at', () => {
+        it.each([
+            [0, 1000],
+            [250, 2000],
+            [999, 2000]
+        ])('should retry at (%i ms into the second)', (milliseconds, wait) => {
+            vi.setSystemTime(new Date(Date.parse('2026-01-01T00:00:00.000Z') + milliseconds));
             const nowInSecs = Date.now() / 1000;
             const mockAxiosError = getDefaultError({
                 response: {
@@ -30,7 +46,7 @@ describe('getProxyRetryFromErr', () => {
                 }
             });
             const res = getRetryFromHeader({ err: mockAxiosError, type: 'at', retryHeader: 'x-rateLimit-reset' });
-            expect(res).toStrictEqual({ found: true, reason: 'at', wait: 2000 });
+            expect(res).toStrictEqual({ found: true, reason: 'at', wait });
         });
 
         it('should ignore invalid at', () => {
