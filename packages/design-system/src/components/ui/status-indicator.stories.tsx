@@ -25,6 +25,9 @@ export const Default: Story = {
                     <StatusIndicator tone="info" size={size} pulse>
                         running
                     </StatusIndicator>
+                    <StatusIndicator tone="neutral" size={size} hollow>
+                        waiting
+                    </StatusIndicator>
                 </div>
             ))}
         </div>
