@@ -4,6 +4,7 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { allowAllWebhookOutbound } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
+import { WEBHOOK_SECRET_HEADERS } from './secret-headers.js';
 import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type { DBAPISecret, DBExternalWebhook } from '@nangohq/types';
@@ -162,6 +163,21 @@ describe('deliver request shape', () => {
 
         const headers = postSpy.mock.calls[0]![2]!.headers as Record<string, string>;
         expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-secret');
+        expect(headers).toMatchObject({ 'x-provider-event': 'created' });
+    });
+
+    it.each(WEBHOOK_SECRET_HEADERS)("never forwards %s, which carries the connection's webhook secret", async (secretHeader) => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { update_id: 1 },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { [secretHeader.toUpperCase()]: 'shh', 'x-provider-event': 'created' },
+            outbound: allowAll
+        });
+
+        const headers = postSpy.mock.calls[0]?.[2]?.headers as Record<string, string>;
+        expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain(secretHeader);
         expect(headers).toMatchObject({ 'x-provider-event': 'created' });
     });
 });

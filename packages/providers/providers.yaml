@@ -37614,6 +37614,10 @@ supabase:
         headers:
             authorization: Bearer ${apiKey}
             apikey: ${apiKey}
+    webhook_routing_script: supabaseWebhookRouting
+    webhook_signature_enforced: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/supabase
     docs_connect: https://nango.dev/docs/api-integrations/supabase/connect
     connection_config:
@@ -38446,6 +38450,10 @@ telegram:
                 content-type: application/json
             endpoints:
                 - /getMe
+    webhook_routing_script: telegramWebhookRouting
+    webhook_signature_enforced: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/telegram
     docs_connect: https://nango.dev/docs/api-integrations/telegram/connect
     credentials:

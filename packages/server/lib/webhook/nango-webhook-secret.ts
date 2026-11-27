@@ -1,5 +1,6 @@
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
+import { NANGO_WEBHOOK_SECRET_HEADER } from '@nangohq/webhooks';
 
 import { safeCompare } from './signature.js';
 
@@ -20,8 +21,9 @@ import type { Result } from '@nangohq/utils';
  *
  * TODO: NAN-6927 connection metadata is a stopgap for where connection-level secrets live.
  */
-export const NANGO_WEBHOOK_SECRET_HEADER = 'x-nango-webhook-secret';
 export const NANGO_WEBHOOK_SECRET_QUERY_PARAM = 'nangoWebhookSecret';
+// The secret-carrying headers are defined once in @nangohq/webhooks, which also keeps them out of forwards.
+export { NANGO_WEBHOOK_SECRET_HEADER, TELEGRAM_SECRET_TOKEN_HEADER, WEBHOOK_SECRET_HEADERS } from '@nangohq/webhooks';
 
 // Customer chosen, so a short one would be guessable from the public webhook URL.
 const MIN_SECRET_LENGTH = 16;

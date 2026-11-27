@@ -15,6 +15,7 @@ import { axiosInstance as axios, Err, getLogger, networkError, Ok, redactHeaders
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
+import { WEBHOOK_SECRET_HEADERS } from './secret-headers.js';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { LogContext } from '@nangohq/logs';
@@ -84,7 +85,7 @@ export const NON_FORWARDABLE_HEADERS = [
     'www-authenticate',
     'server',
     UNVERIFIED_WEBHOOK_HEADER.toLowerCase(),
-    'x-nango-webhook-secret'
+    ...WEBHOOK_SECRET_HEADERS
 ];
 
 const circuitBreaker = await (async () => {
