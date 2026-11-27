@@ -18,9 +18,10 @@ export interface PeriodSelectorProps {
     onChange: (date: Period | null, live: boolean) => void;
     presets: PeriodPreset[];
     defaultPreset?: PeriodPreset;
+    size?: 'sm' | 'md';
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, size = 'md' }: PeriodSelectorProps) => {
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
@@ -93,8 +94,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="outline" size="md" className="grow truncate tabular-nums">
-                    <Calendar size={18} />
+                <Button variant="outline" size={size} className="grow truncate tabular-nums">
+                    <Calendar size={size === 'sm' ? 14 : 18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>

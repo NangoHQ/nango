@@ -1,28 +1,41 @@
 import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
+import { useMemo } from 'react';
 
 import { last24hPreset } from '../../utils/logs';
-import { statusOptions, typesList } from './constants';
+import { statusValues, typesList } from './constants';
+
+import type { LogsState, LogsType } from './constants';
 
 const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
-const parseStates = parseAsArrayOf(parseAsStringLiteral(statusOptions.map((opt) => opt.value)), ',')
-    .withDefault(['all'])
-    .withOptions({ history: 'push' });
-const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withDefault(['all']).withOptions({ history: 'push' });
-const parseIds = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
+const parseStates = parseAsArrayOf(parseAsStringLiteral<LogsState | 'all'>(['all', ...statusValues]), ',').withDefault([]);
+const parseTypes = parseAsArrayOf(parseAsStringEnum<LogsType | 'all'>(['all', ...typesList]), ',').withDefault([]);
+const parseIds = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const defaultPeriod = last24hPreset.toPeriod()!;
 const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',')
     .withOptions({ history: 'push' })
     .withDefault([defaultPeriod.from, defaultPeriod.to ?? new Date()]);
 
+/** Links written before empty meant "all" carry an explicit `all`, sometimes next to real values. */
+export function withoutAll<T extends string>(values: (T | 'all')[]): T[] {
+    return values.filter((value): value is T => value !== 'all');
+}
+
 export function useLogsFilters() {
     const [isLive, setLive] = useQueryState('live', parseLive);
-    const [states, setStates] = useQueryState('states', parseStates);
-    const [types, setTypes] = useQueryState('types', parseTypes);
-    const [integrations, setIntegrations] = useQueryState('integrations', parseIds);
-    const [connections, setConnections] = useQueryState('connections', parseIds);
-    const [syncs, setSyncs] = useQueryState('syncs', parseIds);
-    const [agentSessions, setAgentSessions] = useQueryState('agentSessions', parseIds);
+    const [rawStates, setStates] = useQueryState('states', parseStates);
+    const [rawTypes, setTypes] = useQueryState('types', parseTypes);
+    const [rawIntegrations, setIntegrations] = useQueryState('integrations', parseIds);
+    const [rawConnections, setConnections] = useQueryState('connections', parseIds);
+    const [rawSyncs, setSyncs] = useQueryState('syncs', parseIds);
+    const [rawAgentSessions, setAgentSessions] = useQueryState('agentSessions', parseIds);
     const [period, setPeriod] = useQueryState('period', parsePeriod);
+
+    const states = useMemo(() => withoutAll<LogsState>(rawStates), [rawStates]);
+    const types = useMemo(() => withoutAll<LogsType>(rawTypes), [rawTypes]);
+    const integrations = useMemo(() => withoutAll(rawIntegrations), [rawIntegrations]);
+    const connections = useMemo(() => withoutAll(rawConnections), [rawConnections]);
+    const syncs = useMemo(() => withoutAll(rawSyncs), [rawSyncs]);
+    const agentSessions = useMemo(() => withoutAll(rawAgentSessions), [rawAgentSessions]);
 
     return {
         isLive,

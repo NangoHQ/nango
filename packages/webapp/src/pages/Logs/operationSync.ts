@@ -38,7 +38,7 @@ export function syncOperationIntoLists(queryClient: QueryClient, env: string, op
             continue;
         }
         const states = statusFilter(key);
-        if (Array.isArray(states) && !states.includes('all') && !states.includes(operation.state)) {
+        if (Array.isArray(states) && states.length > 0 && !states.includes(operation.state)) {
             void queryClient.invalidateQueries({ queryKey: key, exact: true });
             continue;
         }

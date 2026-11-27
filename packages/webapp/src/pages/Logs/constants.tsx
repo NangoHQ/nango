@@ -1,77 +1,83 @@
-import type { FilterOption } from '../../components/patterns/FilterMultiSelect';
 import type { SearchOperationsState, SearchOperationsType } from '@nangohq/types';
 
 export const defaultLimit = 25;
 export const refreshInterval = 2_500;
 
-export const statusOptions: FilterOption<SearchOperationsState>[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Success', value: 'success' },
-    { label: 'Failed', value: 'failed' },
-    { label: 'Running', value: 'running' },
-    { label: 'Cancelled', value: 'cancelled' },
-    { label: 'Timeout', value: 'timeout' },
-    { label: 'Waiting', value: 'waiting' }
-];
+export type LogsState = Exclude<SearchOperationsState, 'all'>;
+export type LogsType = Exclude<SearchOperationsType, 'all'>;
 
-export const typesOptions: FilterOption<SearchOperationsType>[] = [
-    { value: 'all', label: 'All' },
+export interface TypeOption {
+    value: LogsType;
+    label: string;
+    children?: { value: LogsType; label: string }[];
+}
+
+export const statusOptions: { value: LogsState; label: string }[] = [
+    { value: 'success', label: 'Success' },
+    { value: 'failed', label: 'Failed' },
+    { value: 'running', label: 'Running' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'timeout', label: 'Timeout' },
+    { value: 'waiting', label: 'Waiting' }
+];
+export const statusValues = statusOptions.map((option) => option.value);
+
+export const typesOptions: TypeOption[] = [
     {
         value: 'auth',
         label: 'Auth',
         children: [
-            { label: 'Connection created', value: 'auth:create_connection' },
-            { label: 'Token refreshed', value: 'auth:refresh_token' }
+            { value: 'auth:create_connection', label: 'create connection' },
+            { value: 'auth:refresh_token', label: 'refresh token' }
         ]
     },
     {
         value: 'sync',
         label: 'Sync',
         children: [
-            { label: 'Sync initialized', value: 'sync:init' },
-            { label: 'Sync executed', value: 'sync:run' },
-            { label: 'Incremental execution triggered', value: 'sync:request_run' },
-            { label: 'Full execution triggered', value: 'sync:request_run_full' },
-            { label: 'Sync execution cancelled', value: 'sync:cancel' },
-            { label: 'Sync schedule paused', value: 'sync:pause' },
-            { label: 'Sync schedule resumed', value: 'sync:unpause' },
-            { label: 'Sync variant created', value: 'sync:create_variant' },
-            { label: 'Sync variant deleted', value: 'sync:delete_variant' }
+            { value: 'sync:run', label: 'run' },
+            { value: 'sync:init', label: 'init' },
+            { value: 'sync:pause', label: 'pause' },
+            { value: 'sync:unpause', label: 'unpause' },
+            { value: 'sync:request_run', label: 'request run' },
+            { value: 'sync:request_run_full', label: 'request run full' },
+            { value: 'sync:cancel', label: 'cancel' },
+            { value: 'sync:create_variant', label: 'create variant' },
+            { value: 'sync:delete_variant', label: 'delete variant' }
         ]
     },
+    { value: 'tool', label: 'Tool' },
     {
         value: 'webhook',
         label: 'Webhook',
         children: [
-            { label: 'External webhook executed', value: 'webhook:incoming' },
-            { label: 'External webhook forwarded', value: 'webhook:forward' },
-            { label: 'Connection creation webhook', value: 'webhook:connection_create' },
-            { label: 'Sync completion webhook', value: 'webhook:sync' },
-            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' },
-            { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
+            { value: 'webhook:incoming', label: 'incoming' },
+            { value: 'webhook:forward', label: 'forward' },
+            { value: 'webhook:sync', label: 'sync' },
+            { value: 'webhook:connection_create', label: 'connection create' },
+            { value: 'webhook:connection_refresh', label: 'connection refresh' },
+            { value: 'webhook:connection_delete', label: 'connection delete' }
         ]
     },
-    { value: 'tool', label: 'Tool', children: [{ label: 'Tool called', value: 'tool:call' }] },
-    { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
-    { value: 'deploy', label: 'Deploy' },
-    {
-        value: 'function',
-        label: 'Function',
-        children: [{ label: 'Function invoked', value: 'function:invoke' }]
-    },
+    { value: 'events', label: 'Event-based execution' },
+    { value: 'function', label: 'Function' },
     {
         value: 'agent_session',
         label: 'Agent session',
         children: [
-            { label: 'Agent session created', value: 'agent_session:create' },
-            { label: 'Agent session terminated', value: 'agent_session:terminate' },
-            { label: 'Agent session tool search', value: 'agent_session:tool_search' }
+            { value: 'agent_session:create', label: 'create' },
+            { value: 'agent_session:terminate', label: 'terminate' },
+            { value: 'agent_session:tool_search', label: 'tool search' }
         ]
-    }
+    },
+    { value: 'deploy', label: 'Deploy' }
 ];
-export const typesList: SearchOperationsType[] = [
+
+export const typesList: LogsType[] = [
     'action',
     'action:run',
+    'tool:call',
+    'function:invoke',
     ...typesOptions.flatMap((opt) => [opt.value, ...(opt.children?.map((child) => child.value) ?? [])])
 ];

@@ -54,6 +54,9 @@ const columns: {
 
 const ROW_HEIGHT_PX = 36;
 
+// The server skips a filter only when it's missing or `['all']`; an empty list still builds a clause.
+const nonEmpty = <T,>(values: T[]): T[] | undefined => (values.length > 0 ? values : undefined);
+
 export const SearchAllOperations: React.FC<Props> = ({
     onSelectOperation,
     selectedOperationId,
@@ -123,12 +126,12 @@ export const SearchAllOperations: React.FC<Props> = ({
             const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    states,
-                    types: expandLogsTypes(types),
-                    integrations,
-                    connections,
-                    syncs,
-                    agentSessions,
+                    states: nonEmpty(states),
+                    types: nonEmpty(expandLogsTypes(types)),
+                    integrations: nonEmpty(integrations),
+                    connections: nonEmpty(connections),
+                    syncs: nonEmpty(syncs),
+                    agentSessions: nonEmpty(agentSessions),
                     period: periodCopy,
                     // Search is post-filtering the list of operations, it can change the actual number of returned operations
                     // It's more efficient to increase the limit of pre-filtered operations we get, and do less round trip
