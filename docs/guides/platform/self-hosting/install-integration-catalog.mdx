@@ -102,19 +102,17 @@ Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the
     npm run compile:integrations
     ```
 
-    This takes several minutes. The output goes into `integrations/<provider>/build/`.
+    This takes several minutes. The script sets its own 8 GB Node heap, so don't override it. The output goes into `integrations/<provider>/build/`.
   </Step>
 
   <Step id="verify-the-build" title="Verify the build">
-    The compiled catalog metadata must be **byte-identical** to the metadata bundled in your image. `catalog.json` lists a hash of every provider's file, so comparing it covers the whole catalog. Compare it with the file in the Nango checkout from step 1:
+    The compiled catalog metadata must be **byte-identical** to the metadata bundled in your image. Compare it with the file in the Nango checkout from step 1:
 
     ```bash
     # from the integration-templates directory
     shasum -a 256 internal/catalog.json
     shasum -a 256 ../nango/packages/shared/catalog.json
     ```
-
-    For an older image that reads `flows.zero.json`, compare `internal/flows.zero.json` with `../nango/packages/shared/flows.zero.json` instead.
 
     The two hashes must match. If they differ, return to step 1, confirm you checked out the Nango commit from your image tag, and rebuild.
   </Step>
