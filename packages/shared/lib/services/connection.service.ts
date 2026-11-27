@@ -209,6 +209,12 @@ export class GetConnectionError extends Error {
     }
 }
 
+interface ConnectionCounts {
+    isProduction: boolean;
+    active: number;
+    total: number;
+}
+
 interface ConnectionServiceDependencies {
     configService: typeof configService;
     refreshOrTestCredentials: RefreshOrTestCredentials;
@@ -2714,6 +2720,26 @@ export class ConnectionService {
         } catch (err: unknown) {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
+    }
+
+    async countActiveAndTotalConnections(now: Date): Promise<[production: ConnectionCounts, other: ConnectionCounts]> {
+        const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+        const rows = await db.readOnly
+            .from('_nango_connections as c')
+            .join('_nango_environments as e', 'e.id', 'c.environment_id')
+            .groupBy('e.is_production')
+            .select<{ is_production: boolean; active: string; total: string }[]>(
+                'e.is_production',
+                db.readOnly.raw('count(*) filter (where c.last_execution_at >= ? and c.last_execution_at < ?) as active', [monthStart, nextMonthStart]),
+                db.readOnly.raw('count(*) filter (where c.deleted_at is null) as total')
+            );
+
+        const count = (isProduction: boolean): ConnectionCounts => {
+            const row = rows.find(({ is_production }) => is_production === isProduction);
+            return { isProduction, active: Number(row?.active ?? 0), total: Number(row?.total ?? 0) };
+        };
+        return [count(true), count(false)];
     }
 }
 

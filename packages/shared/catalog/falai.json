@@ -1,0 +1,1076 @@
+{
+    "providerConfigKey": "falai",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the available model catalog accessible as records keyed by full model endpoint ID, with descriptive metadata where the catalog supplies it.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-models",
+            "output": [
+                "Models"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Models"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Models": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable full model endpoint ID, including owner, app, and any endpoint path."
+                            },
+                            "name": {
+                                "description": "Human-readable model name, when supplied by the catalog.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Provider model tags in their original spelling and order; omitted when unavailable, empty when explicitly empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A provider model tag in its original spelling."
+                                }
+                            },
+                            "category": {
+                                "description": "Provider's model category, without a locally imposed taxonomy; omitted when unavailable.",
+                                "type": "string"
+                            },
+                            "modelUrl": {
+                                "description": "Provider-supplied model reference or playground URL, when available.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "description": {
+                                "description": "Provider's description of this model, when supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available model catalog entry keyed by its full model endpoint ID, with provider-supplied descriptive metadata."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "cancel-request",
+            "integrationId": "falai",
+            "description": "Remove a queued model request or ask its running model app to stop work. Returns the provider's cancellation disposition, not a guarantee that a running app has stopped.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_cancelrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_cancelrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_cancelrequest": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$",
+                                "description": "Full model endpoint ID originally used for submission; endpoint suffixes are handled internally for cancellation."
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request ID returned as id by submit-request."
+                            }
+                        },
+                        "required": [
+                            "modelId",
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The original model endpoint and queued request to target for cancellation."
+                    },
+                    "FunctionOutput_falai_cancelrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the request targeted for cancellation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "OK",
+                                    "CANCELLATION_REQUESTED",
+                                    "ALREADY_COMPLETED",
+                                    "NOT_FOUND"
+                                ],
+                                "description": "Provider cancellation disposition, preserved exactly. OK acknowledges the cancellation operation; CANCELLATION_REQUESTED means a stop was requested, not confirmed. ALREADY_COMPLETED and NOT_FOUND are retained if returned in a successful response. None implies reversal of completed effects."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Full model endpoint ID supplied for cancellation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The targeted request and the provider cancellation disposition, without a guarantee that running work stopped."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use modelId and the id from `submit-request` to stop unwanted work. Queued work is removed; running work receives a cancellation signal and the app decides how to stop. This cannot undo completed work or promise a refund. A cancellation acknowledgement is not proof that execution stopped: inspect `get-request-status` and `get-request-result` afterward. The connection needs models:requests:cancel permission. Do not submit a confirmation flag."
+            },
+            "filePath": "./falai/tools/cancel-request.ts",
+            "version": "b3cbf8d30739bceef17df8b78318d81cea0fde1ac952e871a67b1b19f8ebc711",
+            "location": {
+                "js": "templates-zero/falai/tools/cancel-request/b3cbf8d30739bceef17df8b78318d81cea0fde1ac952e871a67b1b19f8ebc711.cjs",
+                "ts": "templates-zero/falai/tools/cancel-request/b3cbf8d30739bceef17df8b78318d81cea0fde1ac952e871a67b1b19f8ebc711.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-request-result",
+            "integrationId": "falai",
+            "description": "Get the structured output of a completed model request, or report its model-validation, cancellation, timeout, or execution failure.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_getrequestresult",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_getrequestresult",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_getrequestresult": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$",
+                                "description": "Full model endpoint ID used to submit this request. Any endpoint path is handled internally for the result lookup."
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request ID returned as id by submit-request."
+                            }
+                        },
+                        "required": [
+                            "modelId",
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The saved model endpoint and opaque request ID whose existing result should be read."
+                    },
+                    "FunctionOutput_falai_getrequestresult": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque request identifier supplied for this result lookup."
+                            },
+                            "output": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "A model-specific JSON value, preserving nested objects, arrays, nulls and scalar values.",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    ]
+                                },
+                                "description": "Parsed model output in the selected model's documented schema, including generated media references and structured values. This is model data, not an HTTP response envelope."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Full model endpoint ID supplied for this result lookup."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "output",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing request identity and its successful structured model output.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the modelId and id saved from `submit-request`. Prefer `get-request-status` or `wait-for-request` first; COMPLETED alone does not prove success. This reads an existing result and never reruns the model. Retrieve output promptly: without extended payload storage, results expire after one hour, or six minutes for results at least 10 KB. The connection needs models:requests:read permission."
+            },
+            "filePath": "./falai/tools/get-request-result.ts",
+            "version": "18b599c99106287d0613d0db0bb2b3fbc89bd99e2ddf9d8f39ec53651bfb69dc",
+            "location": {
+                "js": "templates-zero/falai/tools/get-request-result/18b599c99106287d0613d0db0bb2b3fbc89bd99e2ddf9d8f39ec53651bfb69dc.cjs",
+                "ts": "templates-zero/falai/tools/get-request-result/18b599c99106287d0613d0db0bb2b3fbc89bd99e2ddf9d8f39ec53651bfb69dc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-request-status",
+            "integrationId": "falai",
+            "description": "Get a model request's current lifecycle state, queue position, execution duration, failure information, and optional runner logs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_getrequeststatus",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_getrequeststatus",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_getrequeststatus": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$",
+                                "description": "Full endpoint ID used to submit the request. Any endpoint suffix is handled internally for the status lookup."
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request ID returned as id by submit-request."
+                            },
+                            "includeLogs": {
+                                "default": false,
+                                "description": "Whether to request available runner logs. Some models do not provide logs even when requested.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "modelId",
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one submitted model request and optionally request its runner logs."
+                    },
+                    "FunctionOutput_falai_getrequeststatus": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque request identifier."
+                            },
+                            "logs": {
+                                "description": "Runner log entries when available. Null means the provider explicitly returned no log collection, for example when not requested; omission preserves an absent provider field. Empty array means an explicitly empty collection.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "labels": {
+                                                    "description": "Provider-supplied structured log labels; omitted when absent and empty when explicitly empty.",
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "description": "A JSON value, including nested arrays, objects, and null.",
+                                                        "allOf": [
+                                                            {
+                                                                "$ref": "#/definitions/__schema0"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Ordinary Unicode log message without transport encoding."
+                                                },
+                                                "timestamp": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Log event instant normalized to UTC with Z, preserving all supplied fractional-second precision."
+                                                }
+                                            },
+                                            "required": [
+                                                "message",
+                                                "timestamp"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One runner log event with its original message and optional structured labels."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "IN_QUEUE",
+                                    "IN_PROGRESS",
+                                    "COMPLETED"
+                                ],
+                                "description": "Current lifecycle state. COMPLETED includes failed and cancelled requests and does not prove success."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Full endpoint ID supplied for this lookup, retained for follow-up tools."
+                            },
+                            "errorType": {
+                                "description": "Opaque provider failure category if reported; omitted when absent.",
+                                "type": "string"
+                            },
+                            "errorMessage": {
+                                "description": "Provider's failure message if reported; omitted when absent.",
+                                "type": "string"
+                            },
+                            "queuePosition": {
+                                "description": "Number of requests ahead, when reported for IN_QUEUE; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "inferenceTimeSeconds": {
+                                "description": "Reported runner execution duration in seconds, when available.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current request lifecycle snapshot, optional execution failure details, duration, and runner logs.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use modelId and the request id from `submit-request`. This is a single status lookup; use `wait-for-request` for a bounded wait. COMPLETED can mean success, failure, or cancellation: use `get-request-result` to obtain output or the execution error. Set includeLogs only when needed; not every model provides logs. The connection needs models:requests:read permission."
+            },
+            "filePath": "./falai/tools/get-request-status.ts",
+            "version": "f6c207c877dc349d58fe2e82aefb9dfc8a35be1dd54827143bf0ff7f763b832d",
+            "location": {
+                "js": "templates-zero/falai/tools/get-request-status/f6c207c877dc349d58fe2e82aefb9dfc8a35be1dd54827143bf0ff7f763b832d.cjs",
+                "ts": "templates-zero/falai/tools/get-request-status/f6c207c877dc349d58fe2e82aefb9dfc8a35be1dd54827143bf0ff7f763b832d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-models",
+            "integrationId": "falai",
+            "description": "List one page of available models and their endpoint IDs for use when submitting model requests.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_listmodels",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_listmodels",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token returned by a previous call on this connection. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for browsing one page of the model catalog."
+                    },
+                    "FunctionOutput_falai_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Full model endpoint ID, including owner, app, and any endpoint path; usable as modelId in submit-request."
+                                        },
+                                        "name": {
+                                            "description": "Human-readable model name, when supplied by the catalog.",
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "description": "Provider's model tags, preserving order and spelling; omitted when unavailable and empty when explicitly empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A model tag in the provider's original spelling."
+                                            }
+                                        },
+                                        "category": {
+                                            "description": "Provider's model category, preserved without imposing a local taxonomy; omitted when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "modelUrl": {
+                                            "description": "Provider-supplied model reference or playground URL, when available.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "description": {
+                                            "description": "Provider's description of the model, when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A callable model endpoint and its available catalog metadata."
+                                },
+                                "description": "Models in this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token. Omitted when no further page is available.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of available model endpoints with optional continuation state."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover model endpoint IDs before `submit-request`. Consult the selected model's API reference for its input schema; catalog entries do not necessarily include that schema. If nextCursor is returned, pass it as cursor to continue. This returns one provider page, not an exhaustive crawl."
+            },
+            "filePath": "./falai/tools/list-models.ts",
+            "version": "14747b115f92cd2631789b04dc1f7cd28add9df0f27eb0673a63e7a608e971a6",
+            "location": {
+                "js": "templates-zero/falai/tools/list-models/14747b115f92cd2631789b04dc1f7cd28add9df0f27eb0673a63e7a608e971a6.cjs",
+                "ts": "templates-zero/falai/tools/list-models/14747b115f92cd2631789b04dc1f7cd28add9df0f27eb0673a63e7a608e971a6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "submit-request",
+            "integrationId": "falai",
+            "description": "Submit model input for asynchronous execution and return the request identity and initial state. Supports both base models and nested endpoint paths, with optional queue, retry, storage, and app-owner controls.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_submitrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_submitrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_submitrequest": {
+                        "type": "object",
+                        "properties": {
+                            "input": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Model-specific input value, preserved as supplied."
+                                },
+                                "description": "Structured input matching the selected model's schema. Use ordinary text for prompts and the model's documented media fields; do not JSON-encode this object yourself."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$",
+                                "description": "Full endpoint ID from the model reference, including owner, app, and optional nested path, for example fal-ai/flux/schnell."
+                            },
+                            "priority": {
+                                "description": "Queue priority. Low lowers priority within the account; neither value raises account priority.",
+                                "default": "normal",
+                                "type": "string",
+                                "enum": [
+                                    "normal",
+                                    "low"
+                                ]
+                            },
+                            "runnerHint": {
+                                "description": "Best-effort runner-affinity hint for stateful workloads, such as a runner with a loaded LoRA. Omission leaves routing to fal.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "retryCounts": {
+                                "description": "Per-condition retry overrides, effective only when the connection owns the app. Cannot be combined with automaticRetries:false. Omitted conditions use provider behavior.",
+                                "minProperties": 1,
+                                "type": "object",
+                                "properties": {
+                                    "timeout": {
+                                        "description": "Requested number of retries for timeout failures.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                    },
+                                    "serverError": {
+                                        "description": "Requested number of retries for temporary server failures.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                    },
+                                    "connectionError": {
+                                        "description": "Requested number of retries for runner connection failures.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "storePayloads": {
+                                "description": "True requests default-period storage of input and output payloads; false disables it. Omit to use the account's storage setting.",
+                                "type": "boolean"
+                            },
+                            "maxQueueLength": {
+                                "description": "Reject submission if this endpoint already has at least this many queued requests. Omit for the provider's unbounded queue default.",
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "disableFallback": {
+                                "description": "True asks the model app not to use a fallback model. This is forwarded to the app, not a guarantee that every app enforces it.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "automaticRetries": {
+                                "description": "Whether to allow fal's automatic retries for temporary runner failures. False disables them for this request.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "startTimeoutSeconds": {
+                                "description": "Maximum elapsed seconds for work to start, including queue time and retries. Does not limit runner execution time. Omit for no request-specific start deadline.",
+                                "type": "number",
+                                "exclusiveMinimum": 0.1
+                            },
+                            "outputFileExpirationSeconds": {
+                                "description": "Requested lifetime in seconds for model-created files, independent of queue-result retention. Omit to leave lifecycle policy unchanged.",
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        },
+                        "required": [
+                            "input",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Model endpoint, structured model input, and optional asynchronous submission controls.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "automaticRetries"
+                                    ],
+                                    "properties": {
+                                        "automaticRetries": {
+                                            "const": false
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "retryCounts"
+                                        ],
+                                        "properties": {
+                                            "retryCounts": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_falai_submitrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque request identifier returned by fal; use as requestId in request tools."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "IN_QUEUE",
+                                    "IN_PROGRESS",
+                                    "COMPLETED"
+                                ],
+                                "description": "Initial provider lifecycle state. COMPLETED includes success, failure, and cancellation, not just successful output."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Full submitted endpoint ID, retained for subsequent status, result, or cancellation calls."
+                            },
+                            "errorType": {
+                                "description": "Opaque provider failure category if supplied; omitted otherwise.",
+                                "type": "string"
+                            },
+                            "errorMessage": {
+                                "description": "Provider failure message if the initial state already reports a failure; omitted otherwise.",
+                                "type": "string"
+                            },
+                            "queuePosition": {
+                                "description": "Number of requests ahead of this request, when supplied for IN_QUEUE; zero means no requests ahead.",
+                                "type": "integer"
+                            },
+                            "inferenceTimeSeconds": {
+                                "description": "Runner execution duration in seconds when supplied, without unit conversion.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission acknowledgement and initial lifecycle state, not confirmation of successful generation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to start model work, not to wait for generation. Obtain a full model endpoint ID from `list-models` or the model's API reference, and supply input conforming to that model's schema. Save modelId and the returned id. Use `get-request-status` or `wait-for-request`, then `get-request-result`. Repeating submission can create another billable request. Custom retry counts apply only to apps you own. No completion webhook is registered."
+            },
+            "filePath": "./falai/tools/submit-request.ts",
+            "version": "d6090ec5274ec6624c927d3ac6b97998a2d3f185cf2e7e20a144d4728b6ab080",
+            "location": {
+                "js": "templates-zero/falai/tools/submit-request/d6090ec5274ec6624c927d3ac6b97998a2d3f185cf2e7e20a144d4728b6ab080.cjs",
+                "ts": "templates-zero/falai/tools/submit-request/d6090ec5274ec6624c927d3ac6b97998a2d3f185cf2e7e20a144d4728b6ab080.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "wait-for-request",
+            "integrationId": "falai",
+            "description": "Wait for a model request to reach its terminal lifecycle state for at most 90 seconds, returning the latest status and optional logs even if execution is still ongoing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_falai_waitforrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_falai_waitforrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_falai_waitforrequest": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$",
+                                "description": "Full model endpoint ID used for submission; endpoint suffixes are handled internally."
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request ID returned as id by submit-request."
+                            },
+                            "includeLogs": {
+                                "description": "Whether to request available runner logs in the observed status. Some models provide none.",
+                                "type": "boolean"
+                            },
+                            "maxWaitSeconds": {
+                                "description": "Maximum number of seconds spent on the bounded observation, including the initial status lookup. Defaults to 30; never waits for an arbitrarily long generation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 90
+                            }
+                        },
+                        "required": [
+                            "modelId",
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a submitted model request and bound the time spent observing its lifecycle."
+                    },
+                    "FunctionOutput_falai_waitforrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque request identifier."
+                            },
+                            "logs": {
+                                "description": "Log collection from the latest observation, preserving explicit null and empty arrays; omitted if that observation lacks the field.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "labels": {
+                                                    "description": "Structured provider log labels, omitted if absent and empty when explicitly empty.",
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "description": "A JSON value, including nested arrays, objects, and null.",
+                                                        "allOf": [
+                                                            {
+                                                                "$ref": "#/definitions/__schema0"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Ordinary Unicode log message."
+                                                },
+                                                "timestamp": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Log instant normalized to UTC Z with all supplied fractional precision preserved."
+                                                }
+                                            },
+                                            "required": [
+                                                "message",
+                                                "timestamp"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One runner log entry from the latest status snapshot."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "IN_QUEUE",
+                                    "IN_PROGRESS",
+                                    "COMPLETED"
+                                ],
+                                "description": "Latest observed lifecycle state. COMPLETED includes failure or cancellation and does not establish generation success."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Full endpoint ID supplied for this wait."
+                            },
+                            "errorType": {
+                                "description": "Opaque failure category in the latest observation, if supplied.",
+                                "type": "string"
+                            },
+                            "waitExpired": {
+                                "type": "boolean",
+                                "description": "True when the bounded wait ended before COMPLETED was observed. False when a terminal state was observed."
+                            },
+                            "errorMessage": {
+                                "description": "Failure message in the latest observation, if supplied.",
+                                "type": "string"
+                            },
+                            "queuePosition": {
+                                "description": "Number of requests ahead in the latest observation, if reported.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "inferenceTimeSeconds": {
+                                "description": "Runner execution duration in seconds if present in the latest observation.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "modelId",
+                            "waitExpired"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The latest observed request snapshot, with whether the bounded wait expired before completion.",
+                        "definitions": {
+                            "__schema0": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/__schema0"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this after `submit-request` when waiting briefly is more useful than an immediate `get-request-status` lookup. Save modelId and the request id before calling. Each call waits at most 90 seconds; if waitExpired is true, call again later or inspect status. COMPLETED includes failure and cancellation. Use `get-request-result` after completion. This does not cancel work when the wait expires and does not register notifications. Requires models:requests:read permission."
+            },
+            "filePath": "./falai/tools/wait-for-request.ts",
+            "version": "bde1a37fb3b65c6a7d1c0b73e633080706790676fa6a9589b0c31cd5dad67d81",
+            "location": {
+                "js": "templates-zero/falai/tools/wait-for-request/bde1a37fb3b65c6a7d1c0b73e633080706790676fa6a9589b0c31cd5dad67d81.cjs",
+                "ts": "templates-zero/falai/tools/wait-for-request/bde1a37fb3b65c6a7d1c0b73e633080706790676fa6a9589b0c31cd5dad67d81.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

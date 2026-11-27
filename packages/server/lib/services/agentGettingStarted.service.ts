@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { report } from '@nangohq/utils';
 
-import { isPlaygroundSession, PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
+import { isPlaygroundSession, PLAYGROUND_USER_TAG_KEY } from './agentPlayground/tags.js';
 import { AGENT_SESSION_TAG_KEY } from './agentSessionConnections.service.js';
 
 import type { Knex } from '@nangohq/database';

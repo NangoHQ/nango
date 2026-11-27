@@ -1,0 +1,1274 @@
+{
+    "providerConfigKey": "posthog-capture",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-capture-events",
+            "integrationId": "posthog-capture",
+            "description": "Submit up to 100 analytics events in one native batch, optionally using historical-migration processing for imported events. Returns an aggregate reception receipt, not per-event ingestion outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_batchcaptureevents",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_batchcaptureevents",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_batchcaptureevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "event": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Exact analytics event name, including supported special-event names."
+                                        },
+                                        "groups": {
+                                            "description": "Existing group type to group key associations for this event only; no groups are created. Omit or use {} for none.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 400,
+                                                "description": "Existing group type."
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 400,
+                                                "description": "Existing group key."
+                                            }
+                                        },
+                                        "timestamp": {
+                                            "description": "Occurrence instant with explicit offset, up to six fractional digits; omitted timestamps are assigned by PostHog.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                                        },
+                                        "distinctId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200,
+                                            "description": "Opaque user or session ID within the connected project; never shortened or converted to a number."
+                                        },
+                                        "properties": {
+                                            "description": "Event properties as ordinary JSON values; omit or use {} for no custom properties. Null values inside the map are preserved. Managed identity, processing and groups keys use dedicated fields.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string",
+                                                "not": {
+                                                    "enum": [
+                                                        "distinct_id",
+                                                        "$process_person_profile",
+                                                        "$groups"
+                                                    ]
+                                                },
+                                                "description": "Custom property name, excluding managed identity, processing and groups keys."
+                                            },
+                                            "additionalProperties": {
+                                                "description": "Ordinary JSON property value, including null and nested values."
+                                            }
+                                        },
+                                        "processPersonProfile": {
+                                            "description": "Enable person processing for this event. False does not detach existing identified IDs and personless events do not count in group analytics.",
+                                            "type": "boolean",
+                                            "default": true
+                                        }
+                                    },
+                                    "required": [
+                                        "event",
+                                        "distinctId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One analytics event and its occurrence, identity, processing and group information."
+                                },
+                                "description": "Events submitted in one request, in the supplied order. The tool does not split, retry, or claim per-item outcomes."
+                            },
+                            "historicalMigration": {
+                                "description": "Use PostHog historical-migration processing for imported events. True requests ordered historical processing without spike detection; false is realtime ingestion. Does not make a batch atomic.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "events"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submit 1–100 analytics events to the connected project in one native batch."
+                    },
+                    "FunctionOutput_posthog_capture_batchcaptureevents": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog acknowledged the aggregate payload; no individual ingestion or atomicity is implied."
+                            },
+                            "quotaLimited": {
+                                "description": "Resource names in the provider's quota_limited response, when present. Explicit [] is retained; absence is omitted.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider resource name subject to quota limitation."
+                                }
+                            },
+                            "submittedCount": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100,
+                                "description": "Number of events included in the submitted request, not a count of stored or individually successful events."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "submittedCount"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate batch reception receipt, not individual event ingestion results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–100 events in the connected project; use `capture-event` for a single custom event. Supply application distinct IDs and optional occurrence instants. Set historicalMigration for historical imports; otherwise realtime processing is used. The serialized request must stay below 20MB, and each processed event must stay below 1MB. A receipt does not verify individual events, person updates, or atomic processing. Do not retry an uncertain batch blindly because events can be duplicated."
+            },
+            "filePath": "./posthog-capture/tools/batch-capture-events.ts",
+            "version": "1b796151168b5afc253c2e60df991ad3badd2f2ace20c375a9caee04ceeeb7c1",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/batch-capture-events/1b796151168b5afc253c2e60df991ad3badd2f2ace20c375a9caee04ceeeb7c1.cjs",
+                "ts": "templates-zero/posthog-capture/tools/batch-capture-events/1b796151168b5afc253c2e60df991ad3badd2f2ace20c375a9caee04ceeeb7c1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "capture-event",
+            "integrationId": "posthog-capture",
+            "description": "Submit an analytics event for a distinct user or anonymous session, with optional properties, group associations, and occurrence time. A receipt confirms payload reception, not completed ingestion or person processing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_captureevent",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_captureevent",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_captureevent": {
+                        "type": "object",
+                        "properties": {
+                            "event": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Event name, preserved exactly, including meaningful PostHog special-event names."
+                            },
+                            "groups": {
+                                "description": "Map of existing group type names to opaque group keys for this event only. Does not create groups or establish persistent membership; omit or use an empty map for no associations.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 400,
+                                    "description": "Existing group type name."
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 400,
+                                    "description": "Opaque existing group key."
+                                }
+                            },
+                            "timestamp": {
+                                "description": "Occurrence instant with explicit UTC marker or numeric offset, at most six fractional digits. Omit to let PostHog determine the time; never inferred from a local timezone.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "description": "Opaque application user or session ID within the connected project; never converted to a number or shortened."
+                            },
+                            "properties": {
+                                "description": "Event property map of ordinary JSON values. Omission and an empty map both add no custom properties; null property values are retained. Managed keys distinct_id, $process_person_profile, and $groups must use the dedicated inputs.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "not": {
+                                        "enum": [
+                                            "distinct_id",
+                                            "$process_person_profile",
+                                            "$groups"
+                                        ]
+                                    },
+                                    "description": "Custom property name, excluding the dedicated managed keys."
+                                },
+                                "additionalProperties": {
+                                    "description": "An ordinary JSON property value, including null."
+                                }
+                            },
+                            "processPersonProfile": {
+                                "default": true,
+                                "description": "Whether ingestion should create or update a person profile. False does not unlink an ID already belonging to a person and personless events do not participate in group analytics.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "event",
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One analytics event for the connected PostHog project."
+                    },
+                    "FunctionOutput_posthog_capture_captureevent": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog acknowledged receiving the payload. This does not establish event storage, profile updates, group linkage, or downstream delivery."
+                            },
+                            "quotaLimited": {
+                                "description": "Resource names reported by PostHog as billing-quota-limited. Omitted when no quota_limited field was returned; an explicitly empty list is retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Resource name reported by PostHog as billing-quota-limited."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Payload reception receipt, not confirmation of completed ingestion or person processing."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for custom analytics events. Obtain the distinct ID from your application; this API cannot look it up. Use `batch-capture-events` for up to 100 events, `capture-pageview` or `capture-screen-view` for navigation, `update-person-properties` for profile changes, and `capture-survey-event` for surveys. Person processing is enabled by default; disable it for personless instrumentation. Existing identified IDs remain linked to their person even when processing is disabled. Do not blindly retry: event UUID deduplication is not guaranteed."
+            },
+            "filePath": "./posthog-capture/tools/capture-event.ts",
+            "version": "04df21c92791ea0ddac8ea2e4789a625ccda56439ce79cf0c4a46569135f3601",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/capture-event/04df21c92791ea0ddac8ea2e4789a625ccda56439ce79cf0c4a46569135f3601.cjs",
+                "ts": "templates-zero/posthog-capture/tools/capture-event/04df21c92791ea0ddac8ea2e4789a625ccda56439ce79cf0c4a46569135f3601.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "capture-pageview",
+            "integrationId": "posthog-capture",
+            "description": "Submit a web pageview with its URL or path, user identity, optional session context, and event properties. This records navigation telemetry; it does not navigate a browser or guarantee complete Web Analytics instrumentation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_capturepageview",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_capturepageview",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_capturepageview": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Visited absolute URL or application path, preserved as supplied; relative paths are supported."
+                            },
+                            "sessionId": {
+                                "description": "Existing application/PostHog session UUID for correlation; omitted when unavailable. Does not create a session.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "timestamp": {
+                                "description": "Visit occurrence instant with explicit offset, up to six fractional digits; omit for provider-assigned time.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "description": "Opaque user or anonymous-session identity within the connected project."
+                            },
+                            "properties": {
+                                "description": "Additional event properties as typed JSON. Managed distinct_id, $current_url, $session_id and $process_person_profile keys cannot be supplied here. Omit or {} adds none; nested nulls are retained.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "not": {
+                                        "enum": [
+                                            "distinct_id",
+                                            "$current_url",
+                                            "$session_id",
+                                            "$process_person_profile"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "processPersonProfile": {
+                                "description": "Whether the event should process a person profile; false does not unlink an already identified user.",
+                                "type": "boolean",
+                                "default": true
+                            }
+                        },
+                        "required": [
+                            "url",
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A web page visit with its application identity, URL or path, and optional event context."
+                    },
+                    "FunctionOutput_posthog_capture_capturepageview": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog received the pageview payload; event ingestion and analytics/session completeness are not established."
+                            },
+                            "quotaLimited": {
+                                "description": "Provider-reported quota-limited resources; omitted when absent and preserves an explicit empty array.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A provider-reported quota-limited resource name."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A reception receipt, not confirmation of ingestion or complete session analytics."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for a web page visit; use `capture-screen-view` for a mobile screen and `capture-event` for other behavior. Get distinctId, page URL/path, and any session ID from your application. Supply a real session UUID when correlating server events; this tool does not create or manage sessions. Person processing is enabled unless disabled. A receipt means reception only, and retrying can double-count a visit."
+            },
+            "filePath": "./posthog-capture/tools/capture-pageview.ts",
+            "version": "366018a40ab4b804e3ae5bb5ab1eb09a67fe9f0e44fe7f2a31ab03130642440f",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/capture-pageview/366018a40ab4b804e3ae5bb5ab1eb09a67fe9f0e44fe7f2a31ab03130642440f.cjs",
+                "ts": "templates-zero/posthog-capture/tools/capture-pageview/366018a40ab4b804e3ae5bb5ab1eb09a67fe9f0e44fe7f2a31ab03130642440f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "capture-screen-view",
+            "integrationId": "posthog-capture",
+            "description": "Submit mobile screen-view telemetry using a screen name, distinct ID, optional occurrence time, and event properties. A receipt confirms reception rather than storage or mobile app navigation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_capturescreenview",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_capturescreenview",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_capturescreenview": {
+                        "type": "object",
+                        "properties": {
+                            "timestamp": {
+                                "description": "Screen-view occurrence instant with an explicit offset and at most six fractional digits; omitted for provider-assigned time.",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "description": "Opaque user or anonymous-session identity in the connected project."
+                            },
+                            "properties": {
+                                "description": "Additional event properties as typed JSON. Omission or {} adds none; null values inside the map remain literal. Managed distinct_id, $screen_name and $process_person_profile keys must use dedicated inputs.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "not": {
+                                        "enum": [
+                                            "distinct_id",
+                                            "$screen_name",
+                                            "$process_person_profile"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "screenName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Application screen name preserved exactly, including Unicode."
+                            },
+                            "processPersonProfile": {
+                                "description": "Whether ingestion should create or update the person profile. False does not unlink existing identified IDs.",
+                                "default": true,
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "distinctId",
+                            "screenName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One mobile screen-view event and its optional occurrence time, event properties, and person-processing preference."
+                    },
+                    "FunctionOutput_posthog_capture_capturescreenview": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog acknowledged the screen-view payload; event ingestion and profile processing are not verified."
+                            },
+                            "quotaLimited": {
+                                "description": "Resource names reported as quota-limited; omit if absent and retain an explicit empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Resource name reported as quota-limited by PostHog."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A screen-view reception receipt, not proof of event storage or application navigation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for a mobile screen being viewed; use `capture-pageview` for a web page and `capture-event` for other behavior. Obtain the distinct ID and screen name from the application. This tool records telemetry and does not open a screen. Disable person processing for personless instrumentation if appropriate. Retry only after checking for prior reception because repeated calls can double-count views."
+            },
+            "filePath": "./posthog-capture/tools/capture-screen-view.ts",
+            "version": "a119e1537530fb53168a718c780e82476936607585d2ef5c5f1bf230530f95ef",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/capture-screen-view/a119e1537530fb53168a718c780e82476936607585d2ef5c5f1bf230530f95ef.cjs",
+                "ts": "templates-zero/posthog-capture/tools/capture-screen-view/a119e1537530fb53168a718c780e82476936607585d2ef5c5f1bf230530f95ef.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "capture-survey-event",
+            "integrationId": "posthog-capture",
+            "description": "Record that a survey was shown or dismissed, or submit partial/final answers from a custom survey implementation. Handles question-based response fields, rating conversion and person-targeting markers without sending or displaying a survey.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_capturesurveyevent",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_capturesurveyevent",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_capturesurveyevent": {
+                        "type": "object",
+                        "properties": {
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "description": "Opaque respondent ID in the connected project; person processing is enabled for survey targeting markers."
+                            },
+                            "surveyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing survey whose lifecycle event is being recorded."
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "shown",
+                                    "dismissed",
+                                    "response"
+                                ],
+                                "description": "Record a displayed survey, a dismissal, or submitted answers. These are telemetry actions, not commands to display or deliver a survey."
+                            },
+                            "iteration": {
+                                "description": "The survey's current_iteration when available. Omitted if unknown; an explicit zero is retained.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "timestamp": {
+                                "description": "When the survey interaction occurred, with an explicit offset and at most six fractional digits; omit for provider-assigned time.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "submissionId": {
+                                "description": "Stable unique ID for one response submission, required for response. Reuse across its partial/final sends to support provider response counting and deduplication; not a guarantee of event replay safety.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "completed": {
+                                "description": "For response only: true for the final answer submission, false for a partial response; required rather than silently defaulted.",
+                                "type": "boolean"
+                            },
+                            "answers": {
+                                "description": "For response only: answered questions with stable question IDs. IDs must be unique within this call; question text is included for positional queries.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "questionId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Stable opaque question ID from the survey, used for ID-based response properties."
+                                        },
+                                        "question": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Question text as displayed to the respondent; retained for $survey_questions."
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A selected-choice string."
+                                                    }
+                                                }
+                                            ],
+                                            "description": "Text, a numeric rating converted to its decimal string, or selected-choice strings. Empty text and an empty choice list are preserved; null is not an answer."
+                                        }
+                                    },
+                                    "required": [
+                                        "questionId",
+                                        "question",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One submitted question and its typed answer."
+                                }
+                            }
+                        },
+                        "required": [
+                            "distinctId",
+                            "surveyId",
+                            "action"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Record one survey lifecycle interaction or partial/final response from a custom implementation.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "action": {
+                                            "const": "response"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "required": [
+                                        "submissionId",
+                                        "completed",
+                                        "answers"
+                                    ],
+                                    "properties": {
+                                        "answers": true,
+                                        "completed": true,
+                                        "submissionId": true
+                                    }
+                                },
+                                "else": {
+                                    "not": {
+                                        "anyOf": [
+                                            {
+                                                "required": [
+                                                    "submissionId"
+                                                ],
+                                                "properties": {
+                                                    "submissionId": true
+                                                }
+                                            },
+                                            {
+                                                "required": [
+                                                    "completed"
+                                                ],
+                                                "properties": {
+                                                    "completed": true
+                                                }
+                                            },
+                                            {
+                                                "required": [
+                                                    "answers"
+                                                ],
+                                                "properties": {
+                                                    "answers": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_posthog_capture_capturesurveyevent": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "The survey event payload was acknowledged, not a verification of stored answers or targeting-marker application."
+                            },
+                            "surveyId": {
+                                "type": "string",
+                                "description": "Exact survey ID supplied by the caller."
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "shown",
+                                    "dismissed",
+                                    "response"
+                                ],
+                                "description": "The recorded survey interaction requested by the caller."
+                            },
+                            "quotaLimited": {
+                                "description": "Resources reported by PostHog as billing-quota-limited; absent field is omitted and an explicit empty list is retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A billing-quota-limited resource name."
+                                }
+                            },
+                            "submissionId": {
+                                "description": "The caller's response submission ID, echoed for response events only; no new submission ID is generated.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "surveyId",
+                            "action"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of receipt, without verification of ingestion or person-targeting changes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use after your application shows, dismisses or collects answers for an existing survey. This tool does not send invitations, display surveys, create surveys or retrieve their questions. Obtain the survey ID, current iteration, question IDs/text and respondent distinct ID from your application or PostHog. For responses, reuse one submissionId across partial and final sends of the same submission. A receipt does not verify ingestion; repeating without the same submission ID can affect response billing, and repeating any event is not guaranteed safe."
+            },
+            "filePath": "./posthog-capture/tools/capture-survey-event.ts",
+            "version": "d07d3506e81f66650a7c57c765992ba2524ebf13462fed30a7876014ea63ba58",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/capture-survey-event/d07d3506e81f66650a7c57c765992ba2524ebf13462fed30a7876014ea63ba58.cjs",
+                "ts": "templates-zero/posthog-capture/tools/capture-survey-event/d07d3506e81f66650a7c57c765992ba2524ebf13462fed30a7876014ea63ba58.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-person-alias",
+            "integrationId": "posthog-capture",
+            "description": "Submit an identity-alias instruction connecting two distinct IDs to the same person and associating their past and future events, subject to PostHog merge restrictions. The receipt does not confirm that the merge was permitted or completed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_createpersonalias",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_createpersonalias",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_createpersonalias": {
+                        "type": "object",
+                        "properties": {
+                            "aliasId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "pattern": "\\S",
+                                "description": "Opaque alternate ID to connect to the same person. Must satisfy PostHog alias and merge restrictions; never converted to a number."
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "pattern": "\\S",
+                                "description": "Opaque source distinct ID in the connected project. The capture reference shows this ID's events being associated with the alias ID after merging."
+                            }
+                        },
+                        "required": [
+                            "aliasId",
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Two different application identifiers that represent the same person."
+                    },
+                    "FunctionOutput_posthog_capture_createpersonalias": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog received the alias instruction, not a confirmation of a successful identity merge."
+                            },
+                            "aliasId": {
+                                "type": "string",
+                                "description": "Exact alias ID supplied in the instruction; not a verified canonical person identifier."
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "description": "Exact source distinct ID supplied in the instruction."
+                            },
+                            "quotaLimited": {
+                                "description": "Provider-reported quota-limited resources; omitted when absent and retains an explicit empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider-reported quota-limited resource name."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "aliasId",
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Receipt for the submitted alias instruction without verification of identity merging."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only when both distinct IDs represent the same person. Obtain IDs from your application; there is no lookup tool in this API. This can change attribution of past and future events and has no undo through these tools. The alias must not already belong to another distinct ID or have been used as an identify/alias target; inspect Merge restrictions in PostHog first. Use `update-person-properties` for profile edits without identity linking. Check ingestion warnings and the profile after submission, especially before retrying."
+            },
+            "filePath": "./posthog-capture/tools/create-person-alias.ts",
+            "version": "40538f344437ffe18a340de27ce79b5b03a36276895ad14fcfbf9efd1153f001",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/create-person-alias/40538f344437ffe18a340de27ce79b5b03a36276895ad14fcfbf9efd1153f001.cjs",
+                "ts": "templates-zero/posthog-capture/tools/create-person-alias/40538f344437ffe18a340de27ce79b5b03a36276895ad14fcfbf9efd1153f001.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-person-properties",
+            "integrationId": "posthog-capture",
+            "description": "Submit partial person-profile changes by distinct ID: overwrite selected properties, set properties only when absent, or remove selected properties. PostHog can create a missing profile during ingestion; the result confirms reception rather than an applied profile snapshot.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_updatepersonproperties",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_updatepersonproperties",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_updatepersonproperties": {
+                        "type": "object",
+                        "properties": {
+                            "distinctId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "pattern": "\\S",
+                                "description": "Stable opaque application user ID in the connected project. Placeholder identities can be refused by PostHog; use a real user identifier."
+                            },
+                            "setProperties": {
+                                "description": "Property keys to overwrite, preserving ordinary JSON types. Omitted keys are unchanged. Empty strings, arrays and objects are literal values; null is excluded—use removeProperties to clear a key.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "description": "A string property value, including an empty string."
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "description": "A numeric property value."
+                                                },
+                                                {
+                                                    "type": "boolean",
+                                                    "description": "A boolean property value."
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "description": "A nested JSON value, including null."
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "A nested JSON value, including null."
+                                            }
+                                        }
+                                    ],
+                                    "description": "A non-null top-level property value. Nested JSON values, including nested nulls, remain intact."
+                                },
+                                "minProperties": 1
+                            },
+                            "updateLastSeen": {
+                                "description": "Whether this enrichment request may update the person's last_seen_at value. Defaults to false to avoid treating profile maintenance as activity.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "removeProperties": {
+                                "description": "Property keys to remove entirely using $unset; this does not delete the person or their events.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "A property key to remove entirely."
+                                },
+                                "uniqueItems": true
+                            },
+                            "setOnceProperties": {
+                                "description": "Property keys to set only when the key is currently absent. First ingested wins, not earliest event time. Null is excluded; empty values remain literal values.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "description": "A string property value, including an empty string."
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "description": "A numeric property value."
+                                                },
+                                                {
+                                                    "type": "boolean",
+                                                    "description": "A boolean property value."
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "description": "A nested JSON value, including null."
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "A nested JSON value, including null."
+                                            }
+                                        }
+                                    ],
+                                    "description": "A non-null top-level property value. Nested JSON values, including nested nulls, remain intact."
+                                },
+                                "minProperties": 1
+                            }
+                        },
+                        "required": [
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "setProperties"
+                                ],
+                                "properties": {
+                                    "setProperties": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "setOnceProperties"
+                                ],
+                                "properties": {
+                                    "setOnceProperties": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "removeProperties"
+                                ],
+                                "properties": {
+                                    "removeProperties": true
+                                }
+                            }
+                        ],
+                        "description": "Partial person-property changes addressed to one stable distinct ID, with at least one nonempty operation."
+                    },
+                    "FunctionOutput_posthog_capture_updatepersonproperties": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog received the property-update instruction; application and profile existence are not verified."
+                            },
+                            "distinctId": {
+                                "type": "string",
+                                "description": "The exact opaque user ID addressed by this request."
+                            },
+                            "quotaLimited": {
+                                "description": "Quota-limited resources reported by the provider; omitted when absent, with an explicit empty list retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A quota-limited resource reported by PostHog."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "distinctId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An ingestion receipt, not a verified person profile or confirmation that properties were applied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for person-property changes, not identity merging; use `create-person-alias` to connect IDs. Obtain the person's stable distinct ID from your application. Unmentioned properties are left alone; removeProperties explicitly clears keys. Setting occurs in ingestion order, not occurrence-time order. The receipt does not verify applied changes, and high-volume IDs may have person processing skipped. Check the person's profile before retrying an uncertain call."
+            },
+            "filePath": "./posthog-capture/tools/update-person-properties.ts",
+            "version": "9d5781d095c636fe2a62bade44dde39a06d7637df02f70ef7fbe4a16d3e67560",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/update-person-properties/9d5781d095c636fe2a62bade44dde39a06d7637df02f70ef7fbe4a16d3e67560.cjs",
+                "ts": "templates-zero/posthog-capture/tools/update-person-properties/9d5781d095c636fe2a62bade44dde39a06d7637df02f70ef7fbe4a16d3e67560.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upsert-group",
+            "integrationId": "posthog-capture",
+            "description": "Submit group information matched by group type and group key in the connected project, creating the group if absent or updating its supplied properties if present. Returns a reception receipt rather than a verified group snapshot.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_posthog_capture_upsertgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_posthog_capture_upsertgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_posthog_capture_upsertgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 400,
+                                "description": "Opaque stable identifier within this group type; together with groupType identifies the group in the connected project."
+                            },
+                            "groupType": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 400,
+                                "description": "Group category within the project, such as company or organization; part of the exact upsert match key."
+                            },
+                            "properties": {
+                                "description": "Group properties to set as a partial update. Omission or {} creates an empty group if absent and supplies no property changes if present. Unmentioned keys are unchanged; empty values are literal values. Null top-level property values are excluded because clearing is not supported.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "description": "String group-property value."
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "description": "Numeric group-property value."
+                                                },
+                                                {
+                                                    "type": "boolean",
+                                                    "description": "Boolean group-property value."
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "description": "JSON array item, including nested null values."
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "description": "JSON object value, including nested null values."
+                                            }
+                                        }
+                                    ],
+                                    "description": "Non-null group-property value preserving JSON type, with nested nulls allowed."
+                                }
+                            }
+                        },
+                        "required": [
+                            "groupKey",
+                            "groupType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group identity and optional partial property update in the connected project."
+                    },
+                    "FunctionOutput_posthog_capture_upsertgroup": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "received",
+                                "description": "PostHog received the upsert instruction; no create/update branch or applied state is verified."
+                            },
+                            "groupKey": {
+                                "type": "string",
+                                "description": "The requested opaque key within the group category, preserved exactly."
+                            },
+                            "groupType": {
+                                "type": "string",
+                                "description": "The requested group category, preserved exactly."
+                            },
+                            "quotaLimited": {
+                                "description": "Quota-limited resource names reported by PostHog; omitted if absent, retaining an explicit empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Quota-limited resource name reported by PostHog."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "groupKey",
+                            "groupType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reception receipt for the group instruction, not a verified group snapshot."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use to create a group or enrich its properties before associating events with it through `capture-event`. Obtain the group type and stable key from your application. A plain event association does not create a group. Omitted properties leave existing values alone; this tool does not remove properties or establish persistent membership. At least one property is needed for visibility in People and groups. The receipt does not confirm applied state; inspect PostHog before retrying an uncertain submission."
+            },
+            "filePath": "./posthog-capture/tools/upsert-group.ts",
+            "version": "4d3494598f4d375f5c55ff76a8e0fde098f93a0a781cbd74fe5f53c4ed2d2d76",
+            "location": {
+                "js": "templates-zero/posthog-capture/tools/upsert-group/4d3494598f4d375f5c55ff76a8e0fde098f93a0a781cbd74fe5f53c4ed2d2d76.cjs",
+                "ts": "templates-zero/posthog-capture/tools/upsert-group/4d3494598f4d375f5c55ff76a8e0fde098f93a0a781cbd74fe5f53c4ed2d2d76.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

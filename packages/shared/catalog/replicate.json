@@ -1,7 +1,1140 @@
 {
     "providerConfigKey": "replicate",
     "actions": [],
-    "syncs": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the catalog of model collection summaries available as records keyed by collection slug.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-collections",
+            "output": [
+                "Collection"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Collection"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Collection": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable collection key, equal to its slug."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Human-readable collection name."
+                            },
+                            "slug": {
+                                "type": "string",
+                                "description": "Collection slug used for collection lookups."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Short collection description."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "slug",
+                            "description"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A model collection summary keyed by its slug."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected account's deployments and their current release configurations available as records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-deployments",
+            "output": [
+                "Deployment"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Deployment"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Deployment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Deployment record key in owner/name form."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Deployment name within its owner's namespace."
+                            },
+                            "model": {
+                                "description": "Current release model in owner/name form; omitted if absent.",
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "description": "Deployment owner's username."
+                            },
+                            "hardware": {
+                                "description": "Current release hardware SKU; omitted if absent.",
+                                "type": "string"
+                            },
+                            "versionId": {
+                                "description": "Current release version ID; omitted if absent.",
+                                "type": "string"
+                            },
+                            "maxInstances": {
+                                "description": "Maximum scaling count; omitted if absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "minInstances": {
+                                "description": "Minimum scaling count; omitted if absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "releaseNumber": {
+                                "description": "Current release number; omitted if absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "releaseCreatedAt": {
+                                "description": "Release creation instant in UTC retaining fractional precision; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "releaseCreatedBy": {
+                                "description": "Release creator account; omitted if absent.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Creator display name; omitted if absent.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "user",
+                                            "organization"
+                                        ],
+                                        "description": "Creator account type."
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "description": "Creator username."
+                                    },
+                                    "avatarUrl": {
+                                        "description": "Creator avatar URL; omitted if absent.",
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    "githubUrl": {
+                                        "description": "Creator GitHub URL; omitted if absent.",
+                                        "type": "string",
+                                        "format": "uri"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "username"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Deployment and its current release configuration."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make metadata for files created by the connected user or organization available as records, including expiration, checksums and user metadata. Records do not contain file bytes.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-files",
+            "output": [
+                "File"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "File"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "File": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque file resource ID and record key."
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Original user-provided JSON value."
+                                },
+                                "description": "User-provided metadata with original keys and JSON value types."
+                            },
+                            "checksums": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Checksum string for the named algorithm."
+                                },
+                                "description": "Checksum strings keyed by algorithm name, including sha256 when supplied."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "File creation instant in UTC retaining fractional precision."
+                            },
+                            "expiresAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "File expiration instant in UTC retaining fractional precision."
+                            },
+                            "sizeBytes": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Exact file length in bytes."
+                            },
+                            "contentType": {
+                                "type": "string",
+                                "description": "File MIME type."
+                            },
+                            "resourceUrl": {
+                                "description": "API metadata resource URL, not a guaranteed content download URL; omitted if absent.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "metadata",
+                            "checksums",
+                            "createdAt",
+                            "expiresAt",
+                            "sizeBytes",
+                            "contentType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Metadata for a file created by the connected user or organization; excludes file bytes."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the available model hardware catalog available as records keyed by SKU.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-hardware",
+            "output": [
+                "Hardware"
+            ],
+            "runs": "every 24 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Hardware"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Hardware": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Hardware record key, equal to its SKU."
+                            },
+                            "sku": {
+                                "type": "string",
+                                "description": "Opaque hardware SKU used in deployment settings."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Human-readable hardware name."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "sku",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available model hardware catalog entry keyed by SKU."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make author-saved example predictions for a configured model available with their model inputs, outputs and lifecycle metadata.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_replicate_syncmodelexamples",
+            "name": "sync-model-examples",
+            "output": [
+                "ModelExample"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ModelExample",
+                "SyncMetadata_replicate_syncmodelexamples"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ModelExample": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque example prediction identifier."
+                            },
+                            "logs": {
+                                "description": "Model log text, including empty text, when available.",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "Model failure message or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "input": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Model-specific input values with native parameter keys."
+                            },
+                            "output": {
+                                "description": "Model-specific JSON output, preserving null, ordinary text and file URLs."
+                            },
+                            "source": {
+                                "description": "Website or API creation source.",
+                                "type": "string",
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
+                                "description": "Prediction lifecycle state."
+                            },
+                            "webUrl": {
+                                "description": "Browser URL for the example prediction.",
+                                "type": "string"
+                            },
+                            "metrics": {
+                                "description": "Provider metric map with native keys; total_time and predict_time are seconds; other values retain provider meaning.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Model identifier in owner/name form."
+                            },
+                            "deadline": {
+                                "description": "Automatic-cancellation instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC Z retaining fractional precision."
+                            },
+                            "startedAt": {
+                                "description": "Execution-start instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "streamUrl": {
+                                "description": "SSE output reference when supplied.",
+                                "type": "string"
+                            },
+                            "versionId": {
+                                "type": "string",
+                                "description": "Version identifier or literal hidden for an unversioned official model."
+                            },
+                            "completedAt": {
+                                "description": "Completion and output-upload instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dataRemoved": {
+                                "type": "boolean",
+                                "description": "Whether prediction output has been deleted."
+                            },
+                            "deploymentId": {
+                                "description": "Deployment reference when supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "error",
+                            "input",
+                            "output",
+                            "status",
+                            "modelId",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An author-saved example prediction with model inputs, outputs and lifecycle metadata."
+                    },
+                    "SyncMetadata_replicate_syncmodelexamples": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[^/:]+\\/[^/:]+$",
+                                "description": "Model identifier in owner/name form whose author-saved examples belong in this dataset."
+                            }
+                        },
+                        "required": [
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configuration selecting the model whose author-saved examples are synced."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make versions of a configured model available with creation metadata and their OpenAPI input/output documents.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_replicate_syncmodelversions",
+            "name": "sync-model-versions",
+            "output": [
+                "ModelVersion"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ModelVersion",
+                "SyncMetadata_replicate_syncmodelversions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ModelVersion": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque version identifier."
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Parent model identifier in owner/name form."
+                            },
+                            "createdAt": {
+                                "description": "Version creation instant in UTC Z retaining source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "cogVersion": {
+                                "description": "Cog build-tool version or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "openapiSchema": {
+                                "description": "OpenAPI input/output schema document with native keys, or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A configured model version with creation metadata and its OpenAPI input/output document."
+                    },
+                    "SyncMetadata_replicate_syncmodelversions": {
+                        "type": "object",
+                        "properties": {
+                            "modelId": {
+                                "type": "string",
+                                "pattern": "^[^/:]+\\/[^/:]+$",
+                                "description": "Model identifier in owner/name form whose versions belong in this dataset."
+                            }
+                        },
+                        "required": [
+                            "modelId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configuration selecting the model whose versions are synced."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the public model catalog available as model records with metadata, latest-version schemas and default-example content. This is not an enumeration of private account models.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-models",
+            "output": [
+                "Model"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Model"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Model": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Model identifier in owner/name form."
+                            },
+                            "url": {
+                                "description": "Model browser URL.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Model name within its owner."
+                            },
+                            "owner": {
+                                "type": "string",
+                                "description": "Owning user or organization."
+                            },
+                            "paperUrl": {
+                                "description": "Paper URL or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "runCount": {
+                                "description": "Provider-reported number of model runs.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "githubUrl": {
+                                "description": "Repository URL or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isOfficial": {
+                                "description": "Whether Replicate officially maintains the model.",
+                                "type": "boolean"
+                            },
+                            "licenseUrl": {
+                                "description": "License URL or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "visibility": {
+                                "description": "Provider-reported model visibility.",
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ]
+                            },
+                            "description": {
+                                "description": "Author description, null if unset; omitted if unavailable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "coverImageUrl": {
+                                "description": "Cover image URL or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "latestVersion": {
+                                "description": "Latest pushed version, null if none.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "description": "Opaque version identifier.",
+                                                "type": "string"
+                                            },
+                                            "createdAt": {
+                                                "description": "Version creation instant in UTC Z retaining fractional precision.",
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            "cogVersion": {
+                                                "description": "Cog build-tool version or null.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "openapiSchema": {
+                                                "description": "OpenAPI input/output document, retaining native schema keys, or null.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "Latest pushed model version and its native OpenAPI document."
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "defaultExample": {
+                                "description": "Default illustrative prediction content, null if none.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "description": "Prediction identifier.",
+                                                "type": "string"
+                                            },
+                                            "input": {
+                                                "description": "Model-specific input values with native keys.",
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            },
+                                            "output": {
+                                                "description": "Model-specific JSON output, including null and file URLs."
+                                            },
+                                            "status": {
+                                                "description": "Prediction lifecycle state.",
+                                                "type": "string",
+                                                "enum": [
+                                                    "starting",
+                                                    "processing",
+                                                    "succeeded",
+                                                    "failed",
+                                                    "canceled",
+                                                    "aborted"
+                                                ]
+                                            },
+                                            "modelId": {
+                                                "description": "Model identifier in owner/name form.",
+                                                "type": "string"
+                                            },
+                                            "versionId": {
+                                                "description": "Version identifier or literal hidden.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "Identity, content, and lifecycle state of the default illustrative prediction."
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Public Replicate catalog model with metadata, latest-version schemas, and default-example content."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connection's user or organization prediction records available, including model input/output, lifecycle state, logs and metrics from API and website runs.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-predictions",
+            "output": [
+                "Prediction"
+            ],
+            "runs": "every 5 minutes",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Prediction"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Prediction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque prediction identifier."
+                            },
+                            "logs": {
+                                "description": "Model log text, including empty, when supplied.",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "Recorded model failure message or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "input": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Native model-specific input value."
+                                },
+                                "description": "Recorded model-specific input parameters with native keys."
+                            },
+                            "output": {
+                                "description": "Model-specific JSON output, preserving null, text and file URL references."
+                            },
+                            "source": {
+                                "description": "Website or API creation source.",
+                                "type": "string",
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
+                                "description": "Prediction lifecycle state; aborted means terminated before running."
+                            },
+                            "webUrl": {
+                                "description": "Prediction browser URL.",
+                                "type": "string"
+                            },
+                            "metrics": {
+                                "description": "Native provider metric map; total_time and predict_time are seconds, other metrics retain provider meaning.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Native provider metric value without unit conversion."
+                                }
+                            },
+                            "modelId": {
+                                "type": "string",
+                                "description": "Model identifier in owner/name form."
+                            },
+                            "deadline": {
+                                "description": "Automatic-cancellation instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC Z retaining source fractional precision."
+                            },
+                            "startedAt": {
+                                "description": "Execution-start instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "streamUrl": {
+                                "description": "SSE output reference when supplied.",
+                                "type": "string"
+                            },
+                            "versionId": {
+                                "type": "string",
+                                "description": "Version identifier or literal hidden for an unversioned official model."
+                            },
+                            "completedAt": {
+                                "description": "Completion and upload instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dataRemoved": {
+                                "type": "boolean",
+                                "description": "Whether prediction output has been deleted."
+                            },
+                            "deploymentId": {
+                                "description": "Deployment reference when applicable.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "error",
+                            "input",
+                            "output",
+                            "status",
+                            "modelId",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
+                        "additionalProperties": false,
+                        "description": "User or organization prediction record from an API or website run."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connection's user or organization training records available with source versions, inputs, trained result references, lifecycle state and duration metrics.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-trainings",
+            "output": [
+                "Training"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Training"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Training": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque training identifier."
+                            },
+                            "logs": {
+                                "description": "Training logs, including empty text, when supplied.",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "Training processing error or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "input": {
+                                "description": "Recorded model-specific training input values with native parameter keys.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "output": {
+                                "description": "Training result, null or omitted when unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "version": {
+                                                "description": "Created trained-version reference, preserved without assuming it is a bare ID.",
+                                                "type": "string"
+                                            },
+                                            "weights": {
+                                                "description": "Trained weights reference, preserved verbatim.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "source": {
+                                "description": "Website or API creation source.",
+                                "type": "string",
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
+                            },
+                            "status": {
+                                "description": "Training lifecycle state; aborted means terminated before running.",
+                                "type": "string",
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ]
+                            },
+                            "metrics": {
+                                "description": "Available duration metrics in seconds.",
+                                "type": "object",
+                                "properties": {
+                                    "totalTimeSeconds": {
+                                        "description": "Total elapsed seconds from total_time.",
+                                        "type": "number"
+                                    },
+                                    "computeTimeSeconds": {
+                                        "description": "CPU/GPU running seconds from predict_time.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "modelId": {
+                                "description": "Source model identifier in owner/name form.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC Z retaining source fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "startedAt": {
+                                "description": "Execution-start instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "versionId": {
+                                "description": "Source model version used for training.",
+                                "type": "string"
+                            },
+                            "completedAt": {
+                                "description": "Completion instant in UTC Z or null; omitted if unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A user or organization training with source inputs, trained result references, lifecycle state and duration metrics."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
     "onEventScripts": {
         "post-connection-creation": [],
         "pre-connection-deletion": [],

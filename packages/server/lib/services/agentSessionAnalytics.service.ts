@@ -2,9 +2,9 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 import { productTracking } from '@nangohq/shared';
 
-import { isPlaygroundSession } from './agentPlaygroundTags.js';
+import { isPlaygroundSession } from './agentPlayground/tags.js';
 
-import type { CreateAgentSessionParams } from './agentSession.service.js';
+import type { CreateAgentSessionParams } from './agentSessionCreation.service.js';
 import type { CallToolResult } from '@modelcontextprotocol/server';
 import type {
     AgentSession,

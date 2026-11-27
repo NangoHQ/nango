@@ -1,0 +1,1714 @@
+{
+    "providerConfigKey": "google-search-console",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected user's Search Console properties and permission levels available as records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-properties",
+            "output": [
+                "Properties"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/webmasters.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Properties"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Properties": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Exact Search Console property identifier, such as https://www.example.com/ or sc-domain:example.com."
+                            },
+                            "permissionLevel": {
+                                "description": "Connected user's permission level for this property; omitted if absent upstream.",
+                                "type": "string",
+                                "enum": [
+                                    "siteFullUser",
+                                    "siteOwner",
+                                    "siteRestrictedUser",
+                                    "siteUnverifiedUser"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Search Console property and the connected user's permission level."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make finalized daily web-search performance totals available for the connected user's accessible properties, aggregated by property and Pacific calendar date. This dataset is not a query-level or page-level traffic inventory.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-search-analytics",
+            "output": [
+                "SearchAnalytics"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "https://www.googleapis.com/auth/webmasters.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SearchAnalytics"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SearchAnalytics": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Collision-free compact JSON serialization of [propertyId,date,searchType,aggregation]."
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Exact Search Console property identifier for these metrics."
+                            },
+                            "date": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Reporting calendar date in America/Los_Angeles, not a UTC instant."
+                            },
+                            "searchType": {
+                                "type": "string",
+                                "const": "web",
+                                "description": "Web search traffic from Google's All tab; excludes Discover and Google News."
+                            },
+                            "aggregation": {
+                                "type": "string",
+                                "const": "byProperty",
+                                "description": "Metrics are aggregated by property, not canonical page."
+                            },
+                            "clicks": {
+                                "type": "number",
+                                "description": "Google-reported click count for this daily property row."
+                            },
+                            "impressions": {
+                                "type": "number",
+                                "description": "Google-reported impression count for this daily property row."
+                            },
+                            "ctr": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "Click-through ratio from 0 to 1, not a percentage."
+                            },
+                            "position": {
+                                "type": "number",
+                                "description": "Google-reported average search position for the daily property row."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "propertyId",
+                            "date",
+                            "searchType",
+                            "aggregation",
+                            "clicks",
+                            "impressions",
+                            "ctr",
+                            "position"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Finalized daily web-search performance totals aggregated by property and Pacific calendar date."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make sitemap submission metadata for the connected user's accessible Search Console properties available as records, including processing status and content counts.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-sitemaps",
+            "output": [
+                "Sitemaps"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "https://www.googleapis.com/auth/webmasters.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Sitemaps"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sitemaps": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Collision-free composite identity: JSON serialization of [propertyId,sitemapUrl]."
+                            },
+                            "type": {
+                                "description": "Google sitemap type, e.g. sitemap or rssFeed; omitted when absent.",
+                                "type": "string"
+                            },
+                            "isIndex": {
+                                "description": "True if this sitemap is a collection of sitemaps; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "contents": {
+                                "description": "Reported content-type counts; absent and empty remain distinct.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Google content type such as web, image, or video; omitted if absent.",
+                                            "type": "string"
+                                        },
+                                        "submittedCount": {
+                                            "description": "Exact nonnegative submitted URL count of this content type as decimal integer text; omitted if absent.",
+                                            "type": "string",
+                                            "pattern": "^[0-9]+$"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Reported sitemap content type and its submitted URL count."
+                                }
+                            },
+                            "isPending": {
+                                "description": "True if unprocessed; omitted if not reported.",
+                                "type": "boolean"
+                            },
+                            "errorCount": {
+                                "description": "Exact nonnegative long count of processing errors as decimal integer text; omitted when absent.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Exact Search Console property identifier scoping the submission."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "description": "Sitemap URL from Google's path field, unchanged."
+                            },
+                            "warningCount": {
+                                "description": "Exact nonnegative long count of URL warnings as decimal integer text; omitted when absent.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "lastSubmittedAt": {
+                                "description": "Submission instant in UTC RFC 3339, preserving fractional precision; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "lastDownloadedAt": {
+                                "description": "Last download instant in UTC RFC 3339, preserving fractional precision; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Sitemap submission metadata for an accessible Search Console property, including processing status and content counts."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-property-to-account",
+            "integrationId": "google-search-console",
+            "description": "Add a property to the connected user's Search Console account. This does not verify ownership or create a website.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_addpropertytoaccount",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_addpropertytoaccount",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_addpropertytoaccount": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Property to add, using its exact URL-prefix identifier such as https://www.example.com/ or Domain identifier such as sc-domain:example.com."
+                            }
+                        },
+                        "required": [
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Property to associate with the connected Search Console account."
+                    },
+                    "FunctionOutput_google_search_console_addpropertytoaccount": {
+                        "type": "object",
+                        "properties": {
+                            "added": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Google acknowledged the add operation; does not establish ownership verification or data access."
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Property identifier submitted for association with this account."
+                            }
+                        },
+                        "required": [
+                            "added",
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that Google accepted the property association."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to associate a URL-prefix or Domain property with the connected account. Supply its Search Console identifier. This does not verify ownership or grant access to private performance data. Check membership with `get-property` or `list-properties`; use `remove-property-from-account` to remove the association.",
+                "required_scopes": {
+                    "all": [
+                        "https://www.googleapis.com/auth/webmasters"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/add-property-to-account.ts",
+            "version": "7b6fc0ae67bd723d7d45bf9e78145b0a03696683be6400c3779ac98176678c01",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/add-property-to-account/7b6fc0ae67bd723d7d45bf9e78145b0a03696683be6400c3779ac98176678c01.cjs",
+                "ts": "templates-zero/google-search-console/tools/add-property-to-account/7b6fc0ae67bd723d7d45bf9e78145b0a03696683be6400c3779ac98176678c01.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-property",
+            "integrationId": "google-search-console",
+            "description": "Get a Search Console property's identifier and the connected user's permission level.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_getproperty",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_getproperty",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_getproperty": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier from list-properties, e.g. https://www.example.com/ or sc-domain:example.com."
+                            }
+                        },
+                        "required": [
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The exact Search Console property to retrieve."
+                    },
+                    "FunctionOutput_google_search_console_getproperty": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Exact Search Console property identifier; use as propertyId in related tools."
+                            },
+                            "permissionLevel": {
+                                "description": "Connected user's permission level; omitted if not provided.",
+                                "type": "string",
+                                "enum": [
+                                    "siteFullUser",
+                                    "siteOwner",
+                                    "siteRestrictedUser",
+                                    "siteUnverifiedUser"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The Search Console property identifier and connected user's permission level."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an exact propertyId from `list-properties`, including the scheme and trailing slash for a URL-prefix property or the sc-domain: prefix for a Domain property. Use `list-properties` when the identifier is unknown.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/get-property.ts",
+            "version": "32a03c8c68f4b0f55b97f401e230f31d9fcd5f88ea0749128851b0e20e72ccad",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/get-property/32a03c8c68f4b0f55b97f401e230f31d9fcd5f88ea0749128851b0e20e72ccad.cjs",
+                "ts": "templates-zero/google-search-console/tools/get-property/32a03c8c68f4b0f55b97f401e230f31d9fcd5f88ea0749128851b0e20e72ccad.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-sitemap",
+            "integrationId": "google-search-console",
+            "description": "Get processing status, submission/download times, and content counts for one sitemap in a property.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_getsitemap",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_getsitemap",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_getsitemap": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier that scopes the sitemap."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "Fully qualified submitted sitemap URL, as returned in list-sitemaps record id."
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifiers of the Search Console property and its submitted sitemap."
+                    },
+                    "FunctionOutput_google_search_console_getsitemap": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Sitemap URL, unique within propertyId; use as sitemapUrl."
+                            },
+                            "type": {
+                                "description": "Google sitemap type such as sitemap, rssFeed, atomFeed, urlList, patternSitemap, or notSitemap; omitted if absent.",
+                                "type": "string"
+                            },
+                            "isIndex": {
+                                "description": "True if the sitemap is a collection of sitemaps; omitted if not reported.",
+                                "type": "boolean"
+                            },
+                            "contents": {
+                                "description": "Content-type counts; omitted if absent and [] if explicitly empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Content type such as web, image, video, news, mobile, androidApp, iosApp, or pattern.",
+                                            "type": "string"
+                                        },
+                                        "submittedCount": {
+                                            "description": "Exact number of submitted URLs of this type as decimal integer text; omitted if absent.",
+                                            "type": "string",
+                                            "pattern": "^[0-9]+$"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Submitted URL count for one sitemap content type."
+                                }
+                            },
+                            "isPending": {
+                                "description": "True if the sitemap has not been processed; omitted if not reported.",
+                                "type": "boolean"
+                            },
+                            "errorCount": {
+                                "description": "Exact nonnegative count of processing errors as decimal integer text; omitted if absent.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Exact Search Console property identifier scoping this sitemap."
+                            },
+                            "warningCount": {
+                                "description": "Exact nonnegative count of generally noncritical URL warnings as decimal integer text; omitted if absent.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "lastSubmittedAt": {
+                                "description": "Submission instant normalized to UTC RFC 3339 with original fractional precision; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "lastDownloadedAt": {
+                                "description": "Last download instant normalized to UTC RFC 3339 with original fractional precision; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Processing status, timestamps, and exact content counts for one submitted sitemap."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain propertyId from `list-properties` and sitemapUrl from a record's id in `list-sitemaps`, or use a known submitted URL. This reads metadata, not sitemap file contents. Use `list-sitemaps` to browse submissions or index entries.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/get-sitemap.ts",
+            "version": "dfb21e1dc335abfd52ef5665a9d4f0c191e34b69c16e7a4280409302513730c7",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/get-sitemap/dfb21e1dc335abfd52ef5665a9d4f0c191e34b69c16e7a4280409302513730c7.cjs",
+                "ts": "templates-zero/google-search-console/tools/get-sitemap/dfb21e1dc335abfd52ef5665a9d4f0c191e34b69c16e7a4280409302513730c7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "inspect-url",
+            "integrationId": "google-search-console",
+            "description": "Inspect Google's indexed version of a URL, returning index status, crawl and canonical information, AMP findings, and rich-result issues. This does not test a live page or request indexing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_inspecturl",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_inspecturl",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_inspecturl": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier. URL-prefix properties must end in /; Domain properties use sc-domain:example.com."
+                            },
+                            "languageCode": {
+                                "description": "IETF BCP-47 language code for translated issue messages, e.g. de-CH; defaults to en-US.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "inspectionUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "Fully qualified URL to inspect; must belong to propertyId."
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "inspectionUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Inspect one URL under an exact Search Console property using Google's indexed version."
+                    },
+                    "FunctionOutput_google_search_console_inspecturl": {
+                        "type": "object",
+                        "properties": {
+                            "amp": {
+                                "description": "AMP analysis; absent if Google supplies no AMP result.",
+                                "type": "object",
+                                "properties": {
+                                    "ampUrl": {
+                                        "description": "AMP URL actually inspected, which may differ from the submitted desktop URL.",
+                                        "type": "string"
+                                    },
+                                    "issues": {
+                                        "description": "Reported AMP issues; absent and [] remain distinct.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "description": "Provider issueMessage as ordinary text in the requested language, preserving Unicode and empty text.",
+                                                    "type": "string"
+                                                },
+                                                "severity": {
+                                                    "description": "Provider issue severity such as WARNING, ERROR, or SEVERITY_UNSPECIFIED; preserve unknown states.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "A provider-reported analysis issue."
+                                        }
+                                    },
+                                    "verdict": {
+                                        "description": "Provider AMP validity verdict based on the most severe issue.",
+                                        "type": "string"
+                                    },
+                                    "indexingState": {
+                                        "description": "Provider AMP indexing/noindex state, preserved without boolean conversion.",
+                                        "type": "string"
+                                    },
+                                    "lastCrawledAt": {
+                                        "description": "AMP last successful crawl instant in UTC RFC 3339 with up to nine fractional digits; omitted if never successfully crawled.",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    "pageFetchState": {
+                                        "description": "Provider AMP fetch state.",
+                                        "type": "string"
+                                    },
+                                    "robotsTxtState": {
+                                        "description": "Provider robots.txt state for the AMP URL.",
+                                        "type": "string"
+                                    },
+                                    "indexStatusVerdict": {
+                                        "description": "Provider verdict for the AMP URL's indexed status.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Search Console property used for this inspection."
+                            },
+                            "indexStatus": {
+                                "description": "Google's indexed-version analysis; absence is not an indexed or not-indexed verdict.",
+                                "type": "object",
+                                "properties": {
+                                    "verdict": {
+                                        "description": "Provider verdict such as PASS, FAIL, NEUTRAL, or VERDICT_UNSPECIFIED; preserve unknown states.",
+                                        "type": "string"
+                                    },
+                                    "crawledAs": {
+                                        "description": "Provider primary crawler type such as MOBILE or DESKTOP; omitted when unavailable.",
+                                        "type": "string"
+                                    },
+                                    "sitemapUrls": {
+                                        "description": "Known sitemap URLs; not exhaustive. Omitted if none were reported; explicit [] remains [].",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "A known sitemap URL."
+                                        }
+                                    },
+                                    "coverageState": {
+                                        "description": "Google's description of whether it could find and index the page.",
+                                        "type": "string"
+                                    },
+                                    "indexingState": {
+                                        "description": "Provider noindex/indexing state; do not collapse unknown or blocked states into a boolean.",
+                                        "type": "string"
+                                    },
+                                    "lastCrawledAt": {
+                                        "description": "Primary crawler's last successful crawl instant in UTC RFC 3339, preserving up to nine fractional digits; omitted if never successfully crawled.",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    "referringUrls": {
+                                        "description": "Reported URLs linking directly or indirectly to the inspected URL; omitted if absent.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "A reported referring URL."
+                                        }
+                                    },
+                                    "userCanonical": {
+                                        "description": "Site-declared canonical URL; omitted when none was declared.",
+                                        "type": "string"
+                                    },
+                                    "pageFetchState": {
+                                        "description": "Provider fetch state such as SUCCESSFUL, NOT_FOUND, SOFT_404, or a blocked/error state.",
+                                        "type": "string"
+                                    },
+                                    "robotsTxtState": {
+                                        "description": "Provider robots.txt state, including ALLOWED, DISALLOWED, or an unspecified state.",
+                                        "type": "string"
+                                    },
+                                    "googleCanonical": {
+                                        "description": "Google-selected canonical URL; omitted when unavailable, including if not indexed.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "richResults": {
+                                "description": "Rich-results analysis; absent when no result is supplied, including no detected rich results.",
+                                "type": "object",
+                                "properties": {
+                                    "verdict": {
+                                        "description": "Provider high-level rich-results verdict.",
+                                        "type": "string"
+                                    },
+                                    "detectedItems": {
+                                        "description": "Detected rich results grouped by type; syntactically unparseable rich results may be absent.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "description": "Detected instances of this rich-result type.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "User-provided name of this rich-result instance, preserving Unicode and empty text.",
+                                                                "type": "string"
+                                                            },
+                                                            "issues": {
+                                                                "description": "Issues for this instance; empty means no reported issues for it.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "message": {
+                                                                            "description": "Provider issueMessage as ordinary text in the requested language, preserving Unicode and empty text.",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "severity": {
+                                                                            "description": "Provider issue severity such as WARNING, ERROR, or SEVERITY_UNSPECIFIED; preserve unknown states.",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false,
+                                                                    "description": "A provider-reported analysis issue."
+                                                                }
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A detected rich-result instance."
+                                                    }
+                                                },
+                                                "richResultType": {
+                                                    "description": "Rich-result type reported by Google.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Detected rich-result instances grouped under one provider type."
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "inspectionUrl": {
+                                "type": "string",
+                                "description": "URL submitted for indexed-version inspection."
+                            },
+                            "mobileUsability": {
+                                "description": "Deprecated mobile-usability analysis, preserved only when Google returns it; omission is not a pass.",
+                                "type": "object",
+                                "properties": {
+                                    "issues": {
+                                        "description": "Reported mobile-usability issues.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "description": "Additional issue information in ordinary text.",
+                                                    "type": "string"
+                                                },
+                                                "severity": {
+                                                    "description": "Reserved provider severity field, preserved if ever supplied.",
+                                                    "type": "string"
+                                                },
+                                                "issueType": {
+                                                    "description": "Provider mobile-usability rule identifier.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "A provider-reported mobile-usability issue."
+                                        }
+                                    },
+                                    "verdict": {
+                                        "description": "Provider mobile-usability verdict.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "inspectionResultLink": {
+                                "description": "Link to the Search Console inspection report; omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "inspectionUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Indexed-version diagnostics with provider verdicts, canonical URLs, crawl instants, and analysis issues preserved."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get propertyId from `list-properties` and provide a fully qualified URL under that property. URL-prefix property identifiers must include their trailing slash. This inspects only Google's indexed version, not the live page, and cannot submit an indexing request. Optional languageCode localizes issue messages. Use `query-search-analytics` for traffic metrics instead. Each call inspects one URL and consumes URL-inspection quota.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/inspect-url.ts",
+            "version": "478ed3cc3f1bd5ffc78b9b8d1849f2f1e00fa8ca80679f262b4bdcfe8dfafcdc",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/inspect-url/478ed3cc3f1bd5ffc78b9b8d1849f2f1e00fa8ca80679f262b4bdcfe8dfafcdc.cjs",
+                "ts": "templates-zero/google-search-console/tools/inspect-url/478ed3cc3f1bd5ffc78b9b8d1849f2f1e00fa8ca80679f262b4bdcfe8dfafcdc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-properties",
+            "integrationId": "google-search-console",
+            "description": "List the connected user's Search Console properties and permission levels.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_listproperties",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_listproperties",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_listproperties": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "List Search Console properties without filters or pagination inputs."
+                    },
+                    "FunctionOutput_google_search_console_listproperties": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Exact Search Console property identifier, such as https://www.example.com/ or sc-domain:example.com; use as propertyId."
+                                        },
+                                        "permissionLevel": {
+                                            "description": "Connected user's permission level; omitted if not supplied by Google.",
+                                            "type": "string",
+                                            "enum": [
+                                                "siteFullUser",
+                                                "siteOwner",
+                                                "siteRestrictedUser",
+                                                "siteUnverifiedUser"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Search Console property and the connected user's permission level."
+                                },
+                                "description": "Properties in the user's Search Console account; empty when none are returned."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's Search Console properties, with exact identifiers and available permissions."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover exact property identifiers for the other tools. Domain properties and URL-prefix properties are different identifiers. Use `get-property` for a known property. This returns one unpaginated provider collection.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/list-properties.ts",
+            "version": "32e6fd646e0b03d2986d5bba260b09915ae84e519844888e99dcbf52af8b5bc0",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/list-properties/32e6fd646e0b03d2986d5bba260b09915ae84e519844888e99dcbf52af8b5bc0.cjs",
+                "ts": "templates-zero/google-search-console/tools/list-properties/32e6fd646e0b03d2986d5bba260b09915ae84e519844888e99dcbf52af8b5bc0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-sitemaps",
+            "integrationId": "google-search-console",
+            "description": "List sitemap submissions for a property or entries in a specified sitemap index, including processing status and counts.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_listsitemaps",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_listsitemaps",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_listsitemaps": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier from list-properties."
+                            },
+                            "sitemapIndexUrl": {
+                                "format": "uri",
+                                "description": "Sitemap index URL whose entries to list; omit to list the property's submitted sitemaps.",
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/"
+                            }
+                        },
+                        "required": [
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select a Search Console property and optionally a sitemap index."
+                    },
+                    "FunctionOutput_google_search_console_listsitemaps": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Sitemap URL, unique within propertyId; use as sitemapUrl."
+                                        },
+                                        "type": {
+                                            "description": "Google sitemap type, e.g. sitemap, rssFeed, atomFeed, urlList, patternSitemap, or notSitemap; omitted if absent.",
+                                            "type": "string"
+                                        },
+                                        "isIndex": {
+                                            "description": "True if this is a collection of sitemaps; omitted if not reported.",
+                                            "type": "boolean"
+                                        },
+                                        "contents": {
+                                            "description": "Reported content-type counts; omitted when absent, preserved as [] when explicitly empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Content type, e.g. web, image, video, news, mobile, androidApp, iosApp, or pattern.",
+                                                        "type": "string"
+                                                    },
+                                                    "submittedCount": {
+                                                        "description": "Exact nonnegative number of submitted URLs of this content type, as decimal integer text; omitted if absent.",
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "Reported content type and its submitted URL count."
+                                            }
+                                        },
+                                        "isPending": {
+                                            "description": "True if Google has not processed the sitemap; omitted if not reported.",
+                                            "type": "boolean"
+                                        },
+                                        "errorCount": {
+                                            "description": "Nonnegative integer count of sitemap processing errors, represented as decimal text to preserve 64-bit precision; omitted if absent.",
+                                            "type": "string",
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "propertyId": {
+                                            "type": "string",
+                                            "description": "Search Console property identifier that scopes this sitemap record."
+                                        },
+                                        "warningCount": {
+                                            "description": "Nonnegative integer count of generally noncritical URL warnings, as exact decimal text; omitted if absent.",
+                                            "type": "string",
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "lastSubmittedAt": {
+                                            "description": "Last sitemap submission instant in UTC RFC 3339, preserving fractional precision; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "lastDownloadedAt": {
+                                            "description": "Last Google download instant in UTC RFC 3339, preserving fractional precision; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "propertyId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A property-scoped sitemap with processing status and nondeprecated content counts."
+                                },
+                                "description": "Sitemap records returned for the property or specified index; empty when none."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One complete provider collection of sitemap submissions or index entries."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain propertyId from `list-properties`. Without sitemapIndexUrl, list submissions for that property; with it, list that index's entries. Use `get-sitemap` for a known sitemap. This returns one unpaginated provider collection, not recursive index expansion.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/list-sitemaps.ts",
+            "version": "ddc0bb7cfd8c6ad20a4a174f6650de76edf0d0a7274c5d794c0c2d3fbfbe8f6b",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/list-sitemaps/ddc0bb7cfd8c6ad20a4a174f6650de76edf0d0a7274c5d794c0c2d3fbfbe8f6b.cjs",
+                "ts": "templates-zero/google-search-console/tools/list-sitemaps/ddc0bb7cfd8c6ad20a4a174f6650de76edf0d0a7274c5d794c0c2d3fbfbe8f6b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "query-search-analytics",
+            "integrationId": "google-search-console",
+            "description": "Query one page of search traffic metrics for a property and inclusive Pacific-time date range, with grouping, filters, aggregation, and finalized or fresh data. Google returns top available rows, not a guaranteed exhaustive export.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_querysearchanalytics",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_querysearchanalytics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_querysearchanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 1000,
+                                "description": "Maximum rows in this page; Google's accepted range is 1–25,000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25000
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the identical property's query and page size; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "endDate": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Inclusive last calendar date in America/Los_Angeles, YYYY-MM-DD; must not precede startDate."
+                            },
+                            "filters": {
+                                "default": [],
+                                "description": "All filters must match, including when filtering dimensions not used for grouping. Omitted or [] means no filters.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "operator": {
+                                            "default": "equals",
+                                            "description": "Match rule. Equals/notEquals are case-sensitive for page and query; contains/notContains ignore case; regex uses RE2 syntax.",
+                                            "type": "string",
+                                            "enum": [
+                                                "equals",
+                                                "notEquals",
+                                                "contains",
+                                                "notContains",
+                                                "includingRegex",
+                                                "excludingRegex"
+                                            ]
+                                        },
+                                        "dimension": {
+                                            "type": "string",
+                                            "enum": [
+                                                "country",
+                                                "device",
+                                                "page",
+                                                "query",
+                                                "searchAppearance"
+                                            ],
+                                            "description": "Dimension to filter. Country uses ISO alpha-3; device uses DESKTOP, MOBILE, or TABLET; searchAppearance values can be discovered by grouping."
+                                        },
+                                        "expression": {
+                                            "type": "string",
+                                            "maxLength": 4096,
+                                            "description": "Ordinary text or RE2 expression to match or exclude; do not encode or serialize it."
+                                        }
+                                    },
+                                    "required": [
+                                        "dimension",
+                                        "expression"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One conjunctive dimension filter."
+                                }
+                            },
+                            "dataState": {
+                                "default": "final",
+                                "description": "final returns finalized data, all includes fresh data, hourly_all includes hourly partial data and is intended for grouping by hour.",
+                                "type": "string",
+                                "enum": [
+                                    "final",
+                                    "all",
+                                    "hourly_all"
+                                ]
+                            },
+                            "startDate": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Inclusive first calendar date in America/Los_Angeles (Pacific time), YYYY-MM-DD; must not be after endDate."
+                            },
+                            "dimensions": {
+                                "default": [],
+                                "uniqueItems": true,
+                                "description": "Grouping dimensions; empty or omitted combines values into one row. Date and hour retain Pacific reporting meaning.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "country",
+                                        "device",
+                                        "page",
+                                        "query",
+                                        "searchAppearance",
+                                        "date",
+                                        "hour"
+                                    ],
+                                    "description": "A dimension to group results by."
+                                }
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier from list-properties."
+                            },
+                            "searchType": {
+                                "default": "web",
+                                "description": "Traffic source: web is Google's All tab; news is the Search News tab; googleNews is news.google.com and its app; discover is Discover.",
+                                "type": "string",
+                                "enum": [
+                                    "web",
+                                    "image",
+                                    "video",
+                                    "news",
+                                    "discover",
+                                    "googleNews"
+                                ]
+                            },
+                            "aggregation": {
+                                "default": "auto",
+                                "description": "Metric aggregation choice. byProperty cannot be used with page grouping/filtering or discover/googleNews. byNewsShowcasePanel requires the NEWS_SHOWCASE searchAppearance filter and discover/googleNews without page grouping/filtering.",
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "byPage",
+                                    "byProperty",
+                                    "byNewsShowcasePanel"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "endDate",
+                            "startDate",
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One Search Console property query over an inclusive Pacific calendar-date range."
+                    },
+                    "FunctionOutput_google_search_console_querysearchanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ctr": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 1,
+                                            "description": "Click-through ratio from 0 to 1, not a percentage."
+                                        },
+                                        "clicks": {
+                                            "type": "number",
+                                            "description": "Google-reported click count for the row, unchanged."
+                                        },
+                                        "position": {
+                                            "type": "number",
+                                            "description": "Google-reported average search result position, unchanged."
+                                        },
+                                        "dimensions": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string",
+                                                "description": "Unchanged reporting key for the requested dimension."
+                                            },
+                                            "description": "Map from each requested dimension name to its key value, avoiding positional key decoding. Date values are Pacific calendar dates; hour values preserve Google's Pacific reporting bucket label."
+                                        },
+                                        "impressions": {
+                                            "type": "number",
+                                            "description": "Google-reported impression count for the row, unchanged."
+                                        }
+                                    },
+                                    "required": [
+                                        "ctr",
+                                        "clicks",
+                                        "position",
+                                        "dimensions",
+                                        "impressions"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One Google-reported metric row with named grouping keys."
+                                },
+                                "description": "Metric rows in provider order: descending clicks, or ascending date when grouped by date; ties arbitrary. Missing dates are not filled with zeros."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for the same query; may lead to an empty final page. Omitted once Google returns zero rows; does not promise more underlying data.",
+                                "type": "string"
+                            },
+                            "aggregation": {
+                                "description": "Google's actual responseAggregationType; omitted if absent. Preserve the provider value, including future values.",
+                                "type": "string"
+                            },
+                            "firstIncompleteDate": {
+                                "description": "First Pacific calendar date with incomplete data, when returned; omitted otherwise.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "firstIncompleteHour": {
+                                "description": "First incomplete hourly instant normalized from the provider's Pacific offset timestamp to UTC Z, preserving fractional precision; omitted otherwise.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of available search traffic rows, continuation, and optional freshness metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get propertyId from `list-properties`. Supply Pacific calendar dates, not UTC instants. Choose dimensions for grouped results or omit them for a single aggregate row. Filters are ANDed. To discover searchAppearance values, group by searchAppearance. Pass nextCursor back as cursor with the same query and limit. Each call returns one page of at most 25,000 rows (default 1,000); results are not guaranteed exhaustive or snapshot-stable. Use `inspect-url` for a page's indexed status instead.",
+                "required_scopes": {
+                    "any": [
+                        "https://www.googleapis.com/auth/webmasters",
+                        "https://www.googleapis.com/auth/webmasters.readonly"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/query-search-analytics.ts",
+            "version": "3319a2f97129452e6390a9856e7be83581c9078735bc52d3934d25c24a41bc6a",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/query-search-analytics/3319a2f97129452e6390a9856e7be83581c9078735bc52d3934d25c24a41bc6a.cjs",
+                "ts": "templates-zero/google-search-console/tools/query-search-analytics/3319a2f97129452e6390a9856e7be83581c9078735bc52d3934d25c24a41bc6a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-property-from-account",
+            "integrationId": "google-search-console",
+            "description": "Remove a property from the connected user's Search Console property set, rather than delete the website or remove its URLs from Google Search.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_removepropertyfromaccount",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_removepropertyfromaccount",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_removepropertyfromaccount": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact identifier of the property to remove from the connected user's account, from list-properties."
+                            }
+                        },
+                        "required": [
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Property to remove from the connected user's Search Console property set."
+                    },
+                    "FunctionOutput_google_search_console_removepropertyfromaccount": {
+                        "type": "object",
+                        "properties": {
+                            "removed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Google acknowledged removal from this user's property set; does not describe website or index deletion."
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Property identifier targeted by the acknowledged removal."
+                            }
+                        },
+                        "required": [
+                            "removed",
+                            "propertyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledged removal of the targeted property from the connected user's property set."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the exact propertyId from `list-properties`. This removes the account association, not website content or indexed URLs. To associate it again use `add-property-to-account`; prior permissions or verification are not promised to be restored.",
+                "required_scopes": {
+                    "all": [
+                        "https://www.googleapis.com/auth/webmasters"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/remove-property-from-account.ts",
+            "version": "090227771a59eff28981d2298275b78d63a57a21fba55ce81617277b9960e471",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/remove-property-from-account/090227771a59eff28981d2298275b78d63a57a21fba55ce81617277b9960e471.cjs",
+                "ts": "templates-zero/google-search-console/tools/remove-property-from-account/090227771a59eff28981d2298275b78d63a57a21fba55ce81617277b9960e471.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-sitemap-from-property",
+            "integrationId": "google-search-console",
+            "description": "Remove a sitemap submission from a Search Console property without deleting its hosted file or directly removing indexed pages.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_removesitemapfromproperty",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_removesitemapfromproperty",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_removesitemapfromproperty": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier whose sitemap submission to remove."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "Exact submitted sitemap URL to remove from this property."
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The property and exact sitemap submission to remove."
+                    },
+                    "FunctionOutput_google_search_console_removesitemapfromproperty": {
+                        "type": "object",
+                        "properties": {
+                            "removed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Google acknowledged removal of the sitemap submission from the property."
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Property targeted by the acknowledged removal."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "description": "Sitemap URL targeted by the acknowledged removal."
+                            }
+                        },
+                        "required": [
+                            "removed",
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledged removal of the specified sitemap submission."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get propertyId from `list-properties` and sitemapUrl from `list-sitemaps`. This removes the property's submission, not website files or indexed URLs. Use `submit-sitemap` to submit the hosted URL again; prior processing history is not promised to be restored.",
+                "required_scopes": {
+                    "all": [
+                        "https://www.googleapis.com/auth/webmasters"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/remove-sitemap-from-property.ts",
+            "version": "dec007a2fd0ee2d154f962dac1b7383b240d6ed3d8589bb1f96384281d33b7db",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/remove-sitemap-from-property/dec007a2fd0ee2d154f962dac1b7383b240d6ed3d8589bb1f96384281d33b7db.cjs",
+                "ts": "templates-zero/google-search-console/tools/remove-sitemap-from-property/dec007a2fd0ee2d154f962dac1b7383b240d6ed3d8589bb1f96384281d33b7db.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "submit-sitemap",
+            "integrationId": "google-search-console",
+            "description": "Submit a hosted sitemap URL for a Search Console property. Acknowledgment does not mean the sitemap has been downloaded, processed, or its URLs indexed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_google_search_console_submitsitemap",
+            "output_schema_ref": "#/definitions/FunctionOutput_google_search_console_submitsitemap",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_google_search_console_submitsitemap": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact Search Console property identifier receiving the sitemap submission."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "Fully qualified hosted sitemap or sitemap-index URL to submit."
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Search Console property and hosted sitemap URL to submit."
+                    },
+                    "FunctionOutput_google_search_console_submitsitemap": {
+                        "type": "object",
+                        "properties": {
+                            "submitted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Google acknowledged the submission, not successful processing or indexing."
+                            },
+                            "propertyId": {
+                                "type": "string",
+                                "description": "Property targeted by the successful submission."
+                            },
+                            "sitemapUrl": {
+                                "type": "string",
+                                "description": "Sitemap URL submitted to Google."
+                            }
+                        },
+                        "required": [
+                            "submitted",
+                            "propertyId",
+                            "sitemapUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the sitemap URL submission, without a processing or indexing guarantee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get propertyId from `list-properties` and supply a hosted sitemap URL. This submits the URL, not sitemap XML or file bytes. Use `get-sitemap` afterward to inspect processing status. Repeating submission may update submission state, so do not replay blindly after an ambiguous result.",
+                "required_scopes": {
+                    "all": [
+                        "https://www.googleapis.com/auth/webmasters"
+                    ]
+                }
+            },
+            "filePath": "./google-search-console/tools/submit-sitemap.ts",
+            "version": "517fd2d0dea60c716d340ce9907fc4122285368ebc9d0d660cc618dc6754a682",
+            "location": {
+                "js": "templates-zero/google-search-console/tools/submit-sitemap/517fd2d0dea60c716d340ce9907fc4122285368ebc9d0d660cc618dc6754a682.cjs",
+                "ts": "templates-zero/google-search-console/tools/submit-sitemap/517fd2d0dea60c716d340ce9907fc4122285368ebc9d0d660cc618dc6754a682.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

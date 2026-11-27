@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { ProxyResponseFormatError } from '../../../../services/mcpProxyResponse.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
-import { connectionDeletedError } from '../sessionConnection.js';
+import { connectionDeletedError } from '../sessionConnectionErrors.js';
 
 import type { McpProxyError } from '../../../../services/mcpProxy.service.js';
 import type { ProxyServiceError } from '../../../../services/proxy.service.js';

@@ -1,0 +1,1395 @@
+{
+    "providerConfigKey": "fairing",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected shop's submitted survey responses available as records, including answer, clarification, customer, order, attribution, and insertion/update context.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-responses",
+            "output": [
+                "Responses"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Responses"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Responses": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque submitted-response record identifier, distinct from an answer-option identifier."
+                            },
+                            "email": {
+                                "description": "Customer email text exactly as returned, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "other": {
+                                "description": "Whether the response used an Other answer.",
+                                "type": "boolean"
+                            },
+                            "orderId": {
+                                "description": "Opaque commerce order identifier, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "utmTerm": {
+                                "description": "UTM term attribution, keeping null distinct from empty text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "question": {
+                                "type": "string",
+                                "description": "Question prompt associated with the response."
+                            },
+                            "response": {
+                                "description": "Submitted or categorized answer text, preserved verbatim.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last update instant normalized to UTC, preserving supplied fractional precision."
+                            },
+                            "utmMedium": {
+                                "description": "UTM medium attribution, keeping null distinct from empty text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "utmSource": {
+                                "description": "UTM source attribution, keeping null distinct from empty text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "couponCode": {
+                                "description": "Applied coupon code, or null; non-null shape is provisional.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "couponType": {
+                                "description": "Provider coupon-type label, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Opaque commerce customer identifier, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "insertedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider insertion instant in RFC 3339 UTC form; distinct from customer response time."
+                            },
+                            "orderTotal": {
+                                "description": "Exact provider decimal order-total text in the order currency, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "questionId": {
+                                "type": "string",
+                                "description": "Opaque Fairing question identifier rendered as a decimal string."
+                            },
+                            "utmContent": {
+                                "description": "UTM content attribution, keeping null distinct from empty text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "orderNumber": {
+                                "description": "Display order number as text, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "orderSource": {
+                                "description": "Provider order-source label, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "submitDelta": {
+                                "description": "Provider submit_delta value in unspecified units, without duration conversion.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "utmCampaign": {
+                                "description": "UTM campaign attribution, keeping null distinct from empty text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "couponAmount": {
+                                "description": "Provider coupon amount as an opaque JSON value; its non-null representation and units are unspecified."
+                            },
+                            "questionType": {
+                                "description": "Provider question type, if returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "orderPlatform": {
+                                "description": "Commerce platform associated with the order, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "orderTotalUsd": {
+                                "description": "Exact provider decimal USD order-total text, or null; no local currency conversion.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "otherResponse": {
+                                "description": "Other-answer text, or null; non-null shape is provisional.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "referringSite": {
+                                "description": "Provider referring-site text or null; the literal string null is not converted to JSON null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "answerOptionId": {
+                                "description": "Configured answer-option identifier from response_id; not the record's own identifier.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "landingPagePath": {
+                                "description": "Provider landing-page path, or null; non-null shape is provisional.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "responsePosition": {
+                                "description": "Provider response position, without an assumed indexing convention.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "orderCurrencyCode": {
+                                "description": "Provider order currency code, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "referringQuestion": {
+                                "description": "Parent question prompt for clarification context, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "availableResponses": {
+                                "description": "Provider available-response context as opaque JSON; non-null structure is unspecified."
+                            },
+                            "customerOrderCount": {
+                                "description": "Provider customer order count, or null.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "responseProvidedAt": {
+                                "description": "Instant the customer provided the response, normalized to UTC, or null.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "referringQuestionId": {
+                                "description": "Parent question's opaque identifier, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "clarificationQuestion": {
+                                "description": "Whether this response answers a clarification question.",
+                                "type": "boolean"
+                            },
+                            "referringQuestionResponse": {
+                                "description": "Parent question's selected answer text, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "referringQuestionAnswerOptionId": {
+                                "description": "Parent question's answer-option identifier, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "question",
+                            "updatedAt",
+                            "insertedAt",
+                            "questionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submitted survey response with answer, clarification, customer, order, attribution, and insertion/update context."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-create-sources",
+            "integrationId": "fairing",
+            "description": "Contribute up to 100 attribution sources to the connected brand's auto-suggest questions and return normalized accepted sources alongside field-level rejections. Requires an approved source-contributor connection; OAuth access also requires the Advanced Attribution plan.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fairing_batchcreatesources",
+            "output_schema_ref": "#/definitions/FunctionOutput_fairing_batchcreatesources",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fairing_batchcreatesources": {
+                        "type": "object",
+                        "properties": {
+                            "sources": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "pattern": "\\S",
+                                            "description": "Source display name containing non-whitespace text."
+                                        },
+                                        "channel": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Podcast",
+                                                "YouTube",
+                                                "Instagram",
+                                                "TikTok",
+                                                "Facebook"
+                                            ],
+                                            "description": "Supported source platform; participates in source identity."
+                                        },
+                                        "channelSourceId": {
+                                            "description": "Optional platform handle or identifier. Leading @ is accepted; blank, whitespace, or @ alone is treated as absent. Omit when unknown.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "channel"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An attribution source to contribute."
+                                },
+                                "description": "One to 100 sources to contribute in one request. Invalid provider items do not prevent valid sources being accepted."
+                            }
+                        },
+                        "required": [
+                            "sources"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A native batch of attribution sources for the connected brand."
+                    },
+                    "FunctionOutput_fairing_batchcreatesources": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Stored or existing source display name after provider normalization."
+                                        },
+                                        "channel": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Podcast",
+                                                "YouTube",
+                                                "Instagram",
+                                                "TikTok",
+                                                "Facebook"
+                                            ],
+                                            "description": "Stored channel in canonical casing."
+                                        },
+                                        "channelSourceId": {
+                                            "description": "Stored channel identifier without a leading @, or null when absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "channel",
+                                        "channelSourceId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accepted or existing normalized attribution source."
+                                },
+                                "description": "Sources accepted or already existing, as normalized by Fairing. Not guaranteed to have one entry for every input because deduplication can collapse inputs."
+                            },
+                            "rejected": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "source": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Originally submitted display name, echoed without provider normalization."
+                                                },
+                                                "channel": {
+                                                    "type": "string",
+                                                    "description": "Originally submitted channel text."
+                                                },
+                                                "channelSourceId": {
+                                                    "description": "Originally supplied handle text, retaining leading @ and whitespace; omitted if not supplied.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "channel"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Refused source in public field names, preserving exact submitted values."
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "const": "source_rejected",
+                                                    "description": "Stable item failure code for a provider-rejected source."
+                                                },
+                                                "fieldErrors": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "A provider validation message."
+                                                        },
+                                                        "description": "Provider messages for this field, in order."
+                                                    },
+                                                    "description": "Map of public field name to provider error messages. channel_source_id is mapped to channelSourceId; unknown error keys are retained."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "fieldErrors"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Actionable item validation error; correct these fields before resubmitting the source."
+                                        }
+                                    },
+                                    "required": [
+                                        "source",
+                                        "error"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A refused source and its field-level validation errors."
+                                },
+                                "description": "Refused sources echoed as submitted with field-level errors; these are item failures, not whole-call errors."
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "created": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Provider count of entries in the created partition."
+                                    },
+                                    "rejected": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Provider count of entries in the rejected partition."
+                                    }
+                                },
+                                "required": [
+                                    "created",
+                                    "rejected"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Provider counts for the returned accepted and rejected partitions, not a count of newly inserted unique sources."
+                            }
+                        },
+                        "required": [
+                            "created",
+                            "rejected",
+                            "summary"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Fairing accepted and rejected source partitions with provider counts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for 1–100 sources in one call; use `create-source` for a single source with a direct success-or-error result. Only approved source contributors can contribute. Inspect both created and rejected: invalid sources do not block valid ones. Fix rejected sources using their field errors and resubmit them. Identical retries are safe under Fairing's deduplication rules. Accepted entries can already exist and do not prove new insertion."
+            },
+            "filePath": "./fairing/tools/batch-create-sources.ts",
+            "version": "22e5a8e7455e611baf6d2ad143fa7dea49c8fbebbe4bf0e2e0043c38774ad479",
+            "location": {
+                "js": "templates-zero/fairing/tools/batch-create-sources/22e5a8e7455e611baf6d2ad143fa7dea49c8fbebbe4bf0e2e0043c38774ad479.cjs",
+                "ts": "templates-zero/fairing/tools/batch-create-sources/22e5a8e7455e611baf6d2ad143fa7dea49c8fbebbe4bf0e2e0043c38774ad479.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-source",
+            "integrationId": "fairing",
+            "description": "Contribute one creator, show, or account as an attribution source for the connected brand's auto-suggest questions. Requires an approved source-contributor connection; OAuth access also requires the Advanced Attribution plan.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fairing_createsource",
+            "output_schema_ref": "#/definitions/FunctionOutput_fairing_createsource",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fairing_createsource": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "\\S",
+                                "description": "Source display name, such as MrBeast or Crime Junkie; must contain non-whitespace text."
+                            },
+                            "channel": {
+                                "type": "string",
+                                "enum": [
+                                    "Podcast",
+                                    "YouTube",
+                                    "Instagram",
+                                    "TikTok",
+                                    "Facebook"
+                                ],
+                                "description": "Platform on which the source appears; channel identity participates in deduplication."
+                            },
+                            "channelSourceId": {
+                                "description": "Optional platform handle or identifier. A leading @ is accepted; blank, whitespace-only, or @ alone is treated as absent by Fairing. Omit when unknown.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "channel"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One attribution source to contribute to the connected brand."
+                    },
+                    "FunctionOutput_fairing_createsource": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Stored or existing normalized source display name."
+                            },
+                            "channel": {
+                                "type": "string",
+                                "enum": [
+                                    "Podcast",
+                                    "YouTube",
+                                    "Instagram",
+                                    "TikTok",
+                                    "Facebook"
+                                ],
+                                "description": "Stored source channel in canonical casing."
+                            },
+                            "channelSourceId": {
+                                "description": "Stored channel identifier without a leading @, or null when absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "channel",
+                            "channelSourceId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The stored or existing attribution source returned by Fairing, not proof of a new insertion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for one source, or `batch-create-sources` for up to 100 sources. You need the display name, a supported channel, and optionally its handle. Only approved source contributors can use this task. A successful result means the source was stored or already existed; it becomes an auto-suggest answer option, not a message sent to customers. Repeating the same source is safe under Fairing's deduplication rules."
+            },
+            "filePath": "./fairing/tools/create-source.ts",
+            "version": "f61e49c52af9a091ca184ad2218b3bb34b53c63ca41938b8b32c472c8d6a924a",
+            "location": {
+                "js": "templates-zero/fairing/tools/create-source/f61e49c52af9a091ca184ad2218b3bb34b53c63ca41938b8b32c472c8d6a924a.cjs",
+                "ts": "templates-zero/fairing/tools/create-source/f61e49c52af9a091ca184ad2218b3bb34b53c63ca41938b8b32c472c8d6a924a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-questions",
+            "integrationId": "fairing",
+            "description": "List the connected shop's question stream, including answer options, clarification questions, presentation settings, and targeting.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fairing_listquestions",
+            "output_schema_ref": "#/definitions/FunctionOutput_fairing_listquestions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fairing_listquestions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed; the connection identifies the shop."
+                    },
+                    "FunctionOutput_fairing_listquestions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                },
+                                "description": "All questions in the connected shop's question stream, in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete question stream, including answer options, presentation settings, and targeting.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque Fairing question identifier; integer identifiers are rendered as decimal strings."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Provider question type, such as single_response, multi_response, or open_ended; unknown values are preserved."
+                                    },
+                                    "prompt": {
+                                        "type": "string",
+                                        "description": "Question text, preserved including Unicode and whitespace."
+                                    },
+                                    "targeting": {
+                                        "description": "Question targeting configuration, when returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "surfaces": {
+                                                "description": "Configured Shopify surfaces; null means no surface targeting is configured.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "Provider Shopify surface identifier."
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "geoTargeting": {
+                                                "description": "Geographic inclusion or exclusion rule, or null when unconfigured.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "option": {
+                                                                "description": "Whether the listed countries and regions are included or excluded.",
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "include",
+                                                                    "exclude"
+                                                                ]
+                                                            },
+                                                            "targets": {
+                                                                "description": "Map from ISO 3166-1 alpha-2 country code to all or an array of subdivision codes.",
+                                                                "type": "object",
+                                                                "propertyNames": {
+                                                                    "type": "string"
+                                                                },
+                                                                "additionalProperties": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "const": "all",
+                                                                            "description": "All subdivisions of the country."
+                                                                        },
+                                                                        {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "string",
+                                                                                "description": "Country subdivision code."
+                                                                            },
+                                                                            "description": "Targeted subdivisions of the country."
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "productTargeting": {
+                                                "description": "Product inclusion or exclusion rule, or null when unconfigured.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "option": {
+                                                                "description": "Whether listed Shopify products are included or excluded.",
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "include",
+                                                                    "exclude"
+                                                                ]
+                                                            },
+                                                            "productIds": {
+                                                                "description": "Opaque Shopify product identifiers rendered as decimal strings.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string",
+                                                                    "description": "Opaque Shopify product identifier rendered as a decimal string."
+                                                                }
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "updatedAt": {
+                                        "description": "Last update instant normalized to UTC with all supplied fractional precision preserved.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "allowOther": {
+                                        "description": "Whether the question permits an Other answer.",
+                                        "type": "boolean"
+                                    },
+                                    "insertedAt": {
+                                        "description": "Provider insertion instant in RFC 3339 UTC form; not reinterpreted as a separate business creation event.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "submitText": {
+                                        "description": "Configured submission button label, if returned.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "publishedAt": {
+                                        "description": "Publication instant normalized to UTC, or null when the provider returns no publication instant.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "customerType": {
+                                        "description": "Provider customer audience setting, preserved without inventing additional states.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "answerOptions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque answer-option identifier, rendered as a decimal string when supplied as an integer."
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "Displayed answer-option text, without trimming or decoding changes."
+                                                },
+                                                "clarificationQuestion": {
+                                                    "description": "Follow-up question associated with this option; null means none, and omission preserves an absent provider field.",
+                                                    "anyOf": [
+                                                        {
+                                                            "$ref": "#/definitions/__schema0"
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A configured answer option and its optional clarification question."
+                                        },
+                                        "description": "Configured answer options in provider order; empty for questions without predefined options."
+                                    },
+                                    "frequencyType": {
+                                        "description": "Provider display-frequency setting, such as once or always.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "otherPlaceholder": {
+                                        "description": "Other-answer placeholder text; null means no placeholder is configured.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "randomizeResponses": {
+                                        "description": "Whether answer options are presented in randomized order.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "prompt",
+                                    "answerOptions"
+                                ],
+                                "additionalProperties": false,
+                                "description": "A question in the shop question stream, or a nested clarification question."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover question IDs, prompts, answer options, and targeting before calling `list-responses` with a question filter. The entire question stream is returned as one unpaginated collection; no cursor is needed. Use `sync-questions` when you need a replicated dataset instead."
+            },
+            "filePath": "./fairing/tools/list-questions.ts",
+            "version": "97c393e8a9587281fccea882068d82a3a97dccb0e25991222f9d6c093866deee",
+            "location": {
+                "js": "templates-zero/fairing/tools/list-questions/97c393e8a9587281fccea882068d82a3a97dccb0e25991222f9d6c093866deee.cjs",
+                "ts": "templates-zero/fairing/tools/list-questions/97c393e8a9587281fccea882068d82a3a97dccb0e25991222f9d6c093866deee.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-responses",
+            "integrationId": "fairing",
+            "description": "List one page of submitted survey responses, optionally restricted by question, insertion time, or last-update time, with customer, order, and attribution context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fairing_listresponses",
+            "output_schema_ref": "#/definitions/FunctionOutput_fairing_listresponses",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fairing_listresponses": {
+                        "type": "object",
+                        "properties": {
+                            "sort": {
+                                "default": "insertedAtDescending",
+                                "description": "Page ordering by insertion or update instant and direction; defaults to newest insertion first.",
+                                "type": "string",
+                                "enum": [
+                                    "insertedAtDescending",
+                                    "insertedAtAscending",
+                                    "updatedAtDescending",
+                                    "updatedAtAscending"
+                                ]
+                            },
+                            "limit": {
+                                "default": 100,
+                                "description": "Maximum responses requested in this page; defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from nextCursor or previousCursor; scoped to this connection and unchanged filters, sort, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "questionId": {
+                                "description": "Opaque Fairing question ID from list-questions; restricts results to that question. Must be representable as the provider's int32 identifier.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "updatedAtMax": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive last-update upper bound with an explicit UTC marker or numeric offset.",
+                                "type": "string"
+                            },
+                            "updatedAtMin": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive last-update lower bound with an explicit UTC marker or numeric offset.",
+                                "type": "string"
+                            },
+                            "insertedAtMax": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive insertion-time upper bound with an explicit UTC marker or numeric offset.",
+                                "type": "string"
+                            },
+                            "insertedAtMin": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive insertion-time lower bound with an explicit UTC marker or numeric offset.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, ordering, page size, and an optional continuation for one response page."
+                    },
+                    "FunctionOutput_fairing_listresponses": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this submitted response record, not the configured answer-option ID."
+                                        },
+                                        "email": {
+                                            "description": "Customer email exactly as returned; no email-format assumption is imposed.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "other": {
+                                            "description": "Whether the submitted response used an Other answer.",
+                                            "type": "boolean"
+                                        },
+                                        "orderId": {
+                                            "description": "Opaque commerce order identifier, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "utmTerm": {
+                                            "description": "Attribution UTM term, preserving null and empty text distinctly.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "question": {
+                                            "type": "string",
+                                            "description": "Question prompt associated with this response."
+                                        },
+                                        "response": {
+                                            "description": "Submitted or categorized answer text; preserved verbatim.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last update instant normalized to UTC, including recategorization updates."
+                                        },
+                                        "utmMedium": {
+                                            "description": "Attribution UTM medium, preserving null and empty text distinctly.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "utmSource": {
+                                            "description": "Attribution UTM source, preserving null and empty text distinctly.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "couponCode": {
+                                            "description": "Applied coupon code, or null; non-null shape is provisional.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "couponType": {
+                                            "description": "Provider coupon-type label, or null; no additional interpretation is imposed.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customerId": {
+                                            "description": "Opaque commerce customer identifier, or null when unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "insertedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Provider insertion instant normalized to RFC 3339 UTC; not the instant the customer supplied the answer."
+                                        },
+                                        "orderTotal": {
+                                            "description": "Exact provider decimal order-total text in the order currency; never converted through floating point.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "questionId": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of the question answered, rendered as a decimal string."
+                                        },
+                                        "utmContent": {
+                                            "description": "Attribution UTM content, preserving null and empty text distinctly.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "orderNumber": {
+                                            "description": "Display order number preserved as text, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "orderSource": {
+                                            "description": "Provider order-source label, such as shopify_checkout, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "submitDelta": {
+                                            "description": "Provider submit_delta value in unspecified units; retained without interpreting it as a duration.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "utmCampaign": {
+                                            "description": "Attribution UTM campaign, preserving null and empty text distinctly.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "couponAmount": {
+                                            "description": "Provider coupon amount retained as an opaque JSON value because its units and non-null representation are unspecified."
+                                        },
+                                        "questionType": {
+                                            "description": "Provider question type, if returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "orderPlatform": {
+                                            "description": "Commerce platform associated with the order, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "orderTotalUsd": {
+                                            "description": "Exact provider decimal order total expressed in USD, or null; no exchange-rate calculation is performed.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "otherResponse": {
+                                            "description": "Other-answer text, or null when none was returned; non-null shape is provisional.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "referringSite": {
+                                            "description": "Provider referring-site text or null. The literal string null remains text, not JSON null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "answerOptionId": {
+                                            "description": "Configured answer-option identifier from response_id; distinct from this record's id.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "landingPagePath": {
+                                            "description": "Provider landing-page path, or null; non-null shape is provisional.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "responsePosition": {
+                                            "description": "Provider-supplied response position; retained without assuming a zero- or one-based convention.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "orderCurrencyCode": {
+                                            "description": "Provider order currency code, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "referringQuestion": {
+                                            "description": "Parent question prompt for clarification context, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "availableResponses": {
+                                            "description": "Provider's available-response context as an opaque JSON value; its non-null structure is unspecified."
+                                        },
+                                        "customerOrderCount": {
+                                            "description": "Provider-supplied customer order count, or null when unavailable.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "responseProvidedAt": {
+                                            "description": "Instant the response was provided, normalized to UTC, or null if unset.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "referringQuestionId": {
+                                            "description": "Parent question identifier for clarification context, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "clarificationQuestion": {
+                                            "description": "Whether this record answers a clarification question.",
+                                            "type": "boolean"
+                                        },
+                                        "referringQuestionResponse": {
+                                            "description": "Parent question's selected answer text, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "referringQuestionAnswerOptionId": {
+                                            "description": "Parent answer-option identifier from referring_question_response_id, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "question",
+                                        "updatedAt",
+                                        "insertedAt",
+                                        "questionId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A submitted survey response with customer, order, attribution, and clarification context."
+                                },
+                                "description": "One provider page of submitted responses in the requested order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation to the next page in the active sort direction; omitted when unavailable.",
+                                "type": "string"
+                            },
+                            "previousCursor": {
+                                "description": "Opaque continuation to the previous page in the active sort direction; omitted when unavailable.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of survey responses and opaque forward and backward continuations, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for on-demand response browsing or a filtered lookup. Obtain a question ID from `list-questions` when filtering by question. Each call returns one page, with 100 responses by default and at most 1,000. Pass nextCursor or previousCursor back as cursor with the same filters, sort, and limit. Newest insertion first is the default; choose an update-time sort to browse recently recategorized responses. Use `sync-responses` for a replicated dataset."
+            },
+            "filePath": "./fairing/tools/list-responses.ts",
+            "version": "220f861c5a39103221911feaf4c5a4118a233a4c097d605e858c4c289faf0989",
+            "location": {
+                "js": "templates-zero/fairing/tools/list-responses/220f861c5a39103221911feaf4c5a4118a233a4c097d605e858c4c289faf0989.cjs",
+                "ts": "templates-zero/fairing/tools/list-responses/220f861c5a39103221911feaf4c5a4118a233a4c097d605e858c4c289faf0989.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

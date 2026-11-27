@@ -1,0 +1,38 @@
+---
+title: 'PrintNode - How do I link my account?'
+sidebarTitle: 'PrintNode'
+---
+
+## Overview
+
+To authenticate with PrintNode, you need:
+
+1. **API Key** — an API key from your PrintNode account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A PrintNode account. [Sign up](https://app.printnode.com/login/register) if you don't have one; signing up is free.
+
+### Step 1: Create an API key
+
+1. Log in to the [PrintNode web app](https://app.printnode.com/login) and click **API Keys** in the top navigation.
+2. If PrintNode asks for your account password to view API Keys, enter it and click **NEXT**.
+3. Under **Create New API Key**, enter a description for the key (up to 15 characters) and click **CREATE**.
+
+<img src="/api-integrations/printnode/create_api_key.png" alt="PrintNode API Keys page with a description entered and the CREATE button highlighted"/>
+
+4. Your new key appears under **Current API Keys**. Copy the value from the **API Key** column.
+
+<img src="/api-integrations/printnode/api_key_created.png" alt="PrintNode Current API Keys table with the API Key column of the new key highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with PrintNode.
+2. Paste your key into the **API Key** field. PrintNode needs no password.
+3. Submit the form. Nango checks the key with PrintNode, and a wrong key is rejected.
+
+<img src="/api-integrations/printnode/form.png" alt="PrintNode Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to PrintNode.

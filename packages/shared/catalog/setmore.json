@@ -1,0 +1,2202 @@
+{
+    "providerConfigKey": "setmore",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Maintain appointment records with booking identity, start and end instants, resource references, price, notes, and tracking labels.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-appointments",
+            "output": [
+                "Appointments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Appointments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Appointments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque appointment identifier."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Appointment end instant normalized to UTC with Z."
+                            },
+                            "label": {
+                                "description": "Internal tracking label, preserving null and empty text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "comment": {
+                                "description": "Internal appointment notes, preserving null and empty text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "staffId": {
+                                "type": "string",
+                                "description": "Staff identifier assigned to the appointment."
+                            },
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Appointment start instant normalized to UTC with Z."
+                            },
+                            "currency": {
+                                "description": "ISO 4217 currency code; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "serviceId": {
+                                "type": "string",
+                                "description": "Booked service identifier."
+                            },
+                            "customerId": {
+                                "type": "string",
+                                "description": "Customer identifier associated with the booking."
+                            },
+                            "costMinorUnits": {
+                                "description": "Appointment cost in the currency's smallest unit without rescaling; omitted if absent.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "durationMinutes": {
+                                "description": "Provider-reported appointment duration in minutes; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "videoMeetingUrl": {
+                                "description": "Virtual meeting link when provided, preserving null or empty; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "endAt",
+                            "staffId",
+                            "startAt",
+                            "serviceId",
+                            "customerId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Appointment records with booking identity, UTC instants, resource references, price, notes, and tracking labels."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Maintain service-category records with display order, service membership, company and brand references, creation time, and provider flags.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-service-categories",
+            "output": [
+                "ServiceCategories"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ServiceCategories"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ServiceCategories": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque service-category identifier."
+                            },
+                            "name": {
+                                "description": "Category display name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "order": {
+                                "description": "Provider display order relative to other categories; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "brandId": {
+                                "description": "Associated brand identifier; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "newness": {
+                                "description": "Opaque provider isNew marker, preserving its string vocabulary; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyId": {
+                                "description": "Company identifier associated with the category; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Category creation instant normalized to UTC with Z and millisecond precision; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "isDeleted": {
+                                "description": "Provider's category deletion flag as record data; omitted if absent.",
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "serviceIds": {
+                                "description": "Service identifiers associated with the category; omitted if absent, preserving null or empty arrays.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Opaque service identifier associated with the category."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Service-category records with display order, service membership, company and brand references, creation time, and provider flags."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Maintain the company's available service catalog, including eligible staff, durations, cost, currency, descriptions, and images.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-services",
+            "output": [
+                "Services"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Services"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Services": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque service identifier."
+                            },
+                            "cost": {
+                                "description": "Provider-reported service cost, with undocumented scale and no rescaling; omitted if absent.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "description": "Service display name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "currency": {
+                                "description": "Currency code for the service cost; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "imageUrl": {
+                                "description": "Service image URL, preserving null or empty; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "staffIds": {
+                                "description": "Associated staff identifiers; omitted if absent, preserving null or an empty list.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of an associated staff member."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "description": {
+                                "description": "Detailed service description as ordinary text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "durationMinutes": {
+                                "description": "Service duration in minutes; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "bufferDurationMinutes": {
+                                "description": "Buffer duration in minutes; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The company's available service catalog, including eligible staff, durations, cost, currency, descriptions, and images."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Maintain the company's staff directory with identity, company references, contact details, profile images, and internal notes.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-staff",
+            "output": [
+                "Staff"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Staff"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Staff": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque staff identifier."
+                            },
+                            "email": {
+                                "description": "Primary email address as stored; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "comment": {
+                                "description": "Internal staff notes as ordinary text, not a structured schedule; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "imageUrl": {
+                                "description": "Profile image URL, preserving null or empty; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastName": {
+                                "description": "Staff family name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyId": {
+                                "description": "Company identifier associated with the staff member; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "firstName": {
+                                "description": "Staff given name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "workPhone": {
+                                "description": "Work contact number as text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "contactType": {
+                                "description": "Provider contact classification, such as Resources; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "mobilePhone": {
+                                "description": "Mobile contact number as text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "countryCallingCode": {
+                                "description": "Country dialing prefix, not an ISO country code; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A staff directory record with identity, company references, contact details, profile image, and internal notes."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-appointment",
+            "integrationId": "setmore",
+            "description": "Book an appointment for an existing customer, service, and staff member at specified start and end times.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_createappointment",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_createappointment",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_createappointment": {
+                        "type": "object",
+                        "properties": {
+                            "staffId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque staff identifier in the connected company."
+                            },
+                            "serviceId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the service to book."
+                            },
+                            "customerId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing customer receiving the service."
+                            },
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:00(?:\\.0+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Appointment start instant with an explicit UTC marker or offset; only whole-minute precision is supported."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "T[0-9]{2}:[0-9]{2}:00(?:\\.0+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Appointment end instant with an explicit UTC marker or offset, on a whole minute and later than startAt."
+                            },
+                            "label": {
+                                "description": "Internal tracking label; omitted means no value is supplied and an empty string is sent literally.",
+                                "type": "string"
+                            },
+                            "comment": {
+                                "description": "Internal appointment notes as ordinary Unicode text; omitted means no value is supplied and an empty string is sent literally.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "staffId",
+                            "serviceId",
+                            "customerId",
+                            "startAt",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer, service, staff, and whole-minute appointment times, with optional internal notes and label."
+                    },
+                    "FunctionOutput_setmore_createappointment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the created appointment."
+                            },
+                            "staffId": {
+                                "type": "string",
+                                "description": "Staff identifier assigned to the appointment."
+                            },
+                            "serviceId": {
+                                "type": "string",
+                                "description": "Identifier of the booked service."
+                            },
+                            "customerId": {
+                                "type": "string",
+                                "description": "Identifier of the customer receiving the service."
+                            },
+                            "startAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Appointment start instant normalized to UTC with Z."
+                            },
+                            "endAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Appointment end instant normalized to UTC with Z."
+                            },
+                            "label": {
+                                "description": "Internal tracking label, preserving empty or null values; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "comment": {
+                                "description": "Internal notes, preserving empty or null values; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "currency": {
+                                "description": "Provider-reported ISO 4217 currency code; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "costMinorUnits": {
+                                "description": "Appointment cost in the currency's smallest unit, without rescaling; omitted if absent.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "durationMinutes": {
+                                "description": "Provider-reported duration in minutes; omitted if absent and null if explicitly null.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "videoMeetingUrl": {
+                                "description": "Virtual meeting link when supplied; omitted if absent, preserving null or empty values.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "staffId",
+                            "serviceId",
+                            "customerId",
+                            "startAt",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The saved appointment reported by Setmore, with UTC instants and unchanged optional saved values."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-services` and `list-staff` to obtain resource IDs and `search-customers` or `create-customer` to obtain the customer ID. Check `list-available-slots` before booking; availability is not reserved by that check. Times must fall on whole minutes. This creates a booking, not just a hold. Do not blindly repeat an uncertain write: check `list-appointments` first."
+            },
+            "filePath": "./setmore/tools/create-appointment.ts",
+            "version": "48c00f297fc0dd3e8101b74cd61352884da54c5f94dc536a98f1a008feba93e5",
+            "location": {
+                "js": "templates-zero/setmore/tools/create-appointment/48c00f297fc0dd3e8101b74cd61352884da54c5f94dc536a98f1a008feba93e5.cjs",
+                "ts": "templates-zero/setmore/tools/create-appointment/48c00f297fc0dd3e8101b74cd61352884da54c5f94dc536a98f1a008feba93e5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-customer",
+            "integrationId": "setmore",
+            "description": "Create a customer profile with contact information, address, notes, and custom fields, returning the saved profile.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_createcustomer",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_createcustomer",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "city": {
+                                "description": "Address city.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Customer email address; omit to leave unspecified.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "state": {
+                                "description": "Address state or region.",
+                                "type": "string"
+                            },
+                            "address": {
+                                "description": "Street address text.",
+                                "type": "string"
+                            },
+                            "comment": {
+                                "description": "Internal customer notes as ordinary Unicode text.",
+                                "type": "string"
+                            },
+                            "imageUrl": {
+                                "description": "URL for the customer profile image.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Customer family name; omit to leave unspecified.",
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "description": "Optional associated company identifier if known; normally omit to use provider account context.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Customer given name as ordinary Unicode text."
+                            },
+                            "homePhone": {
+                                "description": "Home phone, preserving caller formatting.",
+                                "type": "string"
+                            },
+                            "workPhone": {
+                                "description": "Work phone, preserving caller formatting.",
+                                "type": "string"
+                            },
+                            "postalCode": {
+                                "description": "Postal code as text, preserving leading zeros.",
+                                "type": "string"
+                            },
+                            "contactType": {
+                                "description": "Provider contact classification if needed; omit to use provider behavior.",
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "description": "Personal mobile phone, preserving caller formatting.",
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "description": "Custom-field map with caller-chosen keys and JSON values; an empty object is sent explicitly.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "countryCallingCode": {
+                                "description": "Country dialing prefix, such as +1, not an ISO country code.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer profile to create, with a required first name and optional contact details."
+                    },
+                    "FunctionOutput_setmore_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the created customer."
+                            },
+                            "city": {
+                                "description": "Saved city; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "email": {
+                                "description": "Saved email; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "state": {
+                                "description": "Saved state or region; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "address": {
+                                "description": "Saved street address; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "comment": {
+                                "description": "Saved notes, preserving null and empty; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "imageUrl": {
+                                "description": "Saved profile image URL; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastName": {
+                                "description": "Saved family name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyId": {
+                                "description": "Associated company identifier; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "firstName": {
+                                "description": "Saved given name; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "homePhone": {
+                                "description": "Saved home phone; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "workPhone": {
+                                "description": "Saved work phone; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "postalCode": {
+                                "description": "Saved postal code as text; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "contactType": {
+                                "description": "Saved contact classification; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "mobilePhone": {
+                                "description": "Saved personal mobile number; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customFields": {
+                                "description": "Saved custom-field map, preserving JSON values, null and empty objects; omitted if absent.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "countryCallingCode": {
+                                "description": "Saved country dialing prefix; omitted if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Saved customer profile returned by Setmore after successful creation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `search-customers` first when a customer may already exist. This tool creates a new profile; it does not match or update an existing customer. Only a first name is required. The returned id can be passed to `create-appointment`. If a create result is uncertain, search or inspect Setmore before retrying to avoid duplicates."
+            },
+            "filePath": "./setmore/tools/create-customer.ts",
+            "version": "9e56316d90d64509d07a36d2a0617b5d9439ce1600925ac3dbec41f9ca929c1b",
+            "location": {
+                "js": "templates-zero/setmore/tools/create-customer/9e56316d90d64509d07a36d2a0617b5d9439ce1600925ac3dbec41f9ca929c1b.cjs",
+                "ts": "templates-zero/setmore/tools/create-customer/9e56316d90d64509d07a36d2a0617b5d9439ce1600925ac3dbec41f9ca929c1b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-appointments",
+            "integrationId": "setmore",
+            "description": "Read one page of appointments for a calendar-date range, optionally restricted to a staff member and including customer details.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_listappointments",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_listappointments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_listappointments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from this tool for the same connection and unchanged filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "endDate": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "End calendar date in YYYY-MM-DD, no earlier than startDate; boundary inclusion follows Setmore."
+                            },
+                            "staffId": {
+                                "description": "Optional staff identifier; omit to read appointments across the account.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "startDate": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Start calendar date in YYYY-MM-DD, interpreted by Setmore's account calendar rules."
+                            },
+                            "includeCustomerDetails": {
+                                "default": false,
+                                "description": "Whether to include nested customer profiles; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "endDate",
+                            "startDate"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Calendar-date range, optional staff filter, customer-profile choice, and continuation."
+                    },
+                    "FunctionOutput_setmore_listappointments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque appointment identifier."
+                                        },
+                                        "endAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "End instant normalized to UTC with Z."
+                                        },
+                                        "label": {
+                                            "description": "Tracking label, preserving null or empty; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "comment": {
+                                            "description": "Internal notes, preserving null or empty; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "staffId": {
+                                            "type": "string",
+                                            "description": "Assigned staff identifier."
+                                        },
+                                        "startAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Start instant normalized to UTC with Z."
+                                        },
+                                        "currency": {
+                                            "description": "ISO 4217 currency code; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer": {
+                                            "description": "Customer profile when requested and supplied; null remains null and absent stays omitted.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "description": "Opaque customer identifier."
+                                                        },
+                                                        "city": {
+                                                            "description": "Address city; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email": {
+                                                            "description": "Customer email as stored; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "state": {
+                                                            "description": "Address state or region; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "description": "Street address text; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "comment": {
+                                                            "description": "Customer notes, preserving null and empty; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "imageUrl": {
+                                                            "description": "Profile image URL as stored; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "lastName": {
+                                                            "description": "Customer family name; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "companyId": {
+                                                            "description": "Associated company identifier; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "firstName": {
+                                                            "description": "Customer given name; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "homePhone": {
+                                                            "description": "Home phone as stored; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "workPhone": {
+                                                            "description": "Work phone as stored; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "postalCode": {
+                                                            "description": "Postal code preserving leading zeros; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "contactType": {
+                                                            "description": "Provider contact classification; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "mobilePhone": {
+                                                            "description": "Personal mobile phone as stored; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "customFields": {
+                                                            "description": "Additional custom fields as a map of JSON values, preserving keys, nulls and empty objects; omitted if absent.",
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "propertyNames": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "additionalProperties": {}
+                                                                },
+                                                                {
+                                                                    "type": "null"
+                                                                }
+                                                            ]
+                                                        },
+                                                        "countryCallingCode": {
+                                                            "description": "Country dialing prefix, not an ISO country code; omitted if absent.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Customer profile returned by Setmore."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "serviceId": {
+                                            "type": "string",
+                                            "description": "Booked service identifier."
+                                        },
+                                        "customerId": {
+                                            "type": "string",
+                                            "description": "Customer identifier."
+                                        },
+                                        "costMinorUnits": {
+                                            "description": "Appointment cost in smallest currency units without rescaling; omitted if absent.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "durationMinutes": {
+                                            "description": "Provider-reported duration in minutes; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "videoMeetingUrl": {
+                                            "description": "Virtual meeting URL, preserving null or empty; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "endAt",
+                                        "staffId",
+                                        "startAt",
+                                        "serviceId",
+                                        "customerId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Appointment with opaque references and UTC instants."
+                                },
+                                "description": "Appointments in this provider-sized page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the same filters; omitted when the provider reports no more results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-sized page of appointments and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for calendar browsing or checking a booking after an uncertain create. Obtain an optional staff ID from `list-staff`. Pass nextCursor back as cursor with the same date range, staff filter, and customer-detail choice. One call returns one provider-sized page; there is no adjustable page size. Date boundaries follow Setmore's calendar interpretation, not a caller-selected timezone."
+            },
+            "filePath": "./setmore/tools/list-appointments.ts",
+            "version": "572fd5901e0135d631ad8c16b649198a3038148d21cba80149f46ac45173327a",
+            "location": {
+                "js": "templates-zero/setmore/tools/list-appointments/572fd5901e0135d631ad8c16b649198a3038148d21cba80149f46ac45173327a.cjs",
+                "ts": "templates-zero/setmore/tools/list-appointments/572fd5901e0135d631ad8c16b649198a3038148d21cba80149f46ac45173327a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-available-slots",
+            "integrationId": "setmore",
+            "description": "Find available local start times for a staff member and service on a selected date, with explicit off-hours and double-booking choices.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_listavailableslots",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_listavailableslots",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_listavailableslots": {
+                        "type": "object",
+                        "properties": {
+                            "date": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Selected calendar date in YYYY-MM-DD in the requested timezone or company timezone when omitted."
+                            },
+                            "limit": {
+                                "description": "Maximum requested slots, from 1 through 30; defaults to 30. No continuation is available.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 30
+                            },
+                            "staffId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque staff identifier whose availability is requested."
+                            },
+                            "timezone": {
+                                "description": "Optional IANA timezone for returned local slots; omit to use the company's timezone.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "serviceId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque service identifier; choose a staff member associated with this service."
+                            },
+                            "includeOffHours": {
+                                "description": "Whether to include off-hours candidates; defaults to false.",
+                                "type": "boolean"
+                            },
+                            "allowDoubleBooking": {
+                                "description": "Whether overlapping booking candidates may be included; defaults to false. This does not itself create a booking.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "date",
+                            "staffId",
+                            "serviceId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Staff, service, local calendar date, and explicit availability choices."
+                    },
+                    "FunctionOutput_setmore_listavailableslots": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Local calendar date supplied as the provider's slot-map key."
+                                        },
+                                        "localTime": {
+                                            "type": "string",
+                                            "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$",
+                                            "description": "Slot start wall-clock time in 24-hour HH:mm form; intentionally has no UTC offset."
+                                        }
+                                    },
+                                    "required": [
+                                        "date",
+                                        "localTime"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An available local slot start, not a reserved booking or UTC instant."
+                                },
+                                "description": "Returned local slot start times, preserving provider order within each date; not reservations and not guaranteed still available."
+                            },
+                            "timezone": {
+                                "description": "Requested IANA timezone when timezoneSource is requested; omitted when the company timezone name is not known from this operation.",
+                                "type": "string"
+                            },
+                            "timezoneSource": {
+                                "type": "string",
+                                "enum": [
+                                    "requested",
+                                    "company"
+                                ],
+                                "description": "Whether slot local times use the explicitly requested timezone or the provider's company timezone."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "timezoneSource"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available local start times and the source of their timezone context."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain service and compatible staff IDs from `list-services` and `list-staff`. This only checks availability; it does not reserve or create a booking. Prefer an explicit IANA timezone so local times have known context; otherwise Setmore uses its company timezone. At most 30 slots are requested. Returned local date and time values are not UTC instants and may be ambiguous at daylight-saving transitions. Use `create-appointment` only after resolving the desired booking instant."
+            },
+            "filePath": "./setmore/tools/list-available-slots.ts",
+            "version": "b71cb5e360fd8823cadfce6a6ac711d08fb4ec22137846f98d7b2e9fdb75ea4a",
+            "location": {
+                "js": "templates-zero/setmore/tools/list-available-slots/b71cb5e360fd8823cadfce6a6ac711d08fb4ec22137846f98d7b2e9fdb75ea4a.cjs",
+                "ts": "templates-zero/setmore/tools/list-available-slots/b71cb5e360fd8823cadfce6a6ac711d08fb4ec22137846f98d7b2e9fdb75ea4a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-service-categories",
+            "integrationId": "setmore",
+            "description": "Read one page of service categories, including category order, service membership, and creation time.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_listservicecategories",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_listservicecategories",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_listservicecategories": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation returned by this tool on the same connection; omit for the first page. Upstream continuation mapping is provisional.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Read one provider-sized page of service categories, optionally continuing a previous page."
+                    },
+                    "FunctionOutput_setmore_listservicecategories": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque service-category identifier."
+                                        },
+                                        "name": {
+                                            "description": "Category display name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "order": {
+                                            "description": "Provider's category order relative to other categories; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "brandId": {
+                                            "description": "Associated brand identifier; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "newness": {
+                                            "description": "Provider's isNew marker retained as a string because its vocabulary is not defined; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyId": {
+                                            "description": "Company identifier owning this category; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "description": "Category creation instant normalized to UTC with Z and millisecond precision; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "isDeleted": {
+                                            "description": "Provider's category deletion flag; omitted if absent.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "serviceIds": {
+                                            "description": "Service identifiers associated with the category; omitted if absent, preserving null or an empty array.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Opaque service identifier."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A service category with provider ordering, membership, and creation information."
+                                },
+                                "description": "Service categories in this provider-sized page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation when supplied by Setmore; omitted on established exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-sized category page and its continuation, when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find category IDs for `list-services`. One call returns one provider-sized page. If nextCursor is returned, pass it as cursor on the same connection to continue; there is no adjustable page size. Category deletion flags are returned as data and do not trigger any deletion."
+            },
+            "filePath": "./setmore/tools/list-service-categories.ts",
+            "version": "17605ed0f22a4211f51f26f906fe38f2fe77de2e39b7974cdc73497da91933b4",
+            "location": {
+                "js": "templates-zero/setmore/tools/list-service-categories/17605ed0f22a4211f51f26f906fe38f2fe77de2e39b7974cdc73497da91933b4.cjs",
+                "ts": "templates-zero/setmore/tools/list-service-categories/17605ed0f22a4211f51f26f906fe38f2fe77de2e39b7974cdc73497da91933b4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-services",
+            "integrationId": "setmore",
+            "description": "List available services in the company, optionally limited to a service category, including duration, price, and eligible staff.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_listservices",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_listservices",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_listservices": {
+                        "type": "object",
+                        "properties": {
+                            "categoryId": {
+                                "description": "Optional service-category identifier; omit to list the company-wide service catalog.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Choose the company-wide service catalog or one service category."
+                    },
+                    "FunctionOutput_setmore_listservices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque service identifier usable for availability and bookings."
+                                        },
+                                        "cost": {
+                                            "description": "Provider-reported service cost with units unspecified by the documentation; no scaling is applied. Omitted if absent.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "description": "Service display name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "currency": {
+                                            "description": "Provider currency code for the service cost; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "imageUrl": {
+                                            "description": "Service image URL, preserving empty or null; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "staffIds": {
+                                            "description": "Identifiers of staff associated with this service; omitted if absent, preserving null or an empty list.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Opaque identifier of an associated staff member."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "description": {
+                                            "description": "Detailed service description as ordinary text; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "durationMinutes": {
+                                            "description": "Service duration in minutes; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "bufferDurationMinutes": {
+                                            "description": "Buffer duration in minutes; omitted if absent.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An available service with provider-reported pricing, durations, and eligible staff."
+                                },
+                                "description": "Available services in provider order for the selected catalog or category; may be empty."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The selected service collection, preserving provider order and optional values."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to choose a service and its compatible staff before calling `list-available-slots` or `create-appointment`. Obtain an optional category ID from `list-service-categories`; omit it for the company catalog. One call returns the provider's collection, with no documented pagination or adjustable page size. Service cost units are not documented; do not assume they match appointment minor-unit costs."
+            },
+            "filePath": "./setmore/tools/list-services.ts",
+            "version": "a012f5a909a2964c9ffb852d570e4126b471802a5ee6e20e78db0c10bc5cc691",
+            "location": {
+                "js": "templates-zero/setmore/tools/list-services/a012f5a909a2964c9ffb852d570e4126b471802a5ee6e20e78db0c10bc5cc691.cjs",
+                "ts": "templates-zero/setmore/tools/list-services/a012f5a909a2964c9ffb852d570e4126b471802a5ee6e20e78db0c10bc5cc691.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-staff",
+            "integrationId": "setmore",
+            "description": "Read one page of company staff members with their contact details and internal notes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_liststaff",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_liststaff",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_liststaff": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from this tool on the same connection; omit for the first page. Upstream continuation mapping is provisional.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Read one provider-sized page of the connected company staff directory."
+                    },
+                    "FunctionOutput_setmore_liststaff": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque staff identifier usable in bookings and availability queries."
+                                        },
+                                        "email": {
+                                            "description": "Stored primary email address; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "comment": {
+                                            "description": "Internal staff notes, not a structured availability schedule; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "imageUrl": {
+                                            "description": "Profile image URL; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastName": {
+                                            "description": "Staff family name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyId": {
+                                            "description": "Company identifier associated with the staff member; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "firstName": {
+                                            "description": "Staff given name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "workPhone": {
+                                            "description": "Stored work contact number; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "contactType": {
+                                            "description": "Provider contact classification, such as Resources; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "mobilePhone": {
+                                            "description": "Stored mobile contact number; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "countryCallingCode": {
+                                            "description": "Country dialing prefix, not an ISO country code; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A company staff member with stored contact details and internal notes."
+                                },
+                                "description": "Staff members in this provider-sized page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation when Setmore supplies one; omitted on established exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One staff directory page and the provider continuation, when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to obtain staff IDs for appointment filters, availability queries, and bookings. Match staff IDs against staffIds from `list-services` when choosing a compatible service. Pass nextCursor back as cursor on the same connection when present. Each call returns one provider-sized page; there is no adjustable page size."
+            },
+            "filePath": "./setmore/tools/list-staff.ts",
+            "version": "38b174aa64f0b4cc46ef56362890850a9cd9870c034eadf40044123be2952e93",
+            "location": {
+                "js": "templates-zero/setmore/tools/list-staff/38b174aa64f0b4cc46ef56362890850a9cd9870c034eadf40044123be2952e93.cjs",
+                "ts": "templates-zero/setmore/tools/list-staff/38b174aa64f0b4cc46ef56362890850a9cd9870c034eadf40044123be2952e93.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-customers",
+            "integrationId": "setmore",
+            "description": "Find customer profiles using a required first name and optional email and phone filters.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_searchcustomers",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_searchcustomers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_searchcustomers": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Optional email criterion; supplied together with the other filters without local case folding.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "phone": {
+                                "description": "Optional phone criterion, preserving formatting and country prefix.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Customer first-name criterion passed to Setmore; matching and case handling are provider-defined."
+                            }
+                        },
+                        "required": [
+                            "firstName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer search criteria with a required first name and optional email and phone filters."
+                    },
+                    "FunctionOutput_setmore_searchcustomers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque customer identifier usable when creating an appointment."
+                                        },
+                                        "city": {
+                                            "description": "Address city; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Stored customer email; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "state": {
+                                            "description": "Address state or region; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "address": {
+                                            "description": "Street address text; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "comment": {
+                                            "description": "Customer notes; omitted if absent, preserving null and empty.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "imageUrl": {
+                                            "description": "Profile image URL as stored; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastName": {
+                                            "description": "Customer family name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyId": {
+                                            "description": "Associated company identifier; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "firstName": {
+                                            "description": "Customer given name; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "homePhone": {
+                                            "description": "Stored home phone; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "workPhone": {
+                                            "description": "Stored work phone; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "postalCode": {
+                                            "description": "Postal code preserving leading zeros; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "contactType": {
+                                            "description": "Provider contact classification; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "mobilePhone": {
+                                            "description": "Stored personal mobile number; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customFields": {
+                                            "description": "Custom-field map with unchanged JSON values and keys; omitted if absent, preserving null and empty objects.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "countryCallingCode": {
+                                            "description": "Country dialing prefix, such as +1, not an ISO country code; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A customer profile returned by Setmore."
+                                },
+                                "description": "Customer matches returned by the provider in provider order; may be empty or contain multiple profiles."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The customer collection returned by a single Setmore search."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find an existing customer before booking or creating another profile. A first name is required; email-only and phone-only searches are not supported. Matching is controlled by Setmore and is not guaranteed exact or unique. One call returns the provider's result collection; there is no documented continuation. Use `create-customer` only when a new profile is intended."
+            },
+            "filePath": "./setmore/tools/search-customers.ts",
+            "version": "480c41c49ec71052992178e406738d277b3f39734b9f326b6c2ce399533c5ace",
+            "location": {
+                "js": "templates-zero/setmore/tools/search-customers/480c41c49ec71052992178e406738d277b3f39734b9f326b6c2ce399533c5ace.cjs",
+                "ts": "templates-zero/setmore/tools/search-customers/480c41c49ec71052992178e406738d277b3f39734b9f326b6c2ce399533c5ace.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-appointment-label",
+            "integrationId": "setmore",
+            "description": "Replace the internal tracking label of an existing appointment without changing its booking times or resource assignments.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_setmore_updateappointmentlabel",
+            "output_schema_ref": "#/definitions/FunctionOutput_setmore_updateappointmentlabel",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_setmore_updateappointmentlabel": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string",
+                                "description": "Complete replacement tracking label as ordinary Unicode text; an empty string requests clearing. Omission and null are not accepted."
+                            },
+                            "appointmentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing appointment to relabel."
+                            }
+                        },
+                        "required": [
+                            "label",
+                            "appointmentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing appointment and its complete replacement tracking label."
+                    },
+                    "FunctionOutput_setmore_updateappointmentlabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the appointment whose label was updated."
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "Saved replacement tracking label, including an empty string after a successful clear."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "label"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The saved appointment identity and tracking label returned by Setmore."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the appointment ID from `list-appointments` or `create-appointment`. This overwrites only its tracking label, not its booking status or schedule. Supply an empty label to clear it. Use `create-appointment` for a new booking; this tool does not reschedule appointments. If the result is uncertain, inspect `list-appointments` before repeating."
+            },
+            "filePath": "./setmore/tools/update-appointment-label.ts",
+            "version": "f57c9c2addd067880f6aa12636e953fdc3eadaf007d0e96f933ac21a62fab56a",
+            "location": {
+                "js": "templates-zero/setmore/tools/update-appointment-label/f57c9c2addd067880f6aa12636e953fdc3eadaf007d0e96f933ac21a62fab56a.cjs",
+                "ts": "templates-zero/setmore/tools/update-appointment-label/f57c9c2addd067880f6aa12636e953fdc3eadaf007d0e96f933ac21a62fab56a.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

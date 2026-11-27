@@ -1,0 +1,37 @@
+---
+title: 'PDFMonkey - How do I link my account?'
+sidebarTitle: 'PDFMonkey'
+---
+
+## Overview
+
+To authenticate with PDFMonkey, you need:
+
+1. **API Secret Key** - the API secret key of your PDFMonkey account.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A PDFMonkey account. New accounts start with a [30-day trial](https://pdfmonkey.io/docs/getting-started/the-30-day-trial/) that needs no card.
+
+### Step 1: Copy your API secret key
+
+1. Sign in to the [PDFMonkey dashboard](https://dashboard.pdfmonkey.io/).
+2. In the sidebar, click **API Key**.
+
+<img src="/api-integrations/pdfmonkey/sidebar_api_key.png" alt="PDFMonkey dashboard sidebar with the API Key item highlighted"/>
+
+3. Click **Show my API key**, then copy the value in the **API Secret key** field. To issue a new key, click **Rotate API key**.
+
+<img src="/api-integrations/pdfmonkey/api_secret_key.png" alt="PDFMonkey API Key page with the API Secret key field, the Show my API key link and the Rotate API key button"/>
+
+### Step 2: Enter your API secret key in the Connect UI
+
+1. Open the form where you need to authenticate with PDFMonkey.
+2. Enter your **API Secret Key** in the designated field.
+3. Click **Connect**. Nango checks the key with PDFMonkey and rejects it if it is wrong.
+
+<img src="/api-integrations/pdfmonkey/form.png" alt="Nango Connect UI form for entering the PDFMonkey API secret key" style={{maxWidth: "450px" }}/>
+
+You are now connected to PDFMonkey.

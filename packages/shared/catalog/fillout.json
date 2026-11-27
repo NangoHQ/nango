@@ -1,0 +1,2740 @@
+{
+    "providerConfigKey": "fillout",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make accessible form definitions available as records, including questions, calculations, URL parameters, scheduling and payment fields, and quiz configuration.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-forms",
+            "output": [
+                "Forms"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Forms"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Forms": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque public form identifier and record identity."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Form's display name as Unicode text."
+                            },
+                            "quiz": {
+                                "description": "Quiz configuration, omitted when not returned.",
+                                "type": "object",
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "description": "Whether quiz mode is enabled."
+                                    }
+                                },
+                                "required": [
+                                    "enabled"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "payments": {
+                                "description": "Payment field definitions, omitted when absent upstream.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque field identifier within this form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field's display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A named field definition within a form."
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque question identifier within this form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Question's displayed text."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider question type; unrecognized type names remain opaque."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A question definition within a form."
+                                },
+                                "description": "Question definitions in provider order."
+                            },
+                            "scheduling": {
+                                "description": "Scheduling field definitions, omitted when absent upstream.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque field identifier within this form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field's display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A named field definition within a form."
+                                }
+                            },
+                            "calculations": {
+                                "description": "Calculation definitions, omitted when absent upstream.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque calculation identifier within this form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Calculation's display name."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "number",
+                                                "text",
+                                                "duration"
+                                            ],
+                                            "description": "Calculation kind; no duration unit is inferred."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A calculation definition within a form."
+                                }
+                            },
+                            "urlParameters": {
+                                "description": "URL parameter definitions, omitted when absent upstream.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque field identifier within this form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field's display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A named field definition within a form."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible form definition, including questions and optional field and quiz configuration."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make a selected form's submissions available as records, including answers and available calculated, payment, scheduling, quiz and login data. Configuration selects finished or unfinished submissions and whether preview responses are included.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_fillout_syncsubmissions",
+            "name": "sync-submissions",
+            "output": [
+                "Submissions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Submissions",
+                "SyncMetadata_fillout_syncsubmissions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Submissions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque submission identifier; scoped with formId for record identity."
+                            },
+                            "quiz": {
+                                "description": "Quiz results; omitted when absent.",
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Awarded quiz score."
+                                    },
+                                    "maxScore": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum possible score."
+                                    }
+                                },
+                                "required": [
+                                    "score",
+                                    "maxScore"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "login": {
+                                "description": "Provider-recorded login details; omitted when absent.",
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Email recorded as verified by Fillout."
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "formId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the containing form."
+                            },
+                            "payments": {
+                                "description": "Recorded payment responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Payment field identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Payment field name."
+                                        },
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "description": "Customer email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "status": {
+                                                    "description": "Provider payment status without reinterpretation.",
+                                                    "type": "string"
+                                                },
+                                                "currency": {
+                                                    "description": "Provider currency code; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "paymentId": {
+                                                    "type": "string",
+                                                    "description": "Opaque Stripe payment identifier."
+                                                },
+                                                "totalAmount": {
+                                                    "description": "Provider payment amount in cents, not converted.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "discountCode": {
+                                                    "description": "Discount code used; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "stripeCustomerId": {
+                                                    "description": "Opaque Stripe customer identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "stripePaymentUrl": {
+                                                    "description": "Payment dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeCustomerUrl": {
+                                                    "description": "Customer dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeSubscriptionId": {
+                                                    "description": "Opaque Stripe subscription identifier; omitted when absent.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "paymentId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Recorded Stripe payment details."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recorded payment field response."
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Question identifier within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Question text."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider question type, preserving unrecognized names as opaque strings."
+                                        },
+                                        "value": {
+                                            "description": "Native JSON response value, including meaningful null and empty values; no generic conversion of embedded dates."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A question response with its uninterpreted native JSON answer."
+                                },
+                                "description": "Question responses in provider order."
+                            },
+                            "updatedAt": {
+                                "description": "Last-update instant normalized to UTC Z; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "scheduling": {
+                                "description": "Recorded booking responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Scheduling field identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Scheduling field name."
+                                        },
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email of the person booking."
+                                                },
+                                                "userId": {
+                                                    "description": "Opaque scheduling user identifier represented losslessly as decimal text.",
+                                                    "type": "string"
+                                                },
+                                                "eventId": {
+                                                    "description": "Opaque calendar event identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "eventUrl": {
+                                                    "description": "Calendar event URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "fullName": {
+                                                    "type": "string",
+                                                    "description": "Name of the person booking."
+                                                },
+                                                "timezone": {
+                                                    "type": "string",
+                                                    "description": "Provider meeting timezone retained independently of event instants."
+                                                },
+                                                "eventEndTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Event end normalized to UTC Z without precision loss."
+                                                },
+                                                "meetingNotes": {
+                                                    "description": "Meeting notes; omitted when absent, preserving empty text.",
+                                                    "type": "string"
+                                                },
+                                                "eventStartTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Event start normalized to UTC Z without precision loss."
+                                                },
+                                                "scheduledUserEmail": {
+                                                    "description": "Scheduled user's email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "rescheduleOrCancelUrl": {
+                                                    "description": "Booking modification URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            },
+                                            "required": [
+                                                "email",
+                                                "fullName",
+                                                "timezone",
+                                                "eventEndTime",
+                                                "eventStartTime"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Recorded booking details."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recorded scheduling field response."
+                                }
+                            },
+                            "submittedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Submission instant normalized to UTC Z without loss of precision."
+                            },
+                            "calculations": {
+                                "description": "Calculated responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Calculation identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Calculation name."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "number",
+                                                "text",
+                                                "duration"
+                                            ],
+                                            "description": "Calculation kind; no duration units inferred."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Exact calculation value as provider text, preserving precision and formatting."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A calculated field response."
+                                }
+                            },
+                            "urlParameters": {
+                                "description": "Recorded URL parameters; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Parameter identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Parameter name."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Parameter value, preserving empty text."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recorded URL parameter without additional decoding."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "formId",
+                            "questions",
+                            "submittedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A submission from the configured form, with native answers and available business sections."
+                    },
+                    "SyncMetadata_fillout_syncsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque public identifier of the form whose submissions make up this dataset."
+                            },
+                            "status": {
+                                "description": "Completion status represented by this dataset; default finished.",
+                                "type": "string",
+                                "enum": [
+                                    "finished",
+                                    "in_progress"
+                                ]
+                            },
+                            "includePreview": {
+                                "description": "Whether preview responses may be included in this dataset; default false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "formId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the containing form, completion status, and preview inclusion for this submissions dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-create-submissions",
+            "integrationId": "fillout",
+            "description": "Create up to ten submissions for the same form in one native request, with optional recorded specialty and timestamp data for each submission.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_batchcreatesubmissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_batchcreatesubmissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_batchcreatesubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the single form receiving this batch."
+                            },
+                            "submissions": {
+                                "minItems": 1,
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "login": {
+                                            "description": "Recorded login information, not independent email verification.",
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email to record as login information."
+                                                }
+                                            },
+                                            "required": [
+                                                "email"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "payments": {
+                                            "description": "Existing payment details to record, not an instruction to charge.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "email": {
+                                                                "description": "Customer email; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                            },
+                                                            "status": {
+                                                                "description": "Recorded payment status; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "currency": {
+                                                                "description": "Recorded currency code; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "paymentId": {
+                                                                "type": "string",
+                                                                "description": "Existing opaque Stripe payment identifier."
+                                                            },
+                                                            "totalAmount": {
+                                                                "description": "Recorded amount in cents; no conversion.",
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991
+                                                            },
+                                                            "stripeCustomerId": {
+                                                                "description": "Existing Stripe customer identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "stripePaymentUrl": {
+                                                                "description": "Payment dashboard URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "stripeCustomerUrl": {
+                                                                "description": "Customer dashboard URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "stripeSubscriptionId": {
+                                                                "description": "Existing Stripe subscription identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "paymentId"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Recorded payment details."
+                                                    },
+                                                    "paymentFieldId": {
+                                                        "type": "string",
+                                                        "description": "Payment field identifier from get-form."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "value",
+                                                    "paymentFieldId"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "questions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "description": "Native JSON answer appropriate to the question type; null and empty values are forwarded intact."
+                                                    },
+                                                    "questionId": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "description": "Question identifier from get-form."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "value",
+                                                    "questionId"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Answers for this submission; [] is an explicit empty answer list."
+                                        },
+                                        "updatedAt": {
+                                            "description": "Recorded last-update instant with explicit offset or Z; omitted upstream when absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                                        },
+                                        "scheduling": {
+                                            "description": "Existing booking details to record, not an instruction to create an event.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "email": {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                                "description": "Email of the person booking."
+                                                            },
+                                                            "userId": {
+                                                                "description": "Opaque scheduling user identifier in exact provider integer decimal form.",
+                                                                "type": "string",
+                                                                "pattern": "^-?(0|[1-9][0-9]*)$"
+                                                            },
+                                                            "eventId": {
+                                                                "description": "Existing calendar event identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "eventUrl": {
+                                                                "description": "Existing calendar event URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "fullName": {
+                                                                "type": "string",
+                                                                "description": "Name of the person booking."
+                                                            },
+                                                            "timezone": {
+                                                                "type": "string",
+                                                                "minLength": 1,
+                                                                "description": "Meeting timezone, retained independently of event instants."
+                                                            },
+                                                            "eventEndTime": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                                                "description": "Recorded end instant with explicit offset or Z, later than start."
+                                                            },
+                                                            "meetingNotes": {
+                                                                "description": "Booking notes; omitted when absent, preserving empty text.",
+                                                                "type": "string"
+                                                            },
+                                                            "eventStartTime": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                                                "description": "Recorded start instant with explicit offset or Z."
+                                                            },
+                                                            "scheduledUserEmail": {
+                                                                "description": "Scheduled user's email; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                            },
+                                                            "rescheduleOrCancelUrl": {
+                                                                "description": "Existing booking modification URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "email",
+                                                            "fullName",
+                                                            "timezone",
+                                                            "eventEndTime",
+                                                            "eventStartTime"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Recorded booking details."
+                                                    },
+                                                    "schedulingFieldId": {
+                                                        "type": "string",
+                                                        "description": "Scheduling field identifier from get-form."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "value",
+                                                    "schedulingFieldId"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "submittedAt": {
+                                            "description": "Original submission instant with explicit offset or Z; omitted upstream when absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                                        },
+                                        "urlParameters": {
+                                            "description": "Optional URL parameter values; omission differs from [].",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Parameter name from get-form."
+                                                    },
+                                                    "value": {
+                                                        "type": "string",
+                                                        "description": "Parameter value, preserving Unicode and empty text."
+                                                    },
+                                                    "parameterId": {
+                                                        "type": "string",
+                                                        "description": "Parameter identifier from get-form."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "value",
+                                                    "parameterId"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "questions"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One to ten submissions for this form; no atomicity guarantee."
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "submissions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Create a bounded batch of submissions for one Fillout form."
+                    },
+                    "FunctionOutput_fillout_batchcreatesubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Provider-confirmed new submission identifier."
+                                        },
+                                        "formId": {
+                                            "type": "string",
+                                            "description": "Identifier of the form receiving the batch."
+                                        },
+                                        "questions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Question identifier within the form."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Provider-returned question text."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider question type, retaining unknown names."
+                                                    },
+                                                    "value": {
+                                                        "description": "Provider-returned native JSON answer, preserving null and empty values."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Answers returned for this created submission."
+                                        },
+                                        "updatedAt": {
+                                            "description": "Provider last-update instant normalized to UTC Z; omitted when absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "submittedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Provider submission instant normalized losslessly to UTC Z."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "formId",
+                                        "questions",
+                                        "submittedAt"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Created submission records actually returned by Fillout. No per-input outcome or ordering guarantee is implied."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-confirmed creation receipts without per-input success or ordering claims."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain field IDs with `get-form`. Use `create-submission` for one response. Supply 1–10 submissions for a single form per call. This is not guaranteed atomic or safely replayable. Returned items are provider-confirmed records, not per-input success statuses; do not assume positional correlation. If the outcome is uncertain, inspect `list-submissions` before retrying."
+            },
+            "filePath": "./fillout/tools/batch-create-submissions.ts",
+            "version": "dbf8b3df17b2887c577694a6b3ac4473480d06ef25c05bc1f1bfd8fda535e726",
+            "location": {
+                "js": "templates-zero/fillout/tools/batch-create-submissions/dbf8b3df17b2887c577694a6b3ac4473480d06ef25c05bc1f1bfd8fda535e726.cjs",
+                "ts": "templates-zero/fillout/tools/batch-create-submissions/dbf8b3df17b2887c577694a6b3ac4473480d06ef25c05bc1f1bfd8fda535e726.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-submission",
+            "integrationId": "fillout",
+            "description": "Create one form submission from question answers and optional recorded URL, login, payment, scheduling and timestamp data.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_createsubmission",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_createsubmission",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_createsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "login": {
+                                "description": "Optional recorded login information; this tool does not independently verify email ownership.",
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Email to record in the provider's login information."
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque public identifier of the target form."
+                            },
+                            "payments": {
+                                "description": "Optional existing payment details to record, not an instruction to charge.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "description": "Recorded customer email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "status": {
+                                                    "description": "Recorded provider payment status; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "currency": {
+                                                    "description": "Recorded currency code; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "paymentId": {
+                                                    "type": "string",
+                                                    "description": "Existing opaque Stripe payment identifier."
+                                                },
+                                                "totalAmount": {
+                                                    "description": "Recorded amount in cents; no currency conversion.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "stripeCustomerId": {
+                                                    "description": "Existing Stripe customer identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "stripePaymentUrl": {
+                                                    "description": "Payment dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeCustomerUrl": {
+                                                    "description": "Customer dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeSubscriptionId": {
+                                                    "description": "Existing Stripe subscription identifier; omitted when absent.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "paymentId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Existing payment details to associate with the response."
+                                        },
+                                        "paymentFieldId": {
+                                            "type": "string",
+                                            "description": "Payment field identifier from get-form."
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "paymentFieldId"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "description": "Native JSON answer appropriate to the question type; explicit null and empty values are forwarded, not omitted."
+                                        },
+                                        "questionId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Question identifier from get-form."
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "questionId"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Question answers; [] is sent as an explicitly empty answer list."
+                            },
+                            "updatedAt": {
+                                "description": "Optional recorded last-update instant with explicit offset or Z; omitted upstream when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "scheduling": {
+                                "description": "Optional booking details to record; not an instruction to create a calendar booking.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email of the person booking."
+                                                },
+                                                "userId": {
+                                                    "description": "Opaque scheduling user identifier in provider integer decimal form; sent losslessly as an integer.",
+                                                    "type": "string",
+                                                    "pattern": "^-?(0|[1-9][0-9]*)$"
+                                                },
+                                                "eventId": {
+                                                    "description": "Existing calendar event identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "eventUrl": {
+                                                    "description": "Existing event URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "fullName": {
+                                                    "type": "string",
+                                                    "description": "Name of the person booking."
+                                                },
+                                                "timezone": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Meeting timezone, preserved independently of event instants."
+                                                },
+                                                "eventEndTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                                    "description": "Recorded event end instant with explicit offset or Z; must be later than start."
+                                                },
+                                                "meetingNotes": {
+                                                    "description": "Booking notes, preserving empty text; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "eventStartTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                                    "description": "Recorded event start instant with explicit offset or Z."
+                                                },
+                                                "scheduledUserEmail": {
+                                                    "description": "Scheduled user's email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "rescheduleOrCancelUrl": {
+                                                    "description": "Existing booking modification URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            },
+                                            "required": [
+                                                "email",
+                                                "fullName",
+                                                "timezone",
+                                                "eventEndTime",
+                                                "eventStartTime"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Booking details to associate with the response."
+                                        },
+                                        "schedulingFieldId": {
+                                            "type": "string",
+                                            "description": "Scheduling field identifier from get-form."
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "schedulingFieldId"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "submittedAt": {
+                                "description": "Optional original submission instant with explicit offset or Z; omission leaves provider timestamp behavior unchanged.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "urlParameters": {
+                                "description": "Optional URL parameter values; omitted when absent and [] retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "URL parameter name from get-form."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Parameter value, preserving empty strings and Unicode."
+                                        },
+                                        "parameterId": {
+                                            "type": "string",
+                                            "description": "URL parameter identifier from get-form."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "value",
+                                        "parameterId"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One form submission with native question answers and optional recorded details."
+                    },
+                    "FunctionOutput_fillout_createsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Identifier of the submission confirmed by the creation response."
+                            },
+                            "formId": {
+                                "type": "string",
+                                "description": "Identifier of the form containing the created submission."
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Question identifier within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Provider-returned question text."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider-returned question type, preserved as an opaque string when unknown."
+                                        },
+                                        "value": {
+                                            "description": "Native JSON answer returned by Fillout, preserving null and empty values."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Question answers confirmed in the creation response."
+                            },
+                            "updatedAt": {
+                                "description": "Provider-returned last update instant in UTC Z; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "submittedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider-returned submission instant normalized to UTC Z without fractional precision loss."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "formId",
+                            "questions",
+                            "submittedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmed submission identity, timestamps and provider-returned question answers."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-form` to obtain the form's question and other field IDs. Supply native JSON answers appropriate to each question type, not encoded text. Use `batch-create-submissions` for 2–10 submissions to the same form. Creation can produce duplicates if repeated; check `list-submissions` before retrying an uncertain result. Payment and scheduling inputs record supplied details; they do not establish a charge or calendar booking."
+            },
+            "filePath": "./fillout/tools/create-submission.ts",
+            "version": "c015f214a0daa9736d79b3dbe1434d59059604040beaa8e396dd67f81d4b55d7",
+            "location": {
+                "js": "templates-zero/fillout/tools/create-submission/c015f214a0daa9736d79b3dbe1434d59059604040beaa8e396dd67f81d4b55d7.cjs",
+                "ts": "templates-zero/fillout/tools/create-submission/c015f214a0daa9736d79b3dbe1434d59059604040beaa8e396dd67f81d4b55d7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-submission",
+            "integrationId": "fillout",
+            "description": "Delete one submission from its form. The API does not document a restore operation or guarantee recoverability.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_deletesubmission",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_deletesubmission",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the form containing the submission."
+                            },
+                            "submissionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the submission to delete from this form."
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "submissionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The form and submission to target for deletion."
+                    },
+                    "FunctionOutput_fillout_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "description": "Form identifier submitted for deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider returned its documented successful deletion response; not a recoverability guarantee."
+                            },
+                            "submissionId": {
+                                "type": "string",
+                                "description": "Submission identifier submitted for deletion."
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "deleted",
+                            "submissionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Receipt for a submission deletion confirmed by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use formId from `list-forms` and submissionId from `list-submissions` or `get-submission`. This removes the response, not the form. Do not assume it can be undone or that linked payments or calendar events are canceled. Inspect the correct response before deleting if identity is uncertain."
+            },
+            "filePath": "./fillout/tools/delete-submission.ts",
+            "version": "1b7269a41551a4f6c29db9a2e8c0ff6dc71b4988224962e9409036d785f24a67",
+            "location": {
+                "js": "templates-zero/fillout/tools/delete-submission/1b7269a41551a4f6c29db9a2e8c0ff6dc71b4988224962e9409036d785f24a67.cjs",
+                "ts": "templates-zero/fillout/tools/delete-submission/1b7269a41551a4f6c29db9a2e8c0ff6dc71b4988224962e9409036d785f24a67.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-webhook",
+            "integrationId": "fillout",
+            "description": "Remove an existing Fillout webhook registration so it no longer remains registered to receive submission notifications.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_deletewebhook",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_deletewebhook",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhookId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing webhook registration, as retained by its creator; if originally supplied numerically, use its exact decimal text."
+                            }
+                        },
+                        "required": [
+                            "webhookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing Fillout webhook registration to remove."
+                    },
+                    "FunctionOutput_fillout_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider confirmed removal of the registration; not a guarantee that no in-flight notifications remain."
+                            },
+                            "webhookId": {
+                                "type": "string",
+                                "description": "Identifier of the webhook whose removal was confirmed."
+                            }
+                        },
+                        "required": [
+                            "deleted",
+                            "webhookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmation that Fillout removed the identified webhook registration."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only to remove an existing webhook, not to create or renew notification delivery. Obtain webhookId from the integration that originally registered it; there is no webhook-list tool. Removal does not delete submissions or the receiver endpoint. Already dispatched notifications may still arrive, and undo is not provided by this tool."
+            },
+            "filePath": "./fillout/tools/delete-webhook.ts",
+            "version": "9c06c231f0b4c5e4fc6ac11d9db0e2f49d5392815d5014c6b0aca274d70594a5",
+            "location": {
+                "js": "templates-zero/fillout/tools/delete-webhook/9c06c231f0b4c5e4fc6ac11d9db0e2f49d5392815d5014c6b0aca274d70594a5.cjs",
+                "ts": "templates-zero/fillout/tools/delete-webhook/9c06c231f0b4c5e4fc6ac11d9db0e2f49d5392815d5014c6b0aca274d70594a5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-form",
+            "integrationId": "fillout",
+            "description": "Get a form's name, questions, calculations, URL parameters, scheduling and payment fields, and quiz configuration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_getform",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_getform",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_getform": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque public identifier of the form to inspect."
+                            }
+                        },
+                        "required": [
+                            "formId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The form whose field definitions and configuration to retrieve."
+                    },
+                    "FunctionOutput_fillout_getform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque public form identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Form display name in ordinary Unicode text."
+                            },
+                            "quiz": {
+                                "description": "Quiz configuration; omitted when the provider does not return it.",
+                                "type": "object",
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "description": "Whether quiz mode is enabled."
+                                    }
+                                },
+                                "required": [
+                                    "enabled"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "payments": {
+                                "description": "Payment field definitions; omitted when not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this field within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field name or label, without encoding."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A field definition within the form."
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque question identifier within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Question text as displayed by the form."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider question type, such as ShortAnswer or FileUpload; future type names are preserved."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A question definition with its opaque provider type."
+                                },
+                                "description": "Questions defined in the form, in provider order."
+                            },
+                            "scheduling": {
+                                "description": "Scheduling field definitions; omitted when not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this field within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field name or label, without encoding."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A field definition within the form."
+                                }
+                            },
+                            "calculations": {
+                                "description": "Calculation definitions; omitted when not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque calculation identifier within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Calculation's display name."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "number",
+                                                "text",
+                                                "duration"
+                                            ],
+                                            "description": "Provider calculation kind; duration does not establish a unit."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A calculation definition within the form."
+                                }
+                            },
+                            "urlParameters": {
+                                "description": "URL parameter definitions; omitted when not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this field within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Field name or label, without encoding."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A field definition within the form."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Form metadata and field definitions, without submitted answers or a transport envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a form ID from `list-forms`. This returns field definitions, not submitted answers; use `list-submissions` for responses. Use the returned field IDs when calling `create-submission` or `batch-create-submissions`."
+            },
+            "filePath": "./fillout/tools/get-form.ts",
+            "version": "81c0452047a2354452c8b8583705b95a00e13f30155ddbd87023a42c7960cd45",
+            "location": {
+                "js": "templates-zero/fillout/tools/get-form/81c0452047a2354452c8b8583705b95a00e13f30155ddbd87023a42c7960cd45.cjs",
+                "ts": "templates-zero/fillout/tools/get-form/81c0452047a2354452c8b8583705b95a00e13f30155ddbd87023a42c7960cd45.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-submission",
+            "integrationId": "fillout",
+            "description": "Get one submission's answers and available calculations, payment, scheduling, quiz and login details, optionally with an edit link.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_getsubmission",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_getsubmission",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque public identifier of the containing form."
+                            },
+                            "submissionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the submission within the specified form."
+                            },
+                            "includeEditLink": {
+                                "description": "Whether to request the response's edit URL; default false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "submissionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one submission and optionally request its sensitive edit URL."
+                    },
+                    "FunctionOutput_fillout_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque submission identifier."
+                            },
+                            "quiz": {
+                                "description": "Quiz results; omitted when absent.",
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Awarded score."
+                                    },
+                                    "maxScore": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum possible score."
+                                    }
+                                },
+                                "required": [
+                                    "score",
+                                    "maxScore"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "login": {
+                                "description": "Login details; omitted when absent.",
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Email recorded as verified by Fillout."
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "formId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the containing form."
+                            },
+                            "editLink": {
+                                "description": "Sensitive edit URL when requested and returned; omitted otherwise.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "payments": {
+                                "description": "Recorded payment responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Payment field identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Payment field name."
+                                        },
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "description": "Customer email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "status": {
+                                                    "description": "Provider payment status, uninterpreted.",
+                                                    "type": "string"
+                                                },
+                                                "currency": {
+                                                    "description": "Provider currency code; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "paymentId": {
+                                                    "type": "string",
+                                                    "description": "Opaque Stripe payment identifier."
+                                                },
+                                                "totalAmount": {
+                                                    "description": "Amount in provider-documented cents, without conversion.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "discountCode": {
+                                                    "description": "Discount code used; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "stripeCustomerId": {
+                                                    "description": "Opaque Stripe customer identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "stripePaymentUrl": {
+                                                    "description": "Payment dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeCustomerUrl": {
+                                                    "description": "Customer dashboard URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "stripeSubscriptionId": {
+                                                    "description": "Opaque Stripe subscription identifier; omitted when absent.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "paymentId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Recorded payment details."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One recorded payment response."
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Question identifier within the form."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Question's displayed text."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider question type, including opaque future type names."
+                                        },
+                                        "value": {
+                                            "description": "Native JSON answer; preserve null, empty and question-specific values without generic date conversion."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One question response with its native JSON answer."
+                                },
+                                "description": "Question responses in provider order."
+                            },
+                            "updatedAt": {
+                                "description": "Last update instant in UTC Z; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "scheduling": {
+                                "description": "Recorded booking responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Scheduling field identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Scheduling field name."
+                                        },
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email of the person booking."
+                                                },
+                                                "userId": {
+                                                    "description": "Opaque scheduling user identifier, losslessly converted from an integer.",
+                                                    "type": "string"
+                                                },
+                                                "eventId": {
+                                                    "description": "Opaque calendar event identifier; omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "eventUrl": {
+                                                    "description": "Calendar event URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "fullName": {
+                                                    "type": "string",
+                                                    "description": "Name of the person booking."
+                                                },
+                                                "timezone": {
+                                                    "type": "string",
+                                                    "description": "Meeting timezone retained as provided."
+                                                },
+                                                "eventEndTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Event end in UTC Z without precision loss."
+                                                },
+                                                "meetingNotes": {
+                                                    "description": "Booking notes; omitted when absent and empty text preserved.",
+                                                    "type": "string"
+                                                },
+                                                "eventStartTime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                    "description": "Event start in UTC Z without precision loss."
+                                                },
+                                                "scheduledUserEmail": {
+                                                    "description": "Scheduled user's email; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                "rescheduleOrCancelUrl": {
+                                                    "description": "Booking modification URL; omitted when absent.",
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            },
+                                            "required": [
+                                                "email",
+                                                "fullName",
+                                                "timezone",
+                                                "eventEndTime",
+                                                "eventStartTime"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Recorded booking details."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One recorded booking response."
+                                }
+                            },
+                            "submittedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Submission instant in UTC Z, preserving fractional precision."
+                            },
+                            "calculations": {
+                                "description": "Calculated responses; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Calculation identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Calculation name."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "number",
+                                                "text",
+                                                "duration"
+                                            ],
+                                            "description": "Calculation kind; duration units are not inferred."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Exact provider calculation text, without numeric coercion."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One calculated response."
+                                }
+                            },
+                            "urlParameters": {
+                                "description": "Recorded URL parameter values; omitted when absent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Parameter identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Parameter name."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Parameter value as returned, preserving empty text."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One recorded URL parameter."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "formId",
+                            "questions",
+                            "submittedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One submission with its answers and available business details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use formId from `list-forms` and submissionId from `list-submissions` or a creation result. This returns one known response; use `list-submissions` to find responses instead. Request an edit link only when needed and treat the returned URL as sensitive."
+            },
+            "filePath": "./fillout/tools/get-submission.ts",
+            "version": "fd6906f90876eed8310428aa5a4e0830cc4ddf0171a39ae1b6ccf001b6d5e7e8",
+            "location": {
+                "js": "templates-zero/fillout/tools/get-submission/fd6906f90876eed8310428aa5a4e0830cc4ddf0171a39ae1b6ccf001b6d5e7e8.cjs",
+                "ts": "templates-zero/fillout/tools/get-submission/fd6906f90876eed8310428aa5a4e0830cc4ddf0171a39ae1b6ccf001b6d5e7e8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-forms",
+            "integrationId": "fillout",
+            "description": "List the forms accessible to the connection, including their public identifiers and names.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_listforms",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_listforms",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_listforms": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to list forms."
+                    },
+                    "FunctionOutput_fillout_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque public form identifier; use as formId in related tools."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Form's display name, preserved as ordinary Unicode text."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A form accessible to the connection."
+                                },
+                                "description": "All forms returned by the provider for this connection."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete directory of forms accessible to the connection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find a form's ID. Use `get-form` for its questions and other field definitions. The provider returns the complete form directory in one response; there is no continuation token."
+            },
+            "filePath": "./fillout/tools/list-forms.ts",
+            "version": "a557993ea36eeb0b442296c3d2fc2b74f00d4b1caa6746115680caf5b46bfd86",
+            "location": {
+                "js": "templates-zero/fillout/tools/list-forms/a557993ea36eeb0b442296c3d2fc2b74f00d4b1caa6746115680caf5b46bfd86.cjs",
+                "ts": "templates-zero/fillout/tools/list-forms/a557993ea36eeb0b442296c3d2fc2b74f00d4b1caa6746115680caf5b46bfd86.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-submissions",
+            "integrationId": "fillout",
+            "description": "List one page of a form's submissions, optionally filtered by submission time, completion status, preview inclusion, and contained text.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fillout_listsubmissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_fillout_listsubmissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fillout_listsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "sort": {
+                                "description": "Provider submission sort direction; default asc. Tie ordering is not guaranteed.",
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Maximum submissions in this page; default 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 150
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from a prior result for the same form, filters, sort and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "formId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque public identifier of the form whose submissions to list."
+                            },
+                            "search": {
+                                "description": "Optional text that returned submissions must contain, using Fillout's matching semantics; not a query language.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "description": "Completion status to retrieve; default finished. Select in_progress for unfinished responses.",
+                                "type": "string",
+                                "enum": [
+                                    "finished",
+                                    "in_progress"
+                                ]
+                            },
+                            "includePreview": {
+                                "description": "Whether preview responses may be included; default false.",
+                                "type": "boolean"
+                            },
+                            "submittedAfter": {
+                                "description": "Return submissions after this instant, with an explicit UTC marker or offset. Provider boundary inclusivity is not guaranteed.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "includeEditLink": {
+                                "description": "Request an edit link on returned submissions; default false. A link may enable editing.",
+                                "type": "boolean"
+                            },
+                            "submittedBefore": {
+                                "description": "Return submissions before this instant, with an explicit UTC marker or offset. Provider boundary inclusivity is not guaranteed.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            }
+                        },
+                        "required": [
+                            "formId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select one page of submissions for a form using optional filters and an opaque continuation."
+                    },
+                    "FunctionOutput_fillout_listsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque submission identifier."
+                                        },
+                                        "quiz": {
+                                            "description": "Quiz results; omitted when absent.",
+                                            "type": "object",
+                                            "properties": {
+                                                "score": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Awarded quiz score."
+                                                },
+                                                "maxScore": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Maximum possible quiz score."
+                                                }
+                                            },
+                                            "required": [
+                                                "score",
+                                                "maxScore"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "login": {
+                                            "description": "Provider-recorded login information; omitted when absent.",
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email recorded as verified by Fillout."
+                                                }
+                                            },
+                                            "required": [
+                                                "email"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "formId": {
+                                            "type": "string",
+                                            "description": "Opaque public identifier of the containing form."
+                                        },
+                                        "editLink": {
+                                            "description": "Provider edit URL when requested and returned; omitted otherwise. Treat as sensitive.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "payments": {
+                                            "description": "Recorded payment responses; omitted when absent.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Payment field identifier."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Payment field name."
+                                                    },
+                                                    "value": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "email": {
+                                                                "description": "Customer email; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                            },
+                                                            "status": {
+                                                                "description": "Provider payment status, retained without interpretation.",
+                                                                "type": "string"
+                                                            },
+                                                            "currency": {
+                                                                "description": "Provider currency code; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "paymentId": {
+                                                                "type": "string",
+                                                                "description": "Opaque Stripe payment identifier."
+                                                            },
+                                                            "totalAmount": {
+                                                                "description": "Provider payment amount in cents; no currency conversion.",
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991
+                                                            },
+                                                            "discountCode": {
+                                                                "description": "Discount code used; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "stripeCustomerId": {
+                                                                "description": "Opaque Stripe customer identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "stripePaymentUrl": {
+                                                                "description": "Stripe payment dashboard URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "stripeCustomerUrl": {
+                                                                "description": "Stripe customer dashboard URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "stripeSubscriptionId": {
+                                                                "description": "Opaque Stripe subscription identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "paymentId"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Recorded Stripe payment details."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "questions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Question identifier within the form."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Question text."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider question type; unknown names remain opaque."
+                                                    },
+                                                    "value": {
+                                                        "description": "Response as native JSON; null, empty strings and arrays retain their meaning. Embedded values have question-specific semantics."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Question responses in provider order."
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant normalized to UTC Z; omitted when absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "scheduling": {
+                                            "description": "Recorded scheduling responses; omitted when absent.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Scheduling field identifier."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Scheduling field name."
+                                                    },
+                                                    "value": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "email": {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                                "description": "Email of the person booking."
+                                                            },
+                                                            "userId": {
+                                                                "description": "Opaque scheduling user identifier, converted losslessly from the provider integer.",
+                                                                "type": "string"
+                                                            },
+                                                            "eventId": {
+                                                                "description": "Opaque calendar event identifier; omitted when absent.",
+                                                                "type": "string"
+                                                            },
+                                                            "eventUrl": {
+                                                                "description": "Calendar event URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "fullName": {
+                                                                "type": "string",
+                                                                "description": "Name of the person booking."
+                                                            },
+                                                            "timezone": {
+                                                                "type": "string",
+                                                                "description": "Provider meeting timezone, retained independently of UTC instants."
+                                                            },
+                                                            "eventEndTime": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                                "description": "Event end instant normalized to UTC Z, preserving precision."
+                                                            },
+                                                            "meetingNotes": {
+                                                                "description": "Meeting notes; omitted when absent, preserving empty text.",
+                                                                "type": "string"
+                                                            },
+                                                            "eventStartTime": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                                "description": "Event start instant normalized to UTC Z, preserving precision."
+                                                            },
+                                                            "scheduledUserEmail": {
+                                                                "description": "Email of the scheduled user; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                            },
+                                                            "rescheduleOrCancelUrl": {
+                                                                "description": "Reschedule or cancellation URL; omitted when absent.",
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "email",
+                                                            "fullName",
+                                                            "timezone",
+                                                            "eventEndTime",
+                                                            "eventStartTime"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Recorded booking details."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "submittedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Submission instant normalized to UTC Z without loss of fractional precision."
+                                        },
+                                        "calculations": {
+                                            "description": "Calculated responses; omitted when absent.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Calculation identifier."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Calculation name."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "number",
+                                                            "text",
+                                                            "duration"
+                                                        ],
+                                                        "description": "Calculation kind, without an inferred duration unit."
+                                                    },
+                                                    "value": {
+                                                        "type": "string",
+                                                        "description": "Provider calculation value retained exactly as text to avoid inventing units or losing precision."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "urlParameters": {
+                                            "description": "URL parameter values; omitted when absent.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "URL parameter identifier."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "URL parameter name."
+                                                    },
+                                                    "value": {
+                                                        "type": "string",
+                                                        "description": "Parameter value as returned, including empty text."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "value"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "formId",
+                                        "questions",
+                                        "submittedAt"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One page of matching submission records."
+                            },
+                            "total": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported total submissions matching the request parameters at read time; not a snapshot guarantee."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the same request; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "total"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of submissions, the matching total, and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Find formId with `list-forms`. Use this to browse or find submissions; use `get-submission` when the submission ID is already known. Each call returns one page, with limit 1–150 (default 50). Pass nextCursor back as cursor without changing other inputs. Default results are finished, non-preview submissions in ascending provider order. Request edit links only when needed; these links can permit response editing."
+            },
+            "filePath": "./fillout/tools/list-submissions.ts",
+            "version": "781b0d92c7879c779772c3a6f3b15a3096bb21f52334395170cd5e5767f618cc",
+            "location": {
+                "js": "templates-zero/fillout/tools/list-submissions/781b0d92c7879c779772c3a6f3b15a3096bb21f52334395170cd5e5767f618cc.cjs",
+                "ts": "templates-zero/fillout/tools/list-submissions/781b0d92c7879c779772c3a6f3b15a3096bb21f52334395170cd5e5767f618cc.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

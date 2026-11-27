@@ -1,0 +1,2682 @@
+{
+    "providerConfigKey": "roam-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make organization group records and their stored user memberships available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Group"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Group"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Roam Address ID identifying the group record."
+                            },
+                            "location": {
+                                "description": "Resource location from SCIM metadata, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Stored member Person IDs; omitted when membership is absent, and [] when explicitly empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Stored member Person ID."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name as ordinary Unicode text."
+                            },
+                            "resourceType": {
+                                "description": "Resource type from SCIM metadata, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An organization group and its stored user membership references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make Roam organization user records available as a replicated dataset, including identity, profile, email records, active status, and role.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Roam Person ID identifying this record."
+                            },
+                            "role": {
+                                "description": "Roam role from the provider extension, when returned.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "active": {
+                                "description": "True for active and false for archived users, when returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email category, when returned.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Stored email text."
+                                        },
+                                        "primary": {
+                                            "description": "Primary flag, when returned; absence differs from false.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A stored email record."
+                                },
+                                "description": "Stored email records, preserving order and empty arrays."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Stored login email address."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Stored given name."
+                            },
+                            "externalId": {
+                                "description": "Provisioning-system identifier, when returned; empty text is preserved.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Stored family name."
+                            },
+                            "displayName": {
+                                "description": "Provider-generated display name, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "emails",
+                            "userName",
+                            "givenName",
+                            "familyName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A replicated Roam organization user with identity, profile, emails, active status, and role."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-member-to-group",
+            "integrationId": "roam-scim",
+            "description": "Request membership for one user without replacing the group's other members. Roam skips unknown or archived users.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_addmembertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_addmembertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID to add; must resolve to an active user in the account to be applied."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque group Address ID receiving the membership."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One user and the group to request membership in."
+                    },
+                    "FunctionOutput_roam_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Group Address ID."
+                            },
+                            "location": {
+                                "description": "Resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting member Person IDs; omitted if the provider omits membership. An accepted request does not guarantee the requested user was added.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Member Person ID returned by Roam."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name after the operation."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The actual group returned after requesting the membership addition."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups` and userId from `list-users`. Use this for one addition and `batch-add-members-to-group` for up to 100 additions. Unknown or archived users are skipped rather than causing an error; inspect returned memberIds to determine the applied membership. Other members are not replaced."
+            },
+            "filePath": "./roam-scim/tools/add-member-to-group.ts",
+            "version": "19272025232c038e24851e6409015ba9769d10e896d4fae47bfaf8340ec61ba7",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/add-member-to-group/19272025232c038e24851e6409015ba9769d10e896d4fae47bfaf8340ec61ba7.cjs",
+                "ts": "templates-zero/roam-scim/tools/add-member-to-group/19272025232c038e24851e6409015ba9769d10e896d4fae47bfaf8340ec61ba7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "archive-group",
+            "integrationId": "roam-scim",
+            "description": "Archive a group and remove its members while retaining the group's data. This is not permanent deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_archivegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_archivegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_archivegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group to archive."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The group to archive and remove memberships from."
+                    },
+                    "FunctionOutput_roam_scim_archivegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "description": "Address ID targeted by the successful archive request."
+                            },
+                            "archived": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Roam accepted group archival, which also removes memberships; it does not establish permanent data deletion."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "archived"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of successful group archival."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the Address ID from `list-groups` or `get-group`. This archives the entire group and removes its members; use `remove-member-from-group` for only one association. Group data is retained, but no group-restore operation is documented. Contact Roam support for permanent deletion or recovery guidance."
+            },
+            "filePath": "./roam-scim/tools/archive-group.ts",
+            "version": "10646cd123ac4f0103d8acdcff919f5f6202da31db10c6a90ca20a03a62ef481",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/archive-group/10646cd123ac4f0103d8acdcff919f5f6202da31db10c6a90ca20a03a62ef481.cjs",
+                "ts": "templates-zero/roam-scim/tools/archive-group/10646cd123ac4f0103d8acdcff919f5f6202da31db10c6a90ca20a03a62ef481.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "archive-user",
+            "integrationId": "roam-scim",
+            "description": "Archive a user and remove their access while retaining their data. This is not permanent deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_archiveuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_archiveuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_archiveuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID of the user to archive."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The user to archive without permanently deleting their data."
+                    },
+                    "FunctionOutput_roam_scim_archiveuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "Person ID targeted by the successful archive request."
+                            },
+                            "archived": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Roam accepted the archive operation; data was not permanently deleted."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "archived"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of a successful user archive operation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the Person ID from `list-users` or `get-user`. This removes the user's access but retains data. Use `restore-user` to reactivate. Permanent data deletion is not available through this tool; contact Roam support for that."
+            },
+            "filePath": "./roam-scim/tools/archive-user.ts",
+            "version": "e23c10f0a3f2d88d7070d9525af38744720cba85b2bc4a903b6440de60b36fac",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/archive-user/e23c10f0a3f2d88d7070d9525af38744720cba85b2bc4a903b6440de60b36fac.cjs",
+                "ts": "templates-zero/roam-scim/tools/archive-user/e23c10f0a3f2d88d7070d9525af38744720cba85b2bc4a903b6440de60b36fac.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-add-members-to-group",
+            "integrationId": "roam-scim",
+            "description": "Request up to 100 membership additions to one group using a native members-array update. Unresolved or archived users are skipped.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_batchaddmemberstogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_batchaddmemberstogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group receiving memberships."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Person ID to add."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct Person IDs to add, maximum 100. Unknown and archived users are skipped rather than failing the call."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One group and 1–100 distinct Person IDs whose memberships are requested."
+                    },
+                    "FunctionOutput_roam_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Group Address ID."
+                            },
+                            "location": {
+                                "description": "SCIM resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting membership; not per-request success results. Omitted if membership is not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Person ID in the resulting membership."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The resulting group returned by Roam, including actual membership when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use an Address ID from `list-groups` and Person IDs from `list-users`. Supply 1–100 distinct user IDs. Use `add-member-to-group` for one user. This is best-effort: inspect the actual resulting memberIds, and do not assume every requested ID was applied. Other memberships are not replaced."
+            },
+            "filePath": "./roam-scim/tools/batch-add-members-to-group.ts",
+            "version": "6df3db68df4b88df882a373718d19772fc8fe0f3fba487d4743d50f17acbf748",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/batch-add-members-to-group/6df3db68df4b88df882a373718d19772fc8fe0f3fba487d4743d50f17acbf748.cjs",
+                "ts": "templates-zero/roam-scim/tools/batch-add-members-to-group/6df3db68df4b88df882a373718d19772fc8fe0f3fba487d4743d50f17acbf748.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-remove-members-from-group",
+            "integrationId": "roam-scim",
+            "description": "Request removal of up to 100 user memberships from one group without replacing unrelated memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_batchremovemembersfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_batchremovemembersfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group losing memberships."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Person ID whose association should be removed."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct Person IDs whose associations should be removed, maximum 100; unknown memberships are no-ops."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One group and 1–100 distinct member Person IDs to remove."
+                    },
+                    "FunctionOutput_roam_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Group Address ID."
+                            },
+                            "location": {
+                                "description": "Resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting membership, not correlated per-item deletion outcomes; omitted if not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Person ID in the resulting membership."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The actual resulting group returned by the removal request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an Address ID from `list-groups` and member Person IDs from `get-group`. Supply 1–100 distinct IDs. This removes associations, not users or the group; unknown members are no-ops. Use `remove-member-from-group` for a single removal. Inspect the actual resulting memberIds."
+            },
+            "filePath": "./roam-scim/tools/batch-remove-members-from-group.ts",
+            "version": "f0c7ea4f706f35f3fc26b89e5d77c75c737bf33714728879394178ede4ab0a43",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/batch-remove-members-from-group/f0c7ea4f706f35f3fc26b89e5d77c75c737bf33714728879394178ede4ab0a43.cjs",
+                "ts": "templates-zero/roam-scim/tools/batch-remove-members-from-group/f0c7ea4f706f35f3fc26b89e5d77c75c737bf33714728879394178ede4ab0a43.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "roam-scim",
+            "description": "Create a group with a name and optional initial user memberships. Unknown or archived users are skipped by Roam.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "memberIds": {
+                                "description": "Initial Roam Person IDs, maximum 100 per call; omitted or [] requests no initial members. Unknown and archived users are skipped.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Roam Person ID to request as an initial member."
+                                },
+                                "uniqueItems": true
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "maxLength": 64,
+                                "description": "Name of the new group, at most 64 characters."
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Name and optional initial membership for a new Roam group."
+                    },
+                    "FunctionOutput_roam_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Assigned opaque Roam Address ID."
+                            },
+                            "location": {
+                                "description": "Resource location from response metadata, when available.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual applied Person IDs, not all requested IDs; omitted if the provider omits membership.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Roam Person ID returned in the applied membership."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name."
+                            },
+                            "resourceType": {
+                                "description": "Resource type from response metadata, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created Roam group and the membership actually returned by Roam."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new group. Obtain optional member Person IDs from `list-users`; only active users can be added. Inspect returned memberIds to see what Roam actually applied. Use `update-group` or `add-member-to-group` for an existing group. Check `list-groups` before retrying an uncertain create."
+            },
+            "filePath": "./roam-scim/tools/create-group.ts",
+            "version": "88fe2a42c9966c36869867a8c7e218c38c94aab7faf9171110569fedeedf22ba",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/create-group/88fe2a42c9966c36869867a8c7e218c38c94aab7faf9171110569fedeedf22ba.cjs",
+                "ts": "templates-zero/roam-scim/tools/create-group/88fe2a42c9966c36869867a8c7e218c38c94aab7faf9171110569fedeedf22ba.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-user",
+            "integrationId": "roam-scim",
+            "description": "Provision a Roam user with an email, name, and optional role and provisioning attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_createuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_createuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "description": "Initial Roam role; omitted delegates the default to Roam.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Primary email and login name; sent identically as userName and the primary email."
+                            },
+                            "active": {
+                                "description": "Initial active status; omitted delegates the default to Roam.",
+                                "type": "boolean"
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "User's given name as ordinary Unicode text."
+                            },
+                            "externalId": {
+                                "description": "Optional identifier in the provisioning system; empty text is sent literally.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "User's family name as ordinary Unicode text."
+                            },
+                            "additionalEmails": {
+                                "description": "Other email records, all non-primary; omitted means no additional emails are requested.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Optional email category; omitted means no category is sent.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Additional email address text."
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An additional non-primary email record."
+                                }
+                            },
+                            "primaryEmailType": {
+                                "description": "Optional category for the primary email; omitted means no category is sent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "givenName",
+                            "familyName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Email, name, and optional initial provisioning attributes for a new Roam user."
+                    },
+                    "FunctionOutput_roam_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Created user's opaque Roam Person ID."
+                            },
+                            "role": {
+                                "description": "Stored Roam role, when returned.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "active": {
+                                "description": "Stored active status, when returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email category, when returned.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Stored email text."
+                                        },
+                                        "primary": {
+                                            "description": "Primary flag, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An email record stored and returned by Roam."
+                                },
+                                "description": "Actual email records returned by Roam, not merely echoed input."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Stored SCIM login email address."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Stored given name."
+                            },
+                            "externalId": {
+                                "description": "Stored external identifier, when returned.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Stored family name."
+                            },
+                            "displayName": {
+                                "description": "Provider-generated display name, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "emails",
+                            "userName",
+                            "givenName",
+                            "familyName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The actual created Roam user returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new user, not an existing user's profile change; use `update-user` for that. Supply the primary email once: the tool keeps the login and primary email consistent. Roam generates the display name. Check `list-users` before retrying an uncertain creation because replay may conflict or create another resource."
+            },
+            "filePath": "./roam-scim/tools/create-user.ts",
+            "version": "dfc9aafff322e1de39ba7f8512b44f7b5455ed0ab877bd311e25a977cf3c8020",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/create-user/dfc9aafff322e1de39ba7f8512b44f7b5455ed0ab877bd311e25a977cf3c8020.cjs",
+                "ts": "templates-zero/roam-scim/tools/create-user/dfc9aafff322e1de39ba7f8512b44f7b5455ed0ab877bd311e25a977cf3c8020.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "roam-scim",
+            "description": "Retrieve a group by its Roam Address ID, including the membership actually stored.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Roam Address ID of the group to retrieve."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the group to retrieve by its opaque Roam Address ID."
+                    },
+                    "FunctionOutput_roam_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Roam Address ID."
+                            },
+                            "location": {
+                                "description": "SCIM metadata resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Stored member Person IDs; omitted when membership is absent and [] when explicitly empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Stored member Roam Person ID."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM metadata resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The stored group name, opaque identity, membership, and available SCIM metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a group ID from `list-groups` or `create-group`. Use `list-groups` if you do not know the ID. Member IDs identify users and can be read with `get-user`; this call does not expand every member profile."
+            },
+            "filePath": "./roam-scim/tools/get-group.ts",
+            "version": "7d2f1411b590b682cd1edfacdcf0d4e8c0c2c16a0722db40e5d5f535ce4a5cd0",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/get-group/7d2f1411b590b682cd1edfacdcf0d4e8c0c2c16a0722db40e5d5f535ce4a5cd0.cjs",
+                "ts": "templates-zero/roam-scim/tools/get-group/7d2f1411b590b682cd1edfacdcf0d4e8c0c2c16a0722db40e5d5f535ce4a5cd0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-schema",
+            "integrationId": "roam-scim",
+            "description": "Retrieve the documented definition metadata for one supported SCIM schema by its URN.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_getschema",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_getschema",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "schemaId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque SCIM schema URN, for example urn:ietf:params:scim:schemas:core:2.0:User."
+                            }
+                        },
+                        "required": [
+                            "schemaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The SCIM schema URN to retrieve."
+                    },
+                    "FunctionOutput_roam_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Schema's opaque URN identifier."
+                            },
+                            "name": {
+                                "description": "Schema name, when returned.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Provider's schema description, when returned; empty text is preserved.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The documented definition metadata for the requested SCIM schema."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain a schema URN from `list-schemas` or `list-resource-types`. Pass it unchanged, including colons. Use `list-schemas` to enumerate supported definitions instead. This is a public discovery endpoint and does not require authentication."
+            },
+            "filePath": "./roam-scim/tools/get-schema.ts",
+            "version": "85a7e59aa29da7c40e0e40a5c4d36103ccb9923686aa161fd42d8560be355466",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/get-schema/85a7e59aa29da7c40e0e40a5c4d36103ccb9923686aa161fd42d8560be355466.cjs",
+                "ts": "templates-zero/roam-scim/tools/get-schema/85a7e59aa29da7c40e0e40a5c4d36103ccb9923686aa161fd42d8560be355466.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "roam-scim",
+            "description": "Retrieve Roam's advertised SCIM capabilities, including PATCH and filtering support.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to retrieve the public SCIM service provider configuration."
+                    },
+                    "FunctionOutput_roam_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "patchSupported": {
+                                "description": "Advertised PATCH support; omitted if the provider does not report it.",
+                                "type": "boolean"
+                            },
+                            "filterSupported": {
+                                "description": "Advertised filtering support; does not imply support on every resource, and is omitted if not reported.",
+                                "type": "boolean"
+                            },
+                            "filterMaxResults": {
+                                "description": "Advertised filter maxResults value, when returned; not automatically a page-size or batch limit.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Advertised SCIM capabilities, with unavailable capability values omitted."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when configuring a SCIM client or checking advertised features. Use `list-resource-types` for resource endpoints and `list-schemas` for schemas. This public discovery endpoint needs no authentication. Advertised filtering does not imply group filters work; Roam currently ignores group filters."
+            },
+            "filePath": "./roam-scim/tools/get-service-provider-config.ts",
+            "version": "7f2daeb48176f42175039e446c296eaedbbdbf7f225a0eb0788943653b9bfce1",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/get-service-provider-config/7f2daeb48176f42175039e446c296eaedbbdbf7f225a0eb0788943653b9bfce1.cjs",
+                "ts": "templates-zero/roam-scim/tools/get-service-provider-config/7f2daeb48176f42175039e446c296eaedbbdbf7f225a0eb0788943653b9bfce1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "roam-scim",
+            "description": "Retrieve one Roam user by their Person ID, including profile, email records, active status, and role.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Roam Person ID of the user to retrieve."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the Roam user to retrieve by Person ID."
+                    },
+                    "FunctionOutput_roam_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Roam Person ID."
+                            },
+                            "role": {
+                                "description": "Roam role from its extension, when returned.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "active": {
+                                "description": "True for active and false for archived, when returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email category, when returned.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Email address text."
+                                        },
+                                        "primary": {
+                                            "description": "Primary-email flag, when returned; absent is not false.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One stored email record."
+                                },
+                                "description": "Stored email records in provider order."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Stored SCIM login email address."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Stored given name."
+                            },
+                            "externalId": {
+                                "description": "Provisioning-system identifier, when returned; empty text is preserved.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Stored family name."
+                            },
+                            "displayName": {
+                                "description": "Generated display name, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "emails",
+                            "userName",
+                            "givenName",
+                            "familyName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The stored Roam user profile, email records, status, and role."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an ID from `list-users` or `create-user`. Use `list-users` instead when you only know an email address. This is a read and does not reactivate archived users."
+            },
+            "filePath": "./roam-scim/tools/get-user.ts",
+            "version": "d9ea879f99e62d91cda62b6eefdf5ef459e19a045237ae01e87da38fce12498b",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/get-user/d9ea879f99e62d91cda62b6eefdf5ef459e19a045237ae01e87da38fce12498b.cjs",
+                "ts": "templates-zero/roam-scim/tools/get-user/d9ea879f99e62d91cda62b6eefdf5ef459e19a045237ae01e87da38fce12498b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "roam-scim",
+            "description": "List one page of groups in the connected organization, including actual memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested groups per page, default 100; the provider may return fewer.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this connection and limit; omit on the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for one page of organization groups."
+                    },
+                    "FunctionOutput_roam_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Roam Address ID identifying the group."
+                                        },
+                                        "location": {
+                                            "description": "Resource location from SCIM metadata, when returned.",
+                                            "type": "string"
+                                        },
+                                        "memberIds": {
+                                            "description": "Actual member Person IDs; omitted if the provider omits membership, and [] means explicitly empty.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque Person ID of an actual group member."
+                                            }
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Stored group name."
+                                        },
+                                        "resourceType": {
+                                            "description": "SCIM resource type from metadata, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "displayName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An organization group with its returned membership and metadata."
+                                },
+                                "description": "Groups in this provider page, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for another page; omitted when exhausted.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total group count when supplied, not the current page length.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of groups and its continuation, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover group IDs for `get-group`, `update-group`, and membership tools. Pass `nextCursor` back as `cursor` with the same limit for another page. Group filtering is not supported: Roam currently ignores its filter parameter. Each call returns one page."
+            },
+            "filePath": "./roam-scim/tools/list-groups.ts",
+            "version": "6c0926233ec676b4cbf98ad7442a14442809645c23c57d0e0e00b5a3acd644ff",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/list-groups/6c0926233ec676b4cbf98ad7442a14442809645c23c57d0e0e00b5a3acd644ff.cjs",
+                "ts": "templates-zero/roam-scim/tools/list-groups/6c0926233ec676b4cbf98ad7442a14442809645c23c57d0e0e00b5a3acd644ff.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-resource-types",
+            "integrationId": "roam-scim",
+            "description": "List the SCIM resource types supported by Roam and their discovery metadata.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_listresourcetypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_listresourcetypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required to discover supported SCIM resource types."
+                    },
+                    "FunctionOutput_roam_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque SCIM resource-type identifier, for example User or Group."
+                                        },
+                                        "name": {
+                                            "description": "Resource-type name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "Relative resource endpoint reported by discovery, when returned.",
+                                            "type": "string"
+                                        },
+                                        "schemaId": {
+                                            "description": "Core schema URN for this resource type, when returned; suitable for get-schema.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider explanation of the resource type, when returned.",
+                                            "type": "string"
+                                        },
+                                        "schemaExtensions": {
+                                            "description": "Reported extension schemas, when returned; [] means explicitly none.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "required": {
+                                                        "description": "Whether this extension is required for the resource type, when returned.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "schemaId": {
+                                                        "type": "string",
+                                                        "description": "Extension schema URN."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "schemaId"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A reported extension schema and its optional requirement flag."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Discovery metadata for one supported SCIM resource type."
+                                },
+                                "description": "Resource types in the discovery response, in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete SCIM resource-type discovery collection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when configuring a provisioning integration to discover User and Group resource types. Use `list-schemas` and `get-schema` for schema definitions, or `get-service-provider-config` for supported features. This discovery endpoint does not require authentication and returns its collection in one response."
+            },
+            "filePath": "./roam-scim/tools/list-resource-types.ts",
+            "version": "1c0b9671c9574a0e6746dcc8dfda28c7b1ac91d067706849fcfa7ff60419550b",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/list-resource-types/1c0b9671c9574a0e6746dcc8dfda28c7b1ac91d067706849fcfa7ff60419550b.cjs",
+                "ts": "templates-zero/roam-scim/tools/list-resource-types/1c0b9671c9574a0e6746dcc8dfda28c7b1ac91d067706849fcfa7ff60419550b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schemas",
+            "integrationId": "roam-scim",
+            "description": "List the SCIM schemas supported by Roam, including core resources and Roam and enterprise-user extensions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_listschemas",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_listschemas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_listschemas": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No configuration is required to list supported SCIM schemas."
+                    },
+                    "FunctionOutput_roam_scim_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque schema URN suitable as schemaId for get-schema."
+                                        },
+                                        "name": {
+                                            "description": "Provider schema name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider schema description, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A supported SCIM schema summary."
+                                },
+                                "description": "Supported schema summaries in provider order."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "SCIM schema summaries returned by Roam discovery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover schema URNs before `get-schema`. Use `list-resource-types` for resource endpoints and `get-service-provider-config` for supported features. This public discovery call returns the collection in one response and does not require authentication."
+            },
+            "filePath": "./roam-scim/tools/list-schemas.ts",
+            "version": "0695561abe37aeeeaa8eee9b02e12826397096f57cacd32e17e1b13c56e80d23",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/list-schemas/0695561abe37aeeeaa8eee9b02e12826397096f57cacd32e17e1b13c56e80d23.cjs",
+                "ts": "templates-zero/roam-scim/tools/list-schemas/0695561abe37aeeeaa8eee9b02e12826397096f57cacd32e17e1b13c56e80d23.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "roam-scim",
+            "description": "List one page of users in the connected Roam organization, optionally matching an email address or SCIM filter.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Exact userName/email address to match; do not combine with filter.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "limit": {
+                                "description": "Requested maximum users in this page; defaults to 100. The provider may return fewer.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from an earlier page with the same connection, filters, and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Advanced SCIM filter expression, for example userName eq \"alice@example.com\"; do not combine with email.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing one page of Roam users or matching an email or SCIM filter.",
+                        "not": {
+                            "required": [
+                                "email",
+                                "filter"
+                            ],
+                            "properties": {
+                                "email": true,
+                                "filter": true
+                            }
+                        }
+                    },
+                    "FunctionOutput_roam_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Roam Person ID."
+                                        },
+                                        "role": {
+                                            "description": "Roam role from the Roam extension; omitted if not returned.",
+                                            "type": "string",
+                                            "enum": [
+                                                "User",
+                                                "Admin"
+                                            ]
+                                        },
+                                        "active": {
+                                            "description": "Whether the user is active rather than archived; omitted if not returned.",
+                                            "type": "boolean"
+                                        },
+                                        "emails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider email category, when present.",
+                                                        "type": "string"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "Email text from the SCIM email value."
+                                                    },
+                                                    "primary": {
+                                                        "description": "Provider primary-email flag, when present; absence is not false.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "address"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An email record returned for this user."
+                                            },
+                                            "description": "Email records in provider order; an empty array remains empty."
+                                        },
+                                        "userName": {
+                                            "type": "string",
+                                            "description": "SCIM login name, representing the user's email address."
+                                        },
+                                        "givenName": {
+                                            "type": "string",
+                                            "description": "Stored given name, including an empty string if returned."
+                                        },
+                                        "externalId": {
+                                            "description": "Provisioning-system identifier; omitted when not returned, with empty string preserved.",
+                                            "type": "string"
+                                        },
+                                        "familyName": {
+                                            "type": "string",
+                                            "description": "Stored family name, including an empty string if returned."
+                                        },
+                                        "displayName": {
+                                            "description": "Provider-generated display name; omitted when unavailable.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "emails",
+                                        "userName",
+                                        "givenName",
+                                        "familyName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Roam user with flattened names and email records."
+                                },
+                                "description": "Users in this provider page, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when the collection is exhausted.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total users matching this request, when supplied; not the current page length.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of Roam users, with continuation and the provider-reported total when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse users or find a user's ID from an email address. Use `get-user` when you already have the ID. Pass `nextCursor` back as `cursor` with the same filters and limit to continue. Each call returns one page, not the entire organization."
+            },
+            "filePath": "./roam-scim/tools/list-users.ts",
+            "version": "c6ab5ae1c63eb5b2d81ab3605cf764204f4a5998310e801f3643348b0131609e",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/list-users/c6ab5ae1c63eb5b2d81ab3605cf764204f4a5998310e801f3643348b0131609e.cjs",
+                "ts": "templates-zero/roam-scim/tools/list-users/c6ab5ae1c63eb5b2d81ab3605cf764204f4a5998310e801f3643348b0131609e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-group",
+            "integrationId": "roam-scim",
+            "description": "Remove one user's membership without archiving the user or the group.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_removememberfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_removememberfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID whose association is removed; unknown membership is a no-op."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group losing the membership."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the group and the single user membership to remove."
+                    },
+                    "FunctionOutput_roam_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Group Address ID."
+                            },
+                            "location": {
+                                "description": "Resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting member Person IDs; omitted if not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Member Person ID."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Stored group name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Actual resulting group returned after the membership removal."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use groupId from `list-groups` and a member Person ID from `get-group`. This removes only the association, not the user or group. Unknown members are a no-op. Use `batch-remove-members-from-group` for up to 100 removals; use `archive-group` to archive the entire group instead."
+            },
+            "filePath": "./roam-scim/tools/remove-member-from-group.ts",
+            "version": "885241802d37d27ec387c4bd79e39dd266932e9609274a7f2101780ef7d337a3",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/remove-member-from-group/885241802d37d27ec387c4bd79e39dd266932e9609274a7f2101780ef7d337a3.cjs",
+                "ts": "templates-zero/roam-scim/tools/remove-member-from-group/885241802d37d27ec387c4bd79e39dd266932e9609274a7f2101780ef7d337a3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "replace-group",
+            "integrationId": "roam-scim",
+            "description": "Replace a group's name and desired membership in one full-replacement request, subject to Roam's best-effort member resolution and archived-membership preservation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_replacegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_replacegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_replacegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group to replace."
+                            },
+                            "memberIds": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Person ID to include in the desired membership."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired member Person IDs, maximum 100; [] requests no active memberships. Roam preserves archived users' existing memberships and skips unresolved additions."
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "maxLength": 64,
+                                "description": "Complete desired group name, at most 64 characters."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "memberIds",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete group name and desired membership for a full replacement."
+                    },
+                    "FunctionOutput_roam_scim_replacegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unchanged group Address ID."
+                            },
+                            "location": {
+                                "description": "SCIM resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting Person IDs after resolution and archived-member protection; omitted if not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Person ID in the actual resulting membership."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Resulting stored name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Actual group state returned by Roam after replacement."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an Address ID from `get-group` or `list-groups` and provide the entire intended name and member list. Members not included can be removed; archived users' existing memberships are preserved by Roam. Unknown or archived new members are skipped. Use `update-group` for selected fields or membership add/remove tools for incremental changes."
+            },
+            "filePath": "./roam-scim/tools/replace-group.ts",
+            "version": "2daa627a197d18ec31bab52b7b6bb6d415c0c52fc28f67338f81357f83d5801a",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/replace-group/2daa627a197d18ec31bab52b7b6bb6d415c0c52fc28f67338f81357f83d5801a.cjs",
+                "ts": "templates-zero/roam-scim/tools/replace-group/2daa627a197d18ec31bab52b7b6bb6d415c0c52fc28f67338f81357f83d5801a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "replace-user",
+            "integrationId": "roam-scim",
+            "description": "Replace a user's complete supported profile with explicit name, email, role, active status, and external identifier values.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_replaceuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_replaceuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_replaceuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID whose profile is replaced."
+                            },
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Desired primary email and login, submitted together."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Complete desired given name."
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Complete desired family name."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Desired lifecycle: false archives and removes access; true reactivates."
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ],
+                                "description": "Complete desired Roam role."
+                            },
+                            "externalId": {
+                                "type": "string",
+                                "description": "Complete desired external provisioning identifier; empty text requests an empty value."
+                            },
+                            "additionalEmails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Secondary email address text."
+                                        },
+                                        "type": {
+                                            "description": "Desired category; omission sends no category for this entry.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A desired secondary email record."
+                                },
+                                "description": "Complete desired secondary email records; [] requests none."
+                            },
+                            "primaryEmailType": {
+                                "description": "Desired primary-email category; omission sends no category rather than preserving the old one.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "email",
+                            "givenName",
+                            "familyName",
+                            "active",
+                            "role",
+                            "externalId",
+                            "additionalEmails"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete intended supported profile and Person ID for a full user replacement."
+                    },
+                    "FunctionOutput_roam_scim_replaceuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Resulting unchanged Person ID."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Resulting login email."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Resulting given name."
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Resulting family name."
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Stored email text."
+                                        },
+                                        "type": {
+                                            "description": "Stored category, when returned.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Stored primary flag, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An email record actually returned by Roam."
+                                },
+                                "description": "Actual stored email records returned by Roam."
+                            },
+                            "role": {
+                                "description": "Resulting role, when returned.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "active": {
+                                "description": "Resulting lifecycle status, when returned.",
+                                "type": "boolean"
+                            },
+                            "externalId": {
+                                "description": "Resulting external identifier, when returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Provider-generated display name, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userName",
+                            "givenName",
+                            "familyName",
+                            "emails"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Actual supported user state returned by Roam after replacement."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this only when you have the complete intended profile and Person ID from `get-user` or `list-users`. Use `update-user` to preserve omitted fields instead. This overwrites the stored profile, can change email and role, and can archive or reactivate the user. An empty additionalEmails list requests no secondary emails."
+            },
+            "filePath": "./roam-scim/tools/replace-user.ts",
+            "version": "3dc653570a8dd4f1faaec76158b96a09f854635c9d25f7aa26a70eab9aca4c15",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/replace-user/3dc653570a8dd4f1faaec76158b96a09f854635c9d25f7aa26a70eab9aca4c15.cjs",
+                "ts": "templates-zero/roam-scim/tools/replace-user/3dc653570a8dd4f1faaec76158b96a09f854635c9d25f7aa26a70eab9aca4c15.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "restore-user",
+            "integrationId": "roam-scim",
+            "description": "Reactivate an archived Roam user by setting their active status to true.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_restoreuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_restoreuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_restoreuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID of the archived user to reactivate."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the archived Roam user to reactivate."
+                    },
+                    "FunctionOutput_roam_scim_restoreuser": {
+                        "type": "object",
+                        "properties": {
+                            "active": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The update response confirms the user is active."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "Person ID confirmed by the successful update."
+                            }
+                        },
+                        "required": [
+                            "active",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmed identity and active status returned by the reactivation update."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use the Person ID from `get-user` or `list-users` to reactivate an archived user. This changes access status without replacing the profile. Use `archive-user` to remove access instead. The result establishes the active-status update, not any invitation delivery."
+            },
+            "filePath": "./roam-scim/tools/restore-user.ts",
+            "version": "50b79c24e0ff7cbcf8a259d5ad60ce74fd06c626398343918291935f3ebc8281",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/restore-user/50b79c24e0ff7cbcf8a259d5ad60ce74fd06c626398343918291935f3ebc8281.cjs",
+                "ts": "templates-zero/roam-scim/tools/restore-user/50b79c24e0ff7cbcf8a259d5ad60ce74fd06c626398343918291935f3ebc8281.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "roam-scim",
+            "description": "Change a group's name and/or replace its member list while leaving omitted attributes untouched.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Address ID of the group to update."
+                            },
+                            "memberIds": {
+                                "description": "Replacement member Person IDs, maximum 100; omission preserves membership and [] requests an empty list, subject to Roam's archived-user preservation rules.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Person ID to include in the replacement membership."
+                                },
+                                "uniqueItems": true
+                            },
+                            "displayName": {
+                                "description": "Replacement group name; omission preserves it and empty text is sent literally.",
+                                "type": "string",
+                                "maxLength": 64
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "minProperties": 2,
+                        "description": "Group Address ID and at least one replacement name or membership list."
+                    },
+                    "FunctionOutput_roam_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unchanged group Address ID."
+                            },
+                            "location": {
+                                "description": "SCIM resource location, when returned.",
+                                "type": "string"
+                            },
+                            "memberIds": {
+                                "description": "Actual resulting Person IDs, which may differ from the requested replacement; omitted if not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Actual resulting member Person ID."
+                                }
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Resulting group name."
+                            },
+                            "resourceType": {
+                                "description": "SCIM resource type, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Resulting group returned by Roam after applying the supplied replacements."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the Address ID from `list-groups` or `get-group`. Omit memberIds to leave memberships untouched; supplying it replaces the list and can remove members. Use `add-member-to-group` or `remove-member-from-group` for incremental membership changes, or `replace-group` for full replacement. Unknown and archived additions are skipped; inspect returned membership."
+            },
+            "filePath": "./roam-scim/tools/update-group.ts",
+            "version": "b9d5cfbda9f78de0caf65b6b59db7d46719e5bbd702763cd74d4816da82d47e6",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/update-group/b9d5cfbda9f78de0caf65b6b59db7d46719e5bbd702763cd74d4816da82d47e6.cjs",
+                "ts": "templates-zero/roam-scim/tools/update-group/b9d5cfbda9f78de0caf65b6b59db7d46719e5bbd702763cd74d4816da82d47e6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "roam-scim",
+            "description": "Change selected stored user attributes, including a coordinated email change, without replacing the whole profile.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_roam_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_roam_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_roam_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "description": "New Roam role; omission preserves the role.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "email": {
+                                "description": "New primary email and login, changed together; omission leaves all emails unchanged unless additionalEmails is supplied.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Person ID of the user to modify."
+                            },
+                            "givenName": {
+                                "description": "New given name; omission preserves it, and empty text is sent literally.",
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "description": "New external provisioning identifier; omission preserves it, and empty text requests an empty value.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "description": "New family name; omission preserves it, and empty text is sent literally.",
+                                "type": "string"
+                            },
+                            "additionalEmails": {
+                                "description": "Replacement non-primary email records; [] requests no secondary emails. Omitted preserves existing secondary emails.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Optional category for this secondary email.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Secondary email text."
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A replacement secondary email record."
+                                }
+                            },
+                            "primaryEmailType": {
+                                "description": "New primary-email category; omission preserves the existing category, and empty text is sent literally.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "minProperties": 2,
+                        "description": "Person ID and selected stored user attributes to change; omitted attributes remain unchanged."
+                    },
+                    "FunctionOutput_roam_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unchanged Roam Person ID."
+                            },
+                            "role": {
+                                "description": "Resulting Roam role, when returned.",
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Admin"
+                                ]
+                            },
+                            "active": {
+                                "description": "Resulting active status, when returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Stored category, when returned.",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Stored email address text."
+                                        },
+                                        "primary": {
+                                            "description": "Stored primary flag, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A resulting stored email record."
+                                },
+                                "description": "Actual resulting email records in provider order."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Resulting login email address."
+                            },
+                            "givenName": {
+                                "type": "string",
+                                "description": "Resulting given name."
+                            },
+                            "externalId": {
+                                "description": "Resulting external identifier, when returned.",
+                                "type": "string"
+                            },
+                            "familyName": {
+                                "type": "string",
+                                "description": "Resulting family name."
+                            },
+                            "displayName": {
+                                "description": "Provider-generated display name, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "emails",
+                            "userName",
+                            "givenName",
+                            "familyName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Actual updated Roam user returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the Person ID from `list-users` or `get-user`. Supply only attributes to change; omitted attributes remain unchanged. Use `replace-user` for full replacement, `archive-user` to remove access, or `restore-user` to reactivate. A changed email is applied to both login and primary email, preserving the user's identity, chat history, and group memberships."
+            },
+            "filePath": "./roam-scim/tools/update-user.ts",
+            "version": "47bd57c35f9a6d38d24417ea07e934feeda34e81653ef9e715e9f70ad4f63c10",
+            "location": {
+                "js": "templates-zero/roam-scim/tools/update-user/47bd57c35f9a6d38d24417ea07e934feeda34e81653ef9e715e9f70ad4f63c10.cjs",
+                "ts": "templates-zero/roam-scim/tools/update-user/47bd57c35f9a6d38d24417ea07e934feeda34e81653ef9e715e9f70ad4f63c10.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

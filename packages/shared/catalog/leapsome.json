@@ -1,0 +1,3442 @@
+{
+    "providerConfigKey": "leapsome",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make absence records, their employee references, dates, and statuses available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-absences",
+            "output": [
+                "Absences"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Absences"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Absences": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque absence identifier."
+                            },
+                            "status": {
+                                "description": "Provider absence status, when available.",
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "description": "Last absence calendar date, when available; provider endpoint semantics apply.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "startDate": {
+                                "description": "First absence calendar date, when available.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Employee associated with the absence."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An absence record with its employee reference, calendar dates, and provider status."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the access-role catalog available as a replicated dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-access-roles",
+            "output": [
+                "AccessRoles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "AccessRoles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AccessRoles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque role identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Human-readable role name."
+                            },
+                            "description": {
+                                "description": "Role explanation, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Access-role catalog record."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the document-category catalog available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-document-categories",
+            "output": [
+                "DocumentCategories"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "DocumentCategories"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DocumentCategories": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque document-category identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Category display name."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An active document category in the reusable document-category catalog."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make employee identities and basic directory attributes available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-employees",
+            "output": [
+                "Employees"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Employees"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employees": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque employee/user identifier."
+                            },
+                            "email": {
+                                "description": "Employee email address, when available.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider lifecycle status, when available.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Family name, when available.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Given name, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Employee identities and basic directory attributes."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make individual employment relationships and their employee references available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-employments",
+            "output": [
+                "Employments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Employments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque employment-record identifier."
+                            },
+                            "endDate": {
+                                "description": "End calendar date, explicit null for open-ended employment, or omitted when unavailable.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "jobTitle": {
+                                "description": "Job title, when available.",
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "description": "Employment start calendar date, when available.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Associated employee identifier."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Individual employment relationship and its associated employee reference."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make feedback visible to the connection available as replicated records, preserving feedback-kind and visibility distinctions.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-feedback",
+            "output": [
+                "Feedback"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Feedback"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Feedback": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque feedback identifier."
+                            },
+                            "kind": {
+                                "description": "Provider feedback type, when available.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "description": "Visible feedback text in its source content format.",
+                                "type": "string"
+                            },
+                            "authorId": {
+                                "description": "Author employee identifier, when visible.",
+                                "type": "string"
+                            },
+                            "recipientIds": {
+                                "description": "Recipient employee identifiers, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Recipient employee identifier."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Feedback visible to the connection, retaining the provider kind and visible content and references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make comments on accessible goals available as replicated records with explicit parent-goal identity.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-goal-comments",
+            "output": [
+                "GoalComments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GoalComments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GoalComments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Globally unambiguous record key formed from goalId and commentId."
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Comment text in source content format."
+                            },
+                            "goalId": {
+                                "type": "string",
+                                "description": "Parent goal identifier."
+                            },
+                            "authorId": {
+                                "description": "Author employee identifier, when visible.",
+                                "type": "string"
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "Opaque source comment identifier within its goal."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "text",
+                            "goalId",
+                            "commentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Comments on accessible goals with explicit parent-goal identity."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the goal-tag catalog available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-goal-tags",
+            "output": [
+                "GoalTags"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GoalTags"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GoalTags": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque goal-tag identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Tag display text."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Goal-tag catalog record used to classify goals."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible goal details, ownership, tags, and available goal components available as replicated goal records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-goals",
+            "output": [
+                "Goals"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Goals"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Goals": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque goal identifier."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Goal title."
+                            },
+                            "status": {
+                                "description": "Provider goal status, when available.",
+                                "type": "string"
+                            },
+                            "tagIds": {
+                                "description": "Goal-tag references, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque goal-tag identifier."
+                                }
+                            },
+                            "ownerIds": {
+                                "description": "Owner employee references, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque owner employee identifier."
+                                }
+                            },
+                            "keyResults": {
+                                "description": "Nested key results, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque key-result identifier within the goal."
+                                        },
+                                        "unit": {
+                                            "description": "Provider unit label, when available.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Key-result title, when available.",
+                                            "type": "string"
+                                        },
+                                        "targetValue": {
+                                            "description": "Target value in the same unit, when available.",
+                                            "type": "number"
+                                        },
+                                        "currentValue": {
+                                            "description": "Current value in the configured measurement unit, when available.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A key result belonging to the goal."
+                                }
+                            },
+                            "description": {
+                                "description": "Goal description in source content format, when available.",
+                                "type": "string"
+                            },
+                            "initiatives": {
+                                "description": "Nested initiatives, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque initiative identifier within the goal."
+                                        },
+                                        "title": {
+                                            "description": "Initiative title, when available.",
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "Exact completion boolean, only when source state supports it.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An initiative belonging to the goal."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Replicated Leapsome goal details, ownership, tags, and available goal components."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make payroll-cycle participation available as replicated records with cycle and employee references.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-payroll-cycle-participants",
+            "output": [
+                "PayrollCycleParticipants"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PayrollCycleParticipants"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PayrollCycleParticipants": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Record key, JSON-serialized [payrollCycleId, employeeId]."
+                            },
+                            "status": {
+                                "description": "Provider participant status, when available.",
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Participating employee identifier."
+                            },
+                            "payrollCycleId": {
+                                "type": "string",
+                                "description": "Parent payroll-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "payrollCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Payroll-cycle participation with parent cycle and employee references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make payroll-cycle identities and available descriptive attributes available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-payroll-cycles",
+            "output": [
+                "PayrollCycles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PayrollCycles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PayrollCycles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque payroll-cycle identifier."
+                            },
+                            "name": {
+                                "description": "Payroll-cycle name, when available.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider cycle status, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Payroll-cycle identities and available descriptive attributes."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make review-cycle participation available as replicated records with employee and cycle references.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-review-cycle-participants",
+            "output": [
+                "ReviewCycleParticipants"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ReviewCycleParticipants"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ReviewCycleParticipants": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Record key, JSON-serialized [reviewCycleId, employeeId]."
+                            },
+                            "status": {
+                                "description": "Provider participant status, when available.",
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Participant employee/user identifier."
+                            },
+                            "reviewCycleId": {
+                                "type": "string",
+                                "description": "Parent review-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Review-cycle participation with employee and cycle references."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible review-cycle identities and details available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-review-cycles",
+            "output": [
+                "ReviewCycles"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ReviewCycles"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ReviewCycles": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque review-cycle identifier."
+                            },
+                            "name": {
+                                "description": "Cycle display name, when available.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider cycle status, when available.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Cycle description in source content format, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accessible review-cycle identity and details."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make available reviewee-result overviews accessible to the connection available as replicated cycle-and-employee records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-review-participant-results",
+            "output": [
+                "ReviewParticipantResults"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ReviewParticipantResults"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ReviewParticipantResults": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Result record key, JSON-serialized [reviewCycleId, employeeId]."
+                            },
+                            "results": {
+                                "description": "Available question or dimension results, when exposed.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "description": "Narrative result text in source content format, when available.",
+                                            "type": "string"
+                                        },
+                                        "label": {
+                                            "description": "Provider question/dimension label, when available.",
+                                            "type": "string"
+                                        },
+                                        "scale": {
+                                            "description": "Explicit source scale description, when available.",
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "description": "Numeric result in its original provider scale, when available.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An available source question or dimension result."
+                                }
+                            },
+                            "summary": {
+                                "description": "Provider result-summary text, when available.",
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Reviewee employee identifier."
+                            },
+                            "reviewCycleId": {
+                                "type": "string",
+                                "description": "Parent review-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reviewee results available to the connection for one review cycle and employee."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make timesheet identities, employee references, and available period/status attributes available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-timesheets",
+            "output": [
+                "Timesheets"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Timesheets"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Timesheets": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque timesheet identifier."
+                            },
+                            "status": {
+                                "description": "Provider timesheet status, when available.",
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "description": "Last calendar date of the timesheet period, when available; provider boundary semantics apply.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "startDate": {
+                                "description": "First calendar date of the timesheet period, when available.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Associated employee identifier."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Timesheet identities, employee references, and available period and status attributes."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected account's work locations available as replicated records with opaque identifiers and human-readable names when available.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-work-locations",
+            "output": [
+                "WorkLocations"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "WorkLocations"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "WorkLocations": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque work-location identifier within the connected account."
+                            },
+                            "name": {
+                                "description": "Human-readable location name, preserved without trimming. Omitted if the provider omits it; null if explicitly null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A work location in the connected account."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-private-note",
+            "integrationId": "leapsome",
+            "description": "Create a private note about an employee under Leapsome's private-note visibility rules.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_createprivatenote",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_createprivatenote",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_leapsome_createprivatenote",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_createprivatenote": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Private-note content as ordinary Unicode text."
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Employee identifier of the person the note concerns, not a delivery address."
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Employee subject and ordinary Unicode content for one private note."
+                    },
+                    "FunctionOutput_leapsome_createprivatenote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Created note identifier, when supplied.",
+                                "type": "string"
+                            },
+                            "created": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Provider-confirmed note creation, not delivery to the subject."
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Employee the accepted note concerns."
+                            }
+                        },
+                        "required": [
+                            "created",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmed private-note creation and its employee subject."
+                    },
+                    "FunctionMetadata_leapsome_createprivatenote": {
+                        "type": "object",
+                        "properties": {
+                            "senderId": {
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{24}$",
+                                "description": "Leapsome user ID authorized to author private notes for this connection."
+                            }
+                        },
+                        "required": [
+                            "senderId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit private-note author required because Leapsome API tokens are not tied to a user."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Resolve employeeId with `list-employees`. Use this for a private note, not recipient-facing feedback; use `create-instant-feedback` or `create-praise` for those tasks. Privacy is governed by Leapsome's private-note rules, not an invented access-control list. Do not replay an uncertain creation without checking Leapsome."
+            },
+            "filePath": "./leapsome/tools/create-private-note.ts",
+            "version": "2e5f98251894eed51a876466a62095aad18ab941f4ecbb7970b65139d842f9fe",
+            "location": {
+                "js": "templates-zero/leapsome/tools/create-private-note/2e5f98251894eed51a876466a62095aad18ab941f4ecbb7970b65139d842f9fe.cjs",
+                "ts": "templates-zero/leapsome/tools/create-private-note/2e5f98251894eed51a876466a62095aad18ab941f4ecbb7970b65139d842f9fe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-api-info",
+            "integrationId": "leapsome",
+            "description": "Get the API's published information for diagnostics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_getapiinfo",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_getapiinfo",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_getapiinfo": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed to read the published API information."
+                    },
+                    "FunctionOutput_leapsome_getapiinfo": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "API or service name, if returned.",
+                                "type": "string"
+                            },
+                            "message": {
+                                "description": "Informational text returned by the API, if available.",
+                                "type": "string"
+                            },
+                            "version": {
+                                "description": "API-reported version, if returned; not inferred from the connection URL.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Published API information returned by the service, without health or permission-coverage guarantees."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for API information, not employee or business-record lookup. No resource identifier is needed. This does not verify access to every business-data endpoint."
+            },
+            "filePath": "./leapsome/tools/get-api-info.ts",
+            "version": "51ae4441271f60f28516bd7d5d55ac0129a4b97de3b26727240a68e987c2bbca",
+            "location": {
+                "js": "templates-zero/leapsome/tools/get-api-info/51ae4441271f60f28516bd7d5d55ac0129a4b97de3b26727240a68e987c2bbca.cjs",
+                "ts": "templates-zero/leapsome/tools/get-api-info/51ae4441271f60f28516bd7d5d55ac0129a4b97de3b26727240a68e987c2bbca.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-goal",
+            "integrationId": "leapsome",
+            "description": "Get one goal's details, including available key results and initiatives.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_getgoal",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_getgoal",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_getgoal": {
+                        "type": "object",
+                        "properties": {
+                            "goalId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the goal to retrieve."
+                            }
+                        },
+                        "required": [
+                            "goalId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the goal to retrieve."
+                    },
+                    "FunctionOutput_leapsome_getgoal": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque goal identifier."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Goal title."
+                            },
+                            "status": {
+                                "description": "Provider goal status, when available.",
+                                "type": "string"
+                            },
+                            "tagIds": {
+                                "description": "Goal-tag references, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Goal-tag identifier."
+                                }
+                            },
+                            "ownerIds": {
+                                "description": "Owner employee references, when available.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Owner employee identifier."
+                                }
+                            },
+                            "keyResults": {
+                                "description": "Goal key results, when exposed.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque key-result identifier within this goal."
+                                        },
+                                        "unit": {
+                                            "description": "Provider's measurement-unit label, when available.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Key-result title, when available.",
+                                            "type": "string"
+                                        },
+                                        "targetValue": {
+                                            "description": "Target in the same configured unit, when available.",
+                                            "type": "number"
+                                        },
+                                        "currentValue": {
+                                            "description": "Current measured value in this key result's configured unit, when available.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A key result belonging to the goal."
+                                }
+                            },
+                            "description": {
+                                "description": "Goal description in source content format, when available.",
+                                "type": "string"
+                            },
+                            "initiatives": {
+                                "description": "Goal initiatives, when exposed.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque initiative identifier within this goal."
+                                        },
+                                        "title": {
+                                            "description": "Initiative title, when available.",
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "Whether the initiative is complete, only when the provider state has an exact boolean mapping.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An initiative belonging to the goal."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Goal details with available key results and initiatives."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain goalId from `list-goals`. Use returned component IDs with `update-key-result` and `update-initiative`. Use `list-goal-comments` for discussion text. This only reads the goal."
+            },
+            "filePath": "./leapsome/tools/get-goal.ts",
+            "version": "457708141faf386301c192a676047bdbc1049f02838f14c5f76870d9ff5981d4",
+            "location": {
+                "js": "templates-zero/leapsome/tools/get-goal/457708141faf386301c192a676047bdbc1049f02838f14c5f76870d9ff5981d4.cjs",
+                "ts": "templates-zero/leapsome/tools/get-goal/457708141faf386301c192a676047bdbc1049f02838f14c5f76870d9ff5981d4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-review-cycle",
+            "integrationId": "leapsome",
+            "description": "Get details for one known review cycle.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_getreviewcycle",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_getreviewcycle",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_getreviewcycle": {
+                        "type": "object",
+                        "properties": {
+                            "reviewCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque review-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the review cycle to retrieve."
+                    },
+                    "FunctionOutput_leapsome_getreviewcycle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque review-cycle identifier."
+                            },
+                            "name": {
+                                "description": "Cycle display name, when available.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Provider cycle status, when available.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Cycle description in its source content format, when available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Details of the requested review cycle."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get reviewCycleId from `list-review-cycles`. Use `list-review-cycle-participants` for participants and `get-review-participant-results` for a reviewee's results. This does not start or modify a review."
+            },
+            "filePath": "./leapsome/tools/get-review-cycle.ts",
+            "version": "4cb7b87364f748dc9af4c82be0e4719ca1f903aac9ac960fb29bc467f4bc03c3",
+            "location": {
+                "js": "templates-zero/leapsome/tools/get-review-cycle/4cb7b87364f748dc9af4c82be0e4719ca1f903aac9ac960fb29bc467f4bc03c3.cjs",
+                "ts": "templates-zero/leapsome/tools/get-review-cycle/4cb7b87364f748dc9af4c82be0e4719ca1f903aac9ac960fb29bc467f4bc03c3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-review-participant-results",
+            "integrationId": "leapsome",
+            "description": "Get the available review-result overview for one reviewee in a review cycle.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_getreviewparticipantresults",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_getreviewparticipantresults",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_getreviewparticipantresults": {
+                        "type": "object",
+                        "properties": {
+                            "employeeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Employee/user identifier of the reviewee."
+                            },
+                            "reviewCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque review-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "employeeId",
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one reviewee and the review cycle containing their results."
+                    },
+                    "FunctionOutput_leapsome_getreviewparticipantresults": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Result record key, JSON-serialized [reviewCycleId, employeeId]."
+                            },
+                            "results": {
+                                "description": "Available result dimensions or questions; omitted if this structure is not exposed.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "description": "Narrative result text in source content format, when available.",
+                                            "type": "string"
+                                        },
+                                        "label": {
+                                            "description": "Provider question or dimension label, when available.",
+                                            "type": "string"
+                                        },
+                                        "scale": {
+                                            "description": "Provider description of the score scale, when available.",
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "description": "Provider numeric result in its original scale, when available; not an inferred percentage.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One available reviewer answer with its question label and native rating."
+                                }
+                            },
+                            "summary": {
+                                "description": "Provider result-summary text, when available.",
+                                "type": "string"
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Reviewee employee identifier."
+                            },
+                            "reviewCycleId": {
+                                "type": "string",
+                                "description": "Review cycle containing these results."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available results for one reviewee, preserving native ratings and narrative content."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get reviewCycleId from `list-review-cycles` and employeeId from `list-review-cycle-participants`. Use this for a specific reviewee's results, not participant enumeration. Results may be unavailable before release or restricted even when the participant is visible."
+            },
+            "filePath": "./leapsome/tools/get-review-participant-results.ts",
+            "version": "f6aa97cb19e65b2d38da9961502ca57f140cb5e938d30b5847e3813fc535da33",
+            "location": {
+                "js": "templates-zero/leapsome/tools/get-review-participant-results/f6aa97cb19e65b2d38da9961502ca57f140cb5e938d30b5847e3813fc535da33.cjs",
+                "ts": "templates-zero/leapsome/tools/get-review-participant-results/f6aa97cb19e65b2d38da9961502ca57f140cb5e938d30b5847e3813fc535da33.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-absences",
+            "integrationId": "leapsome",
+            "description": "List a page of absence records available to the connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listabsences",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listabsences",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listabsences": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from this collection's previous page; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for browsing one page of absences."
+                    },
+                    "FunctionOutput_leapsome_listabsences": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque absence identifier."
+                                        },
+                                        "status": {
+                                            "description": "Provider absence status, retained without remapping.",
+                                            "type": "string"
+                                        },
+                                        "endDate": {
+                                            "description": "Last absence calendar date, when available; endpoint inclusivity is provider-defined.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "startDate": {
+                                            "description": "First absence calendar date, when available.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "employeeId": {
+                                            "type": "string",
+                                            "description": "Employee to whom the absence belongs."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "employeeId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An absence available to the connection."
+                                },
+                                "description": "Absence records in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for this collection; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of absence records in provider order."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for on-demand absence browsing. Pass `nextCursor` back as `cursor` to continue. Use `list-employees` to resolve employee references. Each call returns one page, not a full export."
+            },
+            "filePath": "./leapsome/tools/list-absences.ts",
+            "version": "e73db358d9faa409e74444e26ca336af9ccf186ad935fac72c5ed39266db4886",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-absences/e73db358d9faa409e74444e26ca336af9ccf186ad935fac72c5ed39266db4886.cjs",
+                "ts": "templates-zero/leapsome/tools/list-absences/e73db358d9faa409e74444e26ca336af9ccf186ad935fac72c5ed39266db4886.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-access-roles",
+            "integrationId": "leapsome",
+            "description": "List available access roles for inspection and employee-role administration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listaccessroles",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listaccessroles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listaccessroles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from a previous access-role page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing access roles."
+                    },
+                    "FunctionOutput_leapsome_listaccessroles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque role identifier used for assignments."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Human-readable role name."
+                                        },
+                                        "description": {
+                                            "description": "Provider explanation of the role, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An access role available for inspection and assignment."
+                                },
+                                "description": "Access roles on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A provider page of available access roles."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use before `update-employee-access-roles` to obtain role IDs. Continue with nextCursor as cursor when returned. This only reads roles; it does not assign them."
+            },
+            "filePath": "./leapsome/tools/list-access-roles.ts",
+            "version": "4c02c1bd3e4b2d8df7f6e0dd70e5c03c700c6427644677095283b4bb57c4d056",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-access-roles/4c02c1bd3e4b2d8df7f6e0dd70e5c03c700c6427644677095283b4bb57c4d056.cjs",
+                "ts": "templates-zero/leapsome/tools/list-access-roles/4c02c1bd3e4b2d8df7f6e0dd70e5c03c700c6427644677095283b4bb57c4d056.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-document-categories",
+            "integrationId": "leapsome",
+            "description": "List document categories for classification and document upload preparation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listdocumentcategories",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listdocumentcategories",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listdocumentcategories": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the previous category page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing document categories."
+                    },
+                    "FunctionOutput_leapsome_listdocumentcategories": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque document-category identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Category display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A document category available for classification."
+                                },
+                                "description": "Document categories in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A page of document categories in provider order."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to obtain document-category IDs before uploading employee documents. Continue with nextCursor as cursor if returned. This does not list document contents."
+            },
+            "filePath": "./leapsome/tools/list-document-categories.ts",
+            "version": "f0cf51bfebeed920f3184c675515f89c18dc2d2c63c1b578f279e950c1deaf55",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-document-categories/f0cf51bfebeed920f3184c675515f89c18dc2d2c63c1b578f279e950c1deaf55.cjs",
+                "ts": "templates-zero/leapsome/tools/list-document-categories/f0cf51bfebeed920f3184c675515f89c18dc2d2c63c1b578f279e950c1deaf55.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-employees",
+            "integrationId": "leapsome",
+            "description": "List a page of employee identities and basic directory attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listemployees",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listemployees",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listemployees": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the previous employee page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one employee directory page using an optional continuation."
+                    },
+                    "FunctionOutput_leapsome_listemployees": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque employee identifier, also used by userId paths."
+                                        },
+                                        "email": {
+                                            "description": "Employee email address, when available.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Provider employee lifecycle status, when available.",
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "description": "Family name, when available.",
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "description": "Given name, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An employee identity and available basic directory attributes."
+                                },
+                                "description": "Employees in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One employee directory page in provider order and its continuation when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to resolve employee IDs for feedback, payroll, review, employment, and role tools. Continue with nextCursor as cursor. This returns one page, not a full directory export."
+            },
+            "filePath": "./leapsome/tools/list-employees.ts",
+            "version": "b48dccdff288d2037c9c3d63b164990807940e856ec6ce63206a9d7f3eb5e31c",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-employees/b48dccdff288d2037c9c3d63b164990807940e856ec6ce63206a9d7f3eb5e31c.cjs",
+                "ts": "templates-zero/leapsome/tools/list-employees/b48dccdff288d2037c9c3d63b164990807940e856ec6ce63206a9d7f3eb5e31c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-employments",
+            "integrationId": "leapsome",
+            "description": "List a page of employment records, distinct from employee identities.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listemployments",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listemployments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listemployments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding employment page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing one page of employment records."
+                    },
+                    "FunctionOutput_leapsome_listemployments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque employment-record identifier."
+                                        },
+                                        "endDate": {
+                                            "description": "Employment end calendar date; null means explicitly no end date, and omission means unavailable.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "jobTitle": {
+                                            "description": "Employment job title, when available.",
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "description": "Employment start calendar date, when available.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "employeeId": {
+                                            "type": "string",
+                                            "description": "Employee associated with this employment."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "employeeId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One employment record, kept distinct from other records for the same employee."
+                                },
+                                "description": "Employment records on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A provider-ordered page of employment records and its continuation, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for employment relationships and their dates, not employee-directory lookup; use `list-employees` for identities. Continue with nextCursor as cursor."
+            },
+            "filePath": "./leapsome/tools/list-employments.ts",
+            "version": "fdb031bbe77a302b11762e7722091501d72ab63b33e7eac4a30b12ea0d46d2bd",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-employments/fdb031bbe77a302b11762e7722091501d72ab63b33e7eac4a30b12ea0d46d2bd.cjs",
+                "ts": "templates-zero/leapsome/tools/list-employments/fdb031bbe77a302b11762e7722091501d72ab63b33e7eac4a30b12ea0d46d2bd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-feedback",
+            "integrationId": "leapsome",
+            "description": "List a page of feedback visible to the connection, retaining the provider's feedback-kind distinctions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listfeedback",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listfeedback",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listfeedback": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding feedback page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of feedback visible to the connection."
+                    },
+                    "FunctionOutput_leapsome_listfeedback": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque feedback identifier."
+                                        },
+                                        "kind": {
+                                            "description": "Provider feedback type, when available; unknown values are retained.",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "description": "Feedback text in the provider's content format, when visible.",
+                                            "type": "string"
+                                        },
+                                        "authorId": {
+                                            "description": "Author's employee identifier, when visible.",
+                                            "type": "string"
+                                        },
+                                        "recipientIds": {
+                                            "description": "Recipient employee identifiers, when available.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque recipient employee identifier."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A visible feedback record with the attributes exposed by the provider."
+                                },
+                                "description": "Visible feedback records on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-ordered feedback page and its continuation, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect existing feedback, not to create it. For new entries use `create-praise`, `create-instant-feedback`, or `create-private-note`. Continue with nextCursor as cursor. Visibility depends on the connection."
+            },
+            "filePath": "./leapsome/tools/list-feedback.ts",
+            "version": "27cd9bd56cd1d13588707b7d4751530e28672a3b8d4bffacead28322ffd04e68",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-feedback/27cd9bd56cd1d13588707b7d4751530e28672a3b8d4bffacead28322ffd04e68.cjs",
+                "ts": "templates-zero/leapsome/tools/list-feedback/27cd9bd56cd1d13588707b7d4751530e28672a3b8d4bffacead28322ffd04e68.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-goal-comments",
+            "integrationId": "leapsome",
+            "description": "List a page of comments for a known goal.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listgoalcomments",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listgoalcomments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listgoalcomments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation for this goal's comments; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "goalId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent goal identifier."
+                            }
+                        },
+                        "required": [
+                            "goalId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the goal whose comments to list."
+                    },
+                    "FunctionOutput_leapsome_listgoalcomments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque comment identifier within its goal."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Comment text in the source content format."
+                                        },
+                                        "goalId": {
+                                            "type": "string",
+                                            "description": "Parent goal identifier."
+                                        },
+                                        "authorId": {
+                                            "description": "Author employee identifier, when visible.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "text",
+                                        "goalId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A comment on the requested goal."
+                                },
+                                "description": "Comments in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for the same goal; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One complete page of goal comments in provider order."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain goalId from `list-goals` or `get-goal`. Use this for discussion text; use `get-goal` for the goal itself. Continue with nextCursor as cursor and keep the same goalId."
+            },
+            "filePath": "./leapsome/tools/list-goal-comments.ts",
+            "version": "8fcbbfe15d1935bc07d8d99b919ad5581e8bd8b0a01ea8769012219690f4fa99",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-goal-comments/8fcbbfe15d1935bc07d8d99b919ad5581e8bd8b0a01ea8769012219690f4fa99.cjs",
+                "ts": "templates-zero/leapsome/tools/list-goal-comments/8fcbbfe15d1935bc07d8d99b919ad5581e8bd8b0a01ea8769012219690f4fa99.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-goal-tags",
+            "integrationId": "leapsome",
+            "description": "List a page of tags used to classify goals.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listgoaltags",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listgoaltags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listgoaltags": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding goal-tag page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing goal tags."
+                    },
+                    "FunctionOutput_leapsome_listgoaltags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque goal-tag identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag display text."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A tag used to classify goals."
+                                },
+                                "description": "Goal tags in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of goal tags in provider order."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to resolve goal-tag IDs and names; use `list-goals` for goals themselves. Continue with nextCursor as cursor if returned."
+            },
+            "filePath": "./leapsome/tools/list-goal-tags.ts",
+            "version": "e5123bb6e2b687dcecb69bd978c7de6c84a5d566ee4a93253801ea5f38be7921",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-goal-tags/e5123bb6e2b687dcecb69bd978c7de6c84a5d566ee4a93253801ea5f38be7921.cjs",
+                "ts": "templates-zero/leapsome/tools/list-goal-tags/e5123bb6e2b687dcecb69bd978c7de6c84a5d566ee4a93253801ea5f38be7921.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-goals",
+            "integrationId": "leapsome",
+            "description": "List a page of accessible goals with basic ownership and classification attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listgoals",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listgoals",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listgoals": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding goal page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of accessible goals."
+                    },
+                    "FunctionOutput_leapsome_listgoals": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque goal identifier."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Goal title."
+                                        },
+                                        "status": {
+                                            "description": "Provider goal status, when available.",
+                                            "type": "string"
+                                        },
+                                        "tagIds": {
+                                            "description": "Goal-tag references, when available.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque goal-tag identifier."
+                                            }
+                                        },
+                                        "ownerIds": {
+                                            "description": "Owner employee identifiers, when available.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque owner employee identifier."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible goal summary."
+                                },
+                                "description": "Goal summaries in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-ordered page of accessible goal summaries."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to discover goal IDs. Use `get-goal` for goal details and component IDs, and `list-goal-comments` for discussions. Continue with nextCursor as cursor. Each call returns one page."
+            },
+            "filePath": "./leapsome/tools/list-goals.ts",
+            "version": "17a9416ceb42fc08dd2d4f696bd54215fcc0404476461ad01099b014ba71c4e5",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-goals/17a9416ceb42fc08dd2d4f696bd54215fcc0404476461ad01099b014ba71c4e5.cjs",
+                "ts": "templates-zero/leapsome/tools/list-goals/17a9416ceb42fc08dd2d4f696bd54215fcc0404476461ad01099b014ba71c4e5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-payroll-cycles",
+            "integrationId": "leapsome",
+            "description": "List a page of payroll cycles available to the connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listpayrollcycles",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listpayrollcycles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listpayrollcycles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding payroll-cycle page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing one page of payroll cycles."
+                    },
+                    "FunctionOutput_leapsome_listpayrollcycles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque payroll-cycle identifier."
+                                        },
+                                        "name": {
+                                            "description": "Payroll-cycle display name, when available.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Provider payroll-cycle status, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A payroll cycle available to the connection."
+                                },
+                                "description": "Payroll cycles on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of payroll cycles and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to obtain payrollCycleId before `list-payroll-cycle-participants`. Continue with nextCursor as cursor. Payroll data may require privileged access."
+            },
+            "filePath": "./leapsome/tools/list-payroll-cycles.ts",
+            "version": "689283aff39d9b7e550d4e1f433bcd53ce05acb6273633e36c3cea46b4315a12",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-payroll-cycles/689283aff39d9b7e550d4e1f433bcd53ce05acb6273633e36c3cea46b4315a12.cjs",
+                "ts": "templates-zero/leapsome/tools/list-payroll-cycles/689283aff39d9b7e550d4e1f433bcd53ce05acb6273633e36c3cea46b4315a12.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-review-cycle-participants",
+            "integrationId": "leapsome",
+            "description": "List a page of participants in a selected review cycle.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listreviewcycleparticipants",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listreviewcycleparticipants",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listreviewcycleparticipants": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation for this cycle's participants; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "reviewCycleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent review-cycle identifier."
+                            }
+                        },
+                        "required": [
+                            "reviewCycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select a review cycle and optionally continue its participant listing."
+                    },
+                    "FunctionOutput_leapsome_listreviewcycleparticipants": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Record key, JSON-serialized [reviewCycleId, employeeId]."
+                                        },
+                                        "status": {
+                                            "description": "Provider participant status, when available.",
+                                            "type": "string"
+                                        },
+                                        "employeeId": {
+                                            "type": "string",
+                                            "description": "Participating employee/user identifier."
+                                        },
+                                        "reviewCycleId": {
+                                            "type": "string",
+                                            "description": "Parent review-cycle identifier."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "employeeId",
+                                        "reviewCycleId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One reviewee membership in the selected review cycle."
+                                },
+                                "description": "Review-cycle participants on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for the same cycle; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider-ordered page of review-cycle participants and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get reviewCycleId from `list-review-cycles`. Use returned employeeId with `get-review-participant-results` for reviewee results. Continue with nextCursor as cursor and keep the same cycle."
+            },
+            "filePath": "./leapsome/tools/list-review-cycle-participants.ts",
+            "version": "2aaff9f49ba1b5ae764a7a49adc2c665d7713204099fd72fd87dd823e25f31b0",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-review-cycle-participants/2aaff9f49ba1b5ae764a7a49adc2c665d7713204099fd72fd87dd823e25f31b0.cjs",
+                "ts": "templates-zero/leapsome/tools/list-review-cycle-participants/2aaff9f49ba1b5ae764a7a49adc2c665d7713204099fd72fd87dd823e25f31b0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-review-cycles",
+            "integrationId": "leapsome",
+            "description": "List a page of accessible review cycles.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listreviewcycles",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listreviewcycles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listreviewcycles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding review-cycle page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Inputs for listing one page of accessible review cycles."
+                    },
+                    "FunctionOutput_leapsome_listreviewcycles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque review-cycle identifier."
+                                        },
+                                        "name": {
+                                            "description": "Review-cycle display name, when available.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Provider review-cycle status, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible review-cycle summary."
+                                },
+                                "description": "Review-cycle summaries on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of accessible review-cycle summaries and its continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to obtain reviewCycleId for `get-review-cycle` and `list-review-cycle-participants`. Continue with nextCursor as cursor. Review access can be restricted."
+            },
+            "filePath": "./leapsome/tools/list-review-cycles.ts",
+            "version": "af31f576398493509f0b17efe224116c720d85c59572ab6cc9ed643c7b3c54bd",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-review-cycles/af31f576398493509f0b17efe224116c720d85c59572ab6cc9ed643c7b3c54bd.cjs",
+                "ts": "templates-zero/leapsome/tools/list-review-cycles/af31f576398493509f0b17efe224116c720d85c59572ab6cc9ed643c7b3c54bd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-timesheets",
+            "integrationId": "leapsome",
+            "description": "List a page of timesheets with employee identity and available period/status attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listtimesheets",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listtimesheets",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listtimesheets": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding timesheet page; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse one page of timesheets, optionally continuing a preceding page."
+                    },
+                    "FunctionOutput_leapsome_listtimesheets": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque timesheet identifier."
+                                        },
+                                        "status": {
+                                            "description": "Provider timesheet status, when available.",
+                                            "type": "string"
+                                        },
+                                        "endDate": {
+                                            "description": "Last calendar date of the timesheet period, when available; provider boundary semantics apply.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "startDate": {
+                                            "description": "First calendar date of the timesheet period, when available.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "employeeId": {
+                                            "type": "string",
+                                            "description": "Employee associated with the timesheet."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "employeeId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Timesheet identity and available period and status attributes."
+                                },
+                                "description": "Timesheets on this page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A provider-ordered timesheet page and continuation when more results may remain."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for on-demand timesheet browsing; use `list-employees` for employee details. Continue with nextCursor as cursor. This does not approve timesheets or modify tracked time."
+            },
+            "filePath": "./leapsome/tools/list-timesheets.ts",
+            "version": "91e1767e1f41a78919ea04d79119f578f6a0ef193fbf4af9aa16c72166c58e32",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-timesheets/91e1767e1f41a78919ea04d79119f578f6a0ef193fbf4af9aa16c72166c58e32.cjs",
+                "ts": "templates-zero/leapsome/tools/list-timesheets/91e1767e1f41a78919ea04d79119f578f6a0ef193fbf4af9aa16c72166c58e32.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-work-locations",
+            "integrationId": "leapsome",
+            "description": "List the work locations available to the connected account for use in employee and workplace integrations.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_listworklocations",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_listworklocations",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_listworklocations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool's previous page, scoped to the same connection. Omit to request the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of work locations available to the connected account."
+                    },
+                    "FunctionOutput_leapsome_listworklocations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque work-location identifier within the connected account."
+                                        },
+                                        "name": {
+                                            "description": "Human-readable location name, preserved without trimming. Omitted if the provider omits it; null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A work location available to the connected account."
+                                },
+                                "description": "Work locations in this provider response page; an empty array means no records in this page."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page. Omitted when no further page is available.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One normalized work-location page and its continuation token, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this tool to look up work locations on demand. Each call returns one page. If nextCursor is present, pass it as cursor to continue; otherwise the collection is exhausted. Location identifiers are opaque and should be retained unchanged."
+            },
+            "filePath": "./leapsome/tools/list-work-locations.ts",
+            "version": "faa92ac458d2450cf2f5ff1323fe79723e47bffb122f8f3eb8560d35d282bbf8",
+            "location": {
+                "js": "templates-zero/leapsome/tools/list-work-locations/faa92ac458d2450cf2f5ff1323fe79723e47bffb122f8f3eb8560d35d282bbf8.cjs",
+                "ts": "templates-zero/leapsome/tools/list-work-locations/faa92ac458d2450cf2f5ff1323fe79723e47bffb122f8f3eb8560d35d282bbf8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-employee-access-roles",
+            "integrationId": "leapsome",
+            "description": "Replace an employee's assigned access-role set. This administrative action can grant or remove access.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_updateemployeeaccessroles",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_updateemployeeaccessroles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_updateemployeeaccessroles": {
+                        "type": "object",
+                        "properties": {
+                            "roleIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Assignable access-role identifier."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired set of assignable role IDs; empty requests removal of all assignable roles. Retained roles keep existing custom scope settings."
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque employee identifier whose assignments will change."
+                            }
+                        },
+                        "required": [
+                            "roleIds",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Employee and complete desired ordinary access-role assignment set."
+                    },
+                    "FunctionOutput_leapsome_updateemployeeaccessroles": {
+                        "type": "object",
+                        "properties": {
+                            "roleIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Accepted access-role identifier."
+                                },
+                                "description": "Desired role IDs accepted by the provider; not a claim about implicit/system roles."
+                            },
+                            "employeeId": {
+                                "type": "string",
+                                "description": "Employee targeted by the successful update."
+                            }
+                        },
+                        "required": [
+                            "roleIds",
+                            "employeeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Employee and secondary role assignments confirmed by the successful provider response."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain employeeId from `list-employees` and role IDs from `list-access-roles`. Supply the entire desired role set, not just additions. An empty set removes assignable roles if the provider allows it. This can remove administrative access; reversibility requires sufficient remaining authority. Use for ordinary role assignments, not custom scope configuration."
+            },
+            "filePath": "./leapsome/tools/update-employee-access-roles.ts",
+            "version": "e305609bf9956556950acc16c7553d39eee1a0628c76e7b466ed792fe3b50c04",
+            "location": {
+                "js": "templates-zero/leapsome/tools/update-employee-access-roles/e305609bf9956556950acc16c7553d39eee1a0628c76e7b466ed792fe3b50c04.cjs",
+                "ts": "templates-zero/leapsome/tools/update-employee-access-roles/e305609bf9956556950acc16c7553d39eee1a0628c76e7b466ed792fe3b50c04.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-initiative",
+            "integrationId": "leapsome",
+            "description": "Update the completion state of an existing goal initiative without replacing its other attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_updateinitiative",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_updateinitiative",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_updateinitiative": {
+                        "type": "object",
+                        "properties": {
+                            "goalId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent goal identifier."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Desired completion state: true completes the initiative and false reopens it, subject to provider lifecycle rules."
+                            },
+                            "initiativeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque initiative identifier within the goal."
+                            }
+                        },
+                        "required": [
+                            "goalId",
+                            "completed",
+                            "initiativeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify an existing goal initiative and request its completion state."
+                    },
+                    "FunctionOutput_leapsome_updateinitiative": {
+                        "type": "object",
+                        "properties": {
+                            "goalId": {
+                                "type": "string",
+                                "description": "Parent goal identifier."
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Completion state established by the successful update."
+                            },
+                            "initiativeId": {
+                                "type": "string",
+                                "description": "Updated initiative identifier."
+                            }
+                        },
+                        "required": [
+                            "goalId",
+                            "completed",
+                            "initiativeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The updated initiative identity and completion state accepted by Leapsome."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get goalId and initiativeId from `get-goal`. Use `update-key-result` for measured key-result values instead. This changes an existing initiative; it does not create or delete one. Check the goal before retrying an uncertain write."
+            },
+            "filePath": "./leapsome/tools/update-initiative.ts",
+            "version": "a0be2f9056e3e52bd5228b164c92fbb3d1036c3798556f45a6293a8c988b73a7",
+            "location": {
+                "js": "templates-zero/leapsome/tools/update-initiative/a0be2f9056e3e52bd5228b164c92fbb3d1036c3798556f45a6293a8c988b73a7.cjs",
+                "ts": "templates-zero/leapsome/tools/update-initiative/a0be2f9056e3e52bd5228b164c92fbb3d1036c3798556f45a6293a8c988b73a7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-key-result",
+            "integrationId": "leapsome",
+            "description": "Update an existing goal key result's measured current value while preserving its other attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_updatekeyresult",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_updatekeyresult",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_updatekeyresult": {
+                        "type": "object",
+                        "properties": {
+                            "goalId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent goal identifier."
+                            },
+                            "keyResultId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque key-result identifier within the goal."
+                            },
+                            "currentValue": {
+                                "type": "number",
+                                "description": "Desired measured value in the key result's existing configured unit; this does not change its target or unit."
+                            }
+                        },
+                        "required": [
+                            "goalId",
+                            "keyResultId",
+                            "currentValue"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify an existing goal key result and supply its new measured value in the configured unit."
+                    },
+                    "FunctionOutput_leapsome_updatekeyresult": {
+                        "type": "object",
+                        "properties": {
+                            "goalId": {
+                                "type": "string",
+                                "description": "Parent goal identifier."
+                            },
+                            "keyResultId": {
+                                "type": "string",
+                                "description": "Updated key-result identifier."
+                            },
+                            "currentValue": {
+                                "type": "number",
+                                "description": "Accepted measured value in the existing configured unit."
+                            }
+                        },
+                        "required": [
+                            "goalId",
+                            "keyResultId",
+                            "currentValue"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The identified key result and its confirmed accepted measured value."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get goalId, keyResultId, and configured measurement unit from `get-goal`. Supply a value in that unit, not an assumed percentage. Use `update-initiative` for initiative completion. Check `get-goal` before retrying an uncertain write."
+            },
+            "filePath": "./leapsome/tools/update-key-result.ts",
+            "version": "0ca8d17f19569599ff0086f94139b81fbcf077ca4c762c2cb763c5aeae4dbdbe",
+            "location": {
+                "js": "templates-zero/leapsome/tools/update-key-result/0ca8d17f19569599ff0086f94139b81fbcf077ca4c762c2cb763c5aeae4dbdbe.cjs",
+                "ts": "templates-zero/leapsome/tools/update-key-result/0ca8d17f19569599ff0086f94139b81fbcf077ca4c762c2cb763c5aeae4dbdbe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upload-employee-document",
+            "integrationId": "leapsome",
+            "description": "Upload a file to the documents associated with a specified Leapsome user. This transfers file bytes rather than importing structured business records.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_leapsome_uploademployeedocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_leapsome_uploademployeedocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_leapsome_uploademployeedocument": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the user whose documents will receive the file."
+                            },
+                            "fileName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Original file name, including its extension when applicable. Supply a name, not a filesystem path."
+                            },
+                            "mediaType": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9!#$&^_.+-]+\\/[A-Za-z0-9!#$&^_.+-]+$",
+                                "description": "File MIME type, such as application/pdf; used to describe the original bytes."
+                            },
+                            "categoryId": {
+                                "description": "Opaque document-category identifier, if a specific category is desired. Omit to use the provider's default categorization, subject to validation of category requirements.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "minLength": 4,
+                                "maxLength": 1398104,
+                                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                                "contentEncoding": "base64",
+                                "description": "Standard padded base64 of the exact nonempty file bytes, with no whitespace or data-URL prefix. Decoded size must not exceed 1,048,576 bytes (1 MiB)."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "fileName",
+                            "mediaType",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One file and the Leapsome user whose document collection should receive it."
+                    },
+                    "FunctionOutput_leapsome_uploademployeedocument": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the user to whom the accepted upload was addressed."
+                            },
+                            "uploaded": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only when the provider confirms upload acceptance. Does not establish notification, delivery, or absence of duplicates."
+                            },
+                            "documentId": {
+                                "description": "Opaque identifier of the uploaded document, included only if returned by the provider.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "uploaded"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmed upload acceptance and the document identifier when Leapsome returns one."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this tool to attach a document to a known user. Obtain the user's opaque identifier from your employee records first. Supply the original file's bytes as base64, not base64 of a URL. The tool accepts one file of at most 1 MiB per call. Supply a category identifier only if you have one from the account's document categories. A successful result establishes upload acceptance, not recipient notification or delivery. Repeating an upload may create another document; after an ambiguous result, check the user's documents in Leapsome before retrying."
+            },
+            "filePath": "./leapsome/tools/upload-employee-document.ts",
+            "version": "f8d939261631ee227c78d36fbb07f44a2e3b376563d6db25ffe01ea15aa57a49",
+            "location": {
+                "js": "templates-zero/leapsome/tools/upload-employee-document/f8d939261631ee227c78d36fbb07f44a2e3b376563d6db25ffe01ea15aa57a49.cjs",
+                "ts": "templates-zero/leapsome/tools/upload-employee-document/f8d939261631ee227c78d36fbb07f44a2e3b376563d6db25ffe01ea15aa57a49.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

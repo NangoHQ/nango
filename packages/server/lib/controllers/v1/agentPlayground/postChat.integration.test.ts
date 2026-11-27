@@ -6,12 +6,12 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { productTracking, seeders } from '@nangohq/shared';
 
-import { playgroundConnectionTags } from '../../../services/agentPlayground.service.js';
+import { playgroundConnectionTags } from '../../../services/agentPlayground/service.js';
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
+import type * as ModelService from '../../../services/agentPlayground/model.service.js';
 import type { LanguageModelV4StreamPart } from '@ai-sdk/provider';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata, AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { LanguageModel } from 'ai';
@@ -20,7 +20,7 @@ import type { MockInstance } from 'vitest';
 const modelOverride = vi.hoisted(() => ({ current: undefined as (() => LanguageModel) | undefined }));
 
 // A developer's OPENAI_API_KEY would otherwise send these tests to the real model.
-vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOriginal) => {
+vi.mock('../../../services/agentPlayground/model.service.js', async (importOriginal) => {
     const original = await importOriginal<typeof ModelService>();
     return { ...original, createPlaygroundModel: () => (modelOverride.current ?? original.createStreamingMockModel)() };
 });

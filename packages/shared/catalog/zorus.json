@@ -1,0 +1,3111 @@
+{
+    "providerConfigKey": "zorus",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the provider's active unblock-request records available with customer and policy context, blocked website, reasons, categories, and submission time.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-active-unblock-requests",
+            "output": [
+                "ActiveUnblockRequests"
+            ],
+            "runs": "every 5 minutes",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ActiveUnblockRequests"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ActiveUnblockRequests": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Unblock-request UUID."
+                            },
+                            "website": {
+                                "description": "Blocked URL text as reported; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "UUID of the policy that blocked the website; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerId": {
+                                "description": "UUID of the customer owning the originating endpoint; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "blockReason": {
+                                "description": "Zorus-provided blocking reason; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "requestedAt": {
+                                "description": "Submission instant in UTC Z retaining all fractional digits; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "endpointName": {
+                                "description": "Originating computer hostname, not an endpoint UUID; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "loggedOnUser": {
+                                "description": "Remote submitter username; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "categoryNames": {
+                                "description": "Website or URL category names; preserve null, empty array, and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Website or URL category name."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "requestReason": {
+                                "description": "User-supplied unblock reason; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An active Zorus unblock request with customer, policy, website, and submission context."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make customer summaries available as records, including enabled state, creation time, deployment counts, and integrations.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-customers",
+            "output": [
+                "Customers"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Customers"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Customers": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus customer UUID."
+                            },
+                            "name": {
+                                "description": "Customer name; preserve null and omit when absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC Z, retaining fractional precision; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "isEnabled": {
+                                "description": "Whether the customer is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "integrations": {
+                                "description": "Associated integrations; preserve null, empty array, and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Integration name; preserve null and omission.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "vendorName": {
+                                                    "description": "Integration vendor name; preserve null and omission.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "An associated customer integration."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "deploymentInfo": {
+                                "description": "Customer deployment counts; omitted if absent.",
+                                "type": "object",
+                                "properties": {
+                                    "networkSeatCount": {
+                                        "description": "Seat count in associated WANs, preserved exactly.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "enabledNetworkCount": {
+                                        "description": "Enabled associated WAN count.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "deployedEndpointCount": {
+                                        "description": "Associated endpoint count.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "filteringEnabledCount": {
+                                        "description": "Associated endpoint count described by Zorus as enabled.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "cyberSightEnabledCount": {
+                                        "description": "Associated endpoint count with CyberSight enabled.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer summaries with enabled state, creation time, deployment counts, and integrations."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make endpoint inventory records available with customer, group, policy, operating-system, last-seen, and feature-state information.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-endpoints",
+            "output": [
+                "Endpoints"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Endpoints"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Endpoints": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus endpoint UUID."
+                            },
+                            "name": {
+                                "description": "Endpoint name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "groupId": {
+                                "description": "Assigned group UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "localIp": {
+                                "description": "Reported local IP text; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "version": {
+                                "description": "Reported agent version; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "Assigned policy UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC Z without fractional precision loss; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "groupName": {
+                                "description": "Assigned group name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isEnabled": {
+                                "description": "Endpoint enabled state; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "licenseId": {
+                                "description": "Opaque license identifier; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "agentState": {
+                                "description": "Opaque agent state; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "lastSeenAt": {
+                                "description": "Last-seen instant in UTC Z without fractional precision loss; preserve null and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isInErrorState": {
+                                "description": "Whether an error state is reported; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "operatingSystem": {
+                                "description": "Operating-system description; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isFilteringEnabled": {
+                                "description": "Whether agent filtering is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "isCyberSightEnabled": {
+                                "description": "Whether agent CyberSight is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "operatingSystemType": {
+                                "description": "Opaque operating-system type; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "browserExtensionState": {
+                                "description": "Opaque browser-extension state; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isInheritingGroupSettings": {
+                                "description": "Whether group settings are inherited; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "isCyberSightBrowserExtensionEnabled": {
+                                "description": "Whether CyberSight browser extension is enabled; omitted if absent.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Endpoint inventory with customer, group, policy, operating-system, last-seen, and feature-state information."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make group summary records available with customer and policy references and member-setting synchronization flags.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Groups"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Groups"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Groups": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus group UUID."
+                            },
+                            "name": {
+                                "description": "Group name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "Assigned policy UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "syncAddonsToMembers": {
+                                "description": "Whether addons synchronize to group members; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "syncOptionsToMembers": {
+                                "description": "Whether options synchronize to group members; omitted if absent.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group summary with customer and policy references and member-setting synchronization flags."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make customer policy summary records available with group ownership and creation time, excluding undocumented policy configuration.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-policies",
+            "output": [
+                "Policies"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Policies"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Policies": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus policy UUID."
+                            },
+                            "groupId": {
+                                "description": "Owning group UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "createdAt": {
+                                "description": "Policy creation instant in UTC Z with all fractional digits retained; preserve null and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "groupName": {
+                                "description": "Owning group name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer policy summary with group ownership and creation time, excluding policy configuration."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-customer",
+            "integrationId": "zorus",
+            "description": "Create a customer and receive the IDs of its default group and default-group policy. Optionally copy settings from an existing policy.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_createcustomer",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_createcustomer",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64,
+                                "description": "Name of the new customer, preserved without trimming."
+                            },
+                            "basePolicyId": {
+                                "description": "Existing policy whose settings are copied into the customer's default-group policy; omit to use provider default creation behavior.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer name and optional policy whose settings are copied during creation."
+                    },
+                    "FunctionOutput_zorus_createcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the newly created customer."
+                            },
+                            "name": {
+                                "description": "Provider-returned customer name; preserve null and omit if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "defaultGroupId": {
+                                "description": "UUID of the customer's default group; omitted if absent upstream.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "defaultGroupPolicyId": {
+                                "description": "UUID of the default group's policy; omitted if absent upstream.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created customer and the provider-returned identifiers of its default resources."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new customer, not to update an existing one. Obtain an optional base policy ID from `list-policies`. Save the returned customer and default-group IDs for `create-group` and `create-deployment-token`. Creation is not safe to replay blindly: check `list-customers` after an uncertain result."
+            },
+            "filePath": "./zorus/tools/create-customer.ts",
+            "version": "465b7411b3d4ffd63493b38edcc543293ee2cf8cd0fe66a9e46230f6baeb6a6b",
+            "location": {
+                "js": "templates-zero/zorus/tools/create-customer/465b7411b3d4ffd63493b38edcc543293ee2cf8cd0fe66a9e46230f6baeb6a6b.cjs",
+                "ts": "templates-zero/zorus/tools/create-customer/465b7411b3d4ffd63493b38edcc543293ee2cf8cd0fe66a9e46230f6baeb6a6b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-deployment-token",
+            "integrationId": "zorus",
+            "description": "Create a deployment token for a group and return the token value with its customer and group context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_createdeploymenttoken",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_createdeploymenttoken",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_createdeploymenttoken": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Token name; omit for a provider-generated unique name. Text is preserved unchanged.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the group that will own the deployment token."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group ownership and optional name for the new deployment token."
+                    },
+                    "FunctionOutput_zorus_createdeploymenttoken": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the new deployment token."
+                            },
+                            "name": {
+                                "description": "Provider-returned token name, including an automatically generated name; null or omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "token": {
+                                "description": "Secret deployment-token value returned by Zorus; null or omission means no usable secret was returned and is not an empty credential.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "groupId": {
+                                "description": "Owning group UUID; omitted if absent upstream.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "groupName": {
+                                "description": "Owning group name; preserve null or omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent upstream.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null or omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "New deployment token, its opaque secret when returned, and its group and customer context."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups`, `get-group`, or defaultGroupId from `create-customer`. Omit name to let Zorus generate a unique name. Treat the returned token as a secret. This creates a new credential; do not blindly retry after an uncertain outcome."
+            },
+            "filePath": "./zorus/tools/create-deployment-token.ts",
+            "version": "0b666d54d22fbf7099b8808c799f8af81ff0df6945cc53a71367f8a5e3c3496f",
+            "location": {
+                "js": "templates-zero/zorus/tools/create-deployment-token/0b666d54d22fbf7099b8808c799f8af81ff0df6945cc53a71367f8a5e3c3496f.cjs",
+                "ts": "templates-zero/zorus/tools/create-deployment-token/0b666d54d22fbf7099b8808c799f8af81ff0df6945cc53a71367f8a5e3c3496f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "zorus",
+            "description": "Create a customer group, optionally copying settings from an existing policy into its generated policy.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255,
+                                "description": "New group name, passed unchanged without trimming."
+                            },
+                            "customerId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the customer that will own the new group."
+                            },
+                            "basePolicyId": {
+                                "description": "Policy whose settings are copied into the new group's policy; omission generates an empty policy using global settings.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "customerId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Customer, unchanged group name, and optional policy to copy for the new group."
+                    },
+                    "FunctionOutput_zorus_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Group name echoed from the successful request, not a fetched group record."
+                            },
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus returned successful completion of the create request; no group identifier was returned."
+                            },
+                            "customerId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Owning customer UUID echoed from the successful request."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "accepted",
+                            "customerId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of successful group creation without a returned group identifier."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get customerId from `list-customers` or `create-customer`, and an optional basePolicyId from `list-policies`. Without a base policy, Zorus generates an empty policy that uses global policy settings. The API does not return a group ID; use `list-groups` to locate it afterward. Do not blindly replay creation after an uncertain result."
+            },
+            "filePath": "./zorus/tools/create-group.ts",
+            "version": "9856ad2156a1841fb665d98eb735d638733b9ffdc3870ed5f357221e25fb311e",
+            "location": {
+                "js": "templates-zero/zorus/tools/create-group/9856ad2156a1841fb665d98eb735d638733b9ffdc3870ed5f357221e25fb311e.cjs",
+                "ts": "templates-zero/zorus/tools/create-group/9856ad2156a1841fb665d98eb735d638733b9ffdc3870ed5f357221e25fb311e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "disable-endpoint",
+            "integrationId": "zorus",
+            "description": "Request disabling of one endpoint, potentially reducing its protection or activity.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_disableendpoint",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_disableendpoint",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_disableendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint to disable."
+                            }
+                        },
+                        "required": [
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The endpoint targeted by the disable request."
+                    },
+                    "FunctionOutput_zorus_disableendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus acknowledged the disable request; remote application is not verified."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Target endpoint UUID echoed after provider success."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the disable request, not verification of remote endpoint state."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain endpointId from `list-endpoints` or `get-endpoint`. This changes an existing endpoint's enabled state and may reduce protection; it does not delete the record. Use `enable-endpoint` for the opposite change, or `isolate-endpoint` for isolation instead. The acknowledgement does not prove remote completion."
+            },
+            "filePath": "./zorus/tools/disable-endpoint.ts",
+            "version": "e455f7bb025e0647b5de2ef4230cb872d431f380fcc512c68073d477b9d696f1",
+            "location": {
+                "js": "templates-zero/zorus/tools/disable-endpoint/e455f7bb025e0647b5de2ef4230cb872d431f380fcc512c68073d477b9d696f1.cjs",
+                "ts": "templates-zero/zorus/tools/disable-endpoint/e455f7bb025e0647b5de2ef4230cb872d431f380fcc512c68073d477b9d696f1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "enable-endpoint",
+            "integrationId": "zorus",
+            "description": "Request enabling of one endpoint.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_enableendpoint",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_enableendpoint",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_enableendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint to enable."
+                            }
+                        },
+                        "required": [
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target endpoint for the enable request."
+                    },
+                    "FunctionOutput_zorus_enableendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus successfully acknowledged the enable request, not verified remote completion."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Target endpoint UUID echoed after provider success."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the endpoint enable request, without verification of remote completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get endpointId from `list-endpoints` or `get-endpoint`. Use `disable-endpoint` for the opposite change. This changes endpoint state, not a policy or group setting. The acknowledgement does not prove the remote agent has applied the change; inspect `get-endpoint` afterward if needed."
+            },
+            "filePath": "./zorus/tools/enable-endpoint.ts",
+            "version": "1f6c1b8d72d551c4339ae0bcf3b2442e95efd9e974700a7ec0fd79c9b13d238a",
+            "location": {
+                "js": "templates-zero/zorus/tools/enable-endpoint/1f6c1b8d72d551c4339ae0bcf3b2442e95efd9e974700a7ec0fd79c9b13d238a.cjs",
+                "ts": "templates-zero/zorus/tools/enable-endpoint/1f6c1b8d72d551c4339ae0bcf3b2442e95efd9e974700a7ec0fd79c9b13d238a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-customer",
+            "integrationId": "zorus",
+            "description": "Get one customer's summary, deployment counts, and integrations by customer ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_getcustomer",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_getcustomer",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_getcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the customer to retrieve."
+                            }
+                        },
+                        "required": [
+                            "customerId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the customer whose summary to retrieve."
+                    },
+                    "FunctionOutput_zorus_getcustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus customer UUID."
+                            },
+                            "name": {
+                                "description": "Customer name; preserve null and omit if absent.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z without fractional precision loss; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "isEnabled": {
+                                "description": "Whether the customer is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "integrations": {
+                                "description": "Customer integrations; preserve null, empty array, and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Integration name; preserve null or omission.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "vendorName": {
+                                                    "description": "Integration vendor name; preserve null or omission.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Names identifying an integration used by the customer."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "deploymentInfo": {
+                                "description": "Deployment counts; omitted if absent.",
+                                "type": "object",
+                                "properties": {
+                                    "networkSeatCount": {
+                                        "description": "Number of seats in associated WANs, as an exact integer.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "enabledNetworkCount": {
+                                        "description": "Number of enabled associated WANs.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "deployedEndpointCount": {
+                                        "description": "Number of associated endpoints.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "filteringEnabledCount": {
+                                        "description": "Number of associated endpoints described by Zorus as enabled.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "cyberSightEnabledCount": {
+                                        "description": "Number of associated endpoints with CyberSight enabled.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The matching customer summary, deployment counts, and integrations."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a customer ID from `list-customers` or `create-customer`. Use `list-customers` instead to discover customers by name or creation time."
+            },
+            "filePath": "./zorus/tools/get-customer.ts",
+            "version": "2ea513e97513c182071e4d7f7d06e0a2d4daf4d5cbb3a029e94fda237372f916",
+            "location": {
+                "js": "templates-zero/zorus/tools/get-customer/2ea513e97513c182071e4d7f7d06e0a2d4daf4d5cbb3a029e94fda237372f916.cjs",
+                "ts": "templates-zero/zorus/tools/get-customer/2ea513e97513c182071e4d7f7d06e0a2d4daf4d5cbb3a029e94fda237372f916.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-endpoint",
+            "integrationId": "zorus",
+            "description": "Get an endpoint record and its current reported agent, filtering, feature, and ownership fields by endpoint ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_getendpoint",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_getendpoint",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_getendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint to retrieve."
+                            }
+                        },
+                        "required": [
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the endpoint to retrieve by its exact UUID."
+                    },
+                    "FunctionOutput_zorus_getendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Endpoint UUID used for endpoint actions."
+                            },
+                            "name": {
+                                "description": "Endpoint name; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "groupId": {
+                                "description": "Assigned group UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "localIp": {
+                                "description": "Reported local IP text; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "version": {
+                                "description": "Reported endpoint agent version; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "Assigned policy UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z without fractional loss; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "groupName": {
+                                "description": "Assigned group name; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isEnabled": {
+                                "description": "Endpoint enabled state; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "licenseId": {
+                                "description": "Opaque license identifier; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "agentState": {
+                                "description": "Opaque agent state; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "lastSeenAt": {
+                                "description": "Last-seen instant normalized to UTC Z without fractional loss; null and omission preserved.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isInErrorState": {
+                                "description": "Whether an error state is reported; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "operatingSystem": {
+                                "description": "Operating-system description; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isFilteringEnabled": {
+                                "description": "Whether agent filtering is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "isCyberSightEnabled": {
+                                "description": "Whether agent CyberSight is enabled; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "operatingSystemType": {
+                                "description": "Provider-defined operating-system type; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "browserExtensionState": {
+                                "description": "Opaque browser-extension state; null and omission preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isInheritingGroupSettings": {
+                                "description": "Whether group settings are inherited; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "isCyberSightBrowserExtensionEnabled": {
+                                "description": "Whether CyberSight browser extension is enabled; omitted if absent.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The endpoint record and its currently reported agent, filtering, feature, and ownership fields."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an endpoint ID from `list-endpoints`. Use `list-endpoints` instead to find endpoints by customer, group, license, or state. Reported state is a read-time observation, not proof that a previous remote command has completed."
+            },
+            "filePath": "./zorus/tools/get-endpoint.ts",
+            "version": "b4c26fcc1e0ec03b5e0b99a46c2e7da22ea70328723d380826213e2343eb083d",
+            "location": {
+                "js": "templates-zero/zorus/tools/get-endpoint/b4c26fcc1e0ec03b5e0b99a46c2e7da22ea70328723d380826213e2343eb083d.cjs",
+                "ts": "templates-zero/zorus/tools/get-endpoint/b4c26fcc1e0ec03b5e0b99a46c2e7da22ea70328723d380826213e2343eb083d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "zorus",
+            "description": "Get a group's summary, assigned policy, owning customer, and member-setting flags by group ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the group to retrieve."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the Zorus group to retrieve by UUID."
+                    },
+                    "FunctionOutput_zorus_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus group UUID."
+                            },
+                            "name": {
+                                "description": "Group name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "Assigned policy UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "syncAddonsToMembers": {
+                                "description": "Whether addons synchronize to members; omitted if absent.",
+                                "type": "boolean"
+                            },
+                            "syncOptionsToMembers": {
+                                "description": "Whether options synchronize to members; omitted if absent.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group summary with assigned policy and customer references and member-setting flags."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain a group ID from `list-groups` or a defaultGroupId from `create-customer`. Use `list-groups` to discover groups by customer or name instead."
+            },
+            "filePath": "./zorus/tools/get-group.ts",
+            "version": "e92e3a166c96d7acc5f26c3db5fd24d85435c549011b2f34341959e0853cdc2c",
+            "location": {
+                "js": "templates-zero/zorus/tools/get-group/e92e3a166c96d7acc5f26c3db5fd24d85435c549011b2f34341959e0853cdc2c.cjs",
+                "ts": "templates-zero/zorus/tools/get-group/e92e3a166c96d7acc5f26c3db5fd24d85435c549011b2f34341959e0853cdc2c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-policy",
+            "integrationId": "zorus",
+            "description": "Get a policy summary by policy ID, including its group, customer, and creation time; this does not retrieve policy settings.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_getpolicy",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_getpolicy",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_getpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the policy summary to retrieve."
+                            }
+                        },
+                        "required": [
+                            "policyId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the policy summary to retrieve."
+                    },
+                    "FunctionOutput_zorus_getpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Zorus policy UUID."
+                            },
+                            "groupId": {
+                                "description": "Owning group UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "createdAt": {
+                                "description": "Policy creation instant normalized to UTC Z with fractional precision retained; preserve null and omission.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "groupName": {
+                                "description": "Owning group name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customerId": {
+                                "description": "Owning customer UUID; omitted if absent.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerName": {
+                                "description": "Owning customer name; preserve null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One policy summary, including ownership and creation time, without policy settings."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a policy ID from `list-policies`, `get-group`, or `create-customer`. Use `list-policies` to discover policies by customer or group. This returns the summary only, not filtering rules or policy configuration."
+            },
+            "filePath": "./zorus/tools/get-policy.ts",
+            "version": "155c93c867acaf1e300bbd9759e336acda3d0f296066a1f92249fbe6752b6dc0",
+            "location": {
+                "js": "templates-zero/zorus/tools/get-policy/155c93c867acaf1e300bbd9759e336acda3d0f296066a1f92249fbe6752b6dc0.cjs",
+                "ts": "templates-zero/zorus/tools/get-policy/155c93c867acaf1e300bbd9759e336acda3d0f296066a1f92249fbe6752b6dc0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "isolate-endpoint",
+            "integrationId": "zorus",
+            "description": "Request isolation of an endpoint that is not already isolated, recording a reason and isolation-session passphrase.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_isolateendpoint",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_isolateendpoint",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_isolateendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "reason": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024,
+                                "description": "Reason for isolating this endpoint, preserved as ordinary text."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint to isolate."
+                            },
+                            "passphrase": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255,
+                                "writeOnly": true,
+                                "description": "Secret passphrase for the isolation session, required by Zorus; this is not an artificial confirmation gate."
+                            }
+                        },
+                        "required": [
+                            "reason",
+                            "endpointId",
+                            "passphrase"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Endpoint to isolate, the intended reason, and the secret isolation-session passphrase."
+                    },
+                    "FunctionOutput_zorus_isolateendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus acknowledged the isolation action; remote state and connectivity are not independently verified."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Target endpoint UUID echoed after provider success."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the isolation request, not verification of remote completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get endpointId from `list-endpoints` or `get-endpoint`. Obtain the intended isolation reason and session passphrase before calling. Isolation can disrupt endpoint activity; protect the passphrase as a secret. Use `release-endpoint` to request release from isolation. Success acknowledges the action, not verified remote completion."
+            },
+            "filePath": "./zorus/tools/isolate-endpoint.ts",
+            "version": "b69d23e06dcec9f123d763dd99d41c115d5c736f15b4575b5e19df2c4ed0a01e",
+            "location": {
+                "js": "templates-zero/zorus/tools/isolate-endpoint/b69d23e06dcec9f123d763dd99d41c115d5c736f15b4575b5e19df2c4ed0a01e.cjs",
+                "ts": "templates-zero/zorus/tools/isolate-endpoint/b69d23e06dcec9f123d763dd99d41c115d5c736f15b4575b5e19df2c4ed0a01e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-active-unblock-requests",
+            "integrationId": "zorus",
+            "description": "List one page of active website unblock requests with optional customer, policy, submitter, and submission-time filters.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_listactiveunblockrequests",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_listactiveunblockrequests",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_listactiveunblockrequests": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 50,
+                                "description": "Requested records in this provider page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation bound to the connection, filters, ordering, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "default": "customerName",
+                                "description": "Request-summary property used for sorting; defaults to customerName.",
+                                "type": "string",
+                                "enum": [
+                                    "customerName",
+                                    "loggedOnUser",
+                                    "endpointName",
+                                    "website"
+                                ]
+                            },
+                            "policyIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict requests to this nonempty set of blocking-policy UUIDs; omitted means no policy filter.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "Blocking-policy UUID."
+                                }
+                            },
+                            "customerIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict requests to this nonempty set of customer UUIDs; omitted means no customer filter.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "Customer UUID."
+                                }
+                            },
+                            "sortDirection": {
+                                "default": "ascending",
+                                "description": "Ordering direction; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "requestedAfter": {
+                                "description": "Exclusive request-submission lower bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "requestedBefore": {
+                                "description": "Exclusive request-submission upper bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "loggedOnUserContains": {
+                                "description": "Required substring in the remote submitter's username; omitted means no filter, empty string is passed unchanged.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, ordering, and continuation for one page of active website unblock requests."
+                    },
+                    "FunctionOutput_zorus_listactiveunblockrequests": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Unblock-request UUID."
+                                        },
+                                        "website": {
+                                            "description": "Blocked URL as reported, without imposing an inferred URI format; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "policyId": {
+                                            "description": "UUID of the policy responsible for blocking the website; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "customerId": {
+                                            "description": "UUID of the customer owning the originating endpoint; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "blockReason": {
+                                            "description": "Zorus-provided reason for blocking; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "requestedAt": {
+                                            "description": "Submission instant in UTC Z with all fractional digits retained; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "customerName": {
+                                            "description": "Owning customer name; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "endpointName": {
+                                            "description": "Hostname of the originating computer, not an endpoint UUID; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "loggedOnUser": {
+                                            "description": "Remote username of the submitter; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "categoryNames": {
+                                            "description": "Categories assigned to the website or URL; preserve null, empty array, and omission.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Category assigned to the website or URL."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "requestReason": {
+                                            "description": "User-supplied reason for requesting an unblock; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An active website unblock request."
+                                },
+                                "description": "Active unblock requests in one provider page; may be empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when exhaustion is established. May lead to an empty final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of active website unblock requests and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to inspect currently active unblock requests. Customer and policy IDs come from `list-customers` and `list-policies`. This does not approve, reject, or unblock a website. Pass nextCursor as cursor with unchanged filters, ordering, and limit to continue. Limit defaults to 50, range 1–100; a continuation can return an empty final page."
+            },
+            "filePath": "./zorus/tools/list-active-unblock-requests.ts",
+            "version": "18b9118b660207515a9a50758784a86002a091d8ab9f6a266c1078e3e2be5791",
+            "location": {
+                "js": "templates-zero/zorus/tools/list-active-unblock-requests/18b9118b660207515a9a50758784a86002a091d8ab9f6a266c1078e3e2be5791.cjs",
+                "ts": "templates-zero/zorus/tools/list-active-unblock-requests/18b9118b660207515a9a50758784a86002a091d8ab9f6a266c1078e3e2be5791.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-customers",
+            "integrationId": "zorus",
+            "description": "List one page of customers, optionally filtering by name, enabled state, or creation time.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_listcustomers",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_listcustomers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_listcustomers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum requested records in this provider page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool, scoped to the connection and unchanged filters, ordering, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "isEnabled": {
+                                "description": "Required enabled state; omitted includes both states.",
+                                "type": "boolean"
+                            },
+                            "createdAfter": {
+                                "description": "Exclusive creation-time lower bound with an explicit UTC marker or numeric offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "nameContains": {
+                                "description": "Substring required in the customer name; omitted means no name filter, and an empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "createdBefore": {
+                                "description": "Exclusive creation-time upper bound with an explicit UTC marker or numeric offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sortDirection": {
+                                "description": "Customer-name ordering; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, customer-name ordering, and continuation for one page of customers."
+                    },
+                    "FunctionOutput_zorus_listcustomers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Zorus customer UUID."
+                                        },
+                                        "name": {
+                                            "description": "Customer name; null is preserved and an absent provider field is omitted.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "description": "Customer creation instant in UTC with Z, retaining provider fractional precision; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "isEnabled": {
+                                            "description": "Whether this customer is enabled; omitted if absent upstream.",
+                                            "type": "boolean"
+                                        },
+                                        "integrations": {
+                                            "description": "Customer integrations; preserve null, empty array, and omission distinctly.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Integration name; null or omission is preserved.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "vendorName": {
+                                                                "description": "Vendor name; null or omission is preserved.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "An integration used by the customer."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "deploymentInfo": {
+                                            "description": "Deployment counts supplied by Zorus; omitted if absent.",
+                                            "type": "object",
+                                            "properties": {
+                                                "networkSeatCount": {
+                                                    "description": "Number of seats in associated WANs, preserved as an exact integer.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "enabledNetworkCount": {
+                                                    "description": "Number of enabled associated WANs.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "deployedEndpointCount": {
+                                                    "description": "Number of endpoints associated with the customer.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "filteringEnabledCount": {
+                                                    "description": "Associated endpoint count described by Zorus as enabled.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "cyberSightEnabledCount": {
+                                                    "description": "Associated endpoint count with CyberSight enabled.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A customer and the optional details supplied by Zorus."
+                                },
+                                "description": "Customers in this provider page; empty when no records remain."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when exhaustion is established. A continuation may lead to an empty final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One customer page and an optional continuation using the same settings."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover customers and their IDs. Use `get-customer` when you already know the customer ID. Pass nextCursor back as cursor with the same filters, ordering, and limit to continue; a continuation can return an empty final page. Use returned IDs with `create-group` or `list-endpoints`. The limit defaults to 50 and supports 1–100."
+            },
+            "filePath": "./zorus/tools/list-customers.ts",
+            "version": "e7731a9aebd615617a29c33c4756ecb605e6278f93faaf04d7d4922d348a7968",
+            "location": {
+                "js": "templates-zero/zorus/tools/list-customers/e7731a9aebd615617a29c33c4756ecb605e6278f93faaf04d7d4922d348a7968.cjs",
+                "ts": "templates-zero/zorus/tools/list-customers/e7731a9aebd615617a29c33c4756ecb605e6278f93faaf04d7d4922d348a7968.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-endpoints",
+            "integrationId": "zorus",
+            "description": "List one page of endpoint records, filtering by identity, ownership, license, agent state, last-seen time, or enabled features.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_listendpoints",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_listendpoints",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_listendpoints": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 50,
+                                "description": "Requested record count for this provider page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation bound to the connection, filters, sorting, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "groupIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict to endpoints in these groups; omitted means no group filter.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "Group UUID."
+                                }
+                            },
+                            "isEnabled": {
+                                "description": "Required endpoint enabled state; omitted means either state.",
+                                "type": "boolean"
+                            },
+                            "agentState": {
+                                "description": "Exact provider-defined agent state, passed unchanged; obtain known values from endpoint records.",
+                                "type": "string"
+                            },
+                            "licenseIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict to these opaque license identifiers; values are not interpreted as numbers.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque license identifier."
+                                }
+                            },
+                            "customerIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict to endpoints owned by these customers; omitted includes all accessible customers.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "Customer UUID."
+                                }
+                            },
+                            "endpointIds": {
+                                "uniqueItems": true,
+                                "description": "Restrict to this nonempty set of endpoint UUIDs; omitted means no identity filter.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "Endpoint UUID."
+                                }
+                            },
+                            "nameContains": {
+                                "description": "Required endpoint-name substring; omitted means no filter; empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "lastSeenAfter": {
+                                "description": "Exclusive last-seen lower bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sortDirection": {
+                                "default": "ascending",
+                                "description": "Endpoint-name ordering; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "isInErrorState": {
+                                "description": "Required endpoint error state; omitted means either state.",
+                                "type": "boolean"
+                            },
+                            "lastSeenBefore": {
+                                "description": "Exclusive last-seen upper bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "isFilteringEnabled": {
+                                "description": "Required agent-filtering state; omitted means either state.",
+                                "type": "boolean"
+                            },
+                            "isCyberSightEnabled": {
+                                "description": "Required agent CyberSight state; omitted means either state.",
+                                "type": "boolean"
+                            },
+                            "isInheritingGroupSettings": {
+                                "description": "Required group-settings inheritance state; omitted means either state.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, name ordering, and continuation settings for one endpoint page."
+                    },
+                    "FunctionOutput_zorus_listendpoints": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Endpoint UUID used by endpoint actions."
+                                        },
+                                        "name": {
+                                            "description": "Endpoint name; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "groupId": {
+                                            "description": "Assigned group UUID; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "localIp": {
+                                            "description": "Reported local IP text, not constrained to an inferred address format; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "version": {
+                                            "description": "Reported endpoint agent version; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "policyId": {
+                                            "description": "Assigned policy UUID; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "createdAt": {
+                                            "description": "Endpoint creation instant in UTC Z with fractional precision preserved; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "groupName": {
+                                            "description": "Assigned group name; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isEnabled": {
+                                            "description": "Endpoint enabled state; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "licenseId": {
+                                            "description": "Opaque license identifier; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "agentState": {
+                                            "description": "Opaque provider-defined agent state; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customerId": {
+                                            "description": "Owning customer UUID; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "lastSeenAt": {
+                                            "description": "Last-seen instant in UTC Z with fractional precision preserved; null and omission preserved.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "customerName": {
+                                            "description": "Owning customer name; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isInErrorState": {
+                                            "description": "Whether the endpoint reports an error state; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "operatingSystem": {
+                                            "description": "Operating-system description; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isFilteringEnabled": {
+                                            "description": "Whether agent filtering is enabled; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "isCyberSightEnabled": {
+                                            "description": "Whether agent CyberSight is enabled; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "operatingSystemType": {
+                                            "description": "Provider-defined operating-system type; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "browserExtensionState": {
+                                            "description": "Opaque provider-defined browser-extension state; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isInheritingGroupSettings": {
+                                            "description": "Whether group settings are inherited; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "isCyberSightBrowserExtensionEnabled": {
+                                            "description": "Whether the CyberSight browser extension is enabled; omitted if absent.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An endpoint discovery record."
+                                },
+                                "description": "Endpoint records in one provider page, possibly empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page continuation; omitted when exhaustion is established. May lead to an empty final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of endpoint records and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover endpoint IDs before endpoint actions. Customer and group IDs come from `list-customers` and `list-groups`. Use `get-endpoint` for one known endpoint ID. Continue with nextCursor as cursor and unchanged settings; limit defaults to 50, range 1–100. A continuation may return an empty final page."
+            },
+            "filePath": "./zorus/tools/list-endpoints.ts",
+            "version": "6434833ad72bc7d61c4769b741a77948afe0bd7807b712ac141a9305242e2f65",
+            "location": {
+                "js": "templates-zero/zorus/tools/list-endpoints/6434833ad72bc7d61c4769b741a77948afe0bd7807b712ac141a9305242e2f65.cjs",
+                "ts": "templates-zero/zorus/tools/list-endpoints/6434833ad72bc7d61c4769b741a77948afe0bd7807b712ac141a9305242e2f65.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "zorus",
+            "description": "List one page of groups with optional customer, policy, name, and member-setting filters.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested records in this provider page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation bound to connection, filters, ordering, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "description": "Group property used for sorting; defaults to name.",
+                                "type": "string",
+                                "enum": [
+                                    "name",
+                                    "customerName",
+                                    "syncOptionsToMembers",
+                                    "syncAddonsToMembers"
+                                ]
+                            },
+                            "policyId": {
+                                "description": "Restrict groups to those assigned this policy UUID.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerId": {
+                                "description": "Restrict groups to this customer UUID.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "nameContains": {
+                                "description": "Required group-name substring; omitted means no filter, empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "sortDirection": {
+                                "description": "Ordering direction; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "syncAddonsToMembers": {
+                                "description": "Filter by the group's addons-to-members synchronization setting; omitted means either state.",
+                                "type": "boolean"
+                            },
+                            "customerNameContains": {
+                                "description": "Required substring in the owning customer's name; omitted means no filter.",
+                                "type": "string"
+                            },
+                            "syncOptionsToMembers": {
+                                "description": "Filter by the group's options-to-members synchronization setting; omitted means either state.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, ordering, and continuation for one page of Zorus groups."
+                    },
+                    "FunctionOutput_zorus_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Zorus group UUID."
+                                        },
+                                        "name": {
+                                            "description": "Group name; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "policyId": {
+                                            "description": "UUID of the group's assigned policy; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "customerId": {
+                                            "description": "UUID of the owning customer; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "customerName": {
+                                            "description": "Owning customer name; null and omission preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "syncAddonsToMembers": {
+                                            "description": "Whether addons synchronize to group members; omitted if absent.",
+                                            "type": "boolean"
+                                        },
+                                        "syncOptionsToMembers": {
+                                            "description": "Whether options synchronize to group members; omitted if absent.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Zorus group with its available customer, policy, and member settings."
+                                },
+                                "description": "Groups in one provider page, possibly empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page continuation; omitted when exhaustion is established. May lead to an empty final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of Zorus groups and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover groups and their policy and customer IDs. Obtain customer IDs from `list-customers` and policy IDs from `list-policies` when filtering. Use `get-group` for a known group ID. Continue with nextCursor as cursor and unchanged settings. Limit defaults to 50, range 1–100; a continuation may return an empty final page."
+            },
+            "filePath": "./zorus/tools/list-groups.ts",
+            "version": "d504ccef58501b4333c92af5cb2c9323493949e3ab2fb7f15e3ff1016ed98a9f",
+            "location": {
+                "js": "templates-zero/zorus/tools/list-groups/d504ccef58501b4333c92af5cb2c9323493949e3ab2fb7f15e3ff1016ed98a9f.cjs",
+                "ts": "templates-zero/zorus/tools/list-groups/d504ccef58501b4333c92af5cb2c9323493949e3ab2fb7f15e3ff1016ed98a9f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-policies",
+            "integrationId": "zorus",
+            "description": "List one page of customer policy summaries by customer, group, name criteria, or creation time.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_listpolicies",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_listpolicies",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_listpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested policy summaries in this provider page; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation bound to the connection, filters, ordering, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "description": "Sort property; defaults to customerName.",
+                                "type": "string",
+                                "enum": [
+                                    "customerName",
+                                    "groupName",
+                                    "createdAt"
+                                ]
+                            },
+                            "groupId": {
+                                "description": "Restrict to policies belonging to this group UUID.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "customerId": {
+                                "description": "Restrict to policies owned by this customer UUID.",
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            "createdAfter": {
+                                "description": "Exclusive policy-creation lower bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "createdBefore": {
+                                "description": "Exclusive policy-creation upper bound with explicit UTC marker or offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sortDirection": {
+                                "description": "Ordering direction; defaults to ascending.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "groupNameContains": {
+                                "description": "Required group-name substring; omitted means no filter; empty string is passed unchanged.",
+                                "type": "string"
+                            },
+                            "customerNameContains": {
+                                "description": "Required customer-name substring; omitted means no filter; empty string is passed unchanged.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, ordering, and continuation for one page of customer policy summaries."
+                    },
+                    "FunctionOutput_zorus_listpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Policy UUID, usable as a base policy reference."
+                                        },
+                                        "groupId": {
+                                            "description": "Owning group UUID; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "createdAt": {
+                                            "description": "Policy creation instant in UTC Z without fractional precision loss; preserve null and omission.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "groupName": {
+                                            "description": "Owning group name; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customerId": {
+                                            "description": "Owning customer UUID; omitted if absent.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "customerName": {
+                                            "description": "Owning customer name; preserve null and omission.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A customer policy summary, without policy settings."
+                                },
+                                "description": "Policy summaries in one provider page; may be empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted at established exhaustion. Can lead to an empty final page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of policy summaries and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover policy IDs for `create-customer` and `create-group`. Use `get-policy` for a known policy ID. These are policy summaries, not policy settings. Obtain customer and group IDs from `list-customers` and `list-groups`. Continue with nextCursor as cursor and unchanged settings; limit defaults to 50, range 1–100."
+            },
+            "filePath": "./zorus/tools/list-policies.ts",
+            "version": "9c61cea7104c84edef32276c1a42f0482dc4c1275825853e0f4bbb59656a8472",
+            "location": {
+                "js": "templates-zero/zorus/tools/list-policies/9c61cea7104c84edef32276c1a42f0482dc4c1275825853e0f4bbb59656a8472.cjs",
+                "ts": "templates-zero/zorus/tools/list-policies/9c61cea7104c84edef32276c1a42f0482dc4c1275825853e0f4bbb59656a8472.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "release-endpoint",
+            "integrationId": "zorus",
+            "description": "Request release of an endpoint from isolation if it is isolated.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_releaseendpoint",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_releaseendpoint",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_releaseendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint to release from isolation."
+                            }
+                        },
+                        "required": [
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target endpoint for release from isolation."
+                    },
+                    "FunctionOutput_zorus_releaseendpoint": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus acknowledged release; remote state is not independently verified."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Target endpoint UUID echoed after provider success."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the endpoint release request, not verification of remote completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an endpoint ID from `list-endpoints` or `get-endpoint`. This removes isolation and can restore activity or connectivity that isolation restricted. Use `isolate-endpoint` for the opposite task and `enable-endpoint` for enabled-state changes. No passphrase is required by this operation. Success is acknowledgement, not verified remote completion."
+            },
+            "filePath": "./zorus/tools/release-endpoint.ts",
+            "version": "02bc12f14d8d802ae9888ecfdb8e306cb29c02ddd5d632ea1dc232bb1fff687a",
+            "location": {
+                "js": "templates-zero/zorus/tools/release-endpoint/02bc12f14d8d802ae9888ecfdb8e306cb29c02ddd5d632ea1dc232bb1fff687a.cjs",
+                "ts": "templates-zero/zorus/tools/release-endpoint/02bc12f14d8d802ae9888ecfdb8e306cb29c02ddd5d632ea1dc232bb1fff687a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "restart-endpoint-service",
+            "integrationId": "zorus",
+            "description": "Send a command to restart the filtering service on one endpoint's remote agent.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_zorus_restartendpointservice",
+            "output_schema_ref": "#/definitions/FunctionOutput_zorus_restartendpointservice",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_zorus_restartendpointservice": {
+                        "type": "object",
+                        "properties": {
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the endpoint whose filtering service should restart."
+                            }
+                        },
+                        "required": [
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target endpoint for a filtering-service restart command."
+                    },
+                    "FunctionOutput_zorus_restartendpointservice": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Zorus acknowledged the restart command; service restart and availability are not verified."
+                            },
+                            "endpointId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Target endpoint UUID echoed after provider success."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "endpointId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the filtering-service restart command, not its completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain endpointId from `list-endpoints` or `get-endpoint`. This restarts the filtering service, not the whole computer, and can interrupt filtering. Success means Zorus acknowledged the command, not that the restart completed. Do not retry blindly: each call can cause another restart."
+            },
+            "filePath": "./zorus/tools/restart-endpoint-service.ts",
+            "version": "d71f3471768a3d4d730845c03c0de5c3e2f9a4d7b557a3faffd434a68dcccf2d",
+            "location": {
+                "js": "templates-zero/zorus/tools/restart-endpoint-service/d71f3471768a3d4d730845c03c0de5c3e2f9a4d7b557a3faffd434a68dcccf2d.cjs",
+                "ts": "templates-zero/zorus/tools/restart-endpoint-service/d71f3471768a3d4d730845c03c0de5c3e2f9a4d7b557a3faffd434a68dcccf2d.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

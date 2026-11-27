@@ -1,0 +1,3014 @@
+{
+    "providerConfigKey": "asana-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Domain-team provisioning identities, display names and available member user IDs, including private teams.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-teams",
+            "output": [
+                "Teams"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Teams"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Teams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque team ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Team display name."
+                            },
+                            "memberIds": {
+                                "description": "Member user IDs when available; omission means unavailable membership, not no members.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Member user ID."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Domain-team provisioning identity, display name and available member user IDs."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Domain-user identities, account activity, profile, licensing, roles and enterprise metadata, excluding guests.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "Users"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Users"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Users": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Asana user ID."
+                            },
+                            "name": {
+                                "description": "Provider-supplied name components.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Full display name.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "givenName": {
+                                        "description": "Given name as returned.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "familyName": {
+                                        "description": "Family name as returned.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "active": {
+                                "description": "Whether the account is active, when supplied.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email entries in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider email category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "roleIds": {
+                                "description": "Opaque RBAC role IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "licenses": {
+                                "description": "License names in provider-reported alphabetical order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Login email."
+                            },
+                            "addresses": {
+                                "description": "Postal location entries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider address category.",
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "description": "State or region.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "country": {
+                                            "description": "Country value.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        },
+                                        "locality": {
+                                            "description": "City or locality.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "enterprise": {
+                                "description": "Enterprise extension metadata without a SCIM namespace wrapper.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Organizational division metadata, distinct from billing division.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "department": {
+                                        "description": "Department metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "organization": {
+                                        "description": "Organization metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "managerUserId": {
+                                        "description": "Manager's opaque Asana user ID.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee identifier preserved as text.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "phoneNumbers": {
+                                "description": "Phone entries in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider phone category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Phone number as text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this number is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "preferredLanguage": {
+                                "description": "Preferred UI language code.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "licensingDivisionId": {
+                                "description": "Opaque billing subdivision or parent-domain ID.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Domain-user identities, account activity, profile, licensing, roles and enterprise metadata, excluding guests."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-member-to-team",
+            "integrationId": "asana-scim",
+            "description": "Add one existing domain user to a team without replacing its other members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_addmembertoteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_addmembertoteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_addmembertoteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Team receiving the member."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing domain user to add."
+                            }
+                        },
+                        "required": [
+                            "teamId",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One existing domain user and the team to add them to."
+                    },
+                    "FunctionOutput_asana_scim_addmembertoteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID targeted by the accepted association change."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID targeted by the accepted association change."
+                            }
+                        },
+                        "required": [
+                            "teamId",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The team and user targeted by the accepted membership addition."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get teamId from `list-teams` and userId from `list-users`. Requires an Enterprise-domain service account. Use `update-team` for a complete desired member set and `remove-member-from-team` to remove an association. This does not create a user."
+            },
+            "filePath": "./asana-scim/tools/add-member-to-team.ts",
+            "version": "7ab09212630bb0122607f55b90bf6d38edefcaff8c429b3bd15e6a2a0da8fe60",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/add-member-to-team/7ab09212630bb0122607f55b90bf6d38edefcaff8c429b3bd15e6a2a0da8fe60.cjs",
+                "ts": "templates-zero/asana-scim/tools/add-member-to-team/7ab09212630bb0122607f55b90bf6d38edefcaff8c429b3bd15e6a2a0da8fe60.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-enum-option",
+            "integrationId": "asana-scim",
+            "description": "Create a selectable enum option on a custom field, optionally placing it before or after an existing option.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_createenumoption",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_createenumoption",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_createenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Label for the new option, as ordinary text."
+                            },
+                            "color": {
+                                "description": "Provider color name; omitted to use the documented default none.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "position": {
+                                "description": "Optional relative position; omission appends the option.",
+                                "type": "object",
+                                "properties": {
+                                    "relation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "before",
+                                            "after"
+                                        ],
+                                        "description": "Place before or after the referenced existing option."
+                                    },
+                                    "relativeToOptionId": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Existing sibling option ID in the same custom field."
+                                    }
+                                },
+                                "required": [
+                                    "relation",
+                                    "relativeToOptionId"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "customFieldId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Custom-field ID receiving the enum option."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "customFieldId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Custom field, option label, and optional color and relative position for a new enum option."
+                    },
+                    "FunctionOutput_asana_scim_createenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New enum-option ID returned by the provider."
+                            },
+                            "name": {
+                                "description": "Option name if returned.",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "Stored color if returned.",
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "description": "Whether selectable; documented as true on creation when returned.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created enum-option identity and any returned option attributes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain a customFieldId and optional sibling option ID from the field's definition; team-applied fields are available through `get-team-details`. New options are enabled and default to the end. A field supports no more than 500 options. Use `update-enum-option` for an existing option and `reorder-enum-option` to reposition one. Options cannot be deleted."
+            },
+            "filePath": "./asana-scim/tools/create-enum-option.ts",
+            "version": "2f2b295dd006e607db1a5dd3a4bfd17b7a97f5a7acb286307e62dde8ca308ee4",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/create-enum-option/2f2b295dd006e607db1a5dd3a4bfd17b7a97f5a7acb286307e62dde8ca308ee4.cjs",
+                "ts": "templates-zero/asana-scim/tools/create-enum-option/2f2b295dd006e607db1a5dd3a4bfd17b7a97f5a7acb286307e62dde8ca308ee4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-team",
+            "integrationId": "asana-scim",
+            "description": "Create a domain team with an optional initial set of member user IDs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_createteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_createteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Unique display name for the new team."
+                            },
+                            "memberIds": {
+                                "description": "Initial member user IDs; omission uses provider behavior, while [] explicitly requests no initial members.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Initial member user ID."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Name and optional initial members of the new domain team."
+                    },
+                    "FunctionOutput_asana_scim_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the team returned by the provider."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created team ID."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Requires an Enterprise-domain service account. Get member IDs from `list-users`. Use `list-teams` to check a name before creation and `update-team` for an existing team. On an uncertain result, inspect teams before retrying."
+            },
+            "filePath": "./asana-scim/tools/create-team.ts",
+            "version": "46499744b73f71f310029f76ac83fb6e71761141d70fd06c28612c8adf10fa02",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/create-team/46499744b73f71f310029f76ac83fb6e71761141d70fd06c28612c8adf10fa02.cjs",
+                "ts": "templates-zero/asana-scim/tools/create-team/46499744b73f71f310029f76ac83fb6e71761141d70fd06c28612c8adf10fa02.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "deprovision-user",
+            "integrationId": "asana-scim",
+            "description": "Deprovision (zombify) a domain user in Asana. This is account deprovisioning, not a promise of permanent content deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_deprovisionuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_deprovisionuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_deprovisionuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque domain-user ID to deprovision."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The domain user to deprovision in Asana."
+                    },
+                    "FunctionOutput_asana_scim_deprovisionuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "ID targeted by the accepted deprovisioning operation."
+                            },
+                            "deprovisioned": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider accepted deprovisioning; this does not establish permanent content deletion."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "deprovisioned"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted account deprovisioning, without a guarantee of permanent content deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the user ID from `list-users`. Requires an Enterprise-domain service account. This removes the user's active provisioning; content deletion and reversibility are not established. Use `update-user` for profile changes. Check `get-user` or the Admin Console before repeating an uncertain request."
+            },
+            "filePath": "./asana-scim/tools/deprovision-user.ts",
+            "version": "4b7c03ffda6c4d563b6a53f90ab799a89a4c211b2861338548d4f58db47f8cb2",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/deprovision-user/4b7c03ffda6c4d563b6a53f90ab799a89a4c211b2861338548d4f58db47f8cb2.cjs",
+                "ts": "templates-zero/asana-scim/tools/deprovision-user/4b7c03ffda6c4d563b6a53f90ab799a89a4c211b2861338548d4f58db47f8cb2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "asana-scim",
+            "description": "Get the SCIM service's advertised protocol features, limits and authentication scheme metadata.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to read the service provider configuration."
+                    },
+                    "FunctionOutput_asana_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "bulk": {
+                                "description": "Advertised SCIM bulk feature and limits, not an integration batch promise.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether bulk requests are advertised as supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations per bulk request.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadBytes": {
+                                        "description": "Advertised bulk payload byte limit.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "description": "Advertised filter feature and result limit.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether filtering is advertised as supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised maximum filtered results.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "etagSupported": {
+                                "description": "Whether ETags are advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "sortSupported": {
+                                "description": "Whether sorting is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "patchSupported": {
+                                "description": "Whether PATCH is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "documentationUrl": {
+                                "description": "Provider documentation URI, when advertised.",
+                                "type": "string"
+                            },
+                            "authenticationSchemes": {
+                                "description": "Advertised authentication methods; contains no credentials.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Authentication scheme name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Authentication scheme type.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary advertised scheme.",
+                                            "type": "boolean"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the scheme.",
+                                            "type": "string"
+                                        },
+                                        "documentationUrl": {
+                                            "description": "Documentation URI, when advertised.",
+                                            "type": "string"
+                                        },
+                                        "specificationUrl": {
+                                            "description": "Specification URI, when advertised.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Metadata for one advertised authentication scheme."
+                                }
+                            },
+                            "changePasswordSupported": {
+                                "description": "Whether changing passwords is advertised as supported.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Advertised SCIM protocol capabilities, limits, and authentication scheme metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for provisioning compatibility checks. Requires an Enterprise-domain service account. Use `list-resource-types` and `list-schemas` for resource and attribute definitions. Returned feature flags describe provider metadata, not extra callable operations in this integration."
+            },
+            "filePath": "./asana-scim/tools/get-service-provider-config.ts",
+            "version": "b37d2727ca71436b8a1804e21864fc3a4aa599c93da410c5a6441b3130ccba00",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/get-service-provider-config/b37d2727ca71436b8a1804e21864fc3a4aa599c93da410c5a6441b3130ccba00.cjs",
+                "ts": "templates-zero/asana-scim/tools/get-service-provider-config/b37d2727ca71436b8a1804e21864fc3a4aa599c93da410c5a6441b3130ccba00.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-team",
+            "integrationId": "asana-scim",
+            "description": "Get a domain team's provisioning name and membership by ID, including private teams accessible through SCIM.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_getteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_getteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque domain-team ID from list-teams."
+                            }
+                        },
+                        "required": [
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the domain team to retrieve."
+                    },
+                    "FunctionOutput_asana_scim_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque team ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Team display name."
+                            },
+                            "memberIds": {
+                                "description": "User IDs of members when provided; omitted membership is unknown, not empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A team member user ID."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The team provisioning name and membership when returned by SCIM."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get teamId from `list-teams`. Requires an Enterprise-domain service account. Use `get-team-details` instead for visibility, descriptions, policy settings and custom-field options."
+            },
+            "filePath": "./asana-scim/tools/get-team.ts",
+            "version": "0ceb0b665e9e37991f48a4ea2b50f19b02a06ce0dde1738cc56ee34c59eac218",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/get-team/0ceb0b665e9e37991f48a4ea2b50f19b02a06ce0dde1738cc56ee34c59eac218.cjs",
+                "ts": "templates-zero/asana-scim/tools/get-team/0ceb0b665e9e37991f48a4ea2b50f19b02a06ce0dde1738cc56ee34c59eac218.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-team-details",
+            "integrationId": "asana-scim",
+            "description": "Get a team's descriptions, visibility, administrative policies and custom-field settings through the standard Asana team API.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_getteamdetails",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_getteamdetails",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_getteamdetails": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Globally unique Asana team ID."
+                            }
+                        },
+                        "required": [
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reference to the Asana team whose details to retrieve."
+                    },
+                    "FunctionOutput_asana_scim_getteamdetails": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Globally unique team ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Team name."
+                            },
+                            "endorsed": {
+                                "description": "Whether the team is endorsed.",
+                                "type": "boolean"
+                            },
+                            "policies": {
+                                "description": "Administrative access policies, omitted individually if unavailable.",
+                                "type": "object",
+                                "properties": {
+                                    "manageContent": {
+                                        "description": "Who may create and share team content.",
+                                        "type": "string",
+                                        "enum": [
+                                            "no_restriction",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "removeMembers": {
+                                        "description": "Who may remove members.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "manageGuestInvites": {
+                                        "description": "Who may accept or deny guest invitations.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "manageJoinRequests": {
+                                        "description": "Who may accept or deny membership requests.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "manageMemberInvites": {
+                                        "description": "Who may accept or deny member invitations.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "editNameOrDescription": {
+                                        "description": "Who may edit the name or description.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    },
+                                    "editVisibilityOrTrash": {
+                                        "description": "Who may change visibility or trash the team.",
+                                        "type": "string",
+                                        "enum": [
+                                            "all_team_members",
+                                            "only_team_admins"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "visibility": {
+                                "description": "Team visibility within the organization.",
+                                "type": "string",
+                                "enum": [
+                                    "secret",
+                                    "request_to_join",
+                                    "public"
+                                ]
+                            },
+                            "description": {
+                                "description": "Plain-text team description, when returned.",
+                                "type": "string"
+                            },
+                            "organization": {
+                                "description": "Organization containing the team.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Organization/workspace ID.",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "Organization name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "permalinkUrl": {
+                                "description": "URL of the team in Asana.",
+                                "type": "string"
+                            },
+                            "htmlDescription": {
+                                "description": "Formatted team description as original HTML, when returned.",
+                                "type": "string"
+                            },
+                            "customFieldSettings": {
+                                "description": "Custom-field associations and definitions applied to this team.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Custom-field setting ID.",
+                                            "type": "string"
+                                        },
+                                        "parentId": {
+                                            "description": "Container ID to which the custom field is applied.",
+                                            "type": "string"
+                                        },
+                                        "customField": {
+                                            "description": "Custom-field definition relevant to interpreting and managing options.",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Custom-field ID.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Custom-field name.",
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "description": "Custom-field description.",
+                                                    "type": "string"
+                                                },
+                                                "enumOptions": {
+                                                    "description": "Ordered enum options, including disabled options when returned.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Enum-option ID."
+                                                            },
+                                                            "name": {
+                                                                "description": "Option label.",
+                                                                "type": "string"
+                                                            },
+                                                            "color": {
+                                                                "description": "Provider option color name.",
+                                                                "type": "string"
+                                                            },
+                                                            "enabled": {
+                                                                "description": "Whether selectable for new values.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "An enum-option definition in provider order."
+                                                    }
+                                                },
+                                                "resourceSubtype": {
+                                                    "description": "Provider custom-field subtype, such as enum or multi_enum.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "isImportant": {
+                                            "description": "Whether the setting is prominent in list/grid views.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A custom-field association applied to the team."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Team descriptions, visibility, administrative policies and custom-field definitions."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a team ID from `list-teams` or an existing Asana team reference. Requires teams:read. Use `get-team` for SCIM provisioning membership instead. Returned custom-field and enum-option IDs can be used by the enum-option tools. This call does not change policy settings.",
+                "required_scopes": {
+                    "all": [
+                        "teams:read"
+                    ]
+                }
+            },
+            "filePath": "./asana-scim/tools/get-team-details.ts",
+            "version": "495bee8b096d84536d9907373c0d9eb8cca3827432705f0b7e380aaf7e2867db",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/get-team-details/495bee8b096d84536d9907373c0d9eb8cca3827432705f0b7e380aaf7e2867db.cjs",
+                "ts": "templates-zero/asana-scim/tools/get-team-details/495bee8b096d84536d9907373c0d9eb8cca3827432705f0b7e380aaf7e2867db.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "asana-scim",
+            "description": "Get a domain user's identity, profile, licensing and enterprise attributes by ID. Guests are not included.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque domain-user ID from list-users."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the domain user to retrieve."
+                    },
+                    "FunctionOutput_asana_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Asana user ID."
+                            },
+                            "name": {
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Full display name.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "givenName": {
+                                        "description": "Given name, without inference from display name.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "familyName": {
+                                        "description": "Family name as returned.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Name components as returned by Asana."
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "active": {
+                                "description": "Whether the account is active, if returned.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Email entries in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider email category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An email entry as returned by Asana."
+                                }
+                            },
+                            "roleIds": {
+                                "description": "Opaque role IDs from roles[].value.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An opaque role ID."
+                                }
+                            },
+                            "licenses": {
+                                "description": "Assigned license names in provider order; empty string is represented as an empty array.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An assigned license name."
+                                }
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Login email."
+                            },
+                            "addresses": {
+                                "description": "Postal location entries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider address category.",
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "description": "State or region.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "country": {
+                                            "description": "Country value.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        },
+                                        "locality": {
+                                            "description": "City or locality.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A postal location entry."
+                                }
+                            },
+                            "enterprise": {
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Organizational division metadata, not licensing division.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "department": {
+                                        "description": "Department metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "organization": {
+                                        "description": "Organization metadata.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "managerUserId": {
+                                        "description": "Manager's opaque Asana user ID.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee identifier preserved as text.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Enterprise extension metadata; omitted if not supplied."
+                            },
+                            "phoneNumbers": {
+                                "description": "Phone entries without number normalization.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider phone category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Phone number as text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this number is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A phone entry as returned by Asana."
+                                }
+                            },
+                            "preferredLanguage": {
+                                "description": "Preferred UI language code.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "licensingDivisionId": {
+                                "description": "Opaque licensing subdivision or parent-domain ID.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A domain user with identity, profile, licensing and enterprise attributes, without a SCIM envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a user ID from `list-users`; use `list-users` with userName when only an email is known. Requires an Enterprise-domain service account. This does not reactivate or modify the user."
+            },
+            "filePath": "./asana-scim/tools/get-user.ts",
+            "version": "4816c27ff180a0af181f65cfc042b11bb816a1eb3d6e48b189353191a1a422ef",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/get-user/4816c27ff180a0af181f65cfc042b11bb816a1eb3d6e48b189353191a1a422ef.cjs",
+                "ts": "templates-zero/asana-scim/tools/get-user/4816c27ff180a0af181f65cfc042b11bb816a1eb3d6e48b189353191a1a422ef.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-resource-types",
+            "integrationId": "asana-scim",
+            "description": "List the SCIM resource types and their endpoint/schema declarations for provisioning discovery.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_listresourcetypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_listresourcetypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed for resource-type discovery."
+                    },
+                    "FunctionOutput_asana_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque resource-type identifier, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Resource-type name, such as User or Group.",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "Declared SCIM endpoint path; not a caller-selected API request.",
+                                            "type": "string"
+                                        },
+                                        "schemaId": {
+                                            "description": "Primary schema URI identifying this resource type.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the resource type.",
+                                            "type": "string"
+                                        },
+                                        "schemaExtensions": {
+                                            "description": "Additional schema declarations.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "required": {
+                                                        "description": "Whether the extension is required for this resource type.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "schemaId": {
+                                                        "description": "Extension schema URI.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A schema extension declared for this resource type."
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A SCIM resource-type declaration."
+                                },
+                                "description": "Resource type declarations returned by this discovery request."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One collection of SCIM resource-type discovery metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for SCIM integration discovery, not to list users or teams. Requires an Enterprise-domain service account. Use `list-schemas` for attribute definitions and `get-service-provider-config` for supported protocol features. Returns one metadata collection."
+            },
+            "filePath": "./asana-scim/tools/list-resource-types.ts",
+            "version": "e8c69b0675e53f29f6c5d11d6a0d1bbe865b64b085e99b33ed3cd77ad2b12b95",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/list-resource-types/e8c69b0675e53f29f6c5d11d6a0d1bbe865b64b085e99b33ed3cd77ad2b12b95.cjs",
+                "ts": "templates-zero/asana-scim/tools/list-resource-types/e8c69b0675e53f29f6c5d11d6a0d1bbe865b64b085e99b33ed3cd77ad2b12b95.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schemas",
+            "integrationId": "asana-scim",
+            "description": "List SCIM schema definitions and their typed attribute constraints for provisioning discovery.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_listschemas",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_listschemas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_listschemas": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Schema discovery request with no caller parameters."
+                    },
+                    "FunctionOutput_asana_scim_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Schema URI identifier.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Schema name.",
+                                            "type": "string"
+                                        },
+                                        "attributes": {
+                                            "description": "Declared schema attributes.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/__schema0"
+                                            }
+                                        },
+                                        "description": {
+                                            "description": "Provider schema description.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A schema definition returned by the provider."
+                                },
+                                "description": "Schema definitions returned by this discovery request."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One collection of SCIM schema definitions with structured attribute constraints.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Attribute name relative to its parent or schema.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM data type, preserved as reported.",
+                                        "type": "string"
+                                    },
+                                    "required": {
+                                        "description": "Whether this attribute is required.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "Provider return rule, such as default or always.",
+                                        "type": "string"
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether comparisons are case sensitive.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Provider mutability rule, such as readOnly or readWrite.",
+                                        "type": "string"
+                                    },
+                                    "uniqueness": {
+                                        "description": "Declared uniqueness scope.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Provider description of the attribute.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether the attribute accepts multiple values.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested attribute declarations for complex fields.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    },
+                                    "referenceTypes": {
+                                        "description": "Declared resource or URI reference types.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "canonicalValues": {
+                                        "description": "Declared accepted canonical values, when supplied.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "A SCIM attribute declaration and its typed constraints."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for attribute discovery and validation, not to retrieve users. Requires an Enterprise-domain service account. Use `list-resource-types` to find primary and extension schema IDs, and `get-service-provider-config` for feature support. Returns one metadata collection."
+            },
+            "filePath": "./asana-scim/tools/list-schemas.ts",
+            "version": "e7a8fb6713a87194737e626c68944d78b81169669a7f7d4ecdb9cb8a75d3a9f9",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/list-schemas/e7a8fb6713a87194737e626c68944d78b81169669a7f7d4ecdb9cb8a75d3a9f9.cjs",
+                "ts": "templates-zero/asana-scim/tools/list-schemas/e7a8fb6713a87194737e626c68944d78b81169669a7f7d4ecdb9cb8a75d3a9f9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-teams",
+            "integrationId": "asana-scim",
+            "description": "List one page of all domain teams, including private teams, optionally matching an exact team name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_listteams",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_listteams",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Exact team display name to match; omit to enumerate all domain teams.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "limit": {
+                                "description": "Requested teams per page, 1–100; defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the previous page, scoped to the same name and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of domain teams, optionally by exact display name."
+                    },
+                    "FunctionOutput_asana_scim_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque team ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Team display name."
+                                        },
+                                        "memberIds": {
+                                            "description": "Member user IDs only if included by the provider; omission does not mean no members.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque member user ID."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A domain team with membership IDs only when supplied."
+                                },
+                                "description": "Teams in this provider page, including private teams."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when no further cursor is provided.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total matching teams, when supplied.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of domain teams and any supplied continuation and total."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Requires an Enterprise-domain service account. Use this to obtain team IDs for `get-team` and membership changes. Use `get-team-details` for rich team settings. Pass nextCursor back as cursor with the same name and limit to continue."
+            },
+            "filePath": "./asana-scim/tools/list-teams.ts",
+            "version": "ccd13ad1b248f0603595ff0e7113827d45a8241f055bb8b49c1e17b3c60f0e7b",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/list-teams/ccd13ad1b248f0603595ff0e7113827d45a8241f055bb8b49c1e17b3c60f0e7b.cjs",
+                "ts": "templates-zero/asana-scim/tools/list-teams/ccd13ad1b248f0603595ff0e7113827d45a8241f055bb8b49c1e17b3c60f0e7b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "asana-scim",
+            "description": "List one page of domain users, excluding guests, optionally matching an exact login email.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested users per page, from 1 to 100; defaults to 50.",
+                                "default": 50,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the preceding result; reuse with the same filter and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userName": {
+                                "description": "Exact login email to match; omit to enumerate domain users.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for one page of domain users, optionally filtered by exact login email."
+                    },
+                    "FunctionOutput_asana_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Asana user ID."
+                                        },
+                                        "name": {
+                                            "description": "Name components provided by Asana; omitted components remain absent.",
+                                            "type": "object",
+                                            "properties": {
+                                                "formatted": {
+                                                    "description": "Full display name.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "givenName": {
+                                                    "description": "Given name as returned, without inferring it from the full name.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "familyName": {
+                                                    "description": "Family name as returned.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "title": {
+                                            "description": "Job title, if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "active": {
+                                            "description": "Whether the account is active; omitted if unavailable.",
+                                            "type": "boolean"
+                                        },
+                                        "emails": {
+                                            "description": "Email addresses, retaining provider order and primary indicators.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider email category, when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Email address.",
+                                                        "type": "string"
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this address is primary.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "An email address and its provider attributes."
+                                            }
+                                        },
+                                        "roleIds": {
+                                            "description": "Opaque RBAC role IDs from roles[].value.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Opaque RBAC role ID."
+                                            }
+                                        },
+                                        "licenses": {
+                                            "description": "Assigned license names in provider-reported alphabetical order; an empty upstream string becomes an empty array.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Assigned license name."
+                                            }
+                                        },
+                                        "userName": {
+                                            "type": "string",
+                                            "description": "User's login email."
+                                        },
+                                        "addresses": {
+                                            "description": "Postal location entries, if supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider address category.",
+                                                        "type": "string"
+                                                    },
+                                                    "region": {
+                                                        "description": "State or region.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "country": {
+                                                        "description": "Country value supplied by Asana.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this address is primary.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "locality": {
+                                                        "description": "City or locality.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A postal location and its provider attributes."
+                                            }
+                                        },
+                                        "enterprise": {
+                                            "description": "Enterprise extension attributes, without the SCIM namespace wrapper.",
+                                            "type": "object",
+                                            "properties": {
+                                                "division": {
+                                                    "description": "Organizational division metadata, not a billing division.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "costCenter": {
+                                                    "description": "Cost center metadata.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "department": {
+                                                    "description": "Department metadata.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "organization": {
+                                                    "description": "Organizational name metadata.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "managerUserId": {
+                                                    "description": "Manager's opaque Asana user ID.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "employeeNumber": {
+                                                    "description": "Employee identifier, preserved as text.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "phoneNumbers": {
+                                            "description": "Phone entries, if supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider phone category.",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Phone number without numeric conversion.",
+                                                        "type": "string"
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this number is primary.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A phone entry and its provider attributes."
+                                            }
+                                        },
+                                        "preferredLanguage": {
+                                            "description": "Preferred UI language code, if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "licensingDivisionId": {
+                                            "description": "Opaque licensing subdivision or parent-domain ID; distinct from organizational division metadata.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "userName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A domain user and available provisioning attributes."
+                                },
+                                "description": "Users in this provider page; guests are excluded."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when the provider supplies no further cursor.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total matching users, when supplied; not the page length.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of domain users with available continuation and total count."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to discover user IDs and provisioning attributes. Use `get-user` for a known ID. Requires an Enterprise-domain service account. Pass nextCursor back as cursor with the same userName and limit to continue. Returns one page, not the entire directory."
+            },
+            "filePath": "./asana-scim/tools/list-users.ts",
+            "version": "324fca2833e5fdde27cf049acd8dac69635471e8709b07e7d11474c1c914862e",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/list-users/324fca2833e5fdde27cf049acd8dac69635471e8709b07e7d11474c1c914862e.cjs",
+                "ts": "templates-zero/asana-scim/tools/list-users/324fca2833e5fdde27cf049acd8dac69635471e8709b07e7d11474c1c914862e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-team",
+            "integrationId": "asana-scim",
+            "description": "Remove one user's association with a team while preserving the team and its other members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_removememberfromteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_removememberfromteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_removememberfromteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Team whose member association is removed."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "User ID to remove from this team only."
+                            }
+                        },
+                        "required": [
+                            "teamId",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The team and user association to remove."
+                    },
+                    "FunctionOutput_asana_scim_removememberfromteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team whose membership change was accepted."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "User whose association was targeted for removal."
+                            }
+                        },
+                        "required": [
+                            "teamId",
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Receipt for the removed or already absent team association."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get teamId from `list-teams` and inspect membership with `get-team`. Requires an Enterprise-domain service account. This removes only team membership, not the user account or team. Use `deprovision-user` to deprovision an account, or `update-team` to replace the full member set."
+            },
+            "filePath": "./asana-scim/tools/remove-member-from-team.ts",
+            "version": "2cbef0f0618a0d5f0b3dc6739b383f64bf23d0d84d0c6edf642f1bccfc61b9f6",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/remove-member-from-team/2cbef0f0618a0d5f0b3dc6739b383f64bf23d0d84d0c6edf642f1bccfc61b9f6.cjs",
+                "ts": "templates-zero/asana-scim/tools/remove-member-from-team/2cbef0f0618a0d5f0b3dc6739b383f64bf23d0d84d0c6edf642f1bccfc61b9f6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "reorder-enum-option",
+            "integrationId": "asana-scim",
+            "description": "Reposition an existing enum option before or after another option in the same custom field's ordered list.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_reorderenumoption",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_reorderenumoption",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_reorderenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "position": {
+                                "type": "object",
+                                "properties": {
+                                    "relation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "before",
+                                            "after"
+                                        ],
+                                        "description": "Place the moved option before or after its sibling."
+                                    },
+                                    "relativeToOptionId": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Sibling option ID, distinct from the moved option."
+                                    }
+                                },
+                                "required": [
+                                    "relation",
+                                    "relativeToOptionId"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Desired relative position within the same field."
+                            },
+                            "enumOptionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing enum-option ID to reposition."
+                            },
+                            "customFieldId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Custom-field ID containing both options."
+                            }
+                        },
+                        "required": [
+                            "position",
+                            "enumOptionId",
+                            "customFieldId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify an existing custom-field option and its desired position relative to a sibling."
+                    },
+                    "FunctionOutput_asana_scim_reorderenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "enumOptionId": {
+                                "type": "string",
+                                "description": "Existing option targeted by the ordering change."
+                            },
+                            "customFieldId": {
+                                "type": "string",
+                                "description": "Field whose option ordering change was accepted."
+                            }
+                        },
+                        "required": [
+                            "enumOptionId",
+                            "customFieldId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifiers for the accepted enum-option ordering change, without a complete ordered list."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain the field ID, option ID and sibling option ID from the field definition or `get-team-details`. All options must belong to the same field. This changes order, not membership, identity or selectability. Use `update-enum-option` for label/color/enabled changes and `create-enum-option` for a new option."
+            },
+            "filePath": "./asana-scim/tools/reorder-enum-option.ts",
+            "version": "2db96adc6bc365b0802127d4c152eb2a3e4d13bd96f4fdfd524df3d9c6bc2691",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/reorder-enum-option/2db96adc6bc365b0802127d4c152eb2a3e4d13bd96f4fdfd524df3d9c6bc2691.cjs",
+                "ts": "templates-zero/asana-scim/tools/reorder-enum-option/2db96adc6bc365b0802127d4c152eb2a3e4d13bd96f4fdfd524df3d9c6bc2691.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "replace-team",
+            "integrationId": "asana-scim",
+            "description": "Replace a team's SCIM-managed name and complete membership using explicit desired values.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_replaceteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_replaceteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_replaceteam": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Complete replacement unique display name."
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing team ID; identity is retained."
+                            },
+                            "memberIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "User ID of a desired team member."
+                                },
+                                "uniqueItems": true,
+                                "description": "Complete desired membership; [] removes all existing members."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "teamId",
+                            "memberIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit desired name and complete membership of an existing team."
+                    },
+                    "FunctionOutput_asana_scim_replaceteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the existing team whose replacement was accepted."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity of the existing team after its replacement was accepted."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for deliberate full provisioning replacement, not an incremental membership edit. Get teamId from `list-teams` and member IDs from `list-users`. Requires an Enterprise-domain service account. All existing members not supplied are removed; [] removes everyone. Use `update-team` to preserve omitted attributes."
+            },
+            "filePath": "./asana-scim/tools/replace-team.ts",
+            "version": "17d97355188400d9878a401f685c879ea85cdba9585a255e1439a7e928b13b73",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/replace-team/17d97355188400d9878a401f685c879ea85cdba9585a255e1439a7e928b13b73.cjs",
+                "ts": "templates-zero/asana-scim/tools/replace-team/17d97355188400d9878a401f685c879ea85cdba9585a255e1439a7e928b13b73.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-enum-option",
+            "integrationId": "asana-scim",
+            "description": "Partially update an enum option's label, color or selectability. Disabling prevents new selection but retains values already set on tasks.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_updateenumoption",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_updateenumoption",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_updateenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Replacement label; omitted to preserve the current label.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "color": {
+                                "description": "Replacement provider color name; use none to remove color, omit to preserve it.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "enabled": {
+                                "description": "Whether selectable for new values; false retains existing task assignments, omission preserves current selectability.",
+                                "type": "boolean"
+                            },
+                            "enumOptionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque enum-option ID to update."
+                            }
+                        },
+                        "required": [
+                            "enumOptionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An enum option ID and at least one label, color or selectability change.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "color"
+                                ],
+                                "properties": {
+                                    "color": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "enabled"
+                                ],
+                                "properties": {
+                                    "enabled": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_asana_scim_updateenumoption": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the option whose update was accepted."
+                            },
+                            "name": {
+                                "description": "Stored label if returned by the provider.",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "Stored color if returned by the provider.",
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "description": "Stored selectability if returned by the provider.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The updated option identity and stored attributes returned by Asana."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an option ID from the custom-field definition or `get-team-details`. Omitted fields are unchanged. enabled=false disables the option without deleting it or clearing existing task values; enabled=true requests re-enabling. Use `reorder-enum-option` for position and `create-enum-option` for a new option. Options cannot be deleted."
+            },
+            "filePath": "./asana-scim/tools/update-enum-option.ts",
+            "version": "a28a04fdcc619e4ac6e3425094259876c811784b5db8b24423004c4a12a13b45",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/update-enum-option/a28a04fdcc619e4ac6e3425094259876c811784b5db8b24423004c4a12a13b45.cjs",
+                "ts": "templates-zero/asana-scim/tools/update-enum-option/a28a04fdcc619e4ac6e3425094259876c811784b5db8b24423004c4a12a13b45.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-team",
+            "integrationId": "asana-scim",
+            "description": "Partially update a team's name or replace its member set while preserving omitted attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_updateteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_updateteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_updateteam": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Replacement unique display name; omission preserves it.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque team ID."
+                            },
+                            "memberIds": {
+                                "description": "Complete desired member set; omission preserves membership, [] removes all members.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque user ID to include in the desired member set."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "memberIds"
+                                ],
+                                "properties": {
+                                    "memberIds": true
+                                }
+                            }
+                        ],
+                        "description": "Partially update a team by supplying a replacement name, a complete member set, or both."
+                    },
+                    "FunctionOutput_asana_scim_updateteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Team ID whose update was accepted."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity of the team whose update was accepted."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get teamId from `list-teams` and member IDs from `list-users`. Requires an Enterprise-domain service account. memberIds replaces the whole member set; use `add-member-to-team` or `remove-member-from-team` for one association. Use `replace-team` when deliberately supplying all provisioning attributes. Empty memberIds removes every member."
+            },
+            "filePath": "./asana-scim/tools/update-team.ts",
+            "version": "6a45be60c4087c85148cc8406b74b2c026aff14a96aca9a3c0ef4e4e3e85900f",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/update-team/6a45be60c4087c85148cc8406b74b2c026aff14a96aca9a3c0ef4e4e3e85900f.cjs",
+                "ts": "templates-zero/asana-scim/tools/update-team/6a45be60c4087c85148cc8406b74b2c026aff14a96aca9a3c0ef4e4e3e85900f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "asana-scim",
+            "description": "Partially update a domain user's profile and administrative assignments, including explicit attribute clearing and account activity changes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_asana_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_asana_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_asana_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque domain-user ID from list-users."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Name components to update; omitted components are preserved.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Full display name; empty string assigns an empty value rather than an explicit removal.",
+                                                "type": "string"
+                                            },
+                                            "givenName": {
+                                                "description": "Given name; implemented through PUT because PATCH does not support this component.",
+                                                "type": "string"
+                                            },
+                                            "familyName": {
+                                                "description": "Family name; implemented through PUT because PATCH does not support this component.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "title": {
+                                        "description": "Replacement job title; empty string remains an explicit empty assignment.",
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "description": "false deprovisions the account; true requests activation, subject to provider state rules.",
+                                        "type": "boolean"
+                                    },
+                                    "emails": {
+                                        "description": "Complete replacement email list; [] clears it if permitted.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "value": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email address."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether primary; at most one may be true.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "roleIds": {
+                                        "description": "Complete replacement RBAC role IDs; [] removes roles if permitted.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "licenses": {
+                                        "description": "Complete replacement licenses; [] requests no licenses.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ai studio",
+                                                "ai requests",
+                                                "client management",
+                                                "client management client",
+                                                "command",
+                                                "command limited",
+                                                "service management",
+                                                "service management requester",
+                                                "timesheets and budgets",
+                                                "work management",
+                                                "work management view only"
+                                            ]
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "userName": {
+                                        "description": "Replacement unique login email.",
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    "addresses": {
+                                        "description": "Complete replacement postal locations; [] clears them.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "region": {
+                                                    "description": "State or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country value.",
+                                                    "type": "string"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "enterprise": {
+                                        "description": "Enterprise metadata updates; omitted siblings are preserved.",
+                                        "type": "object",
+                                        "properties": {
+                                            "division": {
+                                                "description": "Organizational division metadata, not billing division.",
+                                                "type": "string"
+                                            },
+                                            "costCenter": {
+                                                "description": "Cost center metadata.",
+                                                "type": "string"
+                                            },
+                                            "department": {
+                                                "description": "Department metadata.",
+                                                "type": "string"
+                                            },
+                                            "organization": {
+                                                "description": "Organization metadata.",
+                                                "type": "string"
+                                            },
+                                            "managerUserId": {
+                                                "description": "Manager's user ID from list-users.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "employeeNumber": {
+                                                "description": "Employee identifier as text.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Complete replacement phone numbers; [] clears them.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Replacement preferred UI language.",
+                                        "type": "string"
+                                    },
+                                    "licensingDivisionId": {
+                                        "description": "Licensing subdivision GID; use the domain GID to move back to parent billing.",
+                                        "type": "string",
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Fields to assign; omitted fields are preserved. Arrays replace that field's complete collection."
+                            },
+                            "clearFields": {
+                                "description": "Attributes to remove, not assign null; must not overlap changes. Omission clears nothing.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "name.formatted",
+                                        "name.givenName",
+                                        "name.familyName",
+                                        "emails",
+                                        "title",
+                                        "preferredLanguage",
+                                        "addresses",
+                                        "phoneNumbers",
+                                        "licenses",
+                                        "roleIds",
+                                        "enterprise.department",
+                                        "enterprise.costCenter",
+                                        "enterprise.organization",
+                                        "enterprise.division",
+                                        "enterprise.employeeNumber",
+                                        "enterprise.managerUserId"
+                                    ]
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "changes"
+                                ],
+                                "properties": {
+                                    "changes": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "clearFields"
+                                ],
+                                "properties": {
+                                    "clearFields": true
+                                }
+                            }
+                        ],
+                        "description": "Partially assign or explicitly clear profile and administrative attributes of one domain user."
+                    },
+                    "FunctionOutput_asana_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "User ID whose update the provider accepted; read get-user for resulting attributes."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity of the user whose update was accepted, not a snapshot of the resulting profile."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the user ID from `list-users`. Requires an Enterprise-domain service account. Omitted fields are preserved; clearFields explicitly removes supported attributes. active=false deprovisions the user; use `deprovision-user` for that task alone. Role IDs come from Admin Console. Use `get-user` to inspect the result, especially before retrying an uncertain write."
+            },
+            "filePath": "./asana-scim/tools/update-user.ts",
+            "version": "9299720dc2f3e794517305fe96d9b1f6b1183199c5bfc0e67266d82f03824349",
+            "location": {
+                "js": "templates-zero/asana-scim/tools/update-user/9299720dc2f3e794517305fe96d9b1f6b1183199c5bfc0e67266d82f03824349.cjs",
+                "ts": "templates-zero/asana-scim/tools/update-user/9299720dc2f3e794517305fe96d9b1f6b1183199c5bfc0e67266d82f03824349.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3224 @@
+{
+    "providerConfigKey": "glyphic",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make organization call tags available as records with their display names, descriptions and groups.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-call-tags",
+            "output": [
+                "CallTags"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CallTags"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CallTags": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque call tag identifier in this organization."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Tag display name as ordinary Unicode text."
+                            },
+                            "group": {
+                                "description": "Provider grouping label; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "description": "Tag explanation; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization call tag with its display name, description and group."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make public organization calls available with their transcript, summary, ungrouped insight moments, participants, CRM references, tags and saved snippets.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-calls",
+            "output": [
+                "Calls"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Calls"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Calls": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque public call ID."
+                            },
+                            "url": {
+                                "description": "Provider call-view link; absence and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque organization tag ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag display name."
+                                        },
+                                        "group": {
+                                            "description": "Tag group label; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "description": {
+                                            "description": "Tag explanation; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Associated tags, defaulting to [] when absent upstream."
+                            },
+                            "media": {
+                                "description": "Temporary recording link and type; absence and null are preserved, and the link expires in 24 hours.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "mediaUrl": {
+                                                "description": "Presigned media link expiring in 24 hours; not durable file content. Absence and null are preserved.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "mediaType": {
+                                                "description": "Media kind; absence and null are preserved.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "audio",
+                                                            "video"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Call title as ordinary Unicode text."
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "queued",
+                                            "in_progress",
+                                            "completed",
+                                            "failed",
+                                            "cancelled"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Processing state; null is the provider's unknown state."
+                            },
+                            "summary": {
+                                "description": "Generated summary; absent, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "duration": {
+                                "description": "Opaque duration value in undocumented provider units; absent and null remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "insights": {
+                                "description": "Ungrouped insight moments in provider order; absence, null and [] remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Insight name, which may repeat across moments."
+                                                },
+                                                "value": {
+                                                    "description": "Insight text; absence, null and empty text remain distinct.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "snippets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "media": {
+                                            "description": "Temporary snippet media metadata; missing and null are preserved.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "mediaUrl": {
+                                                            "description": "Presigned media link expiring in 24 hours; not durable file content. Absence and null are preserved.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "mediaType": {
+                                                            "description": "Media kind; absence and null are preserved.",
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "audio",
+                                                                        "video"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "type": "null"
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "endSeconds": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Snippet end offset in seconds within the call; boundary inclusivity is unspecified."
+                                        },
+                                        "startSeconds": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Snippet start offset in seconds within the call."
+                                        },
+                                        "transcriptTurns": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "participantId": {
+                                                        "type": "string",
+                                                        "description": "Opaque speaker/party ID losslessly rendered from party_id."
+                                                    },
+                                                    "text": {
+                                                        "type": "string",
+                                                        "description": "Ordinary Unicode transcript text."
+                                                    },
+                                                    "timestamp": {
+                                                        "type": "string",
+                                                        "description": "Opaque transcript position string; no absolute instant or duration format is assumed."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "participantId",
+                                                    "text",
+                                                    "timestamp"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Snippet-range-filtered transcript turns, defaulting to [] when absent upstream."
+                                        }
+                                    },
+                                    "required": [
+                                        "endSeconds",
+                                        "startSeconds",
+                                        "transcriptTurns"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Saved snippets belonging to this call, in provider newest-created-first order; snippets have no exposed stable IDs."
+                            },
+                            "companies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Company name; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "domain": {
+                                            "type": "string",
+                                            "description": "Company domain."
+                                        },
+                                        "crmCompanyId": {
+                                            "description": "Company/account ID in the organization's CRM; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "domain"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Associated companies, defaulting to [] when absent upstream."
+                            },
+                            "crmDealId": {
+                                "description": "Linked deal ID in the organization's CRM; absence and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "startTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Call start instant normalized to UTC Z without fractional precision loss."
+                            },
+                            "participants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque participant ID rendered losslessly from the integer provider ID."
+                                        },
+                                        "name": {
+                                            "description": "Participant name; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Participant email; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "crmLeadId": {
+                                            "description": "Linked lead ID in the organization's CRM; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "crmContactId": {
+                                            "description": "Linked contact ID in the organization's CRM, not a Glyphic ID; absence and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Call participants, defaulting to [] when absent upstream."
+                            },
+                            "transcriptTurns": {
+                                "description": "Full transcript turns in provider order; absence, null and [] remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "participantId": {
+                                                    "type": "string",
+                                                    "description": "Opaque speaker/party ID losslessly rendered from party_id."
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "description": "Ordinary Unicode transcript text."
+                                                },
+                                                "timestamp": {
+                                                    "type": "string",
+                                                    "description": "Opaque transcript position string; no absolute instant or duration format is assumed."
+                                                }
+                                            },
+                                            "required": [
+                                                "participantId",
+                                                "text",
+                                                "timestamp"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "tags",
+                            "title",
+                            "status",
+                            "snippets",
+                            "companies",
+                            "startTime",
+                            "participants"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Public organization call with transcript, summary, ungrouped insight moments, participants, CRM references, tags and saved snippets."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make historic forecast submissions available as frozen records, retaining resubmissions, monetary categories and opted-in deal snapshots.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-forecast-submissions",
+            "output": [
+                "ForecastSubmissions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ForecastSubmissions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ForecastSubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of this frozen submission; resubmissions retain distinct identities."
+                            },
+                            "deals": {
+                                "description": "Opted-in frozen deal snapshot, not current CRM data; missing, null and [] remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque deal identifier in the snapshot; its namespace is provider-defined."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Frozen deal name."
+                                                },
+                                                "isWon": {
+                                                    "description": "Frozen win-state flag; missing, null and false remain distinct.",
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "amount": {
+                                                    "description": "Frozen deal amount; absence and null are preserved.",
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "isClosed": {
+                                                    "type": "boolean",
+                                                    "description": "Frozen closed-state flag."
+                                                },
+                                                "forecastCategory": {
+                                                    "description": "Frozen category label; absence and null are preserved.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "isClosed"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Frozen deal fields from the submission snapshot."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "quota": {
+                                "description": "Frozen submission quota; absence and null are preserved.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "amounts": {
+                                "type": "object",
+                                "properties": {
+                                    "forecast": {
+                                        "type": "number",
+                                        "description": "Frozen forecast amount."
+                                    },
+                                    "closedWon": {
+                                        "description": "Frozen closed-won amount; null remains unknown or unavailable, not zero.",
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
+                                    },
+                                    "categories": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "number",
+                                            "description": "Frozen amount for the exact organization category name."
+                                        },
+                                        "description": "All other provider amount fields keyed by exact organization category name."
+                                    }
+                                },
+                                "required": [
+                                    "forecast",
+                                    "closedWon",
+                                    "categories"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Frozen amounts without scaling or currency conversion."
+                            },
+                            "boardId": {
+                                "description": "Forecast board ID; absence and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "comment": {
+                                "description": "Ordinary submission comment text; absence, null and empty remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "currency": {
+                                "description": "Provider currency label; no currency is inferred when absent or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dealCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Frozen snapshot size, regardless of whether deal details are exposed."
+                            },
+                            "periodEnd": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Forecast period end calendar date, without timezone conversion."
+                            },
+                            "periodLabel": {
+                                "type": "string",
+                                "description": "Exact provider period label."
+                            },
+                            "periodStart": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "description": "Forecast period start calendar date, without timezone conversion."
+                            },
+                            "submittedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Submission instant normalized to UTC Z, preserving fractional precision."
+                            },
+                            "submittedBy": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque provider user ID."
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Submitter display name."
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Submitter email address."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "email"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Person who posted the submission."
+                            },
+                            "isManagerForecast": {
+                                "type": "boolean",
+                                "description": "Whether this is a manager forecast."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "amounts",
+                            "dealCount",
+                            "periodEnd",
+                            "periodLabel",
+                            "periodStart",
+                            "submittedAt",
+                            "submittedBy",
+                            "isManagerForecast"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One frozen historic forecast submission, retaining resubmissions, monetary categories and opted-in deal snapshots."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make organization playbook versions available as records containing their parent playbook, creation time, content and returned metadata.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-playbook-versions",
+            "output": [
+                "PlaybookVersions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PlaybookVersions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PlaybookVersions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque version ID from version_id; assumed unique across the organization, subject to validation."
+                            },
+                            "title": {
+                                "description": "Playbook title returned with this version, not guaranteed historically frozen; absence and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "This version's ordinary text content with Unicode, markup and line breaks preserved."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Version creation instant from version history, normalized to UTC Z with source fractional precision."
+                            },
+                            "teamLabel": {
+                                "description": "Team label returned with this version, not guaranteed historically frozen; absence and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider version-detail updated_at instant normalized to UTC Z; not assumed equivalent to creation time."
+                            },
+                            "playbookId": {
+                                "type": "string",
+                                "description": "Opaque parent playbook ID."
+                            },
+                            "playbookType": {
+                                "type": "string",
+                                "enum": [
+                                    "sales",
+                                    "customer_success",
+                                    "autogen_us",
+                                    "autogen_emea",
+                                    "autogen_apac"
+                                ],
+                                "description": "Playbook classification returned with the version."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "createdAt",
+                            "updatedAt",
+                            "playbookId",
+                            "playbookType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization playbook versions with their parent playbook, creation time, text content and returned metadata."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make non-deleted organization playbooks available with their latest content when a version exists.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-playbooks",
+            "output": [
+                "Playbooks"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Playbooks"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Playbooks": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque playbook ID."
+                            },
+                            "title": {
+                                "description": "Playbook title; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content": {
+                                "description": "Latest version text with Unicode, markup and line breaks preserved; omitted when no version content is available, not replaced with an empty string.",
+                                "type": "string"
+                            },
+                            "teamLabel": {
+                                "description": "Team label; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Latest version update instant, falling back to version creation and then playbook creation, normalized to UTC Z without losing fractional precision."
+                            },
+                            "versionId": {
+                                "description": "Opaque ID of the version providing content; omitted when no version exists.",
+                                "type": "string"
+                            },
+                            "playbookType": {
+                                "type": "string",
+                                "enum": [
+                                    "sales",
+                                    "customer_success",
+                                    "autogen_us",
+                                    "autogen_emea",
+                                    "autogen_apac"
+                                ],
+                                "description": "Provider playbook classification."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "updatedAt",
+                            "playbookType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Non-deleted organization playbook with its latest version content when a version exists."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-call",
+            "integrationId": "glyphic",
+            "description": "Get one call's details, transcript, summary, insights, participants, CRM references and temporary media link.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_getcall",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_getcall",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_getcall": {
+                        "type": "object",
+                        "properties": {
+                            "callId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque call ID, usually obtained from list-calls."
+                            },
+                            "groupInsights": {
+                                "description": "When true, group insight moments sharing a name into a single bulleted value; false retains separate moments.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "callId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one call and optionally request provider-grouped insights."
+                    },
+                    "FunctionOutput_glyphic_getcall": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque call ID."
+                            },
+                            "url": {
+                                "description": "Provider call-view link from url_link; absent and null remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque organization tag ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag display name."
+                                        },
+                                        "group": {
+                                            "description": "Optional grouping label; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "description": {
+                                            "description": "Optional tag explanation; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An associated organization tag."
+                                },
+                                "description": "Associated call tags; empty when absent upstream."
+                            },
+                            "media": {
+                                "description": "Temporary media link and type; missing and null are preserved.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "mediaUrl": {
+                                                "description": "Presigned media URL expiring in 24 hours; missing and null are preserved.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "mediaType": {
+                                                "description": "Media kind, or null if unknown; omitted when absent upstream.",
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "audio",
+                                                            "video"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "Temporary media link and type."
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Call title as ordinary text."
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "queued",
+                                            "in_progress",
+                                            "completed",
+                                            "failed",
+                                            "cancelled"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Call processing state; null represents the provider's unknown state."
+                            },
+                            "summary": {
+                                "description": "Generated summary as ordinary text; absent, null and empty remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "duration": {
+                                "description": "Opaque provider duration value; units are not documented, and no conversion is performed. Absence and null remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "insights": {
+                                "description": "Extracted insight moments or grouped insights, according to groupInsights; missing, null and empty remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Insight name; names can repeat when moments are ungrouped."
+                                                },
+                                                "value": {
+                                                    "description": "Insight text, or a provider-generated bulleted value when grouped; absent and null remain distinct.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An extracted insight moment or provider-grouped insight."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "companies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Company name; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "domain": {
+                                            "type": "string",
+                                            "description": "Company domain."
+                                        },
+                                        "crmCompanyId": {
+                                            "description": "Company/account ID in the organization's CRM; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "domain"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An associated company and its CRM reference."
+                                },
+                                "description": "Associated companies and CRM references; empty when absent upstream."
+                            },
+                            "crmDealId": {
+                                "description": "Linked deal ID in the organization's CRM; absent and null remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "startTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Call start instant in UTC with Z, preserving source fractional precision."
+                            },
+                            "participants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque participant ID, losslessly rendered from the provider integer."
+                                        },
+                                        "name": {
+                                            "description": "Participant name; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Participant email; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "crmLeadId": {
+                                            "description": "Linked lead ID in the organization's CRM; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "crmContactId": {
+                                            "description": "Linked contact ID in the organization's CRM, not a Glyphic ID; null and absence are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A call participant and linked CRM identities."
+                                },
+                                "description": "Call participants and linked CRM identities; empty when absent upstream."
+                            },
+                            "transcriptTurns": {
+                                "description": "Transcript turns in provider order; missing, null and empty remain distinct.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string",
+                                                    "description": "Spoken transcript text, preserved as ordinary Unicode."
+                                                },
+                                                "timestamp": {
+                                                    "type": "string",
+                                                    "description": "Opaque provider transcript position string; not asserted to be an absolute instant or a particular duration format."
+                                                },
+                                                "participantId": {
+                                                    "type": "string",
+                                                    "description": "Opaque speaker/party identifier, losslessly rendered from party_id; participant linkage requires validation."
+                                                }
+                                            },
+                                            "required": [
+                                                "text",
+                                                "timestamp",
+                                                "participantId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One transcript turn in provider order."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "tags",
+                            "title",
+                            "status",
+                            "companies",
+                            "startTime",
+                            "participants"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Full call details, content, analysis, CRM references and temporary media link."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain callId from `list-calls`. Use this for call content and analysis; use `get-call-media` when only a fresh media link is needed or `list-call-snippets` for saved excerpts. Set groupInsights when you want one bulleted value per insight name instead of separate moments. Media links expire in 24 hours."
+            },
+            "filePath": "./glyphic/tools/get-call.ts",
+            "version": "05f85fd56fc0dc3545c1476a0c0daef64c2bdd8329f871fed07a86e78a5283d0",
+            "location": {
+                "js": "templates-zero/glyphic/tools/get-call/05f85fd56fc0dc3545c1476a0c0daef64c2bdd8329f871fed07a86e78a5283d0.cjs",
+                "ts": "templates-zero/glyphic/tools/get-call/05f85fd56fc0dc3545c1476a0c0daef64c2bdd8329f871fed07a86e78a5283d0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-call-media",
+            "integrationId": "glyphic",
+            "description": "Get a call's temporary recording URL and whether it is audio or video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_getcallmedia",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_getcallmedia",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_getcallmedia": {
+                        "type": "object",
+                        "properties": {
+                            "callId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque call identifier from list-calls."
+                            }
+                        },
+                        "required": [
+                            "callId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The call whose current recording link should be retrieved."
+                    },
+                    "FunctionOutput_glyphic_getcallmedia": {
+                        "type": "object",
+                        "properties": {
+                            "mediaUrl": {
+                                "description": "Presigned recording URL, expiring in 24 hours; omitted or null exactly when returned that way.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "mediaType": {
+                                "description": "Recording media kind, or null when unspecified; omitted when absent upstream.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "audio",
+                                            "video"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Current recording link and media kind, preserving absent and null provider values."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get callId from `list-calls`. Use this when you need a fresh recording link without downloading a transcript. Links expire in 24 hours; call again for a fresh link when needed. Use `get-call` for analysis and transcript content. This tool returns a link, not media bytes."
+            },
+            "filePath": "./glyphic/tools/get-call-media.ts",
+            "version": "09bbba01b381f7ff6923b3f94ea69ba94a41b18410a8169c9914a8ca4154cc6c",
+            "location": {
+                "js": "templates-zero/glyphic/tools/get-call-media/09bbba01b381f7ff6923b3f94ea69ba94a41b18410a8169c9914a8ca4154cc6c.cjs",
+                "ts": "templates-zero/glyphic/tools/get-call-media/09bbba01b381f7ff6923b3f94ea69ba94a41b18410a8169c9914a8ca4154cc6c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-forecasting-config",
+            "integrationId": "glyphic",
+            "description": "Get the organization's forecasting periods, visible categories, active boards and current-period live quotas.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_getforecastingconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_getforecastingconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_getforecastingconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to read the connected organization's forecasting configuration."
+                    },
+                    "FunctionOutput_glyphic_getforecastingconfig": {
+                        "type": "object",
+                        "properties": {
+                            "periods": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Exact period label accepted by the submission period filter."
+                                        },
+                                        "cadence": {
+                                            "type": "string",
+                                            "enum": [
+                                                "monthly",
+                                                "quarterly",
+                                                "annual"
+                                            ],
+                                            "description": "Calendar cadence of this forecast period."
+                                        },
+                                        "start": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Period start calendar date, without timezone conversion."
+                                        },
+                                        "end": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Period end calendar date, without timezone conversion."
+                                        }
+                                    },
+                                    "required": [
+                                        "label",
+                                        "cadence",
+                                        "start",
+                                        "end"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Forecast period labels available as submission filters."
+                            },
+                            "visibleCategories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Organization's visible forecast amount category keys, preserved exactly."
+                            },
+                            "fiscalYearStart": {
+                                "type": "string",
+                                "description": "Provider fiscal-year-start setting preserved as an opaque string; no date or timezone format is assumed."
+                            },
+                            "defaultCadence": {
+                                "type": "string",
+                                "enum": [
+                                    "monthly",
+                                    "quarterly",
+                                    "annual"
+                                ],
+                                "description": "Organization's default forecast period cadence."
+                            },
+                            "boards": {
+                                "description": "Active forecast boards available to this organization; omission remains omission.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque forecast board ID for filtering submissions."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Board display name."
+                                        },
+                                        "filters": {
+                                            "type": "object",
+                                            "properties": {
+                                                "dealTypes": {
+                                                    "description": "Provider deal-type filter values; preserve null, absence and empty arrays without assigning undocumented meanings.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "pipelineIds": {
+                                                    "description": "Opaque CRM pipeline filter IDs; preserve null, absence and empty arrays.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "dealSegments": {
+                                                    "description": "CRM deal segment names, such as Opportunity Record Types; null means deals on any segment, while absence and [] remain distinct.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "forecastCategories": {
+                                                    "description": "Provider forecast-category filter values; preserve null, absence and empty arrays.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Filters defining this board's deal set; omitted fields and explicit nulls remain distinct."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "filters"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "currentPeriodQuotas": {
+                                "description": "Whole-organization live quotas for current cadence periods, not frozen submission quotas; omission remains omission.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "period": {
+                                            "type": "object",
+                                            "properties": {
+                                                "label": {
+                                                    "type": "string",
+                                                    "description": "Exact period label accepted by the submission period filter."
+                                                },
+                                                "cadence": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "monthly",
+                                                        "quarterly",
+                                                        "annual"
+                                                    ],
+                                                    "description": "Calendar cadence of this forecast period."
+                                                },
+                                                "start": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                                    "description": "Period start calendar date, without timezone conversion."
+                                                },
+                                                "end": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                                    "description": "Period end calendar date, without timezone conversion."
+                                                }
+                                            },
+                                            "required": [
+                                                "label",
+                                                "cadence",
+                                                "start",
+                                                "end"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Current period to which these live quotas apply."
+                                        },
+                                        "quotas": {
+                                            "description": "People and live quotas for this period; omission and an empty list remain distinct.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Opaque provider user ID usable in forecast submission filters."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "User display name."
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                                "description": "User email address."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "email"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Public identity attached to the live quota."
+                                                    },
+                                                    "quota": {
+                                                        "type": "number",
+                                                        "description": "Provider live quota amount, without scaling, currency inference or rounding."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "user",
+                                                    "quota"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "period"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "periods",
+                            "visibleCategories",
+                            "fiscalYearStart",
+                            "defaultCadence"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The organization's forecasting calendar, visible categories, active boards and current-period live quotas."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this before `list-forecast-submissions` to obtain exact period labels and board IDs. It also exposes current-period live quotas and user identities; these are not the frozen quotas in historic submissions. No input is needed. A working CRM connection may be required."
+            },
+            "filePath": "./glyphic/tools/get-forecasting-config.ts",
+            "version": "49c094a8598b4ed7d74086a709f942b024d217216fba2af2ba1aa29a64f31ecf",
+            "location": {
+                "js": "templates-zero/glyphic/tools/get-forecasting-config/49c094a8598b4ed7d74086a709f942b024d217216fba2af2ba1aa29a64f31ecf.cjs",
+                "ts": "templates-zero/glyphic/tools/get-forecasting-config/49c094a8598b4ed7d74086a709f942b024d217216fba2af2ba1aa29a64f31ecf.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-playbook",
+            "integrationId": "glyphic",
+            "description": "Get a playbook with its latest version's content and version identifier.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_getplaybook",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_getplaybook",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_getplaybook": {
+                        "type": "object",
+                        "properties": {
+                            "playbookId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque playbook ID from list-playbooks."
+                            }
+                        },
+                        "required": [
+                            "playbookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the playbook whose latest content to retrieve."
+                    },
+                    "FunctionOutput_glyphic_getplaybook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque playbook ID, not the version ID."
+                            },
+                            "title": {
+                                "description": "Playbook title; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Latest version's ordinary text content, preserving Unicode, markup and line breaks."
+                            },
+                            "teamLabel": {
+                                "description": "Team label; missing, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider playbook-detail update instant normalized to UTC Z, preserving source fractional precision."
+                            },
+                            "versionId": {
+                                "type": "string",
+                                "description": "Opaque ID of the version whose content is returned."
+                            },
+                            "playbookType": {
+                                "type": "string",
+                                "enum": [
+                                    "sales",
+                                    "customer_success",
+                                    "autogen_us",
+                                    "autogen_emea",
+                                    "autogen_apac"
+                                ],
+                                "description": "Provider playbook classification."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "updatedAt",
+                            "versionId",
+                            "playbookType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A playbook with its latest content, version identifier and provider detail update instant."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get playbookId from `list-playbooks`. Use this for the latest content; use `list-playbook-versions` and `get-playbook-version` for an earlier version. Content is returned as ordinary text with its original formatting."
+            },
+            "filePath": "./glyphic/tools/get-playbook.ts",
+            "version": "567f3662019002fd354af18dd3a9b1acf31104f570007b58601c34858e92cd87",
+            "location": {
+                "js": "templates-zero/glyphic/tools/get-playbook/567f3662019002fd354af18dd3a9b1acf31104f570007b58601c34858e92cd87.cjs",
+                "ts": "templates-zero/glyphic/tools/get-playbook/567f3662019002fd354af18dd3a9b1acf31104f570007b58601c34858e92cd87.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-playbook-version",
+            "integrationId": "glyphic",
+            "description": "Get the content and playbook metadata returned for one specified playbook version.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_getplaybookversion",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_getplaybookversion",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_getplaybookversion": {
+                        "type": "object",
+                        "properties": {
+                            "versionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque version ID from list-playbook-versions for this parent."
+                            },
+                            "playbookId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent playbook ID from list-playbooks."
+                            }
+                        },
+                        "required": [
+                            "versionId",
+                            "playbookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The parent playbook and specific version to retrieve."
+                    },
+                    "FunctionOutput_glyphic_getplaybookversion": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque version ID from the returned version_id."
+                            },
+                            "title": {
+                                "description": "Playbook title returned for this request; not guaranteed to be historically frozen. Missing and null remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Requested version's content as ordinary text with Unicode, markup and line breaks preserved."
+                            },
+                            "teamLabel": {
+                                "description": "Team label returned with the version; historical immutability is not assumed. Missing and null remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider detail updated_at instant normalized to UTC Z, retaining fractional precision; not relabeled as version creation."
+                            },
+                            "playbookId": {
+                                "type": "string",
+                                "description": "Opaque parent playbook ID from the returned detail id."
+                            },
+                            "playbookType": {
+                                "type": "string",
+                                "enum": [
+                                    "sales",
+                                    "customer_success",
+                                    "autogen_us",
+                                    "autogen_emea",
+                                    "autogen_apac"
+                                ],
+                                "description": "Provider playbook classification returned with the version."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "updatedAt",
+                            "playbookId",
+                            "playbookType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested version content and playbook metadata returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain playbookId from `list-playbooks` and versionId from `list-playbook-versions`. Use this for a particular historic version; use `get-playbook` for the latest content. The returned id is the version ID and playbookId identifies its parent."
+            },
+            "filePath": "./glyphic/tools/get-playbook-version.ts",
+            "version": "fc8e98de235a16348af03a8d5b2cd33684a40737b54a31e61c0d5b45237c1957",
+            "location": {
+                "js": "templates-zero/glyphic/tools/get-playbook-version/fc8e98de235a16348af03a8d5b2cd33684a40737b54a31e61c0d5b45237c1957.cjs",
+                "ts": "templates-zero/glyphic/tools/get-playbook-version/fc8e98de235a16348af03a8d5b2cd33684a40737b54a31e61c0d5b45237c1957.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "join-call",
+            "integrationId": "glyphic",
+            "description": "Request a recording bot to join a meeting URL. Recording and subsequent processing continue after this tool returns.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_joincall",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_joincall",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_joincall": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "Optional meeting title; omission leaves it unspecified, while null and empty text are passed through distinctly.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "meetingUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri",
+                                "description": "Meeting URL for the bot to join, such as a Zoom or Google Meet URL."
+                            },
+                            "participants": {
+                                "description": "Optional meeting participants; omission leaves metadata unspecified, null is explicit null, and an empty array supplies no participants.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Participant display name, if known; omission, null and empty text remain distinct.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "email": {
+                                                    "description": "Participant email, if known; omission, null and empty text remain distinct.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Optional name and email metadata for one meeting participant."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "meetingUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting URL and optional meeting metadata for a recording bot request."
+                    },
+                    "FunctionOutput_glyphic_joincall": {
+                        "type": "object",
+                        "properties": {
+                            "requested": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider returned success for the bot-creation request; this does not establish meeting admission, recording completion or delivery of processed results."
+                            },
+                            "meetingUrl": {
+                                "type": "string",
+                                "description": "Meeting URL submitted to the provider."
+                            }
+                        },
+                        "required": [
+                            "requested",
+                            "meetingUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the recording bot request, not meeting admission or recording completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to have a bot join and record a meeting. Obtain the meeting URL and any optional meeting metadata from the user. The result acknowledges the request, not successful admission or a completed recording. Do not replay blindly: duplicate bots for the same URL are blocked within two minutes. Use `list-calls` and `get-call` later to find the processed recording."
+            },
+            "filePath": "./glyphic/tools/join-call.ts",
+            "version": "c992c17c0649c207a2026a4de42f0e6dd7d5bbe095a2903664a29ffdf9d6eaf0",
+            "location": {
+                "js": "templates-zero/glyphic/tools/join-call/c992c17c0649c207a2026a4de42f0e6dd7d5bbe095a2903664a29ffdf9d6eaf0.cjs",
+                "ts": "templates-zero/glyphic/tools/join-call/c992c17c0649c207a2026a4de42f0e6dd7d5bbe095a2903664a29ffdf9d6eaf0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-call-snippets",
+            "integrationId": "glyphic",
+            "description": "List a call's saved snippets, with time ranges, temporary media links and range-filtered transcript turns.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listcallsnippets",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listcallsnippets",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listcallsnippets": {
+                        "type": "object",
+                        "properties": {
+                            "callId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent call ID from list-calls."
+                            }
+                        },
+                        "required": [
+                            "callId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The parent call whose saved snippets to list."
+                    },
+                    "FunctionOutput_glyphic_listcallsnippets": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "media": {
+                                            "description": "Snippet media metadata; null and omission remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "mediaUrl": {
+                                                            "description": "Presigned snippet media URL expiring in 24 hours; missing and null remain distinct.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "mediaType": {
+                                                            "description": "Snippet media kind; omitted or null when returned that way.",
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "audio",
+                                                                        "video"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "type": "null"
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Snippet media metadata."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "endSeconds": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Provider snippet end offset in seconds within the call; boundary inclusivity is unspecified."
+                                        },
+                                        "startSeconds": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Provider snippet start offset in seconds within the call."
+                                        },
+                                        "transcriptTurns": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "text": {
+                                                        "type": "string",
+                                                        "description": "Transcript turn text preserved as Unicode."
+                                                    },
+                                                    "timestamp": {
+                                                        "type": "string",
+                                                        "description": "Opaque provider transcript position string, not asserted to be an absolute timestamp or a specific duration format."
+                                                    },
+                                                    "participantId": {
+                                                        "type": "string",
+                                                        "description": "Opaque speaker/party ID rendered losslessly from the provider integer."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "text",
+                                                    "timestamp",
+                                                    "participantId"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One transcript turn within the snippet."
+                                            },
+                                            "description": "Provider-ordered transcript turns filtered to this snippet's time range; absent upstream defaults to []."
+                                        }
+                                    },
+                                    "required": [
+                                        "endSeconds",
+                                        "startSeconds",
+                                        "transcriptTurns"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A saved snippet of the parent call."
+                                },
+                                "description": "All snippets for this call, newest creation first; empty when none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete ordered collection of saved call snippets."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain callId from `list-calls`. Use this for saved excerpts, or `get-call` for the full transcript. The result is one complete unpaginated collection, newest snippet creation first. Snippet media links expire in 24 hours."
+            },
+            "filePath": "./glyphic/tools/list-call-snippets.ts",
+            "version": "f107af2163963446756f0e54adae4fd364c812d74ddfea4a7f224723ba098940",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-call-snippets/f107af2163963446756f0e54adae4fd364c812d74ddfea4a7f224723ba098940.cjs",
+                "ts": "templates-zero/glyphic/tools/list-call-snippets/f107af2163963446756f0e54adae4fd364c812d74ddfea4a7f224723ba098940.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-call-tags",
+            "integrationId": "glyphic",
+            "description": "List all call tags for the organization, oldest first.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listcalltags",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listcalltags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listcalltags": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to list organization call tags."
+                    },
+                    "FunctionOutput_glyphic_listcalltags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque call tag identifier in this organization."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Tag display name, preserved as ordinary text."
+                                        },
+                                        "group": {
+                                            "description": "Provider tag grouping label; omission and null remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "description": {
+                                            "description": "Tag explanation; omitted or null exactly when returned that way.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An organization call tag and its optional metadata."
+                                },
+                                "description": "Organization call tags in creation order, oldest first; empty when none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of organization call tags."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover tag IDs for the tag filter in `list-calls`. This returns the complete unpaginated tag collection in one response."
+            },
+            "filePath": "./glyphic/tools/list-call-tags.ts",
+            "version": "4833451a48926c4196068bf68ebcf34eb15af9c4d41bc429d445d701ab2fbf0a",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-call-tags/4833451a48926c4196068bf68ebcf34eb15af9c4d41bc429d445d701ab2fbf0a.cjs",
+                "ts": "templates-zero/glyphic/tools/list-call-tags/4833451a48926c4196068bf68ebcf34eb15af9c4d41bc429d445d701ab2fbf0a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-calls",
+            "integrationId": "glyphic",
+            "description": "List one page of the organization's public calls, with optional participant, title, time and tag filters. Private calls are excluded.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listcalls",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listcalls",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listcalls": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum calls requested for one page; defaults to 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100,
+                                "default": 20
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool, scoped to the same connection and filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "tagIds": {
+                                "description": "Only return calls having at least one of these organization tag IDs.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque organization tag ID."
+                                },
+                                "uniqueItems": true
+                            },
+                            "direction": {
+                                "description": "Use next with nextCursor or prev with previousCursor; defaults to next.",
+                                "type": "string",
+                                "enum": [
+                                    "next",
+                                    "prev"
+                                ],
+                                "default": "next"
+                            },
+                            "startTimeTo": {
+                                "description": "Upper call-start time bound, with an explicit UTC marker or numeric offset; normalized to UTC.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "titleFilter": {
+                                "description": "Provider title-filter query, not a general full-text search expression; omitted means no title filter.",
+                                "type": "string"
+                            },
+                            "startTimeFrom": {
+                                "description": "Lower call-start time bound, with an explicit UTC marker or numeric offset; normalized to UTC.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "participantEmail": {
+                                "description": "Only return calls with this participant email; matching is case insensitive.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and cursor for one page of public organization calls."
+                    },
+                    "FunctionOutput_glyphic_listcalls": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque call identifier used by get-call."
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque organization tag ID."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Tag display name."
+                                                    },
+                                                    "group": {
+                                                        "description": "Optional tag grouping label; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "description": {
+                                                        "description": "Optional tag explanation; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An organization call tag."
+                                            },
+                                            "description": "Tags associated with the call; defaults to an empty array when absent."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Call title as ordinary text."
+                                        },
+                                        "status": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "queued",
+                                                        "in_progress",
+                                                        "completed",
+                                                        "failed",
+                                                        "cancelled"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Provider processing state; null is its unknown state, not completed."
+                                        },
+                                        "duration": {
+                                            "description": "Provider duration value preserved without conversion; the API does not specify its unit. Omitted and null remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companies": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Optional company display name; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "domain": {
+                                                        "type": "string",
+                                                        "description": "Company domain supplied by the provider."
+                                                    },
+                                                    "crmCompanyId": {
+                                                        "description": "Company or account ID in the organization's CRM, not a Glyphic company ID; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "domain"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An associated company and its CRM reference."
+                                            },
+                                            "description": "Associated companies and CRM references; defaults to empty when absent."
+                                        },
+                                        "startTime": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Call start instant normalized to UTC with Z, preserving source fractional precision."
+                                        },
+                                        "participants": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque participant identifier, converted losslessly from the provider integer without numeric interpretation."
+                                                    },
+                                                    "name": {
+                                                        "description": "Participant name; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "email": {
+                                                        "description": "Participant email; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "crmLeadId": {
+                                                        "description": "Linked lead ID in the organization's CRM; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "crmContactId": {
+                                                        "description": "Linked contact ID in the organization's CRM, not a Glyphic ID; null and absence are preserved.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A participant with a call-scoped identity."
+                                            },
+                                            "description": "Call participants with call-scoped identities; defaults to empty when absent."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "tags",
+                                        "title",
+                                        "status",
+                                        "companies",
+                                        "startTime",
+                                        "participants"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A public call preview."
+                                },
+                                "description": "One page of public call previews, newest call start first."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page; omitted when the provider supplies no next cursor.",
+                                "type": "string"
+                            },
+                            "previousCursor": {
+                                "description": "Opaque token for the previous page; omitted when the provider supplies none.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of public call previews and available continuation cursors."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to find calls and their IDs; use `get-call` for a transcript, summary and insights. Obtain tag IDs from `list-call-tags`. Results are newest first by call start time. Pass nextCursor as cursor with direction next, or previousCursor with direction prev, keeping filters unchanged. Default limit is 20; the public range is 1–100."
+            },
+            "filePath": "./glyphic/tools/list-calls.ts",
+            "version": "c7377d80e6f7cf0458f35e8c9cd89648f945d9c39ff278a85690dca02c4a3651",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-calls/c7377d80e6f7cf0458f35e8c9cd89648f945d9c39ff278a85690dca02c4a3651.cjs",
+                "ts": "templates-zero/glyphic/tools/list-calls/c7377d80e6f7cf0458f35e8c9cd89648f945d9c39ff278a85690dca02c4a3651.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-forecast-submissions",
+            "integrationId": "glyphic",
+            "description": "List one page of historic forecast submissions, including resubmissions, with optional frozen deal snapshots.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listforecastsubmissions",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listforecastsubmissions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listforecastsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested submissions per page, default 20.",
+                                "default": 20,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token for unchanged filters and connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "period": {
+                                "description": "Exact period label from get-forecasting-config.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "boardId": {
+                                "description": "Opaque forecast board ID from get-forecasting-config.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userIds": {
+                                "description": "Only submissions by these provider user IDs; omit for the whole organization.",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque provider user ID."
+                                }
+                            },
+                            "direction": {
+                                "description": "Pagination direction matching nextCursor or previousCursor; defaults to next.",
+                                "default": "next",
+                                "type": "string",
+                                "enum": [
+                                    "next",
+                                    "prev"
+                                ]
+                            },
+                            "includeDeals": {
+                                "description": "Include each rep submission's frozen deal snapshot; defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "submittedAfter": {
+                                "description": "Inclusive lower submission-time bound, with an explicit offset; converted to UTC.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "submittedBefore": {
+                                "description": "Inclusive upper submission-time bound, with an explicit offset; converted to UTC.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and cursor for one page of historic forecast submissions."
+                    },
+                    "FunctionOutput_glyphic_listforecastsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this frozen submission, not a deduplicated user-period forecast."
+                                        },
+                                        "deals": {
+                                            "description": "Opted-in frozen deal snapshot, not current CRM deal state; missing, null and empty remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Opaque deal ID from the frozen snapshot; provider ID namespace is not assumed to be the CRM namespace."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Frozen deal name."
+                                                            },
+                                                            "isWon": {
+                                                                "description": "Frozen win flag; null is not interpreted as false, and absence is preserved.",
+                                                                "type": [
+                                                                    "boolean",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "amount": {
+                                                                "description": "Frozen deal amount, without conversion; missing and null are preserved.",
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "isClosed": {
+                                                                "type": "boolean",
+                                                                "description": "Whether the deal was closed in this frozen snapshot."
+                                                            },
+                                                            "forecastCategory": {
+                                                                "description": "Frozen forecast category; missing and null are preserved.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "isClosed"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Frozen deal fields captured in a forecast submission."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "quota": {
+                                            "description": "Frozen quota value, if supplied, without conversion; missing and null are preserved.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "amounts": {
+                                            "type": "object",
+                                            "properties": {
+                                                "forecast": {
+                                                    "type": "number",
+                                                    "description": "Frozen forecast amount, without currency conversion or rounding."
+                                                },
+                                                "closedWon": {
+                                                    "description": "Frozen closed-won amount; null remains null.",
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "categories": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "number",
+                                                        "description": "Unchanged numeric amount for this provider category."
+                                                    },
+                                                    "description": "All other provider amount keys, unchanged, mapped to their numeric values."
+                                                }
+                                            },
+                                            "required": [
+                                                "forecast",
+                                                "closedWon",
+                                                "categories"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Frozen monetary amounts in the submission's currency. Named fields are normalized; organization category keys remain exact."
+                                        },
+                                        "boardId": {
+                                            "description": "Forecast board reference; missing and null are preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "comment": {
+                                            "description": "Submission comment as ordinary text; missing, null and empty remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "currency": {
+                                            "description": "Provider currency label; not inferred when missing or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "dealCount": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Size of the frozen deal snapshot, even when deals are not included."
+                                        },
+                                        "periodEnd": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Forecast period end calendar date; no timezone conversion."
+                                        },
+                                        "periodLabel": {
+                                            "type": "string",
+                                            "description": "Exact provider period label."
+                                        },
+                                        "periodStart": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                            "description": "Forecast period start calendar date; no timezone conversion."
+                                        },
+                                        "submittedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Submission instant normalized to UTC Z without reducing fractional precision."
+                                        },
+                                        "submittedBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque provider user ID, usable in userIds filters."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Submitter's display name."
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Submitter's email address."
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "email"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Provider identity of the person who posted this submission."
+                                        },
+                                        "isManagerForecast": {
+                                            "type": "boolean",
+                                            "description": "Whether the submission is a manager forecast."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "amounts",
+                                        "dealCount",
+                                        "periodEnd",
+                                        "periodLabel",
+                                        "periodStart",
+                                        "submittedAt",
+                                        "submittedBy",
+                                        "isManagerForecast"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One frozen historic forecast submission."
+                                },
+                                "description": "One page of historic submissions in newest-submission-first order, including resubmissions."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page token; omitted when absent or null upstream.",
+                                "type": "string"
+                            },
+                            "previousCursor": {
+                                "description": "Opaque previous-page token; omitted when absent or null upstream.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of frozen forecast history and provider continuation cursors."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use `get-forecasting-config` first for valid period labels, board IDs and quota user IDs. Omit filters for organization-wide history. Results are newest submission first and include resubmissions. Set includeDeals to read frozen deal details; dealCount is available without them. Continue with nextCursor/direction next or previousCursor/direction prev, keeping filters unchanged. Limit defaults to 20 and ranges from 1 to 100."
+            },
+            "filePath": "./glyphic/tools/list-forecast-submissions.ts",
+            "version": "41a567c91dc396cd1fd95bb18bfaf0f4c26e61124ed5582a7a1ed98beb1c1afd",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-forecast-submissions/41a567c91dc396cd1fd95bb18bfaf0f4c26e61124ed5582a7a1ed98beb1c1afd.cjs",
+                "ts": "templates-zero/glyphic/tools/list-forecast-submissions/41a567c91dc396cd1fd95bb18bfaf0f4c26e61124ed5582a7a1ed98beb1c1afd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-playbook-versions",
+            "integrationId": "glyphic",
+            "description": "List all versions of one playbook, newest version creation first.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listplaybookversions",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listplaybookversions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listplaybookversions": {
+                        "type": "object",
+                        "properties": {
+                            "playbookId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque parent playbook ID from list-playbooks."
+                            }
+                        },
+                        "required": [
+                            "playbookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The parent playbook whose versions will be listed."
+                    },
+                    "FunctionOutput_glyphic_listplaybookversions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque version ID scoped to the requested playbook."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Version creation instant normalized to UTC Z, preserving source fractional precision."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A version preview containing its identity and creation instant."
+                                },
+                                "description": "All version previews for this playbook, newest version creation first; empty if the provider returns no versions."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete ordered list of version previews for the requested playbook."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain playbookId from `list-playbooks`. Use the returned version IDs with `get-playbook-version` to read historic content. This is one complete unpaginated version list; use `get-playbook` when only the latest content is needed."
+            },
+            "filePath": "./glyphic/tools/list-playbook-versions.ts",
+            "version": "d79b4520b6abb961e0448e89aa2479bb87555301e64621344a3ed89d8d90066e",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-playbook-versions/d79b4520b6abb961e0448e89aa2479bb87555301e64621344a3ed89d8d90066e.cjs",
+                "ts": "templates-zero/glyphic/tools/list-playbook-versions/d79b4520b6abb961e0448e89aa2479bb87555301e64621344a3ed89d8d90066e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-playbooks",
+            "integrationId": "glyphic",
+            "description": "List one page of non-deleted organization playbooks, newest playbook creation first.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_listplaybooks",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_listplaybooks",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_listplaybooks": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum playbook previews requested in one page; defaults to 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool for the same connection; omit on the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "direction": {
+                                "description": "Use next with nextCursor or prev with previousCursor; defaults to next.",
+                                "type": "string",
+                                "enum": [
+                                    "next",
+                                    "prev"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination arguments for one page of organization playbook previews."
+                    },
+                    "FunctionOutput_glyphic_listplaybooks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque playbook ID for detail and version tools."
+                                        },
+                                        "title": {
+                                            "description": "Playbook title; missing, null and empty text remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "teamLabel": {
+                                            "description": "Associated team label; missing, null and empty text remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Latest version update instant, falling back to version creation then playbook creation, normalized to UTC Z; not the collection sort key."
+                                        },
+                                        "playbookType": {
+                                            "type": "string",
+                                            "enum": [
+                                                "sales",
+                                                "customer_success",
+                                                "autogen_us",
+                                                "autogen_emea",
+                                                "autogen_apac"
+                                            ],
+                                            "description": "Provider playbook classification, preserving its domain values."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "updatedAt",
+                                        "playbookType"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A playbook preview without content or a version ID."
+                                },
+                                "description": "One page of playbook previews ordered by playbook creation descending; soft-deleted playbooks are excluded."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page token; omitted when absent or null upstream.",
+                                "type": "string"
+                            },
+                            "previousCursor": {
+                                "description": "Opaque previous-page token; omitted when absent or null upstream.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of organization playbook previews and available continuation tokens."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover playbook IDs, then `get-playbook` for the latest content or `list-playbook-versions` for history. Continue with nextCursor/direction next or previousCursor/direction prev. Default limit is 20, public range 1–100. Ordering is by playbook creation, not updatedAt; updatedAt need not increase or decrease across a page."
+            },
+            "filePath": "./glyphic/tools/list-playbooks.ts",
+            "version": "28e66a94d24a7f4f8fa33bac2b4abe499501e0fd16c5c18a6ffcf39226d71e14",
+            "location": {
+                "js": "templates-zero/glyphic/tools/list-playbooks/28e66a94d24a7f4f8fa33bac2b4abe499501e0fd16c5c18a6ffcf39226d71e14.cjs",
+                "ts": "templates-zero/glyphic/tools/list-playbooks/28e66a94d24a7f4f8fa33bac2b4abe499501e0fd16c5c18a6ffcf39226d71e14.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "test-connection",
+            "integrationId": "glyphic",
+            "description": "Check whether the configured API key can access Glyphic's authenticated ping endpoint.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_glyphic_testconnection",
+            "output_schema_ref": "#/definitions/FunctionOutput_glyphic_testconnection",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_glyphic_testconnection": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to check access using the configured connection API key."
+                    },
+                    "FunctionOutput_glyphic_testconnection": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Provider's ping response text, preserved without assuming a particular value."
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider text returned by the authenticated ping diagnostic."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a lightweight API-access diagnostic. No resource ID is needed. Success only establishes access to the ping endpoint, not access to every call, forecasting availability or CRM health."
+            },
+            "filePath": "./glyphic/tools/test-connection.ts",
+            "version": "65f6d15a657f2f7b09f26365e296eb12223d8c7eb8289b68a73bc3e36c5ad253",
+            "location": {
+                "js": "templates-zero/glyphic/tools/test-connection/65f6d15a657f2f7b09f26365e296eb12223d8c7eb8289b68a73bc3e36c5ad253.cjs",
+                "ts": "templates-zero/glyphic/tools/test-connection/65f6d15a657f2f7b09f26365e296eb12223d8c7eb8289b68a73bc3e36c5ad253.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,46 @@
+---
+title: 'Uploadcare - How do I link my account?'
+sidebarTitle: 'Uploadcare'
+---
+
+## Overview
+
+To authenticate with Uploadcare, you need:
+
+1. **Public Key** — the public key of your Uploadcare project.
+2. **Secret Key** — a secret key of the same project.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An Uploadcare account. You can [sign up](https://app.uploadcare.com/accounts/signup/) for a Free plan.
+
+### Step 1: Copy your public key
+
+1. Sign in to the [Uploadcare dashboard](https://app.uploadcare.com/) and open your project.
+2. Click **API keys** in the project's left menu.
+3. Under **Public key**, click **Copy**.
+
+<img src="/api-integrations/uploadcare/api_keys_page.png" alt="Uploadcare API keys page with the Public key and the Generate new secret key button"/>
+
+### Step 2: Generate a secret key
+
+1. On the same page, under **Secret keys**, click **Generate new secret key**.
+2. Enter a name for the key (optional) and click **Generate**.
+
+<img src="/api-integrations/uploadcare/name_secret_key.png" alt="Dialog to name the new Uploadcare secret key"/>
+
+3. Next to the new secret key, click **Copy** (click **Show key** first if it is shown).
+
+<img src="/api-integrations/uploadcare/secret_key_created.png" alt="New Uploadcare secret key with the Copy button"/>
+
+### Step 3: Enter your keys in the Connect UI
+
+1. Open the form where you need to authenticate with Uploadcare.
+2. Enter your **Public Key** and **Secret Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/uploadcare/form.png" alt="Uploadcare Connect UI form with the Public Key and Secret Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Uploadcare.

@@ -96,8 +96,8 @@ class RemoteFileService {
 
     /**
      * Copy
-     * @desc copy an existing public integration file to user's location in remote storage,
-     * on local copy to the set local destination
+     * @desc copy between full object keys (including across template/integration stores).
+     * When a local destination is supplied, preserve local-development template copying.
      */
     async copy({
         sourcePath,
@@ -110,14 +110,13 @@ class RemoteFileService {
          * sic
          * Destination when not uploading to remote storage
          * This method handles when remote storage is not enabled (like locally)
-         * TODO: We probably need to do it outside but until now it's like this
          */
-        destinationLocalFileName: string;
+        destinationLocalFileName?: string;
     }): Promise<string | null> {
-        const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
+        const sourceKey = sourcePath;
         try {
-            if (this.useRemote) {
-                await copyObject({ from: this.getTemplatesStore(), to: this.getStore(), sourceKey, destinationKey: destinationPath });
+            if (this.useRemote || !destinationLocalFileName) {
+                await copyObject({ from: this.getStoreFor(sourceKey), to: this.getStoreFor(destinationPath), sourceKey, destinationKey: destinationPath });
 
                 return destinationPath;
             } else {

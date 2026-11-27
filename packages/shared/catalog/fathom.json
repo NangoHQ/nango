@@ -1,0 +1,2610 @@
+{
+    "providerConfigKey": "fathom",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the organization's active and inactive meeting-type catalog available as records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meeting-types",
+            "output": [
+                "MeetingTypes"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeetingTypes"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeetingTypes": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Local record key equal to the exact meeting type name; uniqueness is provisional because no separate upstream ID is exposed."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Exact meeting type name usable to filter meetings."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive"
+                                ],
+                                "description": "Whether the type can be assigned going forward; inactive types remain meaningful historically."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Type creation instant in UTC Z with fractional precision preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The organization's active and inactive meeting-type catalog."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible meeting metadata, calendar participants, recording summaries, and speaker-attributed transcripts available as meeting records. The dataset reflects the connection's access and the meeting listing's default organization visibility.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meetings",
+            "output": [
+                "Meetings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meetings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meetings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Meeting record key: the exact decimal string of recording_id, not a separately invented meeting identifier."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque recording identifier for related recording tools."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Fathom meeting title."
+                            },
+                            "meetingTitle": {
+                                "description": "Calendar event title, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "meetingType": {
+                                "description": "Assigned meeting type name, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Fathom meeting URL."
+                            },
+                            "shareUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Existing Fathom share URL; does not grant additional access."
+                            },
+                            "meetingUrl": {
+                                "description": "Underlying calendar meeting join URL; null or absence is retained.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Meeting creation instant in UTC Z, preserving fractional precision."
+                            },
+                            "scheduledStartAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Scheduled start instant in UTC Z."
+                            },
+                            "scheduledEndAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Scheduled end instant in UTC Z."
+                            },
+                            "recordingStartAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Actual recording start instant in UTC Z."
+                            },
+                            "recordingEndAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Actual recording end instant in UTC Z."
+                            },
+                            "inviteeDomainsType": {
+                                "type": "string",
+                                "enum": [
+                                    "only_internal",
+                                    "one_or_more_external"
+                                ],
+                                "description": "Whether calendar invitee domains include an external domain."
+                            },
+                            "sharedWith": {
+                                "type": "string",
+                                "enum": [
+                                    "no_teams",
+                                    "single_team",
+                                    "multiple_teams",
+                                    "all_teams"
+                                ],
+                                "description": "Organization sharing state: recorder-only, one team, multiple teams, or all teams."
+                            },
+                            "recordedBy": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Recorder display name."
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Recorder email address."
+                                    },
+                                    "emailDomain": {
+                                        "type": "string",
+                                        "description": "Recorder email domain."
+                                    },
+                                    "teamName": {
+                                        "description": "Recorder team name, or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "emailDomain",
+                                    "teamName"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Recorder identity."
+                            },
+                            "transcriptLanguage": {
+                                "type": "string",
+                                "description": "Unmodified provider transcript language code."
+                            },
+                            "calendarInvitees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Invitee display name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Invitee email address, or null."
+                                        },
+                                        "emailDomain": {
+                                            "description": "Invitee email domain, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "isExternal": {
+                                            "type": "boolean",
+                                            "description": "Whether the invitee is outside the organization."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "email",
+                                        "emailDomain",
+                                        "isExternal"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Calendar invitee identity and organization membership."
+                                },
+                                "description": "Calendar invitees in provider order."
+                            },
+                            "summary": {
+                                "description": "Recording summary when available; omitted if unavailable, with nullable content retained.",
+                                "type": "object",
+                                "properties": {
+                                    "templateName": {
+                                        "description": "Provider summary template name, or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "markdown": {
+                                        "description": "English summary Markdown with whitespace and Unicode preserved, or null.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "templateName",
+                                    "markdown"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "transcript": {
+                                "description": "Speaker-attributed transcript when available; omitted if unavailable and empty if the provider returns an empty transcript.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "speaker": {
+                                            "type": "object",
+                                            "properties": {
+                                                "displayName": {
+                                                    "type": "string",
+                                                    "description": "Speaker display name."
+                                                },
+                                                "matchedCalendarInviteeEmail": {
+                                                    "description": "Exact matched calendar invitee email; null means no exact match and absence is retained.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "displayName"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Speaker identity and optional exact invitee match."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Ordinary transcript text in its original language, preserving Unicode and whitespace."
+                                        },
+                                        "meetingOffsetSeconds": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991,
+                                            "description": "Whole seconds from meeting start, converted from HH:MM:SS; not a wall-clock timestamp."
+                                        }
+                                    },
+                                    "required": [
+                                        "speaker",
+                                        "text",
+                                        "meetingOffsetSeconds"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Speaker-attributed transcript segment and relative position."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "recordingId",
+                            "title",
+                            "meetingTitle",
+                            "meetingType",
+                            "url",
+                            "shareUrl",
+                            "createdAt",
+                            "scheduledStartAt",
+                            "scheduledEndAt",
+                            "recordingStartAt",
+                            "recordingEndAt",
+                            "inviteeDomainsType",
+                            "sharedWith",
+                            "recordedBy",
+                            "transcriptLanguage",
+                            "calendarInvitees"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accessible Fathom meeting metadata, calendar participants, recording summary, and speaker-attributed transcript."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the visible team-member directory available as member records, without inferring team memberships absent from the source.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-team-members",
+            "output": [
+                "TeamMembers"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "TeamMembers"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TeamMembers": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Local member record key equal to the exact email address; uniqueness is provisional because no provider member ID is exposed."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Member display name, preserving Unicode."
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Member email address preserved exactly."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Member creation instant supplied by Fathom in UTC Z with fractional precision preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Visible Fathom team-member directory record without inferred team memberships."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the visible team directory available as team records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-teams",
+            "output": [
+                "Teams"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Teams"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Teams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Local record key equal to the exact team name; uniqueness is provisional because the API exposes no team ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Exact team name, suitable for related tool filters."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Team creation instant in UTC Z with source fractional precision preserved."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A team in the visible team directory."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make account users, lifecycle states, and available settings and meeting-view permissions available as records. Requires account administrator authority.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "Users"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Users"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Users": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Local user record key equal to the exact email address; uniqueness is provisional because no upstream user ID is exposed."
+                            },
+                            "name": {
+                                "description": "User display name, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Account user email, preserving case and spelling."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "deactivated",
+                                    "invited"
+                                ],
+                                "description": "User lifecycle state."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Provider creation instant, or invite instant for invited users, normalized to UTC Z with source precision preserved."
+                            },
+                            "permissions": {
+                                "description": "Effective permissions; omitted for invited users.",
+                                "type": "object",
+                                "properties": {
+                                    "settingsAccess": {
+                                        "type": "object",
+                                        "properties": {
+                                            "level": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "none",
+                                                    "team_admin",
+                                                    "account_admin"
+                                                ],
+                                                "description": "No administration, team administration, or account administration."
+                                            },
+                                            "teamNames": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "description": "Exact team name."
+                                                },
+                                                "description": "Every team for account_admin, administered teams for team_admin, or [] for none."
+                                            }
+                                        },
+                                        "required": [
+                                            "level",
+                                            "teamNames"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Settings administration access."
+                                    },
+                                    "viewAccess": {
+                                        "type": "object",
+                                        "properties": {
+                                            "level": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "own_meetings",
+                                                    "team",
+                                                    "multiple_teams",
+                                                    "all_teams"
+                                                ],
+                                                "description": "Whether visibility covers own meetings, one team, multiple teams, or all teams."
+                                            },
+                                            "teamNames": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "description": "Exact team name."
+                                                },
+                                                "description": "Every team for all_teams, granted teams for team or multiple_teams, or [] for own_meetings."
+                                            }
+                                        },
+                                        "required": [
+                                            "level",
+                                            "teamNames"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Meeting viewing access."
+                                    }
+                                },
+                                "required": [
+                                    "settingsAccess",
+                                    "viewAccess"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Account user lifecycle, settings administration, and meeting-view permissions."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-recording-download",
+            "integrationId": "fathom",
+            "description": "Start preparation of a downloadable recording file and return its download ID and current status. Audio-only recordings may already be complete; video is prepared asynchronously.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_createrecordingdownload",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_createrecordingdownload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_createrecordingdownload": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID from list-meetings."
+                            },
+                            "destinationUrl": {
+                                "description": "Optional authorized HTTP(S) URL for Fathom to POST the completed download payload once; omit to check status with get-recording-download.",
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording and optional one-shot completion destination for a new download request."
+                    },
+                    "FunctionOutput_fathom_createrecordingdownload": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque download ID to pass as downloadId to get-recording-download; private to the creating API client."
+                            },
+                            "audio": {
+                                "description": "Completed audio-only recording file, present when supplied by Fathom.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "Short-lived signed URL for exact media bytes, usable until expiresAt; not fetched by this tool."
+                                    },
+                                    "expiresAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "File and signed-URL expiration instant normalized to UTC Z with source precision preserved; request a new download afterward."
+                                    },
+                                    "contentType": {
+                                        "type": "string",
+                                        "description": "Provider media MIME type, preserved without inferring it from audio/video placement."
+                                    },
+                                    "fileSizeBytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Generated media file size in bytes, preserved exactly."
+                                    }
+                                },
+                                "required": [
+                                    "url",
+                                    "expiresAt",
+                                    "contentType",
+                                    "fileSizeBytes"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "video": {
+                                "description": "Completed video recording file, present when supplied by Fathom.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "Short-lived signed URL for exact media bytes, usable until expiresAt; not fetched by this tool."
+                                    },
+                                    "expiresAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "File and signed-URL expiration instant normalized to UTC Z with source precision preserved; request a new download afterward."
+                                    },
+                                    "contentType": {
+                                        "type": "string",
+                                        "description": "Provider media MIME type, preserved without inferring it from audio/video placement."
+                                    },
+                                    "fileSizeBytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Generated media file size in bytes, preserved exactly."
+                                    }
+                                },
+                                "required": [
+                                    "url",
+                                    "expiresAt",
+                                    "contentType",
+                                    "fileSizeBytes"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "processing",
+                                    "completed",
+                                    "failed",
+                                    "expired"
+                                ],
+                                "description": "Current download-generation state, not recipient delivery status."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque recording identifier returned by Fathom."
+                            },
+                            "failureReason": {
+                                "description": "Provider generation failure reason, present when the download failed.",
+                                "type": "string",
+                                "enum": [
+                                    "generation_failed",
+                                    "generation_timeout"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Initial download-generation state and any completed media files, without waiting for video generation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain recordingId from `list-meetings`. This creates a download request, not a completed-file guarantee. If processing, use `get-recording-download` with the returned id and recordingId on the same API client. Completed file URLs are short-lived; request a new download after expiresAt. Limited-access shares cannot download. An optional destination receives one completion payload, not recurring notifications."
+            },
+            "filePath": "./fathom/tools/create-recording-download.ts",
+            "version": "a22edc4844bbfa3065128a214ddb04c0538565f0ba90e57700bcb7a844d1dded",
+            "location": {
+                "js": "templates-zero/fathom/tools/create-recording-download/a22edc4844bbfa3065128a214ddb04c0538565f0ba90e57700bcb7a844d1dded.cjs",
+                "ts": "templates-zero/fathom/tools/create-recording-download/a22edc4844bbfa3065128a214ddb04c0538565f0ba90e57700bcb7a844d1dded.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-webhook",
+            "integrationId": "fathom",
+            "description": "Delete a known webhook registration so it no longer remains registered for future meeting-content notifications. This does not delete meeting content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_deletewebhook",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_deletewebhook",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhookId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing webhook registration to delete, obtained from stored application configuration."
+                            }
+                        },
+                        "required": [
+                            "webhookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing webhook registration to remove."
+                    },
+                    "FunctionOutput_fathom_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after a successful provider deletion response; does not establish cancellation of already in-flight notifications."
+                            },
+                            "webhookId": {
+                                "type": "string",
+                                "description": "ID of the webhook whose deletion Fathom acknowledged."
+                            }
+                        },
+                        "required": [
+                            "deleted",
+                            "webhookId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Local acknowledgement of the webhook registration deletion, not deletion of meeting content."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to remove an existing webhook, not to create or renew one. Obtain the webhook ID from the application's stored configuration; no webhook-list tool is available. Deletion has no documented restore operation, and this tool does not promise to recall notifications already in flight."
+            },
+            "filePath": "./fathom/tools/delete-webhook.ts",
+            "version": "b4559e825931bf5a974c6a56804f5e0a0e3b2e40fd553d1f76e657f513ff9d6a",
+            "location": {
+                "js": "templates-zero/fathom/tools/delete-webhook/b4559e825931bf5a974c6a56804f5e0a0e3b2e40fd553d1f76e657f513ff9d6a.cjs",
+                "ts": "templates-zero/fathom/tools/delete-webhook/b4559e825931bf5a974c6a56804f5e0a0e3b2e40fd553d1f76e657f513ff9d6a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-download",
+            "integrationId": "fathom",
+            "description": "Get the current state of a previously created recording download and its signed media URL when complete.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_getrecordingdownload",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_getrecordingdownload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_getrecordingdownload": {
+                        "type": "object",
+                        "properties": {
+                            "downloadId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque id returned by create-recording-download using this same API client."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID associated with the download."
+                            }
+                        },
+                        "required": [
+                            "downloadId",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifiers of the existing recording download to check."
+                    },
+                    "FunctionOutput_fathom_getrecordingdownload": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque download ID returned by Fathom."
+                            },
+                            "audio": {
+                                "description": "Completed audio-only media file when supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "Short-lived signed URL for exact media bytes; not fetched by this tool."
+                                    },
+                                    "expiresAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "File and URL expiration instant in UTC Z, retaining source fractional precision."
+                                    },
+                                    "contentType": {
+                                        "type": "string",
+                                        "description": "Provider MIME type, preserved unchanged even if surprising for the media category."
+                                    },
+                                    "fileSizeBytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Generated media size in bytes, preserved exactly."
+                                    }
+                                },
+                                "required": [
+                                    "url",
+                                    "expiresAt",
+                                    "contentType",
+                                    "fileSizeBytes"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "video": {
+                                "description": "Completed video media file when supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "Short-lived signed URL for exact media bytes; not fetched by this tool."
+                                    },
+                                    "expiresAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "File and URL expiration instant in UTC Z, retaining source fractional precision."
+                                    },
+                                    "contentType": {
+                                        "type": "string",
+                                        "description": "Provider MIME type, preserved unchanged even if surprising for the media category."
+                                    },
+                                    "fileSizeBytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "description": "Generated media size in bytes, preserved exactly."
+                                    }
+                                },
+                                "required": [
+                                    "url",
+                                    "expiresAt",
+                                    "contentType",
+                                    "fileSizeBytes"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "processing",
+                                    "completed",
+                                    "failed",
+                                    "expired"
+                                ],
+                                "description": "Current generation or expiration state, not delivery status."
+                            },
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Opaque recording ID associated with this download."
+                            },
+                            "failureReason": {
+                                "description": "Provider generation failure reason when supplied for a failed download.",
+                                "type": "string",
+                                "enum": [
+                                    "generation_failed",
+                                    "generation_timeout"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One current download status snapshot, including generated media when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "First call `create-recording-download`, then provide its id as downloadId and its recordingId. Use the same API client that created the download. This returns one status snapshot without waiting. If processing, check again later; if expired, create a new download. URLs are only usable until expiresAt."
+            },
+            "filePath": "./fathom/tools/get-recording-download.ts",
+            "version": "d7fc16a68b5f289dbc04344ec0189df049b4a568152dadac6169e0d7bcbf09c6",
+            "location": {
+                "js": "templates-zero/fathom/tools/get-recording-download/d7fc16a68b5f289dbc04344ec0189df049b4a568152dadac6169e0d7bcbf09c6.cjs",
+                "ts": "templates-zero/fathom/tools/get-recording-download/d7fc16a68b5f289dbc04344ec0189df049b4a568152dadac6169e0d7bcbf09c6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-summary",
+            "integrationId": "fathom",
+            "description": "Get the default English summary for a known recording as Markdown and its template name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_getrecordingsummary",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_getrecordingsummary",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_getrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID returned by list-meetings; do not interpret it as a time or number."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The known recording whose default English summary to retrieve."
+                    },
+                    "FunctionOutput_fathom_getrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Recording identifier supplied by the caller."
+                            },
+                            "templateName": {
+                                "description": "Provider's default summary template name, or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "markdown": {
+                                "description": "English summary Markdown, preserving Unicode and whitespace; null and empty string are distinct provider values.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "templateName",
+                            "markdown"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The retrieved default English summary and its template name."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain recordingId from `list-meetings`. Use this for summary content returned directly to you; use `send-recording-summary` for a one-time POST to a destination URL, or `get-recording-transcript` for speaker-attributed source text."
+            },
+            "filePath": "./fathom/tools/get-recording-summary.ts",
+            "version": "e4394f9ec70c193381ae5240792602833bded5b4eb70b0ad325dd18213c5efe1",
+            "location": {
+                "js": "templates-zero/fathom/tools/get-recording-summary/e4394f9ec70c193381ae5240792602833bded5b4eb70b0ad325dd18213c5efe1.cjs",
+                "ts": "templates-zero/fathom/tools/get-recording-summary/e4394f9ec70c193381ae5240792602833bded5b4eb70b0ad325dd18213c5efe1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-transcript",
+            "integrationId": "fathom",
+            "description": "Get a recording's transcript as ordered speaker-attributed text segments with meeting-relative positions in seconds.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_getrecordingtranscript",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_getrecordingtranscript",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_getrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID from list-meetings."
+                            }
+                        },
+                        "required": [
+                            "recordingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording whose transcript should be retrieved."
+                    },
+                    "FunctionOutput_fathom_getrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Recording identifier supplied by the caller."
+                            },
+                            "segments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "speaker": {
+                                            "type": "object",
+                                            "properties": {
+                                                "displayName": {
+                                                    "type": "string",
+                                                    "description": "Speaker display name as supplied by Fathom."
+                                                },
+                                                "matchedCalendarInviteeEmail": {
+                                                    "description": "Exact calendar-invitee email match; null means no exact match, while upstream omission stays omitted.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "displayName"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Speaker attribution and any exact calendar-invitee match."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Ordinary transcript text preserving original language, Unicode, punctuation, and whitespace."
+                                        },
+                                        "meetingOffsetSeconds": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991,
+                                            "description": "Whole seconds from meeting start, converted from provider HH:MM:SS; not an absolute instant."
+                                        }
+                                    },
+                                    "required": [
+                                        "speaker",
+                                        "text",
+                                        "meetingOffsetSeconds"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One source transcript segment with its speaker and meeting-relative position."
+                                },
+                                "description": "All transcript segments returned by the direct recording endpoint, in original order; [] remains empty."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "segments"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording transcript in original order with speaker attribution and positions in seconds."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain recordingId from `list-meetings`. Use this for source speech text, not the English summary returned by `get-recording-summary`. Use `send-recording-transcript` to request a one-time POST to a destination URL. Positions are relative to meeting start, not wall-clock timestamps."
+            },
+            "filePath": "./fathom/tools/get-recording-transcript.ts",
+            "version": "5128f1ac1981b58320ef154846951e9f43d9e7c8e3d0c53e9d91066742c06d8a",
+            "location": {
+                "js": "templates-zero/fathom/tools/get-recording-transcript/5128f1ac1981b58320ef154846951e9f43d9e7c8e3d0c53e9d91066742c06d8a.cjs",
+                "ts": "templates-zero/fathom/tools/get-recording-transcript/5128f1ac1981b58320ef154846951e9f43d9e7c8e3d0c53e9d91066742c06d8a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meeting-types",
+            "integrationId": "fathom",
+            "description": "List one page of the organization's active and inactive meeting types for discovery and meeting filtering.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_listmeetingtypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_listmeetingtypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_listmeetingtypes": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from list-meeting-types on this connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for retrieving one page of organization meeting types."
+                    },
+                    "FunctionOutput_fathom_listmeetingtypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Exact meeting type name usable as the meetingType filter."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "inactive"
+                                            ],
+                                            "description": "Active types are assignable going forward; inactive types are historical and no longer assigned going forward."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Type creation instant in UTC Z, preserving supplied fractional precision."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "status",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An organization meeting type, including its lifecycle status and creation instant."
+                                },
+                                "description": "One provider-sized page of meeting types in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when the provider's next_cursor is null.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of active and inactive meeting types with an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover exact type names for `list-meetings`. Inactive types can still occur on historical meetings. Pass nextCursor as cursor to continue; no page-size input is supported."
+            },
+            "filePath": "./fathom/tools/list-meeting-types.ts",
+            "version": "ba5a8e348231ab4762ca72de5641556488884c7a13415d0ba294f0644d87c740",
+            "location": {
+                "js": "templates-zero/fathom/tools/list-meeting-types/ba5a8e348231ab4762ca72de5641556488884c7a13415d0ba294f0644d87c740.cjs",
+                "ts": "templates-zero/fathom/tools/list-meeting-types/ba5a8e348231ab4762ca72de5641556488884c7a13415d0ba294f0644d87c740.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meetings",
+            "integrationId": "fathom",
+            "description": "List one page of accessible meetings, optionally filtered by creation time, recorder, team, company domain, or meeting type, with optional action items, highlights, and CRM matches.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_listmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_listmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from this connection and the same meeting filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "teamNames": {
+                                "description": "Return meetings belonging to any listed team name.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Exact team name."
+                                },
+                                "uniqueItems": true
+                            },
+                            "meetingType": {
+                                "description": "Exact meeting type name from list-meeting-types. An unknown name returns an empty page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "createdAfter": {
+                                "description": "Exclusive lower bound on meeting creation time, with Z or an explicit numeric offset; fractional seconds are preserved.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "createdBefore": {
+                                "description": "Exclusive upper bound on meeting creation time, with Z or an explicit numeric offset; fractional seconds are preserved.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "companyDomains": {
+                                "description": "Exact company domains; matches meetings associated with any listed domain, not every invitee domain. Each meeting is associated with one company.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Exact associated company domain."
+                                },
+                                "uniqueItems": true
+                            },
+                            "recorderEmails": {
+                                "description": "Return meetings recorded by any listed email address.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Recorder email address."
+                                },
+                                "uniqueItems": true
+                            },
+                            "includeCrmMatches": {
+                                "default": false,
+                                "description": "Include matches from your or your team's linked CRM; no linked CRM is reported within crmMatches.error.",
+                                "type": "boolean"
+                            },
+                            "includeHighlights": {
+                                "default": false,
+                                "description": "Include highlighted recording moments and their positions in seconds.",
+                                "type": "boolean"
+                            },
+                            "includeActionItems": {
+                                "default": false,
+                                "description": "Include English action items and their assignment and completion details.",
+                                "type": "boolean"
+                            },
+                            "inviteeDomainsType": {
+                                "default": "all",
+                                "description": "Whether to include all meetings or only those with internal-only or at least one external invitee domain.",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "only_internal",
+                                    "one_or_more_external"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and optional enrichments for one page of accessible Fathom meetings."
+                    },
+                    "FunctionOutput_fathom_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "recordingId": {
+                                            "type": "string",
+                                            "description": "Opaque recording identifier, also identifying this meeting in the available API."
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Fathom meeting title."
+                                        },
+                                        "meetingTitle": {
+                                            "description": "Calendar event title; null is retained.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "meetingType": {
+                                            "description": "Assigned meeting type name, or null when unassigned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Fathom meeting URL."
+                                        },
+                                        "shareUrl": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Fathom share URL; returning it does not change sharing permissions."
+                                        },
+                                        "meetingUrl": {
+                                            "description": "Underlying meeting join URL, null without an associated calendar meeting; omitted if absent upstream.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Meeting creation instant normalized to UTC Z without precision loss."
+                                        },
+                                        "scheduledStartAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Scheduled meeting start instant in UTC Z."
+                                        },
+                                        "scheduledEndAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Scheduled meeting end instant in UTC Z."
+                                        },
+                                        "recordingStartAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Actual recording start instant in UTC Z."
+                                        },
+                                        "recordingEndAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Actual recording end instant in UTC Z."
+                                        },
+                                        "inviteeDomainsType": {
+                                            "type": "string",
+                                            "enum": [
+                                                "only_internal",
+                                                "one_or_more_external"
+                                            ],
+                                            "description": "Whether calendar invitee domains are internal-only or include external domains."
+                                        },
+                                        "sharedWith": {
+                                            "type": "string",
+                                            "enum": [
+                                                "no_teams",
+                                                "single_team",
+                                                "multiple_teams",
+                                                "all_teams"
+                                            ],
+                                            "description": "Organization sharing state: private to recorder, one team, multiple teams, or all teams, respectively."
+                                        },
+                                        "recordedBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Recorder display name."
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Recorder email address."
+                                                },
+                                                "emailDomain": {
+                                                    "type": "string",
+                                                    "description": "Recorder email domain."
+                                                },
+                                                "teamName": {
+                                                    "description": "Recorder team name, or null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "emailDomain",
+                                                "teamName"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "User who recorded the meeting."
+                                        },
+                                        "transcriptLanguage": {
+                                            "type": "string",
+                                            "description": "Provider's transcript language code, preserved unchanged."
+                                        },
+                                        "calendarInvitees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Invitee display name, or null.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "email": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ],
+                                                        "description": "Invitee email address, or null."
+                                                    },
+                                                    "emailDomain": {
+                                                        "description": "Invitee email domain, or null.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "isExternal": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the invitee is external to the organization."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "email",
+                                                    "emailDomain",
+                                                    "isExternal"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Calendar invitees, preserving order and null identity fields."
+                                        },
+                                        "actionItems": {
+                                            "description": "Optional English action items; omission, null, and an empty array remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "description": {
+                                                                "type": "string",
+                                                                "description": "Action item description, supplied by Fathom in English."
+                                                            },
+                                                            "userGenerated": {
+                                                                "type": "boolean",
+                                                                "description": "Whether the action item was user-generated."
+                                                            },
+                                                            "completed": {
+                                                                "type": "boolean",
+                                                                "description": "Whether the action item is complete."
+                                                            },
+                                                            "recordingOffsetSeconds": {
+                                                                "type": "integer",
+                                                                "minimum": 0,
+                                                                "maximum": 9007199254740991,
+                                                                "description": "Position in whole seconds from recording start, converted from HH:MM:SS."
+                                                            },
+                                                            "recordingPlaybackUrl": {
+                                                                "type": "string",
+                                                                "format": "uri",
+                                                                "description": "URL for playback at the action item's recording position."
+                                                            },
+                                                            "assignee": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "description": "Assignee name, or null.",
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "email": {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string",
+                                                                                "format": "email",
+                                                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ],
+                                                                        "description": "Assignee email, or null."
+                                                                    },
+                                                                    "teamName": {
+                                                                        "description": "Assignee team name, or null.",
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "name",
+                                                                    "email",
+                                                                    "teamName"
+                                                                ],
+                                                                "additionalProperties": false,
+                                                                "description": "Assigned user's available identity fields; nulls are retained."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "description",
+                                                            "userGenerated",
+                                                            "completed",
+                                                            "recordingOffsetSeconds",
+                                                            "recordingPlaybackUrl",
+                                                            "assignee"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "highlights": {
+                                            "description": "Optional highlighted moments; omission, null, and an empty array remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "description": "Label of the bookmark that produced this highlight."
+                                                            },
+                                                            "summary": {
+                                                                "description": "Short highlight summary, or null.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "text": {
+                                                                "description": "Full highlight text; omitted upstream when identical to summary.",
+                                                                "type": "string"
+                                                            },
+                                                            "startSeconds": {
+                                                                "type": "number",
+                                                                "description": "Start position in seconds from recording start, preserving fractional seconds."
+                                                            },
+                                                            "endSeconds": {
+                                                                "type": "number",
+                                                                "description": "End position in seconds from recording start, preserving fractional seconds."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "type",
+                                                            "summary",
+                                                            "startSeconds",
+                                                            "endSeconds"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "crmMatches": {
+                                            "description": "Optional linked CRM results, preserving absence and null; error can explain unavailable CRM data.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "contacts": {
+                                                            "description": "Matched CRM contacts when supplied.",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "description": "CRM contact name."
+                                                                    },
+                                                                    "email": {
+                                                                        "type": "string",
+                                                                        "format": "email",
+                                                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                                        "description": "CRM contact email."
+                                                                    },
+                                                                    "recordUrl": {
+                                                                        "type": "string",
+                                                                        "format": "uri",
+                                                                        "description": "URL of the contact in the linked CRM."
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "name",
+                                                                    "email",
+                                                                    "recordUrl"
+                                                                ],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "companies": {
+                                                            "description": "Matched CRM companies when supplied.",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "description": "CRM company name."
+                                                                    },
+                                                                    "recordUrl": {
+                                                                        "type": "string",
+                                                                        "format": "uri",
+                                                                        "description": "URL of the company in the linked CRM."
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "name",
+                                                                    "recordUrl"
+                                                                ],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "deals": {
+                                                            "description": "Matched CRM deals when supplied.",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "description": "CRM deal name."
+                                                                    },
+                                                                    "amountDollars": {
+                                                                        "type": "number",
+                                                                        "description": "Provider's deal amount in dollars, without currency conversion or an inferred ISO currency code."
+                                                                    },
+                                                                    "recordUrl": {
+                                                                        "type": "string",
+                                                                        "format": "uri",
+                                                                        "description": "URL of the deal in the linked CRM."
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "name",
+                                                                    "amountDollars",
+                                                                    "recordUrl"
+                                                                ],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "error": {
+                                                            "description": "CRM-specific problem such as no CRM connected; not a failure of the meeting listing.",
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "recordingId",
+                                        "title",
+                                        "meetingTitle",
+                                        "meetingType",
+                                        "url",
+                                        "shareUrl",
+                                        "createdAt",
+                                        "scheduledStartAt",
+                                        "scheduledEndAt",
+                                        "recordingStartAt",
+                                        "recordingEndAt",
+                                        "inviteeDomainsType",
+                                        "sharedWith",
+                                        "recordedBy",
+                                        "transcriptLanguage",
+                                        "calendarInvitees"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One provider page of meetings in provider order; an empty array is a valid result."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page; omitted when next_cursor is null.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of accessible meetings and its optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover meetings and recording IDs. Discover team names with `list-teams`, recorder emails with `list-team-members`, and type names with `list-meeting-types`. Pass `nextCursor` as `cursor` with unchanged filters to continue. Use `get-recording-summary` and `get-recording-transcript` for content. Results without recorder or team filters exclude calls from users external to your organization. One call returns one provider-sized page; page size is not configurable."
+            },
+            "filePath": "./fathom/tools/list-meetings.ts",
+            "version": "4b1f8a078fecbb57b2fcd2cee090a4d8afcfb4d4a4011b7433259dace5dcee7f",
+            "location": {
+                "js": "templates-zero/fathom/tools/list-meetings/4b1f8a078fecbb57b2fcd2cee090a4d8afcfb4d4a4011b7433259dace5dcee7f.cjs",
+                "ts": "templates-zero/fathom/tools/list-meetings/4b1f8a078fecbb57b2fcd2cee090a4d8afcfb4d4a4011b7433259dace5dcee7f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-team-members",
+            "integrationId": "fathom",
+            "description": "List one page of team members, optionally restricted to an exact team name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_listteammembers",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_listteammembers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_listteammembers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from list-team-members on this connection with the same teamName filter; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "teamName": {
+                                "description": "Exact team name from list-teams; omit to use the provider's unfiltered member directory.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Optional exact team-name filter and continuation cursor for one page of team members."
+                    },
+                    "FunctionOutput_fathom_listteammembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Member display name."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                            "description": "Member email address, also usable as a recorder filter."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Member creation instant supplied by Fathom, normalized to UTC Z with fractional precision preserved."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "email",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A member supplied by the Fathom member directory."
+                                },
+                                "description": "One provider-sized page of members in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when next_cursor is null.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of team members and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for member names and recorder email addresses. Use `list-users` instead for account lifecycle and permissions; that tool requires account administrator access. Obtain team names from `list-teams`. Continue with nextCursor as cursor and the same teamName."
+            },
+            "filePath": "./fathom/tools/list-team-members.ts",
+            "version": "836194517b8053eb70be8aed9a7217dce0efbed2bb14df19e8118fbf309ab79a",
+            "location": {
+                "js": "templates-zero/fathom/tools/list-team-members/836194517b8053eb70be8aed9a7217dce0efbed2bb14df19e8118fbf309ab79a.cjs",
+                "ts": "templates-zero/fathom/tools/list-team-members/836194517b8053eb70be8aed9a7217dce0efbed2bb14df19e8118fbf309ab79a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-teams",
+            "integrationId": "fathom",
+            "description": "List one page of teams available to the connection.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_listteams",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_listteams",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor returned by list-teams for this connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination input for listing one page of teams."
+                    },
+                    "FunctionOutput_fathom_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Exact team name usable in team filters."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Team creation instant normalized to UTC Z with supplied precision preserved."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A team available to the connection."
+                                },
+                                "description": "One provider page of teams in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page token, omitted when next_cursor is null.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of teams with an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to obtain team names for `list-meetings`, `list-team-members`, or `list-users`. Pass nextCursor back as cursor to continue. One call returns one provider-sized page; page size is not configurable."
+            },
+            "filePath": "./fathom/tools/list-teams.ts",
+            "version": "904b010ad22e865efaf508df9711de497eb34b0aa7161936dd91dc5e0238852e",
+            "location": {
+                "js": "templates-zero/fathom/tools/list-teams/904b010ad22e865efaf508df9711de497eb34b0aa7161936dd91dc5e0238852e.cjs",
+                "ts": "templates-zero/fathom/tools/list-teams/904b010ad22e865efaf508df9711de497eb34b0aa7161936dd91dc5e0238852e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "fathom",
+            "description": "List one page of account users, including lifecycle status and available meeting-view and settings permissions. Requires an account administrator.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from list-users on this connection and the same filters; omit initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "status": {
+                                "description": "User lifecycle filter; invited cannot be combined with settingsAccess.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "deactivated",
+                                    "invited"
+                                ]
+                            },
+                            "teamName": {
+                                "description": "Exact team name to restrict the account-user listing; omitted means no team filter.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "settingsAccess": {
+                                "description": "Filter by settings access level; omit for all access levels.",
+                                "type": "string",
+                                "enum": [
+                                    "none",
+                                    "team_admin",
+                                    "account_admin"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and opaque continuation cursor for one page of account users.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "const": "invited"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "settingsAccess"
+                                        ],
+                                        "properties": {
+                                            "settingsAccess": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_fathom_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "User display name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                            "description": "Account user email address."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "deactivated",
+                                                "invited"
+                                            ],
+                                            "description": "Account user lifecycle state."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Provider creation instant, or invitation instant for invited users, normalized to UTC Z with source precision preserved."
+                                        },
+                                        "permissions": {
+                                            "description": "Effective permission details; omitted for invited users, not replaced by null or empty permissions.",
+                                            "type": "object",
+                                            "properties": {
+                                                "viewAccess": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "level": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "own_meetings",
+                                                                "team",
+                                                                "multiple_teams",
+                                                                "all_teams"
+                                                            ],
+                                                            "description": "Own meetings only, one team, multiple teams, or all teams."
+                                                        },
+                                                        "teamNames": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "description": "Team name in the provider permission scope."
+                                                            },
+                                                            "description": "Every team for all_teams, granted teams for team or multiple_teams, or [] for own_meetings."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "level",
+                                                        "teamNames"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Meeting visibility permissions."
+                                                },
+                                                "settingsAccess": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "level": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "none",
+                                                                "team_admin",
+                                                                "account_admin"
+                                                            ],
+                                                            "description": "No settings access, administration of specified teams, or account-wide administration."
+                                                        },
+                                                        "teamNames": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "description": "Team name in the provider administration scope."
+                                                            },
+                                                            "description": "Every team for account_admin, administered teams for team_admin, or [] for none."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "level",
+                                                        "teamNames"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Settings administration permissions."
+                                                }
+                                            },
+                                            "required": [
+                                                "viewAccess",
+                                                "settingsAccess"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "email",
+                                        "status",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An account user and any available effective permissions."
+                                },
+                                "description": "One provider-sized page of account users; provider order includes active, then deactivated, then pending members."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when next_cursor is null.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One account-user page with an optional opaque continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for account administration and permission audits; the API key must belong to an account administrator. Use `list-team-members` for the simpler member directory. Obtain team names from `list-teams`. Continue with nextCursor as cursor and unchanged filters. Invited users have no permissions object; their createdAt is their invite date."
+            },
+            "filePath": "./fathom/tools/list-users.ts",
+            "version": "30bd33194735552bc1ebf0b540c6ed03ec748b1e2ffb869b6f9f6c3020ee6367",
+            "location": {
+                "js": "templates-zero/fathom/tools/list-users/30bd33194735552bc1ebf0b540c6ed03ec748b1e2ffb869b6f9f6c3020ee6367.cjs",
+                "ts": "templates-zero/fathom/tools/list-users/30bd33194735552bc1ebf0b540c6ed03ec748b1e2ffb869b6f9f6c3020ee6367.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "send-recording-summary",
+            "integrationId": "fathom",
+            "description": "Request one-time asynchronous delivery of an existing recording's English summary to a destination URL. This is not a recurring subscription.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_sendrecordingsummary",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_sendrecordingsummary",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_sendrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID from list-meetings."
+                            },
+                            "destinationUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "HTTP or HTTPS endpoint to receive Fathom's one-time summary POST; use only a destination authorized to receive this content."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "destinationUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording and authorized destination for one-time asynchronous summary delivery."
+                    },
+                    "FunctionOutput_fathom_sendrecordingsummary": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Recording whose summary delivery was requested."
+                            },
+                            "destinationUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Destination acknowledged by Fathom; this is not proof of completed delivery."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "destinationUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the requested summary destination, not completed delivery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this only when the user wants the summary posted to an external destination. Obtain recordingId from `list-meetings`; use `get-recording-summary` instead to read it here. A successful response acknowledges the destination, not delivery. Repeating a call may cause another POST."
+            },
+            "filePath": "./fathom/tools/send-recording-summary.ts",
+            "version": "6b59d20f88ed45e04b667de9b49898f06ff6a8a1888470b37da43b3e2cbfd71e",
+            "location": {
+                "js": "templates-zero/fathom/tools/send-recording-summary/6b59d20f88ed45e04b667de9b49898f06ff6a8a1888470b37da43b3e2cbfd71e.cjs",
+                "ts": "templates-zero/fathom/tools/send-recording-summary/6b59d20f88ed45e04b667de9b49898f06ff6a8a1888470b37da43b3e2cbfd71e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "send-recording-transcript",
+            "integrationId": "fathom",
+            "description": "Request one-time asynchronous delivery of an existing recording's transcript to a destination URL, without registering a recurring notification subscription.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_fathom_sendrecordingtranscript",
+            "output_schema_ref": "#/definitions/FunctionOutput_fathom_sendrecordingtranscript",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_fathom_sendrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal recording ID from list-meetings."
+                            },
+                            "destinationUrl": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "Authorized HTTP or HTTPS endpoint to receive Fathom's one-time transcript POST."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "destinationUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording and authorized destination for one-time asynchronous transcript delivery."
+                    },
+                    "FunctionOutput_fathom_sendrecordingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "recordingId": {
+                                "type": "string",
+                                "description": "Recording whose transcript delivery was requested."
+                            },
+                            "destinationUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Destination acknowledged by Fathom, not a delivery receipt."
+                            }
+                        },
+                        "required": [
+                            "recordingId",
+                            "destinationUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement of the transcript destination, without confirmation of delivery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this when the transcript should be posted to an authorized external endpoint. Obtain recordingId from `list-meetings`. Use `get-recording-transcript` instead to receive normalized segments here. Success acknowledges the destination, not completed delivery. Repeating the request may send another POST."
+            },
+            "filePath": "./fathom/tools/send-recording-transcript.ts",
+            "version": "953108e876c56fa89ee68bac2348861f9d8ca26ef295b822f04a71b0edc4b73a",
+            "location": {
+                "js": "templates-zero/fathom/tools/send-recording-transcript/953108e876c56fa89ee68bac2348861f9d8ca26ef295b822f04a71b0edc4b73a.cjs",
+                "ts": "templates-zero/fathom/tools/send-recording-transcript/953108e876c56fa89ee68bac2348861f9d8ca26ef295b822f04a71b0edc4b73a.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

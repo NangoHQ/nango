@@ -1,0 +1,40 @@
+---
+title: 'NASA - How do I link my account?'
+sidebarTitle: 'NASA'
+---
+
+## Overview
+
+To authenticate with NASA, you need:
+
+1. **API Key** — an api.nasa.gov API key, or NASA's shared demo key for testing.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A valid email address. An api.nasa.gov key allows 1,000 requests per hour.
+
+### Step 1: Generate an API key
+
+1. Open [api.nasa.gov](https://api.nasa.gov/) and click **Generate API Key** in the top menu.
+2. Enter your first name, last name and email. **How will you use the APIs?** is optional.
+3. Click **Sign up**.
+
+<img src="/api-integrations/nasa/generate_api_key_form.png" alt="Generate API Key form on api.nasa.gov with the first name, last name and email fields and the Sign up button"/>
+
+4. The page confirms that your API key has been emailed to you. Open the email from api.data.gov and copy the key.
+
+<img src="/api-integrations/nasa/api_key_emailed.png" alt="api.nasa.gov confirming that the API key has been emailed"/>
+
+To test without signing up, use the shared demo key from NASA's [authentication docs](https://api.nasa.gov/assets/html/authentication.html), the one its documentation examples use. It is limited to 30 requests per hour and 50 per day per IP address.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with NASA.
+2. Paste the key you copied in Step 1, or the demo key, into the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/nasa/form.png" alt="NASA Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to NASA.

@@ -1,0 +1,314 @@
+{
+    "providerConfigKey": "customer-io",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "alias-person-in-pipelines",
+            "integrationId": "customer-io",
+            "description": "Associate a previous anonymous or user identity with a canonical user identity in Data Pipelines destinations that require aliasing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_customer_io_aliaspersoninpipelines",
+            "output_schema_ref": "#/definitions/FunctionOutput_customer_io_aliaspersoninpipelines",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_customer_io_aliaspersoninpipelines": {
+                        "type": "object",
+                        "properties": {
+                            "personId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Canonical user ID to retain in destinations."
+                            },
+                            "previousId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Previous anonymous ID or user ID to associate with the canonical identity."
+                            }
+                        },
+                        "required": [
+                            "personId",
+                            "previousId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Previous and canonical identities to reconcile in Data Pipelines destinations."
+                    },
+                    "FunctionOutput_customer_io_aliaspersoninpipelines": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Alias request accepted; downstream reconciliation is not verified."
+                            }
+                        },
+                        "required": [
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acceptance of the alias request, without verifying downstream reconciliation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for destinations such as Mixpanel that need explicit identity reconciliation. Call before identifying the canonical user. Use `merge-people` for an irreversible Journeys profile merge instead. Supply the old identity and the user ID to keep."
+            },
+            "filePath": "./customer-io/tools/alias-person-in-pipelines.ts",
+            "version": "0f2f1f07af044755d38c5602a8ad5711355d6de8c3a781cf186965ba3bb8eb79",
+            "location": {
+                "js": "templates-zero/customer-io/tools/alias-person-in-pipelines/0f2f1f07af044755d38c5602a8ad5711355d6de8c3a781cf186965ba3bb8eb79.cjs",
+                "ts": "templates-zero/customer-io/tools/alias-person-in-pipelines/0f2f1f07af044755d38c5602a8ad5711355d6de8c3a781cf186965ba3bb8eb79.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "report-content-interaction",
+            "integrationId": "customer-io",
+            "description": "Report a view or click on anonymous in-app message content through Pipelines.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_customer_io_reportcontentinteraction",
+            "output_schema_ref": "#/definitions/FunctionOutput_customer_io_reportcontentinteraction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_customer_io_reportcontentinteraction": {
+                        "type": "object",
+                        "properties": {
+                            "contentId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal ID of the anonymous in-app content."
+                            },
+                            "occurredAt": {
+                                "description": "Interaction instant with explicit offset and up to millisecond precision; omitted uses provider timing.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^.*T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "templateId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque decimal ID of the message template inside the content."
+                            },
+                            "interaction": {
+                                "type": "string",
+                                "enum": [
+                                    "viewed",
+                                    "clicked"
+                                ],
+                                "description": "Observed anonymous content interaction."
+                            }
+                        },
+                        "required": [
+                            "contentId",
+                            "templateId",
+                            "interaction"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An observed interaction with anonymous in-app message content."
+                    },
+                    "FunctionOutput_customer_io_reportcontentinteraction": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Interaction report accepted; analytics persistence is not independently verified."
+                            }
+                        },
+                        "required": [
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that the anonymous content interaction report was accepted."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use content and template IDs from the anonymous in-app message payload. Use `report-delivery-metric` when the interaction belongs to a known delivery ID. This records analytics; it does not render content or send a message."
+            },
+            "filePath": "./customer-io/tools/report-content-interaction.ts",
+            "version": "23b5a85e1cc75ceee537de505da856f246fc330f69dfd4442e66f4e1a859e6fb",
+            "location": {
+                "js": "templates-zero/customer-io/tools/report-content-interaction/23b5a85e1cc75ceee537de505da856f246fc330f69dfd4442e66f4e1a859e6fb.cjs",
+                "ts": "templates-zero/customer-io/tools/report-content-interaction/23b5a85e1cc75ceee537de505da856f246fc330f69dfd4442e66f4e1a859e6fb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "track-object-event",
+            "integrationId": "customer-io",
+            "description": "Record an event attributed to a group/object through Data Pipelines destinations that support group events.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_customer_io_trackobjectevent",
+            "output_schema_ref": "#/definitions/FunctionOutput_customer_io_trackobjectevent",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_customer_io_trackobjectevent": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Custom object event name; lifecycle semantic names are excluded."
+                            },
+                            "context": {
+                                "description": "Structured source context, such as locale or campaign.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Source context value."
+                                }
+                            },
+                            "objectId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Group identifier to which the event is attributed in Pipelines."
+                            },
+                            "occurredAt": {
+                                "description": "Event instant with explicit offset and up to millisecond precision; omitted uses provider timing.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^.*T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "properties": {
+                                "description": "Structured custom event properties.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Custom event property value."
+                                }
+                            },
+                            "integrations": {
+                                "description": "Destination-name switches; All changes the routing default.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "boolean",
+                                    "description": "Whether the named destination is enabled."
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "objectId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A custom event attributed to an application object or group."
+                    },
+                    "FunctionOutput_customer_io_trackobjectevent": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Pipelines accepted the group event, not proof that every destination supports or processed it."
+                            }
+                        },
+                        "required": [
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Pipelines acknowledgment of the group event."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an object/group ID from your application. Use `track-person-event` for an event performed by a person. Not all destinations support group events, so verify the intended destination. This tool does not create the object or its person relationships."
+            },
+            "filePath": "./customer-io/tools/track-object-event.ts",
+            "version": "eeea8e4e2e5d0b06b7bf718b5fe584e3cb3c8124ef3b7300d9f83a4db21771f3",
+            "location": {
+                "js": "templates-zero/customer-io/tools/track-object-event/eeea8e4e2e5d0b06b7bf718b5fe584e3cb3c8124ef3b7300d9f83a4db21771f3.cjs",
+                "ts": "templates-zero/customer-io/tools/track-object-event/eeea8e4e2e5d0b06b7bf718b5fe584e3cb3c8124ef3b7300d9f83a4db21771f3.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,83 @@
+---
+title: 'Scrapfly'
+sidebarTitle: 'Scrapfly'
+description: 'Integrate your application with the Scrapfly API'
+---
+
+## 🚀 Quickstart
+
+Connect to Scrapfly with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Scrapfly_.
+    </Step>
+    <Step id="authorize-scrapfly" title="Authorize Scrapfly">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Scrapfly API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-scrapfly-api" title="Call the Scrapfly API">
+    Let's make your first request to the Scrapfly API to get your account, project and subscription details. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/account" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/account',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Scrapfly integration guides
+
+- [How do I link my account?](/api-integrations/scrapfly/connect)  
+Copy your Scrapfly API key and enter it in the Connect UI.
+
+Official docs: [Scrapfly Web Scraping API](https://scrapfly.io/docs/scrape-api/getting-started)
+
+## 🧩 Pre-built syncs & tools for Scrapfly
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/scrapfly/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Scrapfly's Cloud Browser runs on `https://browser.scrapfly.io`. Calls to it set `baseUrlOverride` to `https://browser.scrapfly.io`; Nango keeps the connection's credentials and headers. See [Getting Started with Cloud Browser](https://scrapfly.io/docs/cloud-browser-api/getting-started).
+- Scrapfly's MCP server runs on `https://mcp.scrapfly.io` at `/mcp`. Calls to it set `baseUrlOverride` to `https://mcp.scrapfly.io`; Nango keeps the connection's credentials and headers. See [MCP Authentication](https://scrapfly.io/docs/mcp/authentication).
+- Nango sends the key as the `key` query parameter and in the `x-scrapfly-api-key` header on every call. Calls that need it another way, such as the Cloud Browser's `api_key` query parameter or the MCP server's `Authorization: Bearer` header, can read it from the connection's credentials (`credentials.apiKey`) and send it in that query parameter or header on the request themselves.
+
+---

@@ -1,0 +1,41 @@
+---
+title: 'PDF API.io - How do I link my account?'
+sidebarTitle: 'PDF API.io'
+---
+
+## Overview
+
+To authenticate with PDF API.io, you need:
+
+1. **API Token** - a PDF API.io API token.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A PDF API.io account. API access is included in the Free plan, which needs no credit card. You can [register here](https://pdf-api.io/en/register).
+
+### Step 1: Create an API token
+
+1. Sign in to [PDF API.io](https://pdf-api.io/en/login).
+2. Open the account menu (your avatar, top right) and click **API Tokens**.
+
+<img src="/api-integrations/pdf-api-io/open_api_tokens_menu.png" alt="PDF API.io account menu with the API Tokens item"/>
+
+3. Click **Create a token**, enter a **Token name**, for example `Nango`, and click **Create**.
+
+<img src="/api-integrations/pdf-api-io/create_api_token_dialog.png" alt="PDF API.io Create an API Token dialog with the Token name field and the Create button"/>
+
+4. Copy the full token shown in the **Token created** dialog, including the number and `|` at its start. You won't be able to view it again.
+
+<img src="/api-integrations/pdf-api-io/api_token_created.png" alt="PDF API.io Token created dialog showing the new API token"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with PDF API.io.
+2. Enter your **API Token** in the designated field.
+3. Click **Connect**. Nango checks the token with PDF API.io and rejects it if it is wrong.
+
+<img src="/api-integrations/pdf-api-io/form.png" alt="Nango Connect UI form for entering the PDF API.io API token" style={{maxWidth: "450px" }}/>
+
+You are now connected to PDF API.io.
