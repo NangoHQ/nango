@@ -502,7 +502,7 @@ See [Auth](/guides/auth/overview) for the end-user connection flow.
 
 ### Hosted telemetry
 
-Nango records usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
+Nango records usage metrics, such as how many functions run at the same time and how many connections ran one this month, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
 
 Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
 
