@@ -1,18 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { hostedTelemetry, initHostedTelemetry } from '@nangohq/hosted-telemetry';
+import { hostedTelemetry } from '@nangohq/hosted-telemetry';
 import { flags } from '@nangohq/utils';
 
 import { connectionsDaemon, recordConnections } from './connections.daemon.js';
 
-import type { Knex } from 'knex';
-
-const telemetryDb = vi.hoisted(() => ({ current: undefined as unknown }));
 const counts = vi.hoisted(() => ({ current: [] as { isProduction: boolean; active: number; total: number }[] }));
 
 vi.mock('@nangohq/hosted-telemetry', () => ({
-    hostedTelemetryDb: () => telemetryDb.current,
-    initHostedTelemetry: vi.fn(),
     hostedTelemetry: { gauge: vi.fn() }
 }));
 vi.mock('@nangohq/shared', () => ({
@@ -24,7 +19,6 @@ const total = 'nango.hosted_metric.connections';
 
 beforeEach(() => {
     flags.hasHostedTelemetryConnections = true;
-    telemetryDb.current = {} as Knex;
     counts.current = [];
 });
 
@@ -37,17 +31,10 @@ describe('connectionsDaemon', () => {
         flags.hasHostedTelemetryConnections = false;
 
         expect(connectionsDaemon()).toBeUndefined();
-        expect(initHostedTelemetry).not.toHaveBeenCalled();
+        expect(hostedTelemetry.gauge).not.toHaveBeenCalled();
     });
 
-    it('does not start without a telemetry database', () => {
-        telemetryDb.current = undefined;
-
-        expect(connectionsDaemon()).toBeUndefined();
-        expect(initHostedTelemetry).not.toHaveBeenCalled();
-    });
-
-    it('initialises hosted telemetry and records at once', async () => {
+    it('starts and records at once', async () => {
         counts.current = [
             { isProduction: true, active: 2, total: 5 },
             { isProduction: false, active: 0, total: 0 }
@@ -58,7 +45,6 @@ describe('connectionsDaemon', () => {
         await vi.waitFor(() => expect(hostedTelemetry.gauge).toHaveBeenCalledTimes(4));
         await daemon?.abort();
 
-        expect(initHostedTelemetry).toHaveBeenCalledWith({ knex: telemetryDb.current });
         expect(hostedTelemetry.gauge).toHaveBeenCalledWith(active, 2, { is_production: true });
         expect(hostedTelemetry.gauge).toHaveBeenCalledWith(total, 5, { is_production: true });
         expect(hostedTelemetry.gauge).toHaveBeenCalledWith(active, 0, { is_production: false });

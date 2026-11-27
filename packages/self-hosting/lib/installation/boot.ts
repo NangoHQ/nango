@@ -1,3 +1,5 @@
+import { hostedTelemetryDb, initHostedTelemetry } from '@nangohq/hosted-telemetry';
+
 import { logger } from '../utils.js';
 import { connectionsDaemon } from './daemons/connections.daemon.js';
 import { uploadTelemetryDaemon } from './daemons/uploadTelemetry.daemon.js';
@@ -11,7 +13,14 @@ export async function boot(): Promise<{
     manualTelemetryExport: ManualTelemetryExportConfig | null;
 }> {
     const uploadTelemetry = await uploadTelemetryDaemon();
-    const connections = connectionsDaemon();
+
+    const telemetryDb = hostedTelemetryDb();
+    if (telemetryDb) {
+        initHostedTelemetry({ knex: telemetryDb });
+    } else {
+        logger.warning('Not recording connection counts (hosted telemetry has no database)');
+    }
+    const connections = telemetryDb ? connectionsDaemon() : undefined;
 
     const manualTelemetryExport = await manualTelemetryExportConfig();
     if (manualTelemetryExport.isErr()) {

@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { hostedTelemetry, hostedTelemetryDb, initHostedTelemetry } from '@nangohq/hosted-telemetry';
+import { hostedTelemetry } from '@nangohq/hosted-telemetry';
 import { connectionService } from '@nangohq/shared';
 import { cancellableDaemon, flags, getLogger } from '@nangohq/utils';
 
@@ -13,12 +13,6 @@ export function connectionsDaemon(): { abort: () => Promise<void> } | undefined 
         logger.info('Skipping (FLAG_HOSTED_TELEMETRY_CONNECTIONS_ENABLED is false)');
         return;
     }
-    const knex = hostedTelemetryDb();
-    if (!knex) {
-        logger.warning('Skipping (hosted telemetry has no database)');
-        return;
-    }
-    initHostedTelemetry({ knex });
 
     logger.info('Recording connection counts');
     return cancellableDaemon({
