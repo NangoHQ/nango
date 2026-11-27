@@ -1,0 +1,77 @@
+---
+title: 'Moosend'
+sidebarTitle: 'Moosend'
+description: 'Integrate your application with the Moosend API'
+---
+
+## 🚀 Quickstart
+
+Connect to Moosend with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Moosend_.
+    </Step>
+    <Step id="authorize-moosend" title="Authorize Moosend">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Moosend API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-moosend-api" title="Call the Moosend API">
+    Let's make your first request to the Moosend API: list the active mailing lists in your account. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/lists.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v3/lists.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Moosend integration guides
+
+- [How do I link my account?](/api-integrations/moosend/connect)  
+Copy your Moosend API key to connect your account.
+
+Official docs: [Moosend API documentation](https://docs.moosend.com/developers/api-documentation/en/index-en.html)
+
+## 🧩 Pre-built syncs & tools for Moosend
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/moosend/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

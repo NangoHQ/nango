@@ -1,0 +1,77 @@
+---
+title: 'TextRazor'
+sidebarTitle: 'TextRazor'
+description: 'Integrate your application with the TextRazor API'
+---
+
+## 🚀 Quickstart
+
+Connect to TextRazor with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _TextRazor_.
+    </Step>
+    <Step id="authorize-textrazor" title="Authorize TextRazor">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your TextRazor API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-textrazor-api" title="Call the TextRazor API">
+    Let's make your first request to the TextRazor API to get your account's plan and usage. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/account/" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/account/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 TextRazor integration guides
+
+- [How do I link my account?](/api-integrations/textrazor/connect)  
+Copy your API key from the TextRazor Console to connect your account.
+
+Official docs: [TextRazor REST API](https://www.textrazor.com/docs/rest)
+
+## 🧩 Pre-built syncs & tools for TextRazor
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/textrazor/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -17,7 +17,7 @@
                 "ActionInput_discord_addguildmemberrole",
                 "ActionOutput_discord_addguildmemberrole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_addguildmemberrole": {
@@ -75,7 +75,7 @@
                 "ActionInput_discord_createchannel",
                 "ActionOutput_discord_createchannel"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createchannel": {
@@ -256,7 +256,7 @@
                 "ActionInput_discord_createmessage",
                 "ActionOutput_discord_createmessage"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createmessage": {
@@ -415,7 +415,7 @@
                 "ActionInput_discord_createreaction",
                 "ActionOutput_discord_createreaction"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createreaction": {
@@ -485,7 +485,7 @@
                 "ActionInput_discord_createrole",
                 "ActionOutput_discord_createrole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createrole": {
@@ -718,7 +718,7 @@
                 "ActionInput_discord_createthreadfrommessage",
                 "ActionOutput_discord_createthreadfrommessage"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createthreadfrommessage": {
@@ -872,7 +872,7 @@
                 "ActionInput_discord_createwebhook",
                 "ActionOutput_discord_createwebhook"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_createwebhook": {
@@ -957,7 +957,7 @@
                 "ActionInput_discord_deletechannel",
                 "ActionOutput_discord_deletechannel"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deletechannel": {
@@ -1019,7 +1019,7 @@
                 "ActionInput_discord_deleteguild",
                 "ActionOutput_discord_deleteguild"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deleteguild": {
@@ -1073,7 +1073,7 @@
                 "ActionInput_discord_deleteguildmember",
                 "ActionOutput_discord_deleteguildmember"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deleteguildmember": {
@@ -1130,7 +1130,7 @@
                 "ActionInput_discord_deletemessage",
                 "ActionOutput_discord_deletemessage"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deletemessage": {
@@ -1193,7 +1193,7 @@
                 "ActionInput_discord_deletereaction",
                 "ActionOutput_discord_deletereaction"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deletereaction": {
@@ -1251,7 +1251,7 @@
                 "ActionInput_discord_deleterole",
                 "ActionOutput_discord_deleterole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deleterole": {
@@ -1315,7 +1315,7 @@
                 "ActionInput_discord_deletewebhook",
                 "ActionOutput_discord_deletewebhook"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_deletewebhook": {
@@ -1369,7 +1369,7 @@
                 "ActionInput_discord_getchannel",
                 "ActionOutput_discord_getchannel"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getchannel": {
@@ -1520,7 +1520,7 @@
                 "ActionInput_discord_getguildmember",
                 "ActionOutput_discord_getguildmember"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getguildmember": {
@@ -1743,7 +1743,7 @@
                 "ActionInput_discord_getguild",
                 "ActionOutput_discord_getguild"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getguild": {
@@ -1784,7 +1784,7 @@
                 "ActionInput_discord_getmessage",
                 "ActionOutput_discord_getmessage"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getmessage": {
@@ -1956,7 +1956,7 @@
                 "ActionInput_discord_getrole",
                 "ActionOutput_discord_getrole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getrole": {
@@ -2117,7 +2117,7 @@
                 "ActionInput_discord_getwebhook",
                 "ActionOutput_discord_getwebhook"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_getwebhook": {
@@ -2228,7 +2228,7 @@
                 "ActionInput_discord_listchannels",
                 "ActionOutput_discord_listchannels"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listchannels": {
@@ -2390,7 +2390,7 @@
                 "ActionInput_discord_listguildmembers",
                 "ActionOutput_discord_listguildmembers"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listguildmembers": {
@@ -2520,7 +2520,7 @@
         },
         {
             "type": "action",
-            "description": "List guilds from Discord.",
+            "description": "List the guilds (servers) the authorized Discord user belongs to.",
             "endpoint": null,
             "input": "ActionInput_discord_listguilds",
             "name": "list-guilds",
@@ -2528,13 +2528,13 @@
                 "ActionOutput_discord_listguilds"
             ],
             "scopes": [
-                "bot"
+                "guilds"
             ],
             "usedModels": [
                 "ActionInput_discord_listguilds",
                 "ActionOutput_discord_listguilds"
             ],
-            "version": "1.0.2",
+            "version": "1.1.0",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listguilds": {
@@ -2641,7 +2641,7 @@
                 "ActionInput_discord_listmessages",
                 "ActionOutput_discord_listmessages"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listmessages": {
@@ -2834,7 +2834,7 @@
                 "ActionInput_discord_listroles",
                 "ActionOutput_discord_listroles"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listroles": {
@@ -2980,7 +2980,7 @@
                 "ActionInput_discord_listwebhooks",
                 "ActionOutput_discord_listwebhooks"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_listwebhooks": {
@@ -3143,7 +3143,7 @@
                 "ActionInput_discord_removeguildmemberrole",
                 "ActionOutput_discord_removeguildmemberrole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_removeguildmemberrole": {
@@ -3213,7 +3213,7 @@
                 "ActionInput_discord_updatechannel",
                 "ActionOutput_discord_updatechannel"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updatechannel": {
@@ -3445,7 +3445,7 @@
                 "ActionInput_discord_updateguildmember",
                 "ActionOutput_discord_updateguildmember"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updateguildmember": {
@@ -3596,7 +3596,7 @@
                 "ActionInput_discord_updateguild",
                 "ActionOutput_discord_updateguild"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updateguild": {
@@ -3934,7 +3934,7 @@
                 "ActionInput_discord_updatemessage",
                 "ActionOutput_discord_updatemessage"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updatemessage": {
@@ -4077,7 +4077,7 @@
                 "ActionInput_discord_updaterole",
                 "ActionOutput_discord_updaterole"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updaterole": {
@@ -4294,7 +4294,7 @@
                 "ActionInput_discord_updatewebhook",
                 "ActionOutput_discord_updatewebhook"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_discord_updatewebhook": {
@@ -4415,7 +4415,7 @@
             "usedModels": [
                 "Channel"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -4499,7 +4499,7 @@
             "usedModels": [
                 "GuildMember"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -4575,7 +4575,7 @@
         },
         {
             "type": "sync",
-            "description": "Sync guilds from Discord.",
+            "description": "Sync the guilds (servers) the authorized Discord user belongs to.",
             "auto_start": true,
             "endpoints": [
                 {
@@ -4590,14 +4590,14 @@
             ],
             "runs": "every hour",
             "scopes": [
-                "bot"
+                "guilds"
             ],
             "sync_type": "full",
             "track_deletes": false,
             "usedModels": [
                 "Guild"
             ],
-            "version": "1.0.1",
+            "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -4670,7 +4670,7 @@
                 "Message",
                 "SyncMetadata_discord_messages"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -4760,7 +4760,7 @@
                 "Role",
                 "SyncMetadata_discord_roles"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -4876,7 +4876,7 @@
                 "Webhook",
                 "SyncMetadata_discord_webhooks"
             ],
-            "version": "1.0.1",
+            "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {

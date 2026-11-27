@@ -1253,7 +1253,7 @@
         },
         "discord": {
             "file": "catalog/discord.json",
-            "sha256": "d82a01e781035f91cc8c132e3a0c0a81f042277a895c802fd5e91ea369476412",
+            "sha256": "dc6ba9aab18efe6d6af59f297b404ccc55a1ac56e576ff236b7508f0ce21590b",
             "counts": {
                 "actions": 33,
                 "syncs": 6,
@@ -1799,7 +1799,7 @@
         },
         "gong": {
             "file": "catalog/gong.json",
-            "sha256": "4a87ce65f2752fdcbdfa014c8071ec1da1515534903ebac030bb3be79413bc7f",
+            "sha256": "ab40c033b92e42f9b43f8182dcfde4535001ab93aad630e0eae65b5a208cc533",
             "counts": {
                 "actions": 66,
                 "syncs": 8,

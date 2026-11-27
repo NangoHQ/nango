@@ -1,0 +1,78 @@
+---
+title: 'Svix'
+sidebarTitle: 'Svix'
+description: 'Integrate your application with the Svix API'
+---
+
+## 🚀 Quickstart
+
+Connect to Svix with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Svix_.
+    </Step>
+    <Step id="authorize-svix" title="Authorize Svix">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then choose your region and enter your Svix API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-svix-api" title="Call the Svix API">
+    Let's make your first request to the Svix API to list your applications. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/app?limit=1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/app',
+            params: { limit: 1 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Svix integration guides
+
+- [How do I link my account?](/api-integrations/svix/connect)  
+Find your region and create a Svix API key to connect in the Connect UI.
+
+Official docs: [Svix API reference](https://api.svix.com/docs)
+
+## 🧩 Pre-built syncs & tools for Svix
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/svix/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

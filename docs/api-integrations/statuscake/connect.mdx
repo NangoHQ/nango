@@ -1,0 +1,42 @@
+---
+title: 'StatusCake - How do I link my account?'
+sidebarTitle: 'StatusCake'
+---
+
+## Overview
+
+To authenticate with StatusCake, you need:
+
+1. **API Key** — a StatusCake API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A [StatusCake account](https://app.statuscake.com/Try/). API keys are available on the free plan.
+
+### Step 1: Generate an API key
+
+1. Sign in to [StatusCake](https://app.statuscake.com).
+2. Open the **Account** menu (top right) and go to **Account Settings**.
+3. Scroll to the **Developer** section and click **Manage API keys**.
+
+<img src="/api-integrations/statuscake/account_settings_api_keys.png" alt="StatusCake Account Settings page with the Developer section and the Manage API keys button"/>
+
+4. In the **Manage API keys** panel, click **Generate API key**.
+5. Optionally, give the new key a **Description** so you can recognize it later.
+6. Click **Copy** next to the key and keep it somewhere safe.
+
+<img src="/api-integrations/statuscake/generate_api_key.png" alt="StatusCake Manage API keys panel with a new key, its Description field and the Copy button"/>
+
+To rotate the key later, generate a new one and click **Revoke key** on the old one.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with StatusCake.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with StatusCake before saving the connection.
+
+<img src="/api-integrations/statuscake/form.png" alt="StatusCake Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to StatusCake.

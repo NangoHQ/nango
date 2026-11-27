@@ -1,0 +1,45 @@
+---
+title: 'Mailercloud - How do I link my account?'
+sidebarTitle: 'Mailercloud'
+---
+
+## Overview
+
+To authenticate with Mailercloud, you need:
+
+1. **API Key** - a Mailercloud API key.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- A Mailercloud account. Sign up at [app.mailercloud.com](https://app.mailercloud.com/register).
+
+### Step 1: Create an API key
+
+1. Sign in to [Mailercloud](https://app.mailercloud.com/login).
+2. Click your profile avatar in the bottom-left corner, then choose **Account**.
+
+<img src="/api-integrations/mailercloud/account_menu.png" alt="Mailercloud profile menu with the Account item"/>
+
+3. In **Account Overview**, open the **Integrations** menu and click **API Keys**. You can also go straight to the [API Keys page](https://app.mailercloud.com/account/api-integrations).
+
+<img src="/api-integrations/mailercloud/integrations_api_keys.png" alt="Mailercloud Account Overview with the Integrations menu open and the API Keys item"/>
+
+4. Click **Create API key**, enter a name for the key, for example `Nango`, and click **Generate key**.
+
+<img src="/api-integrations/mailercloud/create_api_key.png" alt="Mailercloud Add New API Key dialog with the key name field and the Generate key button"/>
+
+5. In the **API Keys** table, click the copy icon next to the masked key to copy the full API key.
+
+<img src="/api-integrations/mailercloud/api_key_created.png" alt="Mailercloud API Keys table with the copy icon next to the new key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Mailercloud.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with Mailercloud and rejects it if it is wrong.
+
+<img src="/api-integrations/mailercloud/form.png" alt="Nango Connect UI form for entering the Mailercloud API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Mailercloud.
