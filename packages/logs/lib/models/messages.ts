@@ -5,13 +5,22 @@ import { client } from '../storage/client.js';
 import { createCursor, parseCursor } from './helpers.js';
 
 import type { estypes } from '@elastic/elasticsearch';
-import type { MessageRow, OperationRow, SearchOperationsState, SearchPeriod } from '@nangohq/types';
+import type { LogLevel, MessageRow, OperationRow, SearchOperationsState, SearchPeriod } from '@nangohq/types';
 
 export interface ListMessages {
     count: number;
     items: MessageRow[];
     cursorAfter: string | null;
     cursorBefore: string | null;
+}
+
+export const logLevels = { debug: 'debug', info: 'info', warn: 'warn', error: 'error' } as const satisfies { [K in LogLevel]: K };
+
+interface MessagesFilters {
+    parentId: string;
+    states?: SearchOperationsState[] | undefined;
+    search?: string | undefined;
+    period?: SearchPeriod | undefined;
 }
 
 /**
@@ -29,18 +38,7 @@ export async function createMessage(row: MessageRow): Promise<{ index: string }>
     return { index: res._index };
 }
 
-/**
- * List messages
- */
-export async function listMessages(opts: {
-    parentId: string;
-    limit: number;
-    states?: SearchOperationsState[] | undefined;
-    search?: string | undefined;
-    cursorBefore?: string | null | undefined;
-    cursorAfter?: string | null | undefined;
-    period?: SearchPeriod | undefined;
-}): Promise<ListMessages> {
+function buildMessagesQuery(opts: MessagesFilters): estypes.QueryDslQueryContainer {
     const query: estypes.QueryDslQueryContainer = {
         bool: { must: [{ term: { parentId: opts.parentId } }], should: [] }
     };
@@ -67,6 +65,22 @@ export async function listMessages(opts: {
                 createdAt: { gte: opts.period.from, lte: opts.period.to }
             }
         });
+    }
+
+    return query;
+}
+
+export async function listMessages(
+    opts: MessagesFilters & {
+        limit: number;
+        levels?: LogLevel[] | undefined;
+        cursorBefore?: string | null | undefined;
+        cursorAfter?: string | null | undefined;
+    }
+): Promise<ListMessages> {
+    const query = buildMessagesQuery(opts);
+    if (opts.levels) {
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ terms: { level: opts.levels } });
     }
 
     // Sort and cursor
@@ -115,6 +129,28 @@ export async function listMessages(opts: {
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
         cursorAfter: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
+}
+
+export async function countMessagesByLevel(opts: MessagesFilters): Promise<Record<LogLevel, number>> {
+    const levels = Object.values(logLevels);
+    const res = await client.search<MessageRow, { levelAgg: estypes.AggregationsStringTermsAggregate }>({
+        index: indexMessages.index,
+        size: 0,
+        track_total_hits: false,
+        query: buildMessagesQuery(opts),
+        aggs: {
+            levelAgg: { terms: { field: 'level', size: levels.length, include: levels } }
+        }
+    });
+
+    const counts = { debug: 0, info: 0, warn: 0, error: 0 } satisfies Record<LogLevel, number>;
+    const buckets = res.aggregations?.levelAgg.buckets;
+    if (Array.isArray(buckets)) {
+        for (const bucket of buckets) {
+            counts[bucket.key as LogLevel] = bucket.doc_count;
+        }
+    }
+    return counts;
 }
 
 /**

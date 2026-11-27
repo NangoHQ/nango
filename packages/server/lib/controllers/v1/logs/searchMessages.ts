@@ -17,6 +17,7 @@ const validation = z
             .max(10)
             .optional()
             .default(['all']),
+        levels: z.array(z.enum(modelMessages.logLevels)).min(1).max(4).optional(),
         cursorBefore: z.string().or(z.null()).optional(),
         cursorAfter: z.string().or(z.null()).optional(),
         period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional()
@@ -62,18 +63,21 @@ export const searchMessages = asyncWrapperWithEnvironment<SearchMessages>(async 
     }
 
     const body: SearchMessages['Body'] = val.data;
-    const rawOps = await modelMessages.listMessages({
-        parentId: body.operationId,
-        limit: body.limit!,
-        states: body.states,
-        search: body.search,
-        cursorBefore: body.cursorBefore,
-        cursorAfter: body.cursorAfter,
-        period: body.period
-    });
+    const filters = { parentId: body.operationId, states: body.states, search: body.search, period: body.period };
+    const [rawOps, levelCounts] = await Promise.all([
+        modelMessages.listMessages({
+            ...filters,
+            limit: body.limit!,
+            levels: body.levels,
+            cursorBefore: body.cursorBefore,
+            cursorAfter: body.cursorAfter
+        }),
+        body.cursorAfter ? undefined : modelMessages.countMessagesByLevel(filters)
+    ]);
 
     res.status(200).send({
         data: rawOps.items,
-        pagination: { total: rawOps.count, cursorBefore: rawOps.cursorBefore, cursorAfter: rawOps.cursorAfter }
+        pagination: { total: rawOps.count, cursorBefore: rawOps.cursorBefore, cursorAfter: rawOps.cursorAfter },
+        levelCounts
     });
 });

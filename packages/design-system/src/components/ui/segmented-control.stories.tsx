@@ -130,6 +130,29 @@ export const IconOnly: Story = {
     )
 };
 
+export const WithCounts: Story = {
+    render: () => (
+        <div className="flex flex-col gap-4">
+            {SIZES.map((size) => (
+                <SegmentedControl key={size} size={size} aria-label="Level" defaultValue="all">
+                    <SegmentedControlItem value="all" count="1.2K">
+                        All
+                    </SegmentedControlItem>
+                    <SegmentedControlItem value="error" count={3}>
+                        Error
+                    </SegmentedControlItem>
+                    <SegmentedControlItem value="warn" count={0} disabled>
+                        Warn
+                    </SegmentedControlItem>
+                    <SegmentedControlItem value="info" count="1.1K">
+                        Info
+                    </SegmentedControlItem>
+                </SegmentedControl>
+            ))}
+        </div>
+    )
+};
+
 export const Disabled: Story = {
     render: () => (
         <div className="flex flex-col gap-4">

@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import { indexMessages } from '../es/schema.js';
 import { logContextGetter } from './logContextGetter.js';
-import { listMessages } from './messages.js';
+import { countMessagesByLevel, listMessages } from './messages.js';
 
 import type { ListMessages } from './messages.js';
 import type { OperationRowInsert } from '@nangohq/types';
@@ -80,5 +80,19 @@ describe('messages', () => {
         expect(list5.cursorAfter).toBeDefined();
         expect(list5.items[0]!.id).not.toEqual(list1.items[0]!.id);
         expect(list5.cursorBefore).not.toEqual(list1.cursorBefore);
+    });
+
+    it('should filter by level and count every level', async () => {
+        const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
+        await ctx.info('info a');
+        await ctx.info('info b');
+        await ctx.warn('warn a');
+        await ctx.error('error a');
+
+        const list = await listMessages({ limit: 10, parentId: ctx.id, levels: ['warn', 'error'] });
+        expect(list.count).toBe(2);
+        expect(list.items.map((item) => item.level).sort()).toStrictEqual(['error', 'warn']);
+        expect(await countMessagesByLevel({ parentId: ctx.id })).toStrictEqual({ debug: 0, info: 2, warn: 1, error: 1 });
+        expect(await countMessagesByLevel({ parentId: ctx.id, search: 'info' })).toStrictEqual({ debug: 0, info: 2, warn: 0, error: 0 });
     });
 });

@@ -1,15 +1,13 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { addMinutes } from 'date-fns';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
@@ -21,16 +19,24 @@ import { columns, defaultLimit } from '../constants';
 import { ShowMessage } from '../Message/Show';
 import { LogRow } from './LogRow';
 
-import type { Period, PeriodPreset } from '../../../../utils/dates';
-import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
+import type { LogLevel, MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
 
-const fullPeriod: PeriodPreset = {
-    name: 'full',
-    label: 'All logs',
-    shortLabel: 'All',
-    toPeriod: () => null // Null means no period
-};
+type LevelFilter = 'all' | LogLevel;
+const levelOptions: { value: LevelFilter; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'error', label: 'Error' },
+    { value: 'warn', label: 'Warn' },
+    { value: 'info', label: 'Info' },
+    { value: 'debug', label: 'Debug' }
+];
+
+function levelCount(counts: Record<LogLevel, number>, level: LevelFilter): number {
+    if (level === 'all') {
+        return counts.debug + counts.info + counts.warn + counts.error;
+    }
+    return counts[level];
+}
 
 export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLive: boolean }> = ({ operation, operationId, isLive }) => {
     const env = useStore((state) => state.env);
@@ -42,7 +48,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
-    const [period, setPeriod] = useState<Period | null>(null);
+    const [level, setLevel] = useState<LevelFilter>('all');
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
@@ -54,7 +60,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         unknown[],
         { before: string | null } | { after: string | null } | null
     >({
-        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, period],
+        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, level],
         queryFn: async ({ pageParam, signal }) => {
             const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
@@ -62,9 +68,9 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     operationId,
                     limit: defaultLimit,
                     search: debouncedSearch,
+                    levels: level === 'all' ? undefined : [level],
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined,
-                    period: period ? { from: period.from.toISOString(), to: period.to?.toISOString() ?? new Date().toISOString() } : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
@@ -92,6 +98,15 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
 
     const flatData = useMemo<MessageRow[]>(() => {
         return data?.pages?.flatMap((page) => page.data) ?? [];
+    }, [data]);
+
+    // Kept across level switches, so the counts don't blank out while the new level loads
+    const [levelCounts, setLevelCounts] = useState<Record<LogLevel, number>>();
+    useEffect(() => {
+        const latest = data?.pages?.[0]?.levelCounts;
+        if (latest) {
+            setLevelCounts(latest);
+        }
     }, [data]);
 
     const [totalHumanReadable, totalMessages] = useMemo(() => {
@@ -163,27 +178,6 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
 
-    const earliestToLatestPeriod = useMemo(() => {
-        if (period || !flatData.length) {
-            return;
-        }
-
-        const { earliest, latest } = flatData.reduce(
-            (acc, curr) => {
-                return {
-                    earliest: new Date(acc.earliest.createdAt) < new Date(curr.createdAt) ? acc.earliest : curr,
-                    latest: new Date(acc.latest.createdAt) > new Date(curr.createdAt) ? acc.latest : curr
-                };
-            },
-            { earliest: flatData[0], latest: flatData[0] }
-        );
-
-        return {
-            from: new Date(earliest.createdAt),
-            to: addMinutes(new Date(latest.createdAt), 1)
-        };
-    }, [flatData, period]);
-
     return (
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -231,16 +225,22 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         </InputGroupAddon>
                     )}
                 </InputGroup>
-                <div className="border border-transparent">
-                    <PeriodSelector
-                        period={period}
-                        isLive={isLive}
-                        onChange={setPeriod}
-                        presets={[fullPeriod]}
-                        defaultPreset={fullPeriod}
-                        customPeriodExample={earliestToLatestPeriod}
-                    />
-                </div>
+                <SegmentedControl
+                    aria-label="Level"
+                    value={level}
+                    onValueChange={(value) => setLevel(levelOptions.find((option) => option.value === value)?.value ?? 'all')}
+                >
+                    {levelOptions.map((option) => (
+                        <SegmentedControlItem
+                            key={option.value}
+                            value={option.value}
+                            count={levelCounts ? formatQuantity(levelCount(levelCounts, option.value)) : undefined}
+                            disabled={!isLive && option.value !== 'all' && option.value !== level && levelCounts?.[option.value] === 0}
+                        >
+                            {option.label}
+                        </SegmentedControlItem>
+                    ))}
+                </SegmentedControl>
             </header>
             <div
                 style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}

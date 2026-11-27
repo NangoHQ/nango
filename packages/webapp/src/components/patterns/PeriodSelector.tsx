@@ -18,10 +18,9 @@ export interface PeriodSelectorProps {
     onChange: (date: Period | null, live: boolean) => void;
     presets: PeriodPreset[];
     defaultPreset?: PeriodPreset;
-    customPeriodExample?: Period;
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset }: PeriodSelectorProps) => {
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
@@ -30,10 +29,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
     const [rangeInputErrorMessage, setRangeInputErrorMessage] = useState('');
 
     const customPeriodInputExample = useMemo(() => {
-        const from = customPeriodExample?.from ?? subDays(new Date(), 1);
-        const to = customPeriodExample?.to ?? new Date();
-        return `${format(from, dateTimeFormat)} - ${format(to, dateTimeFormat)}`;
-    }, [customPeriodExample]);
+        return `${format(subDays(new Date(), 1), dateTimeFormat)} - ${format(new Date(), dateTimeFormat)}`;
+    }, []);
 
     useEffect(() => {
         const preset = matchPresetFromPeriod(period, presets);

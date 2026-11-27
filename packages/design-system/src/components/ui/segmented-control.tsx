@@ -23,7 +23,7 @@ export const segmentedControlVariants = cva(
 
 export const segmentedControlItemVariants = cva(
     [
-        'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-ds-xs',
+        'group inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-ds-xs',
         'font-sans font-ds-medium leading-ds-normal tracking-ds-normal',
         'text-text-secondary hover:text-text-default',
         // Styled on aria-checked rather than Radix's data-state, which a wrapping TooltipTrigger overwrites.
@@ -98,6 +98,7 @@ export type SegmentedControlItemProps = ItemBaseProps &
               /** Text label. One or two words. Empty children (null, booleans) would render icon-only, so they need the other branch. */
               children: Exclude<React.ReactNode, null | undefined | boolean>;
               'aria-label'?: string;
+              count?: React.ReactNode;
           }
         | {
               children?: null | false;
@@ -108,7 +109,8 @@ export type SegmentedControlItemProps = ItemBaseProps &
     );
 
 export const SegmentedControlItem = forwardRef<React.ElementRef<typeof RadioGroupPrimitive.Item>, SegmentedControlItemProps>(
-    ({ className, icon, children, ...props }, ref) => {
+    ({ className, icon, children, ...rest }, ref) => {
+        const { count, ...props } = rest as typeof rest & { count?: React.ReactNode };
         const size = useContext(SegmentedControlSizeContext);
         if (!size) {
             throw new Error('SegmentedControlItem must be rendered inside a SegmentedControl');
@@ -124,6 +126,7 @@ export const SegmentedControlItem = forwardRef<React.ElementRef<typeof RadioGrou
             >
                 {icon}
                 {children}
+                {count !== undefined && <span className="tabular-nums text-text-muted group-disabled:text-text-disabled">{count}</span>}
             </RadioGroupPrimitive.Item>
         );
 
