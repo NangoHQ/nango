@@ -77,8 +77,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
             functionLookupService.resolveFunctionByUuid({
                 environmentId: task.connection.environment_id,
-                functionUuid: task.functionUuid,
-                includeInline: true
+                functionUuid: task.functionUuid
             })
         );
         if (resolved.isErr()) {

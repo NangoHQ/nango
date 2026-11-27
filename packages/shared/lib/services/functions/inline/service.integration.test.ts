@@ -47,21 +47,21 @@ describe('inline functions', () => {
         expect((await get(db.knex, { environmentId: env.id, uuid: created.uuid })).unwrap()).toStrictEqual(created);
     });
 
-    it('resolves an inline uuid as a function only for callers that ask for inline functions', async () => {
+    it('resolves an inline uuid as a function that takes no input', async () => {
         const { env, agentSessionId } = await seedSession();
         const created = (
             await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), code: 'return 1;', description: 'One' })
         ).unwrap();
 
-        expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid, includeInline: true })).unwrap()).toStrictEqual({
+        expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid })).unwrap()).toStrictEqual({
             kind: 'inline',
             uuid: created.uuid,
             name: 'inline',
             enabled: true,
             code: 'return 1;',
-            description: 'One'
+            description: 'One',
+            definition: { uuid: created.uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
         });
-        expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid })).unwrap()).toBeUndefined();
     });
 
     it('only reads the code from the environment that stored it', async () => {

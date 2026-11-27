@@ -5,12 +5,13 @@ import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import * as functionLookupService from './lookup/index.js';
 import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { ResolvedFunction } from './lookup/service.js';
+import type { ResolvedFunction, ResolvedInlineFunction } from './lookup/service.js';
 import type { FunctionInputValidationError } from './models/validate.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type {
@@ -209,7 +210,7 @@ export async function resolveFunctionConnection({
     connectionId,
     integrationId
 }: {
-    fn: ResolvedFunction;
+    fn: ResolvedFunction | ResolvedInlineFunction;
     environmentId: number;
     connectionId: string;
     /** connectionId is historically NOT guaranteed unique across integrations. Required for functions that are not deployed and therefore not tied to a specific integration. */
@@ -223,7 +224,7 @@ export async function resolveFunctionConnection({
         }
         const connections = await connectionService.search(db.knex, {
             environmentId,
-            filter: { connectionId, provider: fn.definition.provider, ...(integrationId !== undefined && { integrationId }) },
+            filter: { connectionId, ...(fn.kind === 'catalog' && { provider: fn.definition.provider }), ...(integrationId !== undefined && { integrationId }) },
             limit: 2
         });
         if (connections.isErr()) {
@@ -236,7 +237,12 @@ export async function resolveFunctionConnection({
         if (other) {
             return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: `Connection '${connectionId}' is ambiguous across integrations` }));
         }
-        return Ok({ connection, integration: { id: connection.config_id, unique_key: connection.provider_config_key, provider: fn.definition.provider } });
+        const provider =
+            fn.kind === 'catalog' ? fn.definition.provider : (await configService.getProviderConfig(connection.provider_config_key, environmentId))?.provider;
+        if (!provider) {
+            return Err(notFound());
+        }
+        return Ok({ connection, integration: { id: connection.config_id, unique_key: connection.provider_config_key, provider } });
     } catch (err) {
         return Err(new FunctionInvokeError({ code: 'server_error', message: 'Failed to find connection', cause: err }));
     }

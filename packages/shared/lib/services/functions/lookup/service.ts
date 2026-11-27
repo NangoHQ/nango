@@ -16,6 +16,7 @@ import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
 import type { FunctionRow } from './models/listing.js';
 import type {
     DBFunctionConfigVersion,
+    FunctionLimits,
     FunctionListType,
     IntegrationConfig,
     ListedNangoActionFunction,
@@ -23,6 +24,7 @@ import type {
     NangoFunctionTemplate
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { JSONSchema7 } from 'json-schema';
 
 export type ResolvedFunction = {
     uuid: string;
@@ -35,6 +37,16 @@ export type ResolvedFunction = {
 
 export const INLINE_FUNCTION_NAME = 'inline';
 
+// What the invoke path reads from a definition. Inline code takes no input and runs on demand.
+export interface InlineFunctionDefinition {
+    uuid: string;
+    version: string;
+    trigger: { kind: 'http' };
+    input_schema_ref: null;
+    json_schema: JSONSchema7;
+    limits: FunctionLimits;
+}
+
 export interface ResolvedInlineFunction {
     kind: 'inline';
     uuid: string;
@@ -42,6 +54,7 @@ export interface ResolvedInlineFunction {
     enabled: true;
     code: string;
     description: string | null;
+    definition: InlineFunctionDefinition;
 }
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -208,32 +221,16 @@ export async function getFunction({
     }
 }
 
-// Inline functions are agent session code, so only callers that run them ask for them.
-export async function resolveFunctionByUuid(args: {
-    environmentId: number;
-    functionUuid: string;
-    includeInline: true;
-}): Promise<Result<ResolvedFunction | ResolvedInlineFunction | undefined>>;
-export async function resolveFunctionByUuid(args: {
-    environmentId: number;
-    functionUuid: string;
-    includeInline?: false;
-}): Promise<Result<ResolvedFunction | undefined>>;
 export async function resolveFunctionByUuid({
     environmentId,
-    functionUuid,
-    includeInline = false
+    functionUuid
 }: {
     environmentId: number;
     functionUuid: string;
-    includeInline?: boolean;
 }): Promise<Result<ResolvedFunction | ResolvedInlineFunction | undefined>> {
     try {
         const uuid = functionUuid.toLowerCase();
         if (isInlineFunctionUuid(uuid)) {
-            if (!includeInline) {
-                return Ok(undefined);
-            }
             const inlineFunction = await inlineFunctionService.get(db.knex, { environmentId, uuid });
             if (inlineFunction.isErr()) {
                 return Err(new Error('failed_to_get_function_by_uuid', { cause: inlineFunction.error }));
@@ -242,7 +239,15 @@ export async function resolveFunctionByUuid({
                 return Ok(undefined);
             }
             const { code, description } = inlineFunction.value;
-            return Ok({ kind: 'inline', uuid, name: INLINE_FUNCTION_NAME, enabled: true, code, description });
+            return Ok({
+                kind: 'inline',
+                uuid,
+                name: INLINE_FUNCTION_NAME,
+                enabled: true,
+                code,
+                description,
+                definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
+            });
         }
         if (isCatalogFunctionUuid(uuid)) {
             const definition = getCatalogFunctionByUuid(uuid);

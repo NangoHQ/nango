@@ -107,10 +107,10 @@ function inlineTask(code: string): TaskFunction {
         name: 'inline',
         enabled: true,
         code,
-        description: 'Names of the open issues'
+        description: 'Names of the open issues',
+        definition: { uuid: INLINE_FUNCTION_UUID, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
     };
-    // vi.mocked only types the last overload, the one without inline functions.
-    vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(fn) as never);
+    vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(fn));
     return task(INLINE_FUNCTION_UUID);
 }
 
@@ -226,8 +226,7 @@ describe('startFunction', () => {
         expect((await startFunction(inlineTask(code))).isOk()).toBe(true);
         expect(shared.functionLookupService.resolveFunctionByUuid).toHaveBeenCalledWith({
             environmentId: 2,
-            functionUuid: INLINE_FUNCTION_UUID,
-            includeInline: true
+            functionUuid: INLINE_FUNCTION_UUID
         });
         const args = startScript.mock.calls[0]?.[0];
         if (!args) throw new Error('Missing script invocation');
