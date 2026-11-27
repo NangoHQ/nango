@@ -51,11 +51,14 @@
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
     --animate-row-flash: row-flash 1.6s ease-out;
-    --animate-status-pulse: status-pulse 1.4s ease-in-out infinite;
+    --animate-status-pulse: status-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 
     @keyframes status-pulse {
-        50% {
-            box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 25%, transparent);
+        from {
+            box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+        }
+        to {
+            box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 0%, transparent);
         }
     }
 
