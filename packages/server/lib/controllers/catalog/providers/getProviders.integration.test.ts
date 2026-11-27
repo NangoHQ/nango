@@ -55,21 +55,21 @@ describe(`GET ${route}`, () => {
             docs_connect: null,
             setup_guide_url: expect.any(String),
             default_scopes: [],
-            setup: expect.toBeOneOf(['nango-managed-app', 'required']),
+            setup: expect.toBeOneOf([{ type: 'nango-managed-app', scopes: expect.any(Array) }, { type: 'required' }]),
             function_counts: { tool: googleCalendarCounts?.tools ?? 0, sync: googleCalendarCounts?.syncs ?? 0 }
         });
     });
 
-    it('reports a Nango-managed app when shared credentials exist, and required setup otherwise', async () => {
+    it('reports a Nango-managed app with its scopes when shared credentials exist, and required setup otherwise', async () => {
         const before = await api.fetch(route, { method: 'GET', query: { search: 'asana', limit: 1 } });
         isSuccess(before.json);
-        expect(before.json.data[0]).toMatchObject({ name: 'asana', setup: 'required' });
+        expect(before.json.data[0]).toMatchObject({ name: 'asana', setup: { type: 'required' } });
 
         const sharedCredentials = await seeders.createSharedCredentialsSeed('asana');
         try {
             const after = await api.fetch(route, { method: 'GET', query: { search: 'asana', limit: 1 } });
             isSuccess(after.json);
-            expect(after.json.data[0]).toMatchObject({ name: 'asana', setup: 'nango-managed-app' });
+            expect(after.json.data[0]).toStrictEqual(expect.objectContaining({ name: 'asana', setup: { type: 'nango-managed-app', scopes: ['test'] } }));
         } finally {
             await db.knex('providers_shared_credentials').where({ id: sharedCredentials.id }).delete();
         }
@@ -79,7 +79,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, { method: 'GET', query: { search: 'posthog', limit: 1 } });
 
         isSuccess(res.json);
-        expect(res.json.data[0]).toMatchObject({ name: 'posthog', setup: 'none' });
+        expect(res.json.data[0]).toMatchObject({ name: 'posthog', setup: { type: 'none' } });
     });
 
     it('paginates', async () => {

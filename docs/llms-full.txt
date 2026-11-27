@@ -10792,7 +10792,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/catalog/list-providers
       "docs_connect": null,
       "setup_guide_url": "https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app",
       "default_scopes": [],
-      "setup": "nango-managed-app",
+      "setup": { "type": "nango-managed-app", "scopes": ["https://www.googleapis.com/auth/calendar"] },
       "function_counts": { "tool": 43, "sync": 3 }
     }
   ],
@@ -10818,7 +10818,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/catalog/get-provider.m
     "docs_connect": "https://nango.dev/docs/api-integrations/posthog/connect",
     "setup_guide_url": null,
     "default_scopes": [],
-    "setup": "none",
+    "setup": { "type": "none" },
     "function_counts": { "tool": 66, "sync": 14 }
   }
 }

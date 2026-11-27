@@ -25,7 +25,8 @@ describe(`GET ${route}`, () => {
             name: 'posthog',
             auth_mode: 'API_KEY',
             docs_connect: 'https://nango.dev/docs/api-integrations/posthog/connect',
-            setup_guide_url: null
+            setup_guide_url: null,
+            setup: { type: 'none' }
         });
     });
 

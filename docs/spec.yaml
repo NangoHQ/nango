@@ -4620,13 +4620,37 @@ components:
                     items:
                         type: string
                 setup:
-                    type: string
-                    enum: ['nango-managed-app', 'none', 'required']
-                    description: |
-                        What you need to do before you create the integration.
-                        - `nango-managed-app`: you can create the integration right away with Nango's managed OAuth app. Registering your own OAuth app is optional.
-                        - `none`: nothing to set up. End users authorize or enter their own credentials in Connect.
-                        - `required`: register your own OAuth app or fill in required integration settings first. See `setup_guide_url` and `docs`.
+                    description: What you need to do before you create the integration. `type` says which case applies.
+                    oneOf:
+                        - type: object
+                          description: >
+                              You can create the integration right away with Nango's managed OAuth app, by passing
+                              `credentials: { "type": "NANGO_MANAGED" }` to `POST /integrations`. Registering your own
+                              OAuth app is optional.
+                          required: [type, scopes]
+                          properties:
+                              type:
+                                  type: string
+                                  enum: [nango-managed-app]
+                              scopes:
+                                  type: array
+                                  items:
+                                      type: string
+                                  description: The scopes Nango's managed app requests. Compare them with a function's `meta.required_scopes`.
+                        - type: object
+                          description: Nothing to set up. End users authorize or enter their own credentials in Connect.
+                          required: [type]
+                          properties:
+                              type:
+                                  type: string
+                                  enum: [none]
+                        - type: object
+                          description: Register your own OAuth app or fill in required integration settings first. See `setup_guide_url` and `docs`.
+                          required: [type]
+                          properties:
+                              type:
+                                  type: string
+                                  enum: [required]
                 function_counts:
                     type: object
                     required:

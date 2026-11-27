@@ -21,7 +21,7 @@ export class CatalogServiceError extends Error {
 export interface CatalogProvider {
     name: string;
     provider: Provider;
-    hasManagedApp: boolean;
+    managedAppScopes: string[] | null;
     functionCounts: ApiProviderFunctionCounts | undefined;
 }
 
@@ -82,7 +82,7 @@ export function rankProviders<T extends CatalogProviderCandidate>(candidates: T[
 }
 
 interface CatalogDetails {
-    managedApps: Record<string, { preConfigured: boolean }>;
+    managedApps: Record<string, { scopes: string[] }>;
     functionCounts: Map<string, ApiProviderFunctionCounts>;
 }
 
@@ -90,7 +90,7 @@ function toCatalogProvider({ name, provider }: { name: string; provider: Provide
     return {
         name,
         provider,
-        hasManagedApp: details.managedApps[name]?.preConfigured ?? false,
+        managedAppScopes: details.managedApps[name]?.scopes ?? null,
         functionCounts: details.functionCounts.get(name)
     };
 }

@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from '../api.js';
 import type { AuthModeType } from '../auth/api.js';
 
-export type ApiCatalogProviderSetup = 'nango-managed-app' | 'none' | 'required';
+export type ApiCatalogProviderSetup = { type: 'nango-managed-app'; scopes: string[] } | { type: 'none' } | { type: 'required' };
 
 export interface ApiCatalogProvider {
     name: string;
