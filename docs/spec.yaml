@@ -4624,7 +4624,7 @@ components:
                     enum: ['nango-managed-app', 'none', 'required']
                     description: |
                         What you need to do before you create the integration.
-                        - `nango-managed-app`: nothing to register. Create the integration with Nango's managed OAuth app. Only on Nango Cloud, where Nango hosts managed apps.
+                        - `nango-managed-app`: you can create the integration right away with Nango's managed OAuth app. Registering your own OAuth app is optional.
                         - `none`: nothing to set up. End users authorize or enter their own credentials in Connect.
                         - `required`: register your own OAuth app or fill in required integration settings first. See `setup_guide_url` and `docs`.
                 function_counts:
