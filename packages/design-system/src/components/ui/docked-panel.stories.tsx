@@ -15,7 +15,7 @@ const rows = Array.from({ length: 30 }, (_, i) => `Operation ${i + 1}`);
 
 export const Default: Story = {
     render: () => (
-        <div className="h-screen bg-surface-page">
+        <div className="h-screen bg-surface-page pt-5">
             <DockedPanelLayout>
                 <DockedPanelMain>
                     <ul className="overflow-y-auto p-5 text-ds-sm text-text-default">

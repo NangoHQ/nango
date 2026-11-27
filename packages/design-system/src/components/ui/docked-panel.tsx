@@ -6,13 +6,15 @@ export const DOCKED_PANEL_MIN_WIDTH = 480;
 const MAIN_MIN_WIDTH = 420;
 const KEYBOARD_STEP = 16;
 
+const card = 'overflow-hidden rounded-t-ds-md border-ds-1 border-b-0 border-border-default bg-surface-panel';
+
 export const DockedPanelLayout = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('relative flex h-full min-h-0 w-full', className)} {...props} />
+    <div ref={ref} className={cn('relative flex h-full min-h-0 w-full gap-3 px-5', className)} {...props} />
 ));
 DockedPanelLayout.displayName = 'DockedPanelLayout';
 
 export const DockedPanelMain = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex min-h-0 min-w-0 flex-1 flex-col', className)} {...props} />
+    <div ref={ref} className={cn('flex min-h-0 min-w-0 flex-1 flex-col', card, className)} {...props} />
 ));
 DockedPanelMain.displayName = 'DockedPanelMain';
 
@@ -41,12 +43,14 @@ function writeStoredWidth(storageKey: string, width: number | null) {
 }
 
 function getMaxWidth(panel: HTMLElement): number | null {
-    const layoutWidth = panel.parentElement?.clientWidth;
-    if (!layoutWidth) {
+    const layout = panel.parentElement;
+    if (!layout?.clientWidth) {
         return null;
     }
+    const layoutStyle = getComputedStyle(layout);
+    const contentWidth = layout.clientWidth - (parseFloat(layoutStyle.paddingLeft) || 0) - (parseFloat(layoutStyle.paddingRight) || 0);
     const isOverlay = getComputedStyle(panel).position === 'absolute';
-    return Math.max(DOCKED_PANEL_MIN_WIDTH, layoutWidth - (isOverlay ? 0 : MAIN_MIN_WIDTH));
+    return Math.max(DOCKED_PANEL_MIN_WIDTH, contentWidth - (isOverlay ? 0 : MAIN_MIN_WIDTH + (parseFloat(layoutStyle.columnGap) || 0)));
 }
 
 export interface DockedPanelProps extends React.HTMLAttributes<HTMLElement> {
@@ -142,9 +146,11 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
             <aside
                 ref={setRefs}
                 className={cn(
-                    'relative flex h-full min-h-0 w-[clamp(600px,48%,960px)] flex-none flex-col border-l border-border-default bg-surface-panel',
-                    'min-[1180px]:max-w-[calc(100%-420px)]',
-                    'max-[1180px]:absolute max-[1180px]:inset-y-0 max-[1180px]:right-0 max-[1180px]:z-10 max-[1180px]:max-w-full max-[1180px]:shadow-container-sheet',
+                    'relative flex h-full min-h-0 w-[clamp(600px,48%,960px)] flex-none flex-col',
+                    card,
+                    'overflow-visible',
+                    'min-[1180px]:max-w-[calc(100%-432px)]',
+                    'max-[1180px]:absolute max-[1180px]:inset-y-0 max-[1180px]:right-5 max-[1180px]:z-10 max-[1180px]:max-w-[calc(100%-40px)] max-[1180px]:shadow-container-sheet',
                     className
                 )}
                 style={width === null ? style : { ...style, width }}
@@ -166,13 +172,13 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
                     onKeyDown={onKeyDown}
                     onDoubleClick={() => setWidth(null)}
                     className={cn(
-                        'absolute inset-y-0 -left-0.75 z-20 w-1.5 cursor-col-resize touch-none',
+                        'absolute inset-y-0 -left-2.25 z-20 w-1.5 cursor-col-resize touch-none',
                         'transition-[background-color,box-shadow] duration-100 ease-in-out',
                         'hover:bg-border-strong data-[dragging]:bg-border-strong',
                         'focus-visible:outline-none focus-visible:shadow-focus-outline-default'
                     )}
                 />
-                {children}
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-[inherit]">{children}</div>
             </aside>
         );
     }

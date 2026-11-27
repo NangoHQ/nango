@@ -75,6 +75,14 @@ describe('DockedPanel', () => {
         expect(panel.style.width).toBe('680px');
     });
 
+    it('leaves room for the layout padding and the gap between the cards', () => {
+        const { panel, handle } = renderPanel({ layoutWidth: 1100, panelWidth: 616 });
+        Object.assign(panel.parentElement!.style, { paddingLeft: '20px', paddingRight: '20px', columnGap: '12px' });
+
+        press(handle, 'ArrowLeft');
+        expect(panel.style.width).toBe('628px');
+    });
+
     it('restores the stored width and resets it on double-click', () => {
         localStorage.setItem('panel-width', '700');
         const { panel, handle } = renderPanel({ layoutWidth: 1600, panelWidth: 700, storageKey: 'panel-width' });
