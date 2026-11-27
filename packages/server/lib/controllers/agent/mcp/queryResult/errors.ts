@@ -13,9 +13,12 @@ const OUTPUT_TOO_LARGE = /^Output size is too large/;
 const TASK_EXPIRED = /^Task \S+ expired$/;
 
 export function resultNotFoundError(): PublicMcpError {
-    return new PublicMcpError('This result_id does not match a stored result of this session. Call the tool that returned it again to get a new result_id.', {
-        code: 'result_not_found'
-    });
+    return new PublicMcpError(
+        'This result_id does not match a stored result of this session. It may not have been stored, so if its tool result came with the data, use that data. Otherwise call the tool that returned it again to get a new result_id.',
+        {
+            code: 'result_not_found'
+        }
+    );
 }
 
 export function outputTooLargeError(limit: string): PublicMcpError {

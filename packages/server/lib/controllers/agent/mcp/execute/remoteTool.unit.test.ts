@@ -298,7 +298,7 @@ describe('executeSessionTool on an MCP server tool', () => {
     });
 });
 
-describe('executeSessionTool on an MCP server tool with a large result', () => {
+describe('executeSessionTool on an MCP server tool with nango_query_result', () => {
     let upsert: MockInstance<typeof records.upsert>;
     const ISSUES = { issues: Array.from({ length: 50 }, (_, i) => ({ id: `ENG-${i}`, description: 'x'.repeat(500) })) };
 
@@ -321,6 +321,13 @@ describe('executeSessionTool on an MCP server tool with a large result', () => {
 
         expect(executed.unwrap()).toMatchObject({ result_id: expect.any(String), truncated: true, shape: expect.stringContaining('issues: {') });
         expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
+    });
+
+    it('returns a small result in full with its result_id', async () => {
+        const executed = await executeWith({ content: [{ type: 'text', text: '{"issues":[]}' }] });
+
+        expect(executed.unwrap()).toEqual({ result_id: expect.any(String), truncated: false, data: { issues: [] } });
+        await vi.waitFor(() => expect(upsert).toHaveBeenCalled());
     });
 
     it('passes it through when nango_query_result is off', async () => {

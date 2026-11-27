@@ -22,7 +22,7 @@ vi.mock('@nangohq/logs', async (importOriginal) => {
     return {
         ...(await importOriginal<object>()),
         OtlpSpan: vi.fn(),
-        logContextGetter: { create: vi.fn().mockResolvedValue(logCtx) }
+        logContextGetter: { create: vi.fn().mockResolvedValue(logCtx), get: vi.fn().mockReturnValue({ warn: vi.fn().mockResolvedValue(true) }) }
     };
 });
 
@@ -78,11 +78,14 @@ afterEach(() => {
 });
 
 describe('nango_query_result', () => {
-    it('returns a small output as is', async () => {
+    it('returns a small output in full with a new result_id, so the agent can query it in turn', async () => {
         invokeFunction.mockResolvedValue(Ok({ data: { count: 3 } }));
 
-        expect((await query()).unwrap()).toEqual({ count: 3 });
-        expect(upsert).not.toHaveBeenCalled();
+        const result = (await query()).unwrap() as { result_id: string };
+
+        expect(result).toEqual({ result_id: expect.any(String), truncated: false, data: { count: 3 } });
+        expect(result.result_id).not.toBe(RESULT_ID);
+        await vi.waitFor(() => expect(upsert).toHaveBeenCalled());
     });
 
     it('stores a large output as a new result on the same connection, so the agent can query it in turn', async () => {
@@ -111,6 +114,6 @@ describe('nango_query_result', () => {
         invokeFunction.mockResolvedValue(Ok({ data: output }));
         upsert.mockResolvedValue(Err(new Error('records down')));
 
-        expect((await query()).unwrap()).toBe(output);
+        expect((await query()).unwrap()).toEqual({ truncated: false, data: output });
     });
 });

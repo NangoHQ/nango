@@ -7,7 +7,7 @@ import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
-import { storeLargeResult, toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
+import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { executeToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
@@ -143,7 +143,8 @@ export async function executeSessionTool({
         });
     }
 
-    const resultForAgent = (data: unknown) => toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data });
+    const resultForAgent = async (data: unknown, logOperationId: string | undefined) =>
+        (await toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data, logOperationId })) ?? data;
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
         // The same keys executeAction sets, so one concept is not queried under two names. It tags
@@ -202,7 +203,7 @@ export async function executeSessionTool({
             }
 
             track({ logOperationId: logCtx?.id, functionSource });
-            return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
+            return Ok(await resultForAgent('data' in result.value ? result.value.data : null, logCtx?.id));
         }
 
         const { logCtx, functionSource, result } = await executeAction({
@@ -226,7 +227,7 @@ export async function executeSessionTool({
         }
 
         track({ logOperationId: logCtx?.id, functionSource });
-        return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
+        return Ok(await resultForAgent('data' in result.value ? result.value.data : null, logCtx?.id));
     });
 }
 
@@ -306,12 +307,9 @@ async function executeRemoteTool({
 
         // A failed call is returned in full, since the agent has to read it to recover.
         const data = result.value.isError ? undefined : remoteResultData(result.value);
-        if (data === undefined) {
-            return Ok(new RemoteToolResult(result.value));
-        }
-
-        const large = await storeLargeResult({ environmentId: environment.id, plan, session, connection, toolName, data });
-        return Ok(large.kind === 'stored' ? large.result : new RemoteToolResult(result.value));
+        const forAgent =
+            data === undefined ? null : await toolResultForAgent({ environmentId: environment.id, plan, session, connection, toolName, data, logOperationId });
+        return Ok(forAgent ?? new RemoteToolResult(result.value));
     });
 }
 

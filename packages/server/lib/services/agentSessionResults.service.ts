@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import tracer from 'dd-trace';
 import * as z from 'zod/v4';
 
+import { logContextGetter } from '@nangohq/logs';
 import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
@@ -10,7 +11,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { describeResult } from './agentSessionResultShape.js';
 
-import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection, DBPlan, MessageMeta } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -22,7 +23,15 @@ export interface StoredResultRef {
     recordId: string;
 }
 
-export interface StoredToolResult {
+export interface FullToolResult {
+    /** Absent when the result is not stored. */
+    result_id?: string;
+    truncated: false;
+    data: unknown;
+    notice?: string;
+}
+
+export interface TruncatedToolResult {
     result_id: string;
     truncated: true;
     bytes: number;
@@ -31,12 +40,9 @@ export interface StoredToolResult {
     hint: string;
 }
 
-export interface UnstoredToolResult {
-    data: unknown;
-    notice: string;
-}
+export type ToolResultForAgent = FullToolResult | TruncatedToolResult;
 
-export type LargeResult = { kind: 'inline' } | { kind: 'stored'; result: StoredToolResult } | { kind: 'over_stored_limit' } | { kind: 'store_failed' };
+export type StoredResult = { kind: 'stored'; result: ToolResultForAgent } | { kind: 'over_stored_limit' };
 
 export interface ResultToStore {
     environmentId: number;
@@ -45,57 +51,61 @@ export interface ResultToStore {
     connection: AgentSessionResolvedConnection;
     toolName: string;
     data: unknown;
+    /** The tool run's log operation, where a result that cannot be stored is reported. */
+    logOperationId: string | undefined;
 }
 
 /**
- * What the agent gets back for a tool result. Small results are returned unchanged. A large one is
- * stored under the session's model and replaced with a reference the agent can run code over. The
- * tool already ran, so a result that cannot be stored is still returned in full rather than as an
- * error the agent would read as "retry the tool".
+ * What the agent gets back for a tool result, or null when the session has no nango_query_result
+ * and the caller returns the result unchanged. A result over what can be stored is returned in full
+ * with a notice.
  */
-export async function toolResultForAgent(params: ResultToStore): Promise<unknown> {
-    const large = await storeLargeResult(params);
-    switch (large.kind) {
-        case 'stored':
-            return large.result;
-        case 'over_stored_limit':
-            return {
-                data: params.data,
-                notice: `This result is over the ${formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES)} that can be stored, so it is returned in full.`
-            } satisfies UnstoredToolResult;
-        default:
-            return params.data;
+export async function toolResultForAgent(params: ResultToStore): Promise<ToolResultForAgent | null> {
+    if (!params.session.metaTools.nangoQueryResult) {
+        return null;
     }
+
+    const stored = await storeResult(params);
+    if (stored.kind === 'stored') {
+        return stored.result;
+    }
+
+    const limit = formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES);
+    warnOnToolRun(params, `The result is over the ${limit} that can be stored, so nango_query_result cannot read it`, {
+        bytes: Buffer.byteLength(JSON.stringify(params.data ?? null), 'utf8')
+    });
+    return { truncated: false, data: params.data, notice: `This result is over the ${limit} that can be stored, so it is returned in full.` };
 }
 
-/** Stores a result over the inline size and describes it. Each caller decides what to return when it is not stored. */
-export async function storeLargeResult({ environmentId, plan, session, connection, toolName, data }: ResultToStore): Promise<LargeResult> {
+/**
+ * Stores a tool result under the session's model and returns its envelope. A result that fits inline
+ * is returned with its id right away and stored in the background, since the agent already has it in
+ * full. A larger one is replaced by its shape and a sample, so it is stored first. The tool already
+ * ran, so a result that fails to store is still returned in full rather than as an error the agent
+ * would read as "retry the tool". Each caller decides what to return for one over the stored limit.
+ */
+export async function storeResult(params: ResultToStore): Promise<StoredResult> {
+    const { data } = params;
     const bytes = Buffer.byteLength(JSON.stringify(data ?? null), 'utf8');
-    if (!session.metaTools.nangoQueryResult || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
-        return { kind: 'inline' };
-    }
-
     if (bytes > envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) {
         return { kind: 'over_stored_limit' };
     }
 
-    const stored = await tracer.trace<Promise<Result<string>>>('server.agentSession.storeResult', async (span: Span) => {
-        span.setTag('nango.agentSessionId', session.id).setTag('nango.actionName', toolName).setTag('nango.resultBytes', bytes);
-        // The tool already ran, so a throw here has to end as a failed store, not as an error the agent retries.
-        const result = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data }).catch(
-            (err: unknown): Result<string> => Err(err instanceof Error ? err : new Error(String(err)))
-        );
-        if (result.isErr()) {
-            span.setTag('error', result.error);
-        }
-        return result;
-    });
+    const recordId = randomUUID();
+    const resultId = encodeResultId({ integrationId: params.connection.integrationId, recordId });
+
+    if (bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
+        void tracedStore({ ...params, recordId, bytes });
+        return { kind: 'stored', result: { result_id: resultId, truncated: false, data } };
+    }
+
+    const stored = await tracedStore({ ...params, recordId, bytes });
     if (stored.isErr()) {
-        return { kind: 'store_failed' };
+        return { kind: 'stored', result: { truncated: false, data } };
     }
 
     const { shape, sample } = describeResult(data);
-    return { kind: 'stored', result: { result_id: stored.value, truncated: true, bytes, shape, sample, hint: STORED_RESULT_HINT } };
+    return { kind: 'stored', result: { result_id: resultId, truncated: true, bytes, shape, sample, hint: STORED_RESULT_HINT } };
 }
 
 /** Opaque to the agent. The connection is resolved through the calling session, so an id from another session finds nothing. */
@@ -116,23 +126,30 @@ export function decodeResultId(resultId: string): StoredResultRef | null {
     return null;
 }
 
-async function storeToolResult({
-    sessionId,
+/** Never rejects: a failure is tagged on the span and reported on the tool run's log operation. */
+async function tracedStore(params: ResultToStore & { recordId: string; bytes: number }): Promise<Result<void>> {
+    const { session, toolName, bytes } = params;
+    return await tracer.trace<Promise<Result<void>>>('server.agentSession.storeResult', async (span: Span) => {
+        span.setTag('nango.agentSessionId', session.id).setTag('nango.actionName', toolName).setTag('nango.resultBytes', bytes);
+        const result = await insertResult(params).catch((err: unknown): Result<void> => Err(err instanceof Error ? err : new Error(String(err))));
+        if (result.isErr()) {
+            span.setTag('error', result.error);
+            warnOnToolRun(params, 'Could not store the result, so nango_query_result cannot read it', { error: result.error });
+        }
+        return result;
+    });
+}
+
+async function insertResult({
     environmentId,
     plan,
+    session,
     connection,
     toolName,
-    data
-}: {
-    sessionId: string;
-    environmentId: number;
-    plan: DBPlan | null;
-    connection: AgentSessionResolvedConnection;
-    toolName: string;
-    data: unknown;
-}): Promise<Result<string>> {
-    const recordId = randomUUID();
-    const model = agentSessionResultModel(sessionId);
+    data,
+    recordId
+}: ResultToStore & { recordId: string }): Promise<Result<void>> {
+    const model = agentSessionResultModel(session.id);
 
     const formatted = recordsFormatter.formatRecords({
         data: [{ id: recordId, tool: toolName, storedAt: new Date().toISOString(), data: (data ?? null) as never }],
@@ -149,7 +166,22 @@ async function storeToolResult({
         return Err(upserted.error);
     }
 
-    return Ok(encodeResultId({ integrationId: connection.integrationId, recordId }));
+    return Ok(undefined);
+}
+
+/** Best effort, and never throws: a result can be stored in the background, where nothing awaits it. */
+function warnOnToolRun({ logOperationId, session }: ResultToStore, message: string, meta: MessageMeta): void {
+    if (!logOperationId) {
+        return;
+    }
+    try {
+        logContextGetter
+            .get({ id: logOperationId, accountId: session.accountId })
+            .warn(message, meta)
+            .catch(() => undefined);
+    } catch {
+        // the tool run already returned its result
+    }
 }
 
 export function formatMegabytes(bytes: number): string {

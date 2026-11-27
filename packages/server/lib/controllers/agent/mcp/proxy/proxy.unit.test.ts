@@ -472,6 +472,16 @@ describe('proxyTool large responses', () => {
         expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
     });
 
+    it('returns a small body in full with its result_id', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ id: 'page_1' })) });
+
+        const result = (await callWithQueryResult()).unwrap() as { status: number; body: unknown };
+
+        expect(result.status).toBe(200);
+        expect(result.body).toEqual({ result_id: expect.any(String), truncated: false, data: { id: 'page_1' } });
+        await vi.waitFor(() => expect(upsert).toHaveBeenCalled());
+    });
+
     it('returns a large provider error in full, since the agent has to read it', async () => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(LARGE_BODY, 500, 'upstream_error')) });
 

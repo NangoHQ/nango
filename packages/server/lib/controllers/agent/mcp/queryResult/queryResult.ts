@@ -8,7 +8,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
-import { decodeResultId, formatMegabytes, storeLargeResult } from '../../../../services/agentSessionResults.service.js';
+import { decodeResultId, formatMegabytes, storeResult } from '../../../../services/agentSessionResults.service.js';
 import { queryResultToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
@@ -116,10 +116,18 @@ export const queryResultTool = makeAgentSessionMcpTool({
             }
             const output = 'data' in run.value ? run.value.data : null;
 
-            // A large output is stored as a result of its own, so the agent can run code over it in turn. The code
-            // already ran, so an output that fails to store is returned in full. One over the stored limit is rejected.
-            const large = await storeLargeResult({ environmentId: environment.id, plan, session, connection, toolName: 'nango_query_result', data: output });
-            if (large.kind === 'over_stored_limit') {
+            // The output is stored as a result of its own, so the agent can run code over it in turn. One over the
+            // stored limit is rejected, since returning it in full is what the agent asked nango_query_result to avoid.
+            const stored = await storeResult({
+                environmentId: environment.id,
+                plan,
+                session,
+                connection,
+                toolName: 'nango_query_result',
+                data: output,
+                logOperationId: logCtx.id
+            });
+            if (stored.kind === 'over_stored_limit') {
                 const limit = formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES);
                 void logCtx.error(`The code returned more than the ${limit} that can be stored`);
                 void logCtx.failed();
@@ -129,7 +137,7 @@ export const queryResultTool = makeAgentSessionMcpTool({
 
             void logCtx.success();
             track({ integrationId, logOperationId: logCtx.id });
-            return Ok(large.kind === 'stored' ? large.result : output);
+            return Ok(stored.result);
         });
     }
 });

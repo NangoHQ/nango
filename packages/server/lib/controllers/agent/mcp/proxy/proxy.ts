@@ -6,7 +6,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionProxyRequest } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
-import { storeLargeResult } from '../../../../services/agentSessionResults.service.js';
+import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { proxyInputSchema, proxyToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
@@ -126,25 +126,22 @@ export const proxyTool = makeAgentSessionMcpTool({
                 return Err(proxyErrorToMcp({ error: result.error, integrationId }));
             }
 
-            return Ok(await withLargeBodyStored({ output: result.value, environmentId: environment.id, plan, session, connection }));
+            return Ok(await withBodyStored({ output: result.value, environmentId: environment.id, plan, session, connection, logOperationId: logCtx?.id }));
         });
     }
 });
 
 /**
- * Only the body is stored, so the status and headers, such as a pagination link, still come back in
- * full. A provider error is returned in full too, since the agent has to read it to recover.
+ * Only the body is stored, so the status and headers, such as a pagination link, still come back as
+ * they are. A provider error is returned as is too, since the agent has to read it to recover.
  */
-async function withLargeBodyStored({
-    output,
-    ...target
-}: { output: ProxyRequestOutput } & Omit<ResultToStore, 'toolName' | 'data'>): Promise<ProxyRequestOutput> {
+async function withBodyStored({ output, ...target }: { output: ProxyRequestOutput } & Omit<ResultToStore, 'toolName' | 'data'>): Promise<ProxyRequestOutput> {
     if (output.status >= 400) {
         return output;
     }
 
-    const large = await storeLargeResult({ ...target, toolName: 'nango_proxy', data: output.body });
-    return large.kind === 'stored' ? { ...output, body: large.result as unknown as ProxyRequestOutput['body'] } : output;
+    const body = await toolResultForAgent({ ...target, toolName: 'nango_proxy', data: output.body });
+    return body ? { ...output, body: body as unknown as ProxyRequestOutput['body'] } : output;
 }
 
 interface ProxyRequestOutcome {
