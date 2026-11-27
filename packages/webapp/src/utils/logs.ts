@@ -1,5 +1,7 @@
 import { addMilliseconds, startOfDay, subDays, subHours, subMinutes } from 'date-fns';
 
+import { matchPresetFromPeriod } from './dates';
+
 import type { Period, PeriodPreset } from './dates';
 import type { SearchOperations, SearchOperationsType, SearchPeriod } from '@nangohq/types';
 
@@ -116,3 +118,12 @@ export const logsPresets: PeriodPreset[] = [
     },
     last14dPreset
 ] as const;
+
+export function liveDisplayPeriod(isLive: boolean, stored: Period): Period {
+    if (!isLive) {
+        return stored;
+    }
+    const slid = slidePeriod(stored);
+    // Rolling presets (5m to 24h) match the slid window; start-of-day ones (3d to 14d) keep their start and match an open end.
+    return matchPresetFromPeriod(slid, logsPresets) ? slid : { from: stored.from };
+}

@@ -1,5 +1,4 @@
 import { Bot, ChevronRight, ListFilter } from 'lucide-react';
-import { parseAsArrayOf, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs';
 import { Link } from 'react-router-dom';
 
 import { CopyButton } from '@nangohq/design-system';
@@ -9,22 +8,20 @@ import { TooltipIconButton } from '@/components/patterns/TooltipIconButton';
 import { track } from '@/utils/analytics';
 import { cn } from '@/utils/utils';
 import { typesList } from '../constants';
+import { useLogsFilters } from '../filters';
 import { operationTypeLabel } from '../format';
 
-import type { AnalyticsEventProperties, OperationRow, SearchOperationsType } from '@nangohq/types';
+import type { LogsType } from '../constants';
+import type { AnalyticsEventProperties, OperationRow } from '@nangohq/types';
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
 
-function typeFilterValue({ type, action }: OperationRow['operation']): SearchOperationsType | null {
+function typeFilterValue({ type, action }: OperationRow['operation']): LogsType | null {
     if (type === 'action') {
         return 'tool';
     }
     return typesList.find((value) => value === `${type}:${action}`) ?? typesList.find((value) => value === type) ?? null;
 }
-
-const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withOptions({ history: 'push' });
-
-const parseFilter = parseAsArrayOf(parseAsString, ',').withOptions({ history: 'push' });
 
 // Touch screens can't hover, so the actions stay visible there.
 const ROW_ACTION =
@@ -90,11 +87,7 @@ const Property: React.FC<PropertyProps> = ({ label, children, to, copy, filter }
 const Code: React.FC<{ children: string }> = ({ children }) => <span className="truncate type-code-regular-sm text-text-strong">{children}</span>;
 
 export const OperationProperties: React.FC<{ env: string; operation: OperationRow }> = ({ env, operation }) => {
-    const [, setTypes] = useQueryState('types', parseTypes);
-    const [, setIntegrations] = useQueryState('integrations', parseFilter);
-    const [, setConnections] = useQueryState('connections', parseFilter);
-    const [, setSyncs] = useQueryState('syncs', parseFilter);
-    const [, setAgentSessions] = useQueryState('agentSessions', parseFilter);
+    const { setTypes, setIntegrations, setConnections, setSyncs, setAgentSessions } = useLogsFilters();
     const { type, action } = operationTypeLabel(operation);
     const { integrationName, connectionName, syncConfigName, providerName } = operation;
     const sessionId = operation.actor?.kind === 'session' ? operation.actor.id : null;

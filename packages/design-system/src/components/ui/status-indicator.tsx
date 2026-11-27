@@ -44,25 +44,33 @@ const dotVariants = cva('shrink-0 rounded-full bg-current', {
         pulse: {
             true: "relative after:absolute after:inset-0 after:rounded-full after:border-[1.5px] after:border-current after:opacity-0 after:content-[''] motion-safe:after:animate-status-ripple",
             false: ''
+        },
+        hollow: {
+            true: 'bg-transparent border-[1.5px] border-current',
+            false: ''
         }
     },
     defaultVariants: {
         tone: 'neutral',
         size: 'md',
-        pulse: false
+        pulse: false,
+        hollow: false
     }
 });
 
 export interface StatusIndicatorProps extends React.ComponentProps<'span'>, VariantProps<typeof statusIndicatorVariants> {
     pulse?: boolean;
+    hollow?: boolean;
 }
 
-const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(({ className, tone, size, pulse = false, children, ...props }, ref) => (
-    <span ref={ref} data-slot="status-indicator" className={cn(statusIndicatorVariants({ tone, size }), className)} {...props}>
-        <span aria-hidden className={dotVariants({ tone, size, pulse })} />
-        {children}
-    </span>
-));
+const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
+    ({ className, tone, size, pulse = false, hollow = false, children, ...props }, ref) => (
+        <span ref={ref} data-slot="status-indicator" className={cn(statusIndicatorVariants({ tone, size }), className)} {...props}>
+            <span aria-hidden className={dotVariants({ tone, size, pulse, hollow })} />
+            {children}
+        </span>
+    )
+);
 StatusIndicator.displayName = 'StatusIndicator';
 
 export { StatusIndicator };

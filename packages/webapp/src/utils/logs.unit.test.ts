@@ -1,6 +1,34 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { expandLogsTypes, getLogsUrl } from './logs.js';
+import { matchPresetFromPeriod } from './dates.js';
+import { expandLogsTypes, getLogsUrl, liveDisplayPeriod, logsPresets } from './logs.js';
+
+describe('liveDisplayPeriod', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    const labelAfter = (pickedAt: string, now: string, preset: string) => {
+        vi.useFakeTimers({ now: new Date(pickedAt) });
+        const picked = logsPresets.find((p) => p.name === preset)!.toPeriod()!;
+        const stored = { from: picked.from, to: picked.to ?? new Date() };
+        vi.setSystemTime(new Date(now));
+        return matchPresetFromPeriod(liveDisplayPeriod(true, stored), logsPresets)?.name;
+    };
+
+    it('keeps a rolling preset after time passes', () => {
+        expect(labelAfter('2026-11-27T10:00:00Z', '2026-11-27T10:30:00Z', 'last24h')).toBe('last24h');
+    });
+
+    it('keeps a start-of-day preset after time passes', () => {
+        expect(labelAfter('2026-11-27T10:00:00Z', '2026-11-27T10:30:00Z', 'last3d')).toBe('last3d');
+    });
+
+    it('returns the stored window when paused', () => {
+        const stored = { from: new Date('2026-11-26T10:00:00Z'), to: new Date('2026-11-27T10:00:00Z') };
+        expect(liveDisplayPeriod(false, stored)).toBe(stored);
+    });
+});
 
 describe('expandLogsTypes', () => {
     it.each(['tool', 'tool:call'] as const)('includes legacy actions when filtering by %s', (type) => {

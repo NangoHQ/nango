@@ -13,13 +13,13 @@ describe('syncOperationIntoLists', () => {
     it('updates the matching row in every cached list and leaves the others alone', () => {
         const client = new QueryClient();
         const page = { data: [op('a', 'running'), op('b', 'running')], pagination: { total: 2, cursor: null } };
-        client.setQueryData([...operationsListKey('dev'), ['all'], 'filters-1'], { pages: [page], pageParams: [null] });
+        client.setQueryData([...operationsListKey('dev'), [], 'filters-1'], { pages: [page], pageParams: [null] });
         client.setQueryData([...operationsListKey('dev'), ['success', 'running'], 'filters-2'], { pages: [page], pageParams: [null] });
 
         syncOperationIntoLists(client, 'dev', op('a', 'success', '2026-11-27T12:00:05Z'));
 
         for (const key of [
-            [['all'], 'filters-1'],
+            [[], 'filters-1'],
             [['success', 'running'], 'filters-2']
         ]) {
             const data = client.getQueryData<{ pages: { data: OperationRow[] }[] }>([...operationsListKey('dev'), ...key]);
