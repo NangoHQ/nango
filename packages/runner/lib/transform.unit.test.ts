@@ -121,6 +121,13 @@ describe('exec in transform mode', () => {
         expect(error.payload).toEqual(payload);
     });
 
+    it('reports a return value that cannot be serialized', async () => {
+        const error = await failure(`return 1n;`);
+
+        expect(error.type).toBe('script_internal_error');
+        expect(error.payload).toMatchObject({ name: 'TypeError', message: 'Do not know how to serialize a BigInt' });
+    });
+
     it('rejects code that awaits something that never settles', async () => {
         const error = await failure(`await new Promise(() => {}); return 1;`);
 

@@ -22,7 +22,15 @@ const AsyncFunction = vm.runInNewContext('(async function () {}).constructor') a
 const driver = `(run) => (input) => {
     const state = { done: false };
     run(JSON.parse(input)).then(
-        (output) => { state.output = output === undefined ? undefined : JSON.stringify(output); state.done = true; },
+        (output) => {
+            try {
+                state.output = output === undefined ? undefined : JSON.stringify(output);
+            } catch (error) {
+                state.error = error;
+                state.failed = true;
+            }
+            state.done = true;
+        },
         (error) => { state.error = error; state.failed = true; state.done = true; }
     );
     return state;
