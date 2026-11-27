@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/exchangerate-api/PreBuiltUseCa
 ## API gotchas
 
 - The keyless open access API is on `https://open.er-api.com`. Calls to it set `baseUrlOverride` to `https://open.er-api.com`; Nango keeps the connection's credentials and headers. See [ExchangeRate-API - Open Access, No Key Required](https://www.exchangerate-api.com/docs/free).
-- Nango sends the key in the `Authorization` header on every call, so endpoints leave the key out of the path (`/v6/latest/USD`). Calls that need the key in the URL path (`/v6/<KEY>/latest/USD`) can read it from the connection's credentials (`credentials.apiKey`) and put it in the path as the docs show.
+- Nango sends the key in the `Authorization` header on every call, so endpoints leave the key out of the path (`/v6/latest/USD`). Calls that need the key in the URL path (`/v6/<KEY>/latest/USD`) can read it from the connection's credentials (`credentials.apiKey`) and put it in the path themselves, right after `/v6/`.
 
 ---
