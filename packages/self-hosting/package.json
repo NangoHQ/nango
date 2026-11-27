@@ -16,7 +16,7 @@
         "directory": "packages/self-hosting"
     },
     "dependencies": {
-        "@aws-sdk/client-kms": "3.1069.0",
+        "@aws-sdk/client-kms": "3.1173.0",
         "@clickhouse/client": "1.18.2",
         "@nangohq/clickhouse-migrations": "file:../clickhouse-migrations",
         "@nangohq/hosted-telemetry": "file:../hosted-telemetry",
