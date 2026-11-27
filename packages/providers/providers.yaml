@@ -12394,7 +12394,7 @@ databricks-account-oauth:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.region}/api
+        base_url: https://${connectionConfig.region}/api/2.0/accounts/${connectionConfig.accountId}
     docs: https://nango.dev/docs/api-integrations/databricks-account-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/databricks-account-oauth/how-to-register-your-own-databricks-account-oauth-api-oauth-app
     connection_config:

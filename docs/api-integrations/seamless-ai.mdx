@@ -76,7 +76,7 @@ import PreBuiltUseCases from "/snippets/generated/seamless-ai/PreBuiltUseCases.m
 
 ## API gotchas
 
-- The MCP server is on the fixed host `https://mcp.seamless.ai`: send MCP requests to `/mcp` with `baseUrlOverride` set to `https://mcp.seamless.ai`, and Nango keeps the connection's credentials and headers. The key must be created with the MCP scope. See [Authentication](https://docs.seamless.ai/mcp/authentication).
-- Nango sends the key in the `Token` header to `https://api.seamless.ai` on every call. The docs also accept the same key in the `Token` header on the MCP server at `https://mcp.seamless.ai/mcp`: calls that reach it outside this connection can read the key from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- The MCP server is on the fixed host `https://mcp.seamless.ai`: send MCP requests to `/mcp` with `baseUrlOverride` set to `https://mcp.seamless.ai` and the headers `Content-Type: application/json` and `Accept: application/json, text/event-stream`; Nango keeps the connection's credentials. The key must be created with the MCP scope. See [Authentication](https://docs.seamless.ai/mcp/authentication).
+- Nango sends the key in the `Token` header to `https://api.seamless.ai` on every call. The docs also accept the same key in the `Token` header on the MCP server at `https://mcp.seamless.ai/mcp`: calls that reach it outside this connection can read the key from the connection's credentials (`credentials.apiKey`) and set the `Token` header themselves.
 
 ---

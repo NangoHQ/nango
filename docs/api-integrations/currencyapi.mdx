@@ -76,7 +76,7 @@ import PreBuiltUseCases from "/snippets/generated/currencyapi/PreBuiltUseCases.m
 
 ## API gotchas
 
-- Nango sends the key in the `apikey` header on every call. Calls that need it another way, such as the `apikey` query parameter, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `apikey` header on every call. Calls that need it as the `apikey` query parameter instead can read it from the connection's credentials (`credentials.apiKey`) and add that parameter themselves; currencyapi recommends the header, since a key in the URL can end up in access logs.
 - currencyapi's MCP server takes the same key: send MCP requests to `/mcp` through this connection.
 
 ---

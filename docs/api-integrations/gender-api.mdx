@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/gender-api/PreBuiltUseCases.md
 ## API gotchas
 
 - The Gender API MCP server is served from `https://mcp.gender-api.com`, not from `https://gender-api.com`. Call it with `baseUrlOverride` set to that host; Nango keeps the connection's credentials and headers. See [Hosted MCP Server](https://gender-api.com/en/app-integrations/mcp-server).
-- Nango sends the key as a bearer token in the `Authorization` header on every call. Calls that need it another way, such as the `key` query parameter of the legacy API v1, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key as a bearer token in the `Authorization` header on every call. Calls to the legacy API v1 take it as the `key` query parameter instead (for example `GET /get-stats?key=<key>`): read it from the connection's credentials (`credentials.apiKey`) and add that parameter yourself. See [Statistic](https://gender-api.com/en/api-docs/v2/statistic).
 
 ---

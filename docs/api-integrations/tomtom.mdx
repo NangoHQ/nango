@@ -77,6 +77,6 @@ import PreBuiltUseCases from "/snippets/generated/tomtom/PreBuiltUseCases.mdx"
 ## API gotchas
 
 - Detailed South Korea data is on `kr-api.tomtom.com`. Calls to it set `baseUrlOverride` to `https://kr-api.tomtom.com`; Nango keeps the connection's credentials. See [Region-specific content](https://docs.tomtom.com/platform/documentation/api-best-practices/region-specific-content.md).
-- Nango sends the key as the `key` query parameter on every call. Calls that need it another way, such as Orbis-based services that take a `TomTom-Api-Key` header, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key as the `key` query parameter on every call. Orbis-based services (routing, traffic incident details, places) also accept it in a `TomTom-Api-Key` header: read it from the connection's credentials (`credentials.apiKey`) and set that header yourself.
 
 ---

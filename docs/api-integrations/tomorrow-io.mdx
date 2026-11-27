@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/tomorrow-io/PreBuiltUseCases.m
 
 ## API gotchas
 
-- Nango sends the key in the `apikey` header on every call. Calls that need it another way, such as the MCP server at `/v4/tomorrow-weather/mcp`, which takes an `X-Api-Key` header, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `apikey` header on every call. The MCP server at `/v4/tomorrow-weather/mcp` takes it in an `X-Api-Key` header instead: read it from the connection's credentials (`credentials.apiKey`) and set that header yourself. See [MCP](https://docs.tomorrow.io/reference/mcp).
 
 ---
