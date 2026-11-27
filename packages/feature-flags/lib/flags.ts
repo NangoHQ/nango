@@ -97,7 +97,7 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether this account can create agent sessions with `nango_run_code`. Without it the setting
+         * Whether this account can create agent sessions with `nango_query_result`. Without it the setting
          * is rejected as an unknown meta tool. Default `false`.
          */
         isAgentSessionRunCodeEnabled(accountUuid: string) {

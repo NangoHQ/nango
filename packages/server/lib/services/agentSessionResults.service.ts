@@ -14,7 +14,7 @@ import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
 const STORED_RESULT_HINT =
-    'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_run_code with this result_id and JavaScript that reads `data` and returns only what you need.';
+    'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_query_result with this result_id and JavaScript that reads `result` and returns only what you need.';
 
 export interface StoredResultRef {
     integrationId: string;
@@ -57,7 +57,7 @@ export async function toolResultForAgent({
     data: unknown;
 }): Promise<unknown> {
     const bytes = Buffer.byteLength(JSON.stringify(data ?? null), 'utf8');
-    if (!session.metaTools.nangoRunCode || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
+    if (!session.metaTools.nangoQueryResult || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
         return data;
     }
 
