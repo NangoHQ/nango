@@ -1,0 +1,61 @@
+---
+title: 'How to set up webhooks with ElevenLabs on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time ElevenLabs conversation events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. ElevenLabs sends a POST request to your Nango webhook URL when an event happens, for example `post_call_transcription` or `voice_removed`.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `ElevenLabs-Signature` against that connection's own webhook secret. The signature is an HMAC-SHA256 of its timestamp and the request body, and Nango rejects deliveries signed more than 30 minutes ago, the window ElevenLabs' own SDK uses.
+3. Nango routes the event to that connection, using the payload's `type` field as the webhook type.
+
+ElevenLabs payloads don't say which workspace they come from. So each connection needs its own webhook in ElevenLabs and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+Retries are off by default in ElevenLabs. If you turn them on, the last retry comes about 40 minutes after the first attempt, and ElevenLabs doesn't say whether a retry is signed again. A retry that keeps the first attempt's signature is rejected, as ElevenLabs' own SDK would reject it.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your ElevenLabs integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Register the webhook in ElevenLabs
+
+1. As a workspace admin, go to ElevenLabs' general settings → **Webhooks** and create a webhook with the URL from step 1, using HMAC authentication.
+2. Copy the webhook's secret.
+3. Pick the webhook where events are sent from, for example your agent's post-call webhook, or the events to listen to in the webhook's settings.
+
+### 3. Set the webhook secret in Nango
+
+Store the ElevenLabs secret as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<ELEVENLABS-WEBHOOK-SECRET>" }
+  }'
+```
+
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for ElevenLabs. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `post_call_transcription`. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in ElevenLabs, then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

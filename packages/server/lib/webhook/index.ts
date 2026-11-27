@@ -50,4 +50,9 @@ export { default as docusignWebhookRouting } from './docusign-webhook-routing.js
 export { default as layloWebhookRouting } from './laylo-webhook-routing.js';
 export { default as bambooHrWebhookRouting } from './bamboohr-webhook-routing.js';
 export { default as oktaWebhookRouting } from './okta-webhook-routing.js';
+export { default as firefliesWebhookRouting } from './fireflies-webhook-routing.js';
+export { default as pylonWebhookRouting } from './pylon-webhook-routing.js';
+export { default as elevenLabsWebhookRouting } from './elevenlabs-webhook-routing.js';
+export { default as workOSWebhookRouting } from './workos-webhook-routing.js';
+export { default as zendeskWebhookRouting } from './zendesk-webhook-routing.js';
 export type * from './types.js';
