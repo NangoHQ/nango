@@ -417,7 +417,7 @@ export abstract class NangoActionBase<
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
         const limitParameterName = paginationConfig.limit_name_in_request;
 
-        if (paginationConfig['limit']) {
+        if (paginationConfig['limit'] && limitParameterName) {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 

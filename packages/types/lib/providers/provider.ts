@@ -28,14 +28,14 @@ export interface SimplifiedJSONSchema {
     pattern?: string;
     optional?: boolean;
     format?: 'hostname' | 'uri' | 'uuid' | 'email';
-    order: number;
+    order?: number;
     default_value?: string;
-    hidden?: string;
+    hidden?: boolean;
     prefix?: string;
     suffix?: string;
     doc_section?: string;
     secret?: boolean;
-    automated: boolean;
+    automated?: boolean;
     enum?: string[];
     // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
     warnings?: Record<string, string>;
@@ -45,6 +45,9 @@ export interface SimplifiedJSONSchema {
 
 // A `proxy.body` leaf is a string (interpolated) or a nested object of more leaves, to any depth.
 export type ProxyBodyValue = string | { [key: string]: ProxyBodyValue };
+
+// A token request param is a scalar or a nested object of more params (e.g. XML request bodies), to any depth.
+export type TokenParamValue = string | number | boolean | { [key: string]: TokenParamValue };
 
 export interface BaseProvider {
     display_name: string;
@@ -61,7 +64,8 @@ export interface BaseProvider {
         forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
-            method: EndpointMethod;
+            method?: EndpointMethod; // Defaults to GET
+
             endpoints: string[];
             base_url_override?: string;
             headers?: Record<string, string>;
@@ -72,13 +76,13 @@ export interface BaseProvider {
     authorization_url_skip_encode?: string[];
     authorization_url_skip_empty?: boolean;
     access_token_url?: string;
-    authorization_params?: Record<string, string>;
+    authorization_params?: Record<string, string | boolean>;
     authorization_code_param_in_callback?: string;
     scope_separator?: string;
     default_scopes?: string[];
     token_url?: string | TokenUrlObject;
     token_url_skip_encode?: string[];
-    token_params?: Record<string, string>;
+    token_params?: Record<string, TokenParamValue>;
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
@@ -116,12 +120,12 @@ export interface ProviderOAuth2 extends BaseProvider {
 
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
 
-    token_params?: {
+    token_params?: Record<string, TokenParamValue> & {
         grant_type?: 'authorization_code' | 'client_credentials';
     };
 
-    refresh_params?: {
-        grant_type: 'refresh_token';
+    refresh_params?: Record<string, TokenParamValue> & {
+        grant_type?: 'refresh_token';
     };
     authorization_method?: OAuthAuthorizationMethodType;
     alternate_access_token_response_path?: string;
@@ -160,6 +164,14 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     registration_url?: string;
     client_registration: McpOAuth2ClientRegistration;
     registration_params?: Record<string, string | string[]>;
+    refresh_params?: Record<string, TokenParamValue>;
+    alternate_access_token_response_path?: string;
+}
+
+export interface ProviderOAuth2CC extends BaseProvider {
+    auth_mode: 'OAUTH2_CC';
+    token_headers?: Record<string, string>;
+    expires_in_unit?: 'milliseconds';
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
@@ -211,12 +223,14 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         header: {
             alg: string;
             typ?: string;
+            kid?: string;
         };
         payload: {
             iss?: string;
             scope?: string;
             aud?: string;
             sub?: string;
+            jti?: string;
         };
     };
     token_request_method?: 'GET';
@@ -242,11 +256,14 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         type?: 'saml' | 'jwt';
         key?: string;
         issuer?: string;
-        lifetimeInSeconds?: number;
+        // SAML assertions read this as a string (it's interpolated), JWT assertions as a number.
+        lifetimeInSeconds?: number | string;
         audiences?: string | string[];
         attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
         sessionIndex?: string;
         recipient?: string;
+        nameIdentifier?: string;
+        nameIdentifierFormat?: string;
         // jwt-specific
         header?: Record<string, string>;
         payload?: Record<string, string>;
@@ -285,6 +302,7 @@ export type Provider =
     | BaseProvider
     | ProviderOAuth1
     | ProviderOAuth2
+    | ProviderOAuth2CC
     | ProviderJwt
     | ProviderTwoStep
     | ProviderSignature

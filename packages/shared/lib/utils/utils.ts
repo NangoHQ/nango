@@ -431,8 +431,9 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     return interpolated;
 }
 
-export function interpolateObjectValues(obj: Record<string, string | undefined>, connectionConfig: Record<string, any>): Record<string, string | undefined> {
-    const interpolated: Record<string, string | undefined> = {};
+// Interpolates string values; other values (booleans, numbers, nested objects) are passed through unchanged.
+export function interpolateObjectValues<T>(obj: Record<string, T>, connectionConfig: Record<string, any>): Record<string, T | string> {
+    const interpolated: Record<string, T | string> = {};
     for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'string') {
             interpolated[key] = interpolateStringFromObject(value, { connectionConfig });

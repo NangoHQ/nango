@@ -110,15 +110,6 @@
                 "alternate_access_token_response_path": {
                     "type": "string"
                 },
-                "auth": {
-                    "type": "object",
-                    "additionalProperties": true,
-                    "properties": {
-                        "response_type": {
-                            "type": "string"
-                        }
-                    }
-                },
                 "auth_mode": {
                     "type": "string",
                     "enum": [
@@ -258,9 +249,6 @@
                     "items": {
                         "type": "string"
                     }
-                },
-                "decode_url": {
-                    "type": "boolean"
                 },
                 "default_scopes": {
                     "type": "array",
@@ -654,12 +642,6 @@
                     "enum": ["milliseconds"]
                 },
                 "token_response_metadata": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "refresh_token_response_metadata": {
                     "type": "array",
                     "items": {
                         "type": "string"

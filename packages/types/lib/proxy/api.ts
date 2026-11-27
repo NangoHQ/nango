@@ -100,7 +100,7 @@ export enum PaginationType {
 export interface PaginationBase {
     limit?: number | string;
     response_path?: string;
-    limit_name_in_request: string;
+    limit_name_in_request?: string;
     in_body?: boolean;
     on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }

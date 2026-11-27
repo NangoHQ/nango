@@ -729,7 +729,10 @@ class OAuthController {
                 provider.token_params.grant_type == undefined ||
                 provider.token_params.grant_type == 'authorization_code'
             ) {
-                let allAuthParams: Record<string, string | undefined> = interpolateObjectValues(provider.authorization_params || {}, connectionConfig);
+                let allAuthParams: Record<string, string | boolean | undefined> = interpolateObjectValues(
+                    provider.authorization_params || {},
+                    connectionConfig
+                );
 
                 // We always implement PKCE, no matter whether the server requires it or not,
                 // unless it has been explicitly turned off for this template
@@ -1633,7 +1636,7 @@ class OAuthController {
                 config: {
                     scopes: config.oauth_scopes,
                     basicAuthEnabled: provider.token_request_auth_method === 'basic',
-                    tokenParams: provider.token_params as string
+                    tokenParams: provider.token_params
                 },
                 response: {
                     ...(req.query && { queryParams: req.query })
@@ -1721,7 +1724,7 @@ class OAuthController {
             void logCtx.error(error.message, {
                 scopes: config.oauth_scopes,
                 basicAuthEnabled: provider.token_request_auth_method === 'basic',
-                tokenParams: provider.token_params as string
+                tokenParams: provider.token_params
             });
             await logCtx.failed();
 
