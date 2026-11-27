@@ -9,6 +9,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Segment
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { usePageVisible } from '@/hooks/usePageVisible';
 import { useStore } from '@/store';
 import { APIError, apiFetch } from '@/utils/api';
 import { findScrollParent } from '@/utils/scroll';
@@ -126,16 +127,19 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     const hasMore = messages.length < total;
     const allLoaded = Boolean(data) && !hasMore;
 
-    useInterval(
-        () => {
-            if (order === 'desc') {
-                void fetchPreviousPage({ cancelRefetch: false });
-            } else if (allLoaded) {
-                void fetchNextPage({ cancelRefetch: false });
-            }
-        },
-        isLive ? 5000 : null
-    );
+    const fetchNewLines = () => {
+        if (order === 'desc') {
+            void fetchPreviousPage({ cancelRefetch: false });
+        } else if (allLoaded) {
+            void fetchNextPage({ cancelRefetch: false });
+        }
+    };
+    const pageVisible = usePageVisible(() => {
+        if (isLive) {
+            fetchNewLines();
+        }
+    });
+    useInterval(fetchNewLines, isLive && pageVisible ? 5000 : null);
 
     const listRef = useRef<HTMLDivElement>(null);
     const { scrollParent, offsetTop } = useScrollParent(listRef);

@@ -66,6 +66,21 @@ export {
 } from './components/ui/dialog';
 export { DOCKED_PANEL_MIN_WIDTH, DockedPanel, DockedPanelLayout, DockedPanelMain, type DockedPanelProps } from './components/ui/docked-panel';
 export {
+    Table,
+    TableBody,
+    type TableBodyProps,
+    TableCell,
+    type TableCellProps,
+    TableHead,
+    type TableHeadProps,
+    TableHeader,
+    type TableProps,
+    TableRow,
+    type TableRowProps,
+    TableSortButton,
+    type TableSortButtonProps
+} from './components/ui/table';
+export {
     InlineCode,
     type InlineCodeProps,
     type InlineCodeSize,

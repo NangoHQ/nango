@@ -26,22 +26,23 @@ export const statusIndicatorVariants = cva('inline-flex w-fit shrink-0 items-cen
     }
 });
 
-const dotVariants = cva('shrink-0 rounded-full', {
+// Keep the colour on `text-*`, not `bg-*`: the ripple ring draws with currentColor.
+const dotVariants = cva('shrink-0 rounded-full bg-current', {
     variants: {
         tone: {
-            neutral: 'bg-border-strong',
-            muted: 'bg-border-default',
-            success: 'bg-icon-success',
-            info: 'bg-icon-info',
-            warning: 'bg-icon-warning',
-            danger: 'bg-icon-danger'
+            neutral: 'text-border-strong',
+            muted: 'text-border-default',
+            success: 'text-icon-success',
+            info: 'text-icon-info',
+            warning: 'text-icon-warning',
+            danger: 'text-icon-danger'
         },
         size: {
             sm: 'size-1.5',
             md: 'size-1.75'
         },
         pulse: {
-            true: 'motion-safe:animate-pulse',
+            true: "relative after:absolute after:inset-0 after:rounded-full after:border-[1.5px] after:border-current after:opacity-0 after:content-[''] motion-safe:after:animate-status-ripple",
             false: ''
         }
     },

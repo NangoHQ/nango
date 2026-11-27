@@ -9,22 +9,39 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
+import { formatQuantity } from '../../utils/utils';
 import { OperationPanel } from './components/OperationPanel';
+import { OperationsToolbar } from './components/OperationsToolbar';
 import { SearchAllOperations } from './components/SearchAllOperations';
 import { navigationDirection, neighbourId } from './operationNavigation';
+
+function focusedRowId(target: EventTarget | null): string | null {
+    return target instanceof HTMLElement ? (target.closest<HTMLElement>('tr[data-operation-id]')?.dataset['operationId'] ?? null) : null;
+}
 
 export const LogsShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const [operationId, setOperationId] = useQueryState('operationId', { history: 'push' });
     const [loadedIds, setLoadedIds] = useState<string[]>([]);
 
-    const onSelectOperation = (open: boolean, operationId: string) => {
-        if (open) {
-            track('logs:operation_view', {});
-        }
-        setOperationId(open ? operationId : null);
-    };
+    const onSelectOperation = useCallback(
+        (open: boolean, id: string) => {
+            if (open) {
+                track('logs:operation_view', {});
+            }
+            void setOperationId(open ? id : null);
+        },
+        [setOperationId]
+    );
 
+    const [total, setTotal] = useState(0);
+    const [lastOperationId, setLastOperationId] = useState<string | null>(null);
+    useEffect(() => {
+        if (operationId) {
+            setLastOperationId(operationId);
+        }
+    }, [operationId]);
+    const cursorId = operationId ?? (lastOperationId && loadedIds.includes(lastOperationId) ? lastOperationId : null);
     const previousId = operationId ? neighbourId(loadedIds, operationId, 'previous') : null;
     const nextId = operationId ? neighbourId(loadedIds, operationId, 'next') : null;
     const goTo = useCallback(
@@ -37,24 +54,32 @@ export const LogsShow: React.FC = () => {
     );
 
     useEffect(() => {
-        if (!operationId) {
-            return;
-        }
         const onKeyDown = (event: KeyboardEvent) => {
-            const direction = navigationDirection(event);
-            if (!direction) {
+            const rowId = focusedRowId(event.target);
+            const enterId = rowId ?? (event.target === document.body ? cursorId : null);
+            if (event.key === 'Enter' && !operationId && enterId) {
+                event.preventDefault();
+                onSelectOperation(true, enterId);
                 return;
             }
-            const id = direction === 'next' ? nextId : previousId;
+            const direction = navigationDirection(event);
+            if (!direction || (!operationId && !rowId && event.target !== document.body)) {
+                return;
+            }
+            const id = neighbourId(loadedIds, operationId ?? rowId ?? cursorId, direction);
             if (!id) {
                 return;
             }
             event.preventDefault();
-            goTo(id);
+            if (operationId) {
+                goTo(id);
+            } else {
+                onSelectOperation(true, id);
+            }
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [operationId, previousId, nextId, goTo]);
+    }, [operationId, cursorId, loadedIds, goTo, onSelectOperation]);
 
     if (!globalEnv.features.logs) {
         return (
@@ -82,21 +107,31 @@ export const LogsShow: React.FC = () => {
                 <title>Logs - Nango</title>
             </Helmet>
 
-            <DockedPanelLayout key={env}>
-                <DockedPanelMain>
-                    <div className="flex h-full min-h-0 flex-col p-5">
-                        <SearchAllOperations onSelectOperation={onSelectOperation} selectedOperationId={operationId} onLoadedIdsChange={setLoadedIds} />
-                    </div>
-                </DockedPanelMain>
-                {operationId && (
-                    <OperationPanel
-                        operationId={operationId}
-                        onClose={() => void setOperationId(null)}
-                        onPrevious={previousId ? () => goTo(previousId) : undefined}
-                        onNext={nextId ? () => goTo(nextId) : undefined}
-                    />
-                )}
-            </DockedPanelLayout>
+            <div key={env} className="flex h-full min-h-0 flex-col gap-3 pt-5">
+                <div className="px-5">
+                    <OperationsToolbar count={`${formatQuantity(total)} ${total === 1 ? 'log' : 'logs'} found`} />
+                </div>
+                <DockedPanelLayout>
+                    <DockedPanelMain>
+                        <SearchAllOperations
+                            onSelectOperation={onSelectOperation}
+                            selectedOperationId={operationId}
+                            tabStopOperationId={cursorId}
+                            onLoadedIdsChange={setLoadedIds}
+                            onTotalChange={setTotal}
+                            panelOpen={Boolean(operationId)}
+                        />
+                    </DockedPanelMain>
+                    {operationId && (
+                        <OperationPanel
+                            operationId={operationId}
+                            onClose={() => void setOperationId(null)}
+                            onPrevious={previousId ? () => goTo(previousId) : undefined}
+                            onNext={nextId ? () => goTo(nextId) : undefined}
+                        />
+                    )}
+                </DockedPanelLayout>
+            </div>
         </DashboardLayout>
     );
 };

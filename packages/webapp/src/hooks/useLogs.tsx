@@ -4,9 +4,13 @@ import { APIError, apiFetch } from '../utils/api';
 
 import type { GetOperation, PostInsights, SearchFilters } from '@nangohq/types';
 
+export function operationQueryKey(env: string, operationId: string) {
+    return ['logs', 'operation', env, operationId];
+}
+
 export function useGetOperation(env: string, params: GetOperation['Params']) {
     const { data, error, isLoading, isFetching, refetch } = useQuery<GetOperation['Success'], APIError>({
-        queryKey: ['logs', 'operation', env, params.operationId],
+        queryKey: operationQueryKey(env, params.operationId),
         queryFn: async (): Promise<GetOperation['Success']> => {
             const res = await apiFetch(`/api/v1/logs/operations/${params.operationId}?env=${env}`);
 

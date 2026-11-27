@@ -1,6 +1,9 @@
 export type NavigationDirection = 'previous' | 'next';
 
-export function neighbourId(ids: string[], currentId: string, direction: NavigationDirection): string | null {
+export function neighbourId(ids: string[], currentId: string | null, direction: NavigationDirection): string | null {
+    if (currentId === null) {
+        return direction === 'next' ? (ids[0] ?? null) : null;
+    }
     const index = ids.indexOf(currentId);
     if (index === -1) {
         return null;

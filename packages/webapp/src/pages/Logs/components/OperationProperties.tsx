@@ -8,13 +8,13 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { TooltipIconButton } from '@/components/patterns/TooltipIconButton';
 import { track } from '@/utils/analytics';
 import { cn } from '@/utils/utils';
-import { typesList, typesOptions } from '../constants';
+import { typesList } from '../constants';
+import { operationTypeLabel } from '../format';
 
 import type { AnalyticsEventProperties, OperationRow, SearchOperationsType } from '@nangohq/types';
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
 
-const typeLabels: Record<string, string> = { action: 'Tool', ...Object.fromEntries(typesOptions.map((opt) => [opt.value, opt.label])) };
 function typeFilterValue({ type, action }: OperationRow['operation']): SearchOperationsType | null {
     if (type === 'action') {
         return 'tool';
@@ -23,11 +23,6 @@ function typeFilterValue({ type, action }: OperationRow['operation']): SearchOpe
 }
 
 const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withOptions({ history: 'push' });
-
-export function operationTypeLabel(operation: Pick<OperationRow, 'operation'>): { type: string; action: string } {
-    const { type, action } = operation.operation;
-    return { type: typeLabels[type] ?? type, action: action.replaceAll('_', ' ') };
-}
 
 const parseFilter = parseAsArrayOf(parseAsString, ',').withOptions({ history: 'push' });
 
@@ -121,8 +116,7 @@ export const OperationProperties: React.FC<{ env: string; operation: OperationRo
                     copy={{ value: integrationName, label: 'Copy integration key' }}
                     filter={{ label: "Show only this integration's operations", kind: 'integration', onClick: () => void setIntegrations([integrationName]) }}
                 >
-                    {/* Provider logo SVGs pad their artwork inside the canvas. */}
-                    {providerName && <IntegrationLogo provider={providerName} className="-m-0.75 size-5.5 shrink-0 p-0 bg-transparent border-transparent" />}
+                    {providerName && <IntegrationLogo provider={providerName} className="size-4 shrink-0 p-0 bg-transparent border-transparent" />}
                     <Code>{integrationName}</Code>
                 </Property>
             )}

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Check, Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -7,12 +8,16 @@ import { Alert, AlertDescription, Button, COPY_BUTTON_RESET_MS, copyText } from 
 
 import { CodeBlock, COLLAPSED_MAX_LENGTH } from '@/components/ui/CodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { usePageVisible } from '@/hooks/usePageVisible';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { getRunTime } from '../../../utils/utils';
-import { OperationProperties, operationTypeLabel } from '../components/OperationProperties';
+import { OperationProperties } from '../components/OperationProperties';
 import { OperationStatus } from '../components/OperationStatus';
+import { operationTypeLabel } from '../format';
+import { Elapsed } from '../operationCells';
+import { syncOperationIntoLists } from '../operationSync';
 import { Logs } from './components/Logs';
 
 import type { ApiError, OperationRow } from '@nangohq/types';
@@ -53,6 +58,14 @@ const OperationHeading: React.FC<{ operation: OperationRow }> = ({ operation }) 
                     <>
                         <span aria-hidden>·</span>
                         <span>{duration}</span>
+                    </>
+                )}
+                {!duration && operation.state === 'running' && operation.startedAt && (
+                    <>
+                        <span aria-hidden>·</span>
+                        <span className="text-text-muted">
+                            <Elapsed startedAt={operation.startedAt} />
+                        </span>
                     </>
                 )}
             </div>
@@ -135,6 +148,13 @@ export const ShowOperation: React.FC<{ operationId: string; actions: React.React
     const errorCode = error instanceof APIError ? (error.json as ApiError<string> | undefined)?.error?.code : undefined;
     const isNotFound = errorCode === 'not_found' || errorCode === 'invalid_uri_params';
 
+    const queryClient = useQueryClient();
+    useEffect(() => {
+        if (operation) {
+            syncOperationIntoLists(queryClient, env, operation);
+        }
+    }, [queryClient, env, operation]);
+
     const isLive = useMemo(() => {
         if (isNotFound) {
             return false;
@@ -164,13 +184,12 @@ export const ShowOperation: React.FC<{ operationId: string; actions: React.React
         return pl;
     }, [operation?.meta, operation?.request, operation?.response, operation?.error]);
 
-    useInterval(
-        () => {
-            // Auto refresh
+    const pageVisible = usePageVisible(() => {
+        if (isLive) {
             trigger();
-        },
-        isLive ? 5000 : null
-    );
+        }
+    });
+    useInterval(trigger, isLive && pageVisible ? 5000 : null);
 
     if (loading) {
         return (

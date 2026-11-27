@@ -1,49 +1,72 @@
+import { formatOperationTime, operationTypeLabel } from './format';
+
 import type { SearchOperationsData } from '@nangohq/types';
-import type { Column } from '@tanstack/react-table';
-import type { CSSProperties } from 'react';
 
-// ProviderTag renders a logo (16px) + gap (6px); every cell has px-3 horizontal padding (24px total).
-const INTEGRATION_LOGO_WIDTH = 22;
-const CELL_HORIZONTAL_PADDING = 24;
-// Advance width of one character in the cell font (Geist Mono at text-s / 12px). The values are monospace,
-// so width scales linearly with character count. Measured ~7.56px; rounded up so we never under-size a
-// column and truncate a value that would otherwise fit.
+// Rounded up from Geist Mono 12px and Geist 13px: rounding down truncates values that fit.
 const MONO_CHAR_WIDTH = 7.6;
+const SANS_CHAR_WIDTH = 7.2;
+const LOGO_WIDTH = 16 + 8;
+// Must match the design-system TableCell padding.
+const CELL_PADDING = 20;
+const EDGE_PADDING = 10;
 
-// flex-shrink weights. `canShrink` columns shrink first; the grow column keeps a tiny weight so it only
-// gives up space once the others have hit their minSize, making the connection ID the last to truncate.
-const SHRINK_FIRST = 1000;
-const SHRINK_LAST = 1;
+const TIME_ONLY_CHARS = 'HH:mm:ss'.length;
+const DURATION_WIDTH = 76;
+const STATUS_WIDTH = 104;
+const PANEL_DURATION_WIDTH = 68;
+const PANEL_STATUS_WIDTH = 96;
+const PANEL_TEXT_MIN_WIDTH = 64;
+const INTEGRATION_MIN_WIDTH = 120;
+const FUNCTION_MIN_WIDTH = 120;
+const CONNECTION_MIN_WIDTH = 100;
+const CONNECTION_MAX_WIDTH = 320;
 
-/**
- * Sizes the variable-width columns (Integration, Script, Connection) to fit their widest value, so nothing
- * truncates while it fits. getSize() clamps the result to each column's minSize, so short values never fall
- * below the header width.
- */
-export function computeLogsColumnSizing(rows: SearchOperationsData[]): Record<string, number> {
-    const maxChars = (get: (row: SearchOperationsData) => string | null | undefined) => rows.reduce((max, row) => Math.max(max, (get(row) || '').length), 0);
-
-    return {
-        integrationId: Math.ceil(maxChars((row) => row.integrationName) * MONO_CHAR_WIDTH) + INTEGRATION_LOGO_WIDTH + CELL_HORIZONTAL_PADDING,
-        syncConfigId: Math.ceil(maxChars((row) => row.syncConfigName) * MONO_CHAR_WIDTH) + CELL_HORIZONTAL_PADDING,
-        connectionId: Math.ceil(maxChars((row) => row.connectionName) * MONO_CHAR_WIDTH) + CELL_HORIZONTAL_PADDING
-    };
+function widest(rows: SearchOperationsData[], get: (row: SearchOperationsData) => string | null | undefined): number {
+    return rows.reduce((max, row) => Math.max(max, (get(row) ?? '').length), 0);
 }
 
-/**
- * Flex layout for a table cell/header. Every column sits at its content width (flex-basis). The `canGrow`
- * column grows to absorb leftover space so short values leave no gap; when the row is too narrow, `canShrink`
- * columns give up space (and truncate) first, so the `canGrow` column is the last thing to be truncated.
- * Fixed columns never grow or shrink.
- */
-export function getLogsColumnStyle(column: Column<SearchOperationsData, unknown>): CSSProperties {
-    const size = column.getSize();
-    const meta = column.columnDef.meta;
-    const flexible = meta?.canShrink || meta?.canGrow;
-    return {
-        flexBasis: size,
-        flexGrow: meta?.canGrow ? 1 : 0,
-        flexShrink: meta?.canShrink ? SHRINK_FIRST : meta?.canGrow ? SHRINK_LAST : 0,
-        minWidth: flexible ? (column.columnDef.minSize ?? 0) : size
-    };
+export function computeLogsGridTemplate(rows: SearchOperationsData[], { panelOpen, now = new Date() }: { panelOpen: boolean; now?: Date }): string {
+    const timeOnly = Math.ceil(TIME_ONLY_CHARS * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING;
+    const timestamp = Math.max(
+        timeOnly,
+        Math.ceil(widest(rows, (row) => formatOperationTime(row.createdAt, now)) * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING
+    );
+    const type = Math.max(
+        PANEL_TEXT_MIN_WIDTH,
+        Math.ceil(
+            widest(rows, (row) => {
+                const { type, action } = operationTypeLabel(row);
+                return `${type} ${action}`;
+            }) * SANS_CHAR_WIDTH
+        ) + CELL_PADDING
+    );
+
+    if (panelOpen) {
+        // The panel can leave the list ~400px. Timestamp, Type and Function shrink, or fixed widths push Function out of the card.
+        return [
+            `minmax(${timeOnly}px,${timestamp}px)`,
+            `${PANEL_DURATION_WIDTH}px`,
+            `${PANEL_STATUS_WIDTH}px`,
+            `minmax(${PANEL_TEXT_MIN_WIDTH}px,${type}px)`,
+            `minmax(${PANEL_TEXT_MIN_WIDTH}px,1fr)`
+        ].join(' ');
+    }
+
+    const integration = Math.max(INTEGRATION_MIN_WIDTH, Math.ceil(widest(rows, (row) => row.integrationName) * SANS_CHAR_WIDTH) + LOGO_WIDTH + CELL_PADDING);
+    const connection = Math.min(
+        CONNECTION_MAX_WIDTH,
+        Math.max(CONNECTION_MIN_WIDTH, Math.ceil(widest(rows, (row) => row.connectionName) * MONO_CHAR_WIDTH) + CELL_PADDING + EDGE_PADDING)
+    );
+
+    // Integration and Connection have px maximums, so the grid fills them before Function.
+    // They truncate only once Function is at its minimum.
+    return [
+        `${timestamp}px`,
+        `${DURATION_WIDTH}px`,
+        `${STATUS_WIDTH}px`,
+        `${type}px`,
+        `minmax(0,${integration}px)`,
+        `minmax(${FUNCTION_MIN_WIDTH}px,1fr)`,
+        `minmax(${CONNECTION_MIN_WIDTH}px,${connection}px)`
+    ].join(' ');
 }

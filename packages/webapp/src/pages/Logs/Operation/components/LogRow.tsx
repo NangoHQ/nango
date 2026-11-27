@@ -5,7 +5,8 @@ import { useLayoutEffect, useMemo, useState } from 'react';
 import { StatusIndicator, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { cn, millisecondsToRuntime } from '@/utils/utils';
+import { cn } from '@/utils/utils';
+import { formatDuration } from '../../format';
 
 import type { StatusIndicatorProps } from '@nangohq/design-system';
 import type { LogLevel, MessageRow } from '@nangohq/types';
@@ -67,16 +68,6 @@ function useIsTruncated(): [(node: HTMLElement | null) => void, boolean] {
         return () => observer.disconnect();
     }, [node]);
     return [setNode, truncated];
-}
-
-function formatDuration(ms: number): string {
-    if (ms < 1000) {
-        return `${Math.round(ms)}ms`;
-    }
-    if (ms < 60_000) {
-        return `${(Math.floor(ms / 100) / 10).toFixed(1)}s`;
-    }
-    return millisecondsToRuntime(ms - (ms % 1000));
 }
 
 function splitUrl(url: string): [head: string, lastSegment: string, query: string] {
