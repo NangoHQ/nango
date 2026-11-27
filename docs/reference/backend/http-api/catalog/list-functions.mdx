@@ -1,0 +1,32 @@
+---
+title: "List a catalog provider's functions"
+openapi: 'GET /catalog/providers/{provider}/functions'
+---
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "name": "add-attendee",
+      "type": "action",
+      "description": "Fetch an event, append an attendee, and patch the attendee list",
+      "meta": {
+        "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events"] },
+        "tags": {}
+      }
+    },
+    {
+      "name": "calendar-events",
+      "type": "sync",
+      "description": "Incrementally sync full Google Calendar event objects",
+      "meta": {
+        "required_scopes": { "all": ["https://www.googleapis.com/auth/calendar.events.readonly"] },
+        "tags": {}
+      }
+    }
+  ],
+  "pagination": { "total": 46, "page": 0, "limit": 2 }
+}
+```
+</ResponseExample>

@@ -540,7 +540,9 @@
                         "group": "Catalog",
                         "pages": [
                           "reference/backend/http-api/catalog/list-providers",
-                          "reference/backend/http-api/catalog/get-provider"
+                          "reference/backend/http-api/catalog/get-provider",
+                          "reference/backend/http-api/catalog/list-functions",
+                          "reference/backend/http-api/catalog/get-function"
                         ]
                       },
                       {

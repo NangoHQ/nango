@@ -26,6 +26,8 @@ import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.j
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getPublicCatalogProvider } from './controllers/catalog/providers/getProvider.js';
 import { getPublicCatalogProviders } from './controllers/catalog/providers/getProviders.js';
+import { getPublicCatalogFunction } from './controllers/catalog/providers/provider/functions/getFunction.js';
+import { getPublicCatalogFunctions } from './controllers/catalog/providers/provider/functions/getFunctions.js';
 import { postCliTelemetry } from './controllers/cli/postTelemetry.js';
 import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
 import configController from './controllers/config.controller.js';
@@ -287,6 +289,8 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngr
 publicAPI.use('/catalog', jsonContentTypeMiddleware);
 publicAPI.route('/catalog/providers').get(rateLimiterMiddleware, getPublicCatalogProviders);
 publicAPI.route('/catalog/providers/:provider').get(rateLimiterMiddleware, getPublicCatalogProvider);
+publicAPI.route('/catalog/providers/:provider/functions').get(rateLimiterMiddleware, getPublicCatalogFunctions);
+publicAPI.route('/catalog/providers/:provider/functions/:name').get(rateLimiterMiddleware, getPublicCatalogFunction);
 publicAPI.use('/catalog', (_req, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
 });

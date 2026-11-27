@@ -4,20 +4,15 @@ import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { catalogProviderToApi } from '../../../formatters/catalog.js';
 import { paginationQueryFields } from '../../../helpers/validation.js';
-import catalogService, { normalizeSearch } from '../../../services/catalog.service.js';
+import catalogService from '../../../services/catalog.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { catalogSearchSchema } from '../validation.js';
 
 import type { GetPublicCatalogProviders } from '@nangohq/types';
 
 const validationQuery = z
     .object({
-        search: z
-            .string()
-            .trim()
-            .min(1)
-            .max(255)
-            .refine((search) => normalizeSearch(search).length > 0, { message: 'search must contain at least one Latin letter (a-z) or digit' })
-            .optional(),
+        search: catalogSearchSchema.optional(),
         ...paginationQueryFields
     })
     .strict();

@@ -1,0 +1,50 @@
+---
+title: 'Get a catalog function'
+openapi: 'GET /catalog/providers/{provider}/functions/{name}'
+---
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "name": "create-domain-record",
+    "type": "tool",
+    "description": "Create an A, AAAA, CAA, CNAME, MX, NS, SRV or TXT record in a managed DNS domain.",
+    "meta": {
+      "instructions": "Get the domain from `list-domains`. Use @ for apex or the provider-style host/service name, and supply type-specific fields. Use `update-domain-record` to change an existing record. SOA is managed automatically and is not created through this tool.",
+      "required_scopes": { "any": ["domain:create", "domain:update"] },
+      "tags": { "read_only_hint": "false", "destructive_hint": "false", "idempotent_hint": "false" }
+    },
+    "input_json_schema": {
+      "$ref": "#/definitions/FunctionInput_digitalocean_createdomainrecord",
+      "definitions": {
+        "FunctionInput_digitalocean_createdomainrecord": {
+          "type": "object",
+          "properties": {
+            "domainName": { "type": "string", "minLength": 1, "description": "Parent managed DNS domain name." },
+            "type": { "type": "string", "enum": ["A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"], "description": "Type of DNS record to create." },
+            "name": { "type": "string", "minLength": 1, "description": "Provider host, alias or service name, such as @, www or _service._tcp." },
+            "data": { "type": "string", "description": "Record address, target or TXT content as ordinary text; empty text is retained for provider validation." }
+          },
+          "required": ["domainName", "type", "name", "data"]
+        }
+      }
+    },
+    "output_json_schema": {
+      "$ref": "#/definitions/FunctionOutput_digitalocean_createdomainrecord",
+      "definitions": {
+        "FunctionOutput_digitalocean_createdomainrecord": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "Created record identifier." },
+            "domainName": { "type": "string", "description": "Parent managed domain name." },
+            "type": { "type": "string", "description": "Created DNS record type." }
+          },
+          "required": ["id", "domainName", "type"]
+        }
+      }
+    }
+  }
+}
+```
+</ResponseExample>
