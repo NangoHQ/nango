@@ -5,11 +5,13 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
-import { seeders } from '@nangohq/shared';
-import { Err } from '@nangohq/utils';
+import { records } from '@nangohq/records';
+import { agentSessionResultModel, inlineFunctionService, seeders } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import {
     createAgentSessionToken,
+    deleteEndedSessionsData,
     endAgentSession,
     expireAgentSessions,
     fillPendingMcpServers,
@@ -190,6 +192,83 @@ describe('agentSession service', () => {
         expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
         expect(retried.session.endedReason).toBe('terminated');
     });
+
+    it('deletes the session data in the background on terminate and marks it deleted', async () => {
+        vi.spyOn(logContextGetter, 'create').mockResolvedValue({ enrichOperation: vi.fn(), info: vi.fn(), success: vi.fn() } as unknown as LogContextOrigin);
+        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        const inline = await createInlineFunction(session);
+        const model = agentSessionResultModel(session.id);
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({ [model]: { count: 1 } as never }));
+        const deleteRecords = vi.spyOn(records, 'deleteRecords').mockResolvedValue(Ok({ count: 1, lastCursor: null }));
+
+        (await terminateAgentSession({ account, environment, sessionId: session.id })).unwrap();
+
+        await vi.waitFor(async () => expect(await dataDeletedAt(session.id)).toBeInstanceOf(Date));
+        expect(deleteRecords).toHaveBeenCalledWith({
+            connectionId: 42,
+            environmentId: environment.id,
+            model,
+            mode: 'hard',
+            limit: 100,
+            batchSize: 100,
+            plan: null
+        });
+        expect((await inlineFunctionService.get(db.knex, { environmentId: environment.id, uuid: inline.uuid })).unwrap()).toBeUndefined();
+    });
+
+    it('sweeps the data of ended sessions not marked deleted, and leaves the rest', async () => {
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Ok({}));
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        const pending = await createSession({ account, environment });
+        const justEnded = await createSession({ account, environment });
+        const live = await createSession({ account, environment });
+        const alreadyDeleted = await createSession({ account, environment });
+        await db.knex(table).where({ id: pending.id }).update({ ended_at: tenMinutesAgo, ended_reason: 'expired' });
+        await db.knex(table).where({ id: justEnded.id }).update({ ended_at: new Date(), ended_reason: 'expired' });
+        await db.knex(table).where({ id: alreadyDeleted.id }).update({ ended_at: tenMinutesAgo, ended_reason: 'expired', data_deleted_at: tenMinutesAgo });
+        const inlines = await Promise.all([pending, justEnded, live, alreadyDeleted].map((session) => createInlineFunction(session)));
+
+        expect(await deleteEndedSessionsData({ limit: 10, deadline: new Date(Date.now() + 60_000) })).toBe(1);
+
+        expect(await dataDeletedAt(pending.id)).toBeInstanceOf(Date);
+        expect(await dataDeletedAt(justEnded.id)).toBeNull();
+        expect(await dataDeletedAt(live.id)).toBeNull();
+        const remaining = await db.knex('agent_sessions_inline_functions').pluck('uuid');
+        expect(remaining.sort()).toEqual(
+            inlines
+                .slice(1)
+                .map((inline) => inline.uuid)
+                .sort()
+        );
+    });
+
+    it('leaves an ended session unmarked when its results cannot be deleted, so the sweep retries it', async () => {
+        vi.spyOn(records, 'getCountsByModel').mockResolvedValue(Err(new Error('records down')));
+        const session = await createSession({ account, environment, resolvedConnections: RESOLVED_CONNECTIONS });
+        await db
+            .knex(table)
+            .where({ id: session.id })
+            .update({ ended_at: new Date(Date.now() - 10 * 60 * 1000), ended_reason: 'expired' });
+
+        expect(await deleteEndedSessionsData({ limit: 10, deadline: new Date(Date.now() + 60_000) })).toBe(0);
+        expect(await dataDeletedAt(session.id)).toBeNull();
+    });
+
+    async function createInlineFunction(session: AgentSession) {
+        return (
+            await inlineFunctionService.create(db.knex, {
+                environmentId: environment.id,
+                agentSessionId: session.id,
+                code: 'return 1;',
+                resultRecordId: randomUUID()
+            })
+        ).unwrap();
+    }
+
+    async function dataDeletedAt(id: string): Promise<Date | null> {
+        const row = await db.knex(table).select<{ data_deleted_at: Date | null }>('data_deleted_at').where({ id }).first();
+        return row?.data_deleted_at ?? null;
+    }
 
     it('records the terminated operation without a payload', async () => {
         const session = await createSession({ account, environment });
@@ -448,20 +527,26 @@ async function keysFor(sessionId: string): Promise<number> {
     return keys.length;
 }
 
+const RESOLVED_CONNECTIONS: AgentSessionResolvedConnections = {
+    github: { integrationId: 'github', provider: 'github', connectionId: 'acme', internalConnectionId: 42, configId: 7 }
+};
+
 async function createSession({
     account,
     environment,
-    expiresAt = new Date(Date.now() + 60_000)
+    expiresAt = new Date(Date.now() + 60_000),
+    resolvedConnections = {}
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     expiresAt?: Date;
+    resolvedConnections?: AgentSessionResolvedConnections;
 }): Promise<AgentSession> {
     return (
         await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
-            resolvedConnections: {},
+            resolvedConnections,
             compiledToolset: {},
             metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
             expiresAt

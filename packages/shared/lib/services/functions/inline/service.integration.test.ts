@@ -6,7 +6,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../../seeders/global.seeder.js';
 import { resolveFunctionByUuid } from '../lookup/service.js';
-import { create, get, INLINE_FUNCTIONS_TABLE, maxInlineFunctionCodeLength } from './service.js';
+import { create, deleteBySession, get, INLINE_FUNCTIONS_TABLE, maxInlineFunctionCodeLength } from './service.js';
 import { isInlineFunctionUuid } from './uuid.js';
 
 beforeAll(async () => {
@@ -100,5 +100,18 @@ describe('inline functions', () => {
         await db.knex('agent_sessions').where({ id: agentSessionId }).delete();
 
         expect((await get(db.knex, { environmentId: env.id, uuid: created.uuid })).unwrap()).toBeUndefined();
+    });
+
+    it('deletes the code of one session and leaves the others', async () => {
+        const ended = await seedSession();
+        const other = await seedSession();
+        await create(db.knex, { environmentId: ended.env.id, agentSessionId: ended.agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' });
+        const kept = (
+            await create(db.knex, { environmentId: other.env.id, agentSessionId: other.agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' })
+        ).unwrap();
+
+        expect((await deleteBySession(db.knex, { agentSessionId: ended.agentSessionId })).unwrap()).toBe(1);
+        expect(await db.knex(INLINE_FUNCTIONS_TABLE).where({ agent_session_id: ended.agentSessionId })).toHaveLength(0);
+        expect((await get(db.knex, { environmentId: other.env.id, uuid: kept.uuid })).unwrap()).toBeDefined();
     });
 });

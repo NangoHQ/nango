@@ -3,16 +3,22 @@ import { randomUUID } from 'node:crypto';
 import tracer from 'dd-trace';
 import * as z from 'zod/v4';
 
+import db from '@nangohq/database';
 import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { getAgentSession } from './agentSession.service.js';
 import { describeResult } from './agentSessionResultShape.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
+
+// Stored results can each be megabytes, so batches stay small to keep every delete transaction short.
+const DELETE_BATCH_SIZE = 100;
+const ENDED_SESSION_DELETE_BUDGET_MS = 60 * 1000;
 
 const STORED_RESULT_HINT =
     'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_query_result with this result_id and JavaScript that reads `result` and returns only what you need.';
@@ -74,6 +80,17 @@ export async function toolResultForAgent({
         const result = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data });
         if (result.isErr()) {
             span.setTag('error', result.error);
+            return result;
+        }
+
+        const ended = await deleteIfSessionEnded({ session, environmentId, connection });
+        if (ended.isErr()) {
+            span.setTag('error', ended.error);
+            return Err(ended.error);
+        }
+        if (ended.value) {
+            span.setTag('nango.sessionEnded', true);
+            return Err(new Error('agent_session_ended'));
         }
         return result;
     });
@@ -101,6 +118,84 @@ export function decodeResultId(resultId: string): StoredResultRef | null {
         // not an id we issued
     }
     return null;
+}
+
+/**
+ * Sessions have no cap on what they store, so results are deleted in batches that each commit on their own.
+ * Returns `done: false` when the deadline stops it before everything is gone.
+ */
+export async function deleteSessionResults(
+    session: Pick<AgentSession, 'id' | 'environmentId' | 'resolvedConnections'>,
+    { deadline }: { deadline: Date }
+): Promise<Result<{ done: boolean }>> {
+    const model = agentSessionResultModel(session.id);
+
+    for (const connection of Object.values(session.resolvedConnections)) {
+        // Checked first because deleting routes the model, and routing records a store for every dataset it sees.
+        const counts = await records.getCountsByModel({ connectionId: connection.internalConnectionId, environmentId: session.environmentId, models: [model] });
+        if (counts.isErr()) {
+            return Err(counts.error);
+        }
+        if (!counts.value[model]) {
+            continue;
+        }
+
+        while (true) {
+            if (Date.now() >= deadline.getTime()) {
+                return Ok({ done: false });
+            }
+
+            const deleted = await records.deleteRecords({
+                connectionId: connection.internalConnectionId,
+                environmentId: session.environmentId,
+                model,
+                mode: 'hard',
+                limit: DELETE_BATCH_SIZE,
+                batchSize: DELETE_BATCH_SIZE,
+                plan: null
+            });
+            if (deleted.isErr()) {
+                return Err(deleted.error);
+            }
+            if (deleted.value.count < DELETE_BATCH_SIZE) {
+                break;
+            }
+        }
+    }
+
+    return Ok({ done: true });
+}
+
+/**
+ * A tool call can outlast its session, so its result may be stored after the session's data was deleted.
+ * Checking after the write closes that gap: a session that ends later is cleaned up after this result exists.
+ */
+async function deleteIfSessionEnded({
+    session,
+    environmentId,
+    connection
+}: {
+    session: AgentSession;
+    environmentId: number;
+    connection: AgentSessionResolvedConnection;
+}): Promise<Result<boolean>> {
+    try {
+        const current = await getAgentSession(db.knex, { id: session.id, accountId: session.accountId, environmentId });
+        if (current.isOk() && current.value.endedAt === null) {
+            return Ok(false);
+        }
+
+        const deleted = await deleteSessionResults(
+            { id: session.id, environmentId, resolvedConnections: { [connection.integrationId]: connection } },
+            { deadline: new Date(Date.now() + ENDED_SESSION_DELETE_BUDGET_MS) }
+        );
+        if (deleted.isErr()) {
+            return Err(deleted.error);
+        }
+        return Ok(true);
+    } catch (err) {
+        return Err(new Error('failed_to_check_session_ended', { cause: err }));
+    }
 }
 
 async function storeToolResult({

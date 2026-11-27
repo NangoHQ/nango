@@ -88,6 +88,14 @@ export async function get(db: Knex, { environmentId, uuid }: { environmentId: nu
     }
 }
 
+export async function deleteBySession(db: Knex, { agentSessionId }: { agentSessionId: string }): Promise<Result<number>> {
+    try {
+        return Ok(await db<DBInlineFunction>(INLINE_FUNCTIONS_TABLE).where({ agent_session_id: agentSessionId }).delete());
+    } catch (err) {
+        return Err(new Error('failed_to_delete_session_inline_functions', { cause: err }));
+    }
+}
+
 function toInlineFunction(row: DBInlineFunction): InlineFunction {
     return {
         uuid: row.uuid,

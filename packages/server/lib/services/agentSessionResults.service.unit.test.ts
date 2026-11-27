@@ -3,14 +3,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { decodeResultId, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
+import { decodeResultId, deleteSessionResults, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
 
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 
 const mocks = vi.hoisted(() => ({
     upsert: vi.fn(),
+    getCountsByModel: vi.fn(),
+    deleteRecords: vi.fn(),
+    getAgentSession: vi.fn(),
     setTag: vi.fn()
 }));
+
+vi.mock('./agentSession.service.js', () => ({ getAgentSession: mocks.getAgentSession }));
 
 vi.mock('dd-trace', () => {
     const span = {
@@ -23,7 +28,11 @@ vi.mock('dd-trace', () => {
 });
 
 vi.mock('@nangohq/records', () => ({
-    records: { upsert: mocks.upsert },
+    records: {
+        upsert: mocks.upsert,
+        getCountsByModel: mocks.getCountsByModel,
+        deleteRecords: mocks.deleteRecords
+    },
     format: { formatRecords: ({ data }: { data: unknown[] }) => Ok(data) }
 }));
 
@@ -39,6 +48,8 @@ const CONNECTION: AgentSessionResolvedConnection = {
 
 const SESSION = {
     id: 'session-1',
+    accountId: 2,
+    endedAt: null,
     metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} }, nangoQueryResult: true },
     resolvedConnections: { gmail: CONNECTION }
 } as unknown as AgentSession;
@@ -59,6 +70,9 @@ async function resultFor(data: unknown, session: AgentSession = SESSION): Promis
 beforeEach(() => {
     mocks.upsert.mockReset().mockResolvedValue(Ok({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] }));
     mocks.setTag.mockReset();
+    mocks.getAgentSession.mockReset().mockResolvedValue(Ok(SESSION));
+    mocks.getCountsByModel.mockReset();
+    mocks.deleteRecords.mockReset();
 });
 
 describe('toolResultForAgent', () => {
@@ -101,6 +115,25 @@ describe('toolResultForAgent', () => {
             hint: expect.stringContaining('nango_query_result')
         });
         expect(result).not.toHaveProperty('data');
+        expect(mocks.getAgentSession).toHaveBeenCalledWith(expect.anything(), { id: 'session-1', accountId: 2, environmentId: 1 });
+        expect(mocks.deleteRecords).not.toHaveBeenCalled();
+    });
+
+    it('deletes what it stored and returns the result in full when the session ended while the tool ran', async () => {
+        mocks.getAgentSession.mockResolvedValue(Ok({ ...SESSION, endedAt: new Date() }));
+        mocks.getCountsByModel.mockResolvedValue(Ok({ [MODEL]: { count: 1 } }));
+        mocks.deleteRecords.mockResolvedValue(Ok({ count: 1, lastCursor: null }));
+
+        await expect(resultFor(LARGE)).resolves.toBe(LARGE);
+        expect(mocks.upsert).toHaveBeenCalled();
+        expect(mocks.deleteRecords).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, environmentId: 1, model: MODEL, mode: 'hard' }));
+    });
+
+    it('returns the result in full and tags the span with the error when checking the session throws', async () => {
+        mocks.getAgentSession.mockRejectedValue(new Error('db down'));
+
+        await expect(resultFor(LARGE)).resolves.toBe(LARGE);
+        expect(mocks.setTag).toHaveBeenCalledWith('error', expect.objectContaining({ message: 'failed_to_check_session_ended' }));
     });
 
     it('returns the result in full with a notice when it is too large to store', async () => {
@@ -147,5 +180,50 @@ describe('result ids', () => {
         Buffer.from('["gmail","not-a-uuid"]').toString('base64url')
     ])('reject %j', (resultId) => {
         expect(decodeResultId(resultId)).toBeNull();
+    });
+});
+
+describe('deleteSessionResults', () => {
+    const OTHER_CONNECTION: AgentSessionResolvedConnection = { ...CONNECTION, integrationId: 'slack', provider: 'slack', internalConnectionId: 11 };
+    const session = { id: 'session-1', environmentId: 1, resolvedConnections: { gmail: CONNECTION, slack: OTHER_CONNECTION } };
+
+    const later = () => new Date(Date.now() + 60_000);
+    const batch = (count: number) => Ok({ count, lastCursor: null });
+
+    it('deletes in batches on each connection that stored results until a batch comes back short', async () => {
+        mocks.getCountsByModel.mockImplementation(({ connectionId }: { connectionId: number }) =>
+            Promise.resolve(Ok(connectionId === CONNECTION.internalConnectionId ? { [MODEL]: { count: 150 } } : {}))
+        );
+        mocks.deleteRecords.mockResolvedValueOnce(batch(100)).mockResolvedValueOnce(batch(50));
+
+        expect((await deleteSessionResults(session, { deadline: later() })).unwrap()).toEqual({ done: true });
+
+        expect(mocks.getCountsByModel).toHaveBeenCalledTimes(2);
+        expect(mocks.getCountsByModel).toHaveBeenNthCalledWith(1, { connectionId: 10, environmentId: 1, models: [MODEL] });
+        expect(mocks.getCountsByModel).toHaveBeenNthCalledWith(2, { connectionId: 11, environmentId: 1, models: [MODEL] });
+        expect(mocks.deleteRecords).toHaveBeenCalledTimes(2);
+        expect(mocks.deleteRecords).toHaveBeenCalledWith({
+            connectionId: 10,
+            environmentId: 1,
+            model: MODEL,
+            mode: 'hard',
+            limit: 100,
+            batchSize: 100,
+            plan: null
+        });
+    });
+
+    it('stops at the deadline and reports it is not done', async () => {
+        mocks.getCountsByModel.mockResolvedValue(Ok({ [MODEL]: { count: 1 } }));
+
+        expect((await deleteSessionResults(session, { deadline: new Date(Date.now() - 1) })).unwrap()).toEqual({ done: false });
+        expect(mocks.deleteRecords).not.toHaveBeenCalled();
+    });
+
+    it('returns the error when a delete fails', async () => {
+        mocks.getCountsByModel.mockResolvedValue(Ok({ [MODEL]: { count: 1 } }));
+        mocks.deleteRecords.mockResolvedValue(Err(new Error('boom')));
+
+        expect((await deleteSessionResults(session, { deadline: later() })).isErr()).toBe(true);
     });
 });
