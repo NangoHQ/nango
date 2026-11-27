@@ -1,4 +1,6 @@
 import { Bot } from 'lucide-react';
+import { useState } from 'react';
+import { useInterval } from 'react-use';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
@@ -6,7 +8,7 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { operationTypeLabel } from './components/OperationProperties';
 import { OperationStatus } from './components/OperationStatus';
-import { formatDuration, formatOperationTime } from './format';
+import { formatDuration, formatElapsed, formatOperationTime } from './format';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
@@ -18,7 +20,20 @@ export const TimestampCell: React.FC<{ createdAt: string; now: Date }> = ({ crea
     </span>
 );
 
+export const Elapsed: React.FC<{ startedAt: string }> = ({ startedAt }) => {
+    const [now, setNow] = useState(() => Date.now());
+    useInterval(() => setNow(Date.now()), 1000);
+    return <>{formatElapsed(now - new Date(startedAt).getTime())}</>;
+};
+
 export const DurationCell: React.FC<{ operation: SearchOperationsData }> = ({ operation }) => {
+    if (operation.state === 'running' && operation.startedAt) {
+        return (
+            <span className="truncate type-code-regular-xs text-text-muted">
+                <Elapsed startedAt={operation.startedAt} />
+            </span>
+        );
+    }
     if (!operation.startedAt || !operation.endedAt) {
         return <Muted />;
     }

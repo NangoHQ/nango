@@ -14,6 +14,7 @@ import { APIError } from '../../../utils/api';
 import { getRunTime } from '../../../utils/utils';
 import { OperationProperties, operationTypeLabel } from '../components/OperationProperties';
 import { OperationStatus } from '../components/OperationStatus';
+import { Elapsed } from '../operationCells';
 import { Logs } from './components/Logs';
 
 import type { ApiError, OperationRow } from '@nangohq/types';
@@ -54,6 +55,14 @@ const OperationHeading: React.FC<{ operation: OperationRow }> = ({ operation }) 
                     <>
                         <span aria-hidden>·</span>
                         <span>{duration}</span>
+                    </>
+                )}
+                {!duration && operation.state === 'running' && operation.startedAt && (
+                    <>
+                        <span aria-hidden>·</span>
+                        <span className="text-text-muted">
+                            <Elapsed startedAt={operation.startedAt} />
+                        </span>
                     </>
                 )}
             </div>

@@ -7,6 +7,11 @@ export function formatOperationTime(createdAt: string, now: Date): string {
     return format(date, isSameDay(date, now) ? 'HH:mm:ss' : 'MMM d HH:mm:ss');
 }
 
+export function formatElapsed(ms: number): string {
+    const clamped = Math.max(0, ms);
+    return clamped < 60_000 ? `${Math.floor(clamped / 1000)}s` : millisecondsToRuntime(clamped - (clamped % 1000));
+}
+
 export function formatDuration(rawMs: number): string {
     const ms = Math.max(0, rawMs);
     if (ms < 1000) {
