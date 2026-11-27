@@ -76,7 +76,7 @@ import PreBuiltUseCases from "/snippets/generated/martllm/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends the key in the `Authorization: Bearer` header on every call. Calls that need it another way, such as the `x-api-key` header on the Anthropic-compatible surface, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `Authorization: Bearer` header on every call. Calls to the Anthropic-compatible `/v1/messages` endpoint can take it in the `x-api-key` header instead: read it from the connection's credentials (`credentials.apiKey`) and set that header on the request yourself. See [Authentication](https://martllm.com/docs/authentication).
 - MartLLM's MCP server takes the same key: send MCP requests to `/mcp` through this connection.
 
 ---
