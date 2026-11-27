@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking, withProductTrackingContext } from '@nangohq/shared';
 
-import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
+import { PLAYGROUND_USER_TAG_KEY } from './agentPlayground/tags.js';
 import {
     measureAgentSessionToolCall,
     trackAgentSessionCreated,

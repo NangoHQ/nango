@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking } from '@nangohq/shared';
 
-import { stepCostUsd, sumTurnUsage, trackIntegrationSetup, trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
+import { stepCostUsd, sumTurnUsage, trackIntegrationSetup, trackPlaygroundTurn } from './usage.service.js';
 
-import type { PlaygroundStep } from './agentPlaygroundUsage.service.js';
+import type { PlaygroundStep } from './usage.service.js';
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;

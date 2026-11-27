@@ -2,7 +2,7 @@ import { APICallError, RetryError, streamText } from 'ai';
 import { convertArrayToReadableStream, MockLanguageModelV4 } from 'ai/test';
 import { describe, expect, it } from 'vitest';
 
-import { modelErrorCategory, ModelKeyMissingError, modelUnavailableError } from './agentPlaygroundModelError.js';
+import { modelErrorCategory, ModelKeyMissingError, modelUnavailableError } from './modelError.js';
 
 function apiCallError({
     statusCode,

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { resolveApp, SET_UP_INTEGRATIONS_TOOL, setUpIntegrationsTool, stopAfterSetUp } from './agentPlaygroundSetUpTool.js';
+import { resolveApp, SET_UP_INTEGRATIONS_TOOL, setUpIntegrationsTool, stopAfterSetUp } from './setUpTool.js';
 
 import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
 import type { StepResult, ToolSet } from 'ai';

@@ -4,7 +4,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { dismiss, getStatus, isDismissed, recordConnectionCreated, recordToolCall, restart } from './agentGettingStarted.service.js';
-import { PLAYGROUND_USER_TAG_KEY } from './agentPlaygroundTags.js';
+import { PLAYGROUND_USER_TAG_KEY } from './agentPlayground/tags.js';
 import { AGENT_SESSION_TAG_KEY } from './agentSessionConnections.service.js';
 
 import type { AgentSession, DBTeam } from '@nangohq/types';

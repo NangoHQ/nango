@@ -5,10 +5,10 @@ import { getFlags } from '@nangohq/feature-flags';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolveAuditAttribution } from '../../../middleware/audit/auditable.js';
-import { startTurn } from '../../../services/agentPlayground.service.js';
+import { startTurn } from '../../../services/agentPlayground/service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { PlaygroundUIMessage } from '../../../services/agentPlayground.service.js';
+import type { PlaygroundUIMessage } from '../../../services/agentPlayground/service.js';
 import type { PostAgentPlaygroundChat } from '@nangohq/types';
 
 export function isTimeZone(timeZone: string): boolean {

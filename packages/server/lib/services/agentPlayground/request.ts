@@ -4,7 +4,7 @@ import * as z from 'zod/v4';
 import { getProviders } from '@nangohq/shared';
 import { getLogger, stringifyError } from '@nangohq/utils';
 
-import { ModelKeyMissingError } from './agentPlaygroundModelError.js';
+import { ModelKeyMissingError } from './modelError.js';
 
 import type { LanguageModel } from 'ai';
 

@@ -1,6 +1,6 @@
 import { humanize } from './toolDisplay';
 
-// The server only sets up integrations for these providers (PLAYGROUND_PROVIDERS in agentPlayground.service.ts).
+// The server only sets up integrations for these providers (PLAYGROUND_PROVIDERS in agentPlayground/service.ts).
 export const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
