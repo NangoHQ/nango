@@ -1,0 +1,49 @@
+---
+title: 'IPLocate - How do I link my account?'
+sidebarTitle: 'IPLocate'
+---
+
+## Overview
+
+To authenticate with IPLocate, you need:
+
+1. **Region** — the IPLocate API endpoint to send requests to.
+2. **API Key** — your IPLocate API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An IPLocate account. If you don't have one, you can [sign up for free](https://www.iplocate.io/signup) with your email, GitHub or Google. If you sign up with your email, click the confirmation link IPLocate sends you: the API key only appears once your email address is confirmed.
+
+### Step 1: Choose your region
+
+IPLocate has a global API endpoint that routes requests to the closest server, and an EU endpoint that only routes requests to servers in the European Union. Select the value that matches where your requests should be processed:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global | `iplocate.io` |
+| EU | `eu-api.iplocate.io` |
+
+See [EU API endpoint](https://www.iplocate.io/docs/reference/eu-api-endpoint) for details.
+
+### Step 2: Copy your API key
+
+1. [Log in](https://www.iplocate.io/login) to IPLocate and open the [dashboard](https://www.iplocate.io/account). The **Overview** page opens.
+2. Under **Your API key**, click **Show API key**.
+
+<img src="/api-integrations/iplocate/show_api_key.png" alt="IPLocate account Overview page with the Show API key link under Your API key"/>
+
+3. Click the **Copy to clipboard** button next to your API key.
+
+<img src="/api-integrations/iplocate/copy_api_key.png" alt="IPLocate account Overview page with the Copy to clipboard button next to the API key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with IPLocate.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/iplocate/form.png" alt="IPLocate connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to IPLocate.

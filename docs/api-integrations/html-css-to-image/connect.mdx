@@ -1,0 +1,56 @@
+---
+title: 'HTML/CSS to Image - How do I link my account?'
+sidebarTitle: 'HTML/CSS to Image'
+---
+
+## Overview
+
+To authenticate with HTML/CSS to Image, you need:
+
+1. **API ID** - the ID of an API key in your HTML/CSS to Image dashboard.
+2. **API Key** - the secret API key that comes with that API ID.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- An HTML/CSS to Image account. [Sign up](https://htmlcsstoimage.com) if you don't have one: the Free plan includes API access and needs no credit card.
+
+### Step 1: Create an API key
+
+Every new organization already has a **Default Key**. You can use it, or create a separate key for this connection:
+
+1. Log in to HTML/CSS to Image and open **Dashboard**.
+2. In the sidebar, under **Resources**, click **API Keys**, then click **Create New Key**.
+
+<img src="/api-integrations/html-css-to-image/api_keys_page.png" alt="HTML/CSS to Image API Keys page with the Create New Key button highlighted"/>
+
+3. Enter a **Name** for the key.
+4. Choose a **Permission preset** (**Basics**, **Image Creator**, **Administrator**, **Read Only** or **Custom**) and adjust the permissions your application needs. Keys with any preset work with Nango.
+5. Click **Save**.
+
+<img src="/api-integrations/html-css-to-image/create_key_dialog.png" alt="Create an API key dialog with the Read Only preset selected and the Save button highlighted"/>
+
+### Step 2: Copy your API ID and API Key
+
+In the **API Keys** list, find your key's row. The **API ID / Key** column holds two values:
+
+1. Copy the **API ID** (the first field).
+2. Click the copy icon in the second field to copy the **API Key**.
+
+Copy both values from the same key's row.
+
+<img src="/api-integrations/html-css-to-image/api_key_created.png" alt="HTML/CSS to Image API Keys list with the new key's API ID and API Key fields highlighted"/>
+
+<Tip>Keep your API Key private and secure.</Tip>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with HTML/CSS to Image.
+2. Paste the **API ID** from Step 2 into the **API ID** field.
+3. Paste the **API Key** from Step 2 into the **API Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/html-css-to-image/form.png" alt="HTML/CSS to Image Connect UI form with the API ID and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to HTML/CSS to Image.

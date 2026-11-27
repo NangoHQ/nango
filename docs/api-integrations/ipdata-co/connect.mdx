@@ -1,0 +1,50 @@
+---
+title: 'ipdata - How do I link my account?'
+sidebarTitle: 'ipdata'
+---
+
+## Overview
+
+To authenticate with ipdata, you need:
+
+1. **Region** — the ipdata API endpoint to send requests to.
+2. **API Key** — an ipdata API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An ipdata account. If you don't have one, you can [sign up for a free API key](https://dashboard.ipdata.co/sign-up).
+
+### Step 1: Choose your region
+
+ipdata has a global API endpoint and a dedicated EU endpoint that keeps the end user data you send in the EU. The EU endpoint is backed by EU datacenters in Frankfurt, Paris and Ireland. Select the value that matches where your data should be processed:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global | `api.ipdata.co` |
+| EU | `eu-api.ipdata.co` |
+
+See [Getting started](https://docs.ipdata.co/docs/getting-started) for details.
+
+### Step 2: Create an API key
+
+1. [Log in](https://dashboard.ipdata.co/sign-in) to the ipdata dashboard. The **Overview** page shows your default key under **Your API Key**; you can copy that one, or create a dedicated key as below.
+2. Click **API Settings** in the left sidebar.
+3. Enter a name for the new key and click **Create key**.
+
+<img src="/api-integrations/ipdata-co/create_api_key.png" alt="ipdata API Settings page with a key name entered and the Create key button"/>
+
+4. Click **Copy** next to the new key to copy it.
+
+<img src="/api-integrations/ipdata-co/api_key_created.png" alt="ipdata API keys list with the Copy button next to the new key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ipdata.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ipdata-co/form.png" alt="ipdata connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to ipdata.

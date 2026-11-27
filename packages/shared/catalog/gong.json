@@ -1127,7 +1127,7 @@
                 "ActionInput_gong_fetchcallextensivedata",
                 "ActionOutput_gong_fetchcallextensivedata"
             ],
-            "version": "1.0.3",
+            "version": "1.0.4",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_fetchcallextensivedata": {
@@ -1267,12 +1267,6 @@
                                     "null"
                                 ]
                             },
-                            "totalRecords": {
-                                "type": [
-                                    "number",
-                                    "null"
-                                ]
-                            },
                             "currentPageSize": {
                                 "type": [
                                     "number",
@@ -1299,13 +1293,14 @@
                 "ActionOutput_gong_fetchcalltranscripts"
             ],
             "scopes": [
-                "api:calls:read:transcript"
+                "api:calls:read:transcript",
+                "api:calls:read:extensive"
             ],
             "usedModels": [
                 "ActionInput_gong_fetchcalltranscripts",
                 "ActionOutput_gong_fetchcalltranscripts"
             ],
-            "version": "4.0.3",
+            "version": "4.0.4",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_fetchcalltranscripts": {
@@ -1429,13 +1424,6 @@
                                 "description": "Pass this cursor to the next call to retrieve the following page. Absent when there are no more pages.",
                                 "type": [
                                     "string",
-                                    "null"
-                                ]
-                            },
-                            "totalRecords": {
-                                "description": "Total number of matching transcripts across all pages",
-                                "type": [
-                                    "number",
                                     "null"
                                 ]
                             }
@@ -1569,7 +1557,7 @@
                 "ActionInput_gong_getcallmedia",
                 "ActionOutput_gong_getcallmedia"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_getcallmedia": {
@@ -1619,13 +1607,14 @@
                 "ActionOutput_gong_getcalltranscript"
             ],
             "scopes": [
-                "api:calls:read:transcript"
+                "api:calls:read:transcript",
+                "api:calls:read:extensive"
             ],
             "usedModels": [
                 "ActionInput_gong_getcalltranscript",
                 "ActionOutput_gong_getcalltranscript"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_getcalltranscript": {
@@ -1821,7 +1810,7 @@
                 "ActionInput_gong_getcall",
                 "ActionOutput_gong_getcall"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_getcall": {
@@ -6519,13 +6508,14 @@
                 "ActionOutput_gong_listcalltranscripts"
             ],
             "scopes": [
-                "api:calls:read:transcript"
+                "api:calls:read:transcript",
+                "api:calls:read:extensive"
             ],
             "usedModels": [
                 "ActionInput_gong_listcalltranscripts",
                 "ActionOutput_gong_listcalltranscripts"
             ],
-            "version": "1.0.2",
+            "version": "1.0.3",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_listcalltranscripts": {
@@ -6650,12 +6640,6 @@
                                     "null"
                                 ]
                             },
-                            "totalRecords": {
-                                "type": [
-                                    "number",
-                                    "null"
-                                ]
-                            },
                             "currentPageSize": {
                                 "type": [
                                     "number",
@@ -6688,7 +6672,7 @@
                 "ActionInput_gong_listcalls",
                 "ActionOutput_gong_listcalls"
             ],
-            "version": "1.0.3",
+            "version": "1.0.4",
             "json_schema": {
                 "definitions": {
                     "ActionInput_gong_listcalls": {
@@ -10950,7 +10934,8 @@
             ],
             "runs": "every hour",
             "scopes": [
-                "api:calls:read:transcript"
+                "api:calls:read:transcript",
+                "api:calls:read:extensive"
             ],
             "sync_type": "full",
             "track_deletes": false,
@@ -10958,7 +10943,7 @@
                 "CallTranscript",
                 "SyncMetadata_gong_calltranscripts"
             ],
-            "version": "4.0.2",
+            "version": "4.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {
@@ -11093,7 +11078,7 @@
                 "Call",
                 "SyncMetadata_gong_calls"
             ],
-            "version": "2.0.2",
+            "version": "2.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
                 "definitions": {

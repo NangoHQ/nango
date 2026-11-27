@@ -1,0 +1,81 @@
+---
+title: 'NocoDB'
+sidebarTitle: 'NocoDB'
+description: 'Integrate your application with the NocoDB API'
+---
+
+## 🚀 Quickstart
+
+Connect to NocoDB with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _NocoDB_.
+    </Step>
+    <Step id="authorize-nocodb" title="Authorize NocoDB">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your NocoDB host and API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-nocodb-api" title="Call the NocoDB API">
+    Let's make your first request to the NocoDB API to list the workspaces your token can access. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/meta/workspaces" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v3/meta/workspaces',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 NocoDB integration guides
+
+- [How do I link my account?](/api-integrations/nocodb/connect)  
+Find your NocoDB host, create an API token and connect them in the Connect UI.
+
+Official docs: [NocoDB API reference](https://nocodb.com/apis/v3/data)
+
+## 🧩 Pre-built syncs & tools for NocoDB
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/nocodb/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the token in the `xc-token` header on every call. Calls that need it another way, such as the `Authorization: Bearer` header, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+
+---

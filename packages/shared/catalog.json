@@ -1799,7 +1799,7 @@
         },
         "gong": {
             "file": "catalog/gong.json",
-            "sha256": "4a87ce65f2752fdcbdfa014c8071ec1da1515534903ebac030bb3be79413bc7f",
+            "sha256": "ab40c033b92e42f9b43f8182dcfde4535001ab93aad630e0eae65b5a208cc533",
             "counts": {
                 "actions": 66,
                 "syncs": 8,
