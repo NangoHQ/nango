@@ -1,0 +1,83 @@
+---
+title: 'Rollbar'
+sidebarTitle: 'Rollbar'
+description: 'Integrate your application with the Rollbar API'
+---
+
+## 🚀 Quickstart
+
+Connect to Rollbar with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Rollbar_.
+    </Step>
+    <Step id="authorize-rollbar" title="Authorize Rollbar">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Rollbar access token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-rollbar-api" title="Call the Rollbar API">
+    Let's make your first request to the Rollbar API to list the environments of your Rollbar project. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/1/environments" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/1/environments',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    This works with a project access token. With a service or personal access token, list your projects with `/1/projects` instead.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Rollbar integration guides
+
+- [How do I link my account?](/api-integrations/rollbar/connect)  
+Create a Rollbar project, service or personal access token to connect your account.
+
+Official docs: [Rollbar API reference](https://docs.rollbar.com/reference/getting-started-1)
+
+## 🧩 Pre-built syncs & tools for Rollbar
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/rollbar/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the token in the `X-Rollbar-Access-Token` header on every call. The few endpoints that still take it as the deprecated `access_token` query or form parameter can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+
+---
