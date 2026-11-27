@@ -1,0 +1,101 @@
+---
+title: 'Aggregate (MCP)'
+sidebarTitle: 'Aggregate (MCP)'
+description: 'Connect AI tools to Aggregate via the Model Context Protocol (MCP) to read reconciled company and personal finances'
+---
+
+## 🚀 Quickstart
+
+Connect to the Aggregate MCP server with Nango and call MCP tools in minutes. Aggregate's MCP server uses OAuth 2.1 with **dynamic client registration** and PKCE, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _Aggregate (MCP)_. Leave the scopes empty to request everything the server offers, or set them to `finance:read,offline_access` for read tools only.
+    </Step>
+    <Step id="authorize-aggregate-mcp" title="Authorize Aggregate">
+        Go to **Connections** → _Add Test Connection_ → _Authorize_, then sign in to Aggregate and choose which companies and kinds of data the connection can see. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-aggregate-mcp" title="Call the Aggregate MCP API">
+        Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2025-06-18",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2025-06-18',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+
+        </Tabs>
+        ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Aggregate (MCP) guides
+
+Nango registers its own client with Aggregate's OAuth server automatically (dynamic client registration), so you do not need to register an application. Just create the integration in Nango and sign in to Aggregate.
+
+Things to know before connecting:
+
+- Aggregate keeps one or more companies' money, plus a private Personal space, in one double-entry ledger built from banks, cards, payment apps, books, invoices, payroll and the cap table. Its tools return Aggregate's own totals (cash, burn, runway, MRR, receivables), which match what the user sees in the app.
+- Scopes: `finance:read` for read tools, `records:write` for tools that record entries in Aggregate, and `offline_access` for a refresh token (access tokens last one hour). If you set scopes yourself, keep `offline_access`.
+- At sign-in the user chooses which companies and kinds of data the connection can see, and can pause or revoke it in Aggregate at any time. Writes can be held for the user's approval in the app.
+- Aggregate never moves money, pays bills or contacts anyone. It is free during beta.
+
+Official resources: [Aggregate docs](https://docs.aggregate.finance) · [Source (AGPL-3.0)](https://github.com/Izzy-Gottz/aggregate-finance)
+
+---

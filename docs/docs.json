@@ -631,6 +631,7 @@
               "api-integrations/agentcard",
               "api-integrations/agentline",
               "api-integrations/agenty",
+              "api-integrations/aggregate-mcp",
               "api-integrations/agile-crm",
               "api-integrations/agiled",
               "api-integrations/agentql",

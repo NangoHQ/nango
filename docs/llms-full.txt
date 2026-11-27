@@ -15542,6 +15542,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `agentline` | AgentLine | API_KEY | [docs](https://nango.dev/docs/api-integrations/agentline.md) | [connect](https://nango.dev/docs/api-integrations/agentline/connect.md) |  | communication |
 | `agentql` | AgentQL | API_KEY | [docs](https://nango.dev/docs/api-integrations/agentql.md) | [connect](https://nango.dev/docs/api-integrations/agentql/connect.md) |  | dev-tools |
 | `agenty` | Agenty | API_KEY | [docs](https://nango.dev/docs/api-integrations/agenty.md) | [connect](https://nango.dev/docs/api-integrations/agenty/connect.md) |  | other |
+| `aggregate-mcp` | Aggregate (MCP) | MCP_OAUTH2_GENERIC | [docs](https://nango.dev/docs/api-integrations/aggregate-mcp.md) |  |  | accounting, banking, mcp |
 | `agile-crm` | Agile CRM | BASIC | [docs](https://nango.dev/docs/api-integrations/agile-crm.md) | [connect](https://nango.dev/docs/api-integrations/agile-crm/connect.md) |  | crm |
 | `agiled` | Agiled | API_KEY | [docs](https://nango.dev/docs/api-integrations/agiled.md) | [connect](https://nango.dev/docs/api-integrations/agiled/connect.md) |  | crm, invoicing |
 | `agility-cms` | Agility CMS | API_KEY | [docs](https://nango.dev/docs/api-integrations/agility-cms.md) | [connect](https://nango.dev/docs/api-integrations/agility-cms/connect.md) |  | cms |
