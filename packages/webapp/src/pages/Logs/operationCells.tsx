@@ -76,7 +76,7 @@ export const FunctionCell: React.FC<{ operation: SearchOperationsData; withLogo:
         <span className="flex min-w-0 items-center gap-2">
             {withLogo && <Logo operation={operation} />}
             {operation.syncConfigName ? <span className="truncate text-text-strong">{operation.syncConfigName}</span> : <Muted />}
-            {sessionId && (
+            {sessionId && operation.syncConfigName && (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span className="flex shrink-0 text-icon-secondary" role="img" aria-label={`Via agent session ${sessionId}`}>
