@@ -4,6 +4,51 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="17,000 new agent tools" description="November 26, 2026">
+  Over 17,000 new agent tools landed in the [Catalog](https://app.nango.dev/dev/catalog) this week, bringing the total to 27,000+ and tripling what was available out of the box. Your agent can now do more useful work across more apps without you building or customizing any tools.
+
+  See these tools in action in our [Agent Playground](https://app.nango.dev/dev/playground/agent) or add them to your own agent using [Agent sessions](/guides/agent-sessions).
+</Update>
+---
+
+<Update label="Agent sessions updates" description="November 26, 2026">
+  - **Smaller tool search responses:** Agent tool search responses are 76% smaller, so each search adds less bloat to the agent's context and uses fewer tokens. See [nango_tool_search](/guides/agent-sessions/meta-tools#nango-tool-search).
+  - **Tool tags in tool listings:** Tools now carry tags such as `read_only_hint` and `destructive_hint`, so your agent can ask the user for approval for calls that aren't read-only, or let low-risk read-only tools run unattended. See [customize tools](/guides/tools/customize-tools).
+  - **MCP revision 2026-07-28:** The agent session MCP endpoint now serves the [2026-07-28 revision](https://modelcontextprotocol.io/specification/2026-07-28). Tool listings tell your client not to cache tool definitions, so agents stop calling stale tools after the available tools change mid-session. Older clients keep working. See [agent sessions](/guides/agent-sessions).
+</Update>
+---
+
+<Update label="Agent Playground updates" description="November 25, 2026">
+  - **Agents can add missing integrations on the go:** When a user asks to do something that requires a new integration (e.g., "check my Outlook inbox"), the agent can now add it if the app has [instant setup](/guides/auth/overview#apis-with-a-nango-managed-oauth-app), then ask the user to connect their account. Apps that need your own OAuth app show an **Add integration** card instead.
+
+    ![The agent adds the Semrush and Gmail integrations mid-conversation, then shows a Connect Gmail card](/images/changelog/playground-add-integration.png)
+
+  - **Tool calls grouped per reply:** Consecutive tool calls now collapse into one **Ran N tools** row. Expand it to see each call's parameters and response.
+
+    ![A collapsed Ran 14 tools row above the agent's answer](/images/changelog/playground-ran-tools.png)
+
+  [Try Agent Playground](https://app.nango.dev/dev/playground/agent).
+</Update>
+---
+
+<Update label="More Webhooks" description="November 25, 2026">
+  Nango can now receive, verify, and forward [Okta](/integrations/all/okta/webhooks) event hooks, [BambooHR](/api-integrations/bamboohr/webhooks) webhooks, and [Microsoft Graph](/api-integrations/microsoft/webhooks) change notifications, such as Outlook mail and calendar events.
+
+  Gmail Pub/Sub pushes are also routed on the [Google](/api-integrations/google/webhooks) integration now, so Gmail and Google Calendar share one webhook URL.
+</Update>
+---
+
+<Update label="Small improvements" description="November 25, 2026">
+  - **Audit trail records credential reads through the API:** Fetching a connection's credentials with the [GET API](/reference/backend/http-api/connections/get) is now recorded as `connection.credentials_read`. See [audit trail](/guides/platform/audit-trail).
+  - **Integration level scopes on Google Service Account:** Set scopes once on a `google-service-account` integration and Connect UI stops asking each end user for them. See [Google service account](/integrations/all/google-service-account).
+</Update>
+---
+
+<Update label="Free plan functions no longer pause" description="November 24, 2026">
+  Syncs and tools on the Free plan no longer pause at the end of a two-week trial. Free plan [usage limits](https://nango.dev/pricing) still apply.
+</Update>
+---
+
 <Update label="New Catalog page" description="November 17, 2026">
   Browse supported APIs from the new Catalog page in the dashboard. Filter by category, sort by popularity, and switch on **Instant setup only** to see the APIs your agent can access without registering your own OAuth app. Drill down to see prebuilt tools and syncs for every API.
 
