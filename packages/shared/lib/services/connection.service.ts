@@ -2731,8 +2731,8 @@ export class ConnectionService {
             .groupBy('e.is_production')
             .select<{ is_production: boolean; active: string; total: string }[]>(
                 'e.is_production',
-                db.knex.raw('count(*) filter (where c.last_execution_at >= ? and c.last_execution_at < ?) as active', [monthStart, nextMonthStart]),
-                db.knex.raw('count(*) filter (where c.deleted_at is null) as total')
+                db.readOnly.raw('count(*) filter (where c.last_execution_at >= ? and c.last_execution_at < ?) as active', [monthStart, nextMonthStart]),
+                db.readOnly.raw('count(*) filter (where c.deleted_at is null) as total')
             );
 
         const count = (isProduction: boolean): ConnectionCounts => {
