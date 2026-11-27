@@ -129,6 +129,13 @@ describe('toolResultForAgent', () => {
         expect(mocks.deleteRecords).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, environmentId: 1, model: MODEL, mode: 'hard' }));
     });
 
+    it('returns the result in full and tags the span with the error when checking the session throws', async () => {
+        mocks.getAgentSession.mockRejectedValue(new Error('db down'));
+
+        await expect(resultFor(LARGE)).resolves.toBe(LARGE);
+        expect(mocks.setTag).toHaveBeenCalledWith('error', expect.objectContaining({ message: 'failed_to_check_session_ended' }));
+    });
+
     it('returns the result in full with a notice when it is too large to store', async () => {
         const huge = { text: 'a'.repeat(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) };
 

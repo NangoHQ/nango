@@ -179,19 +179,23 @@ async function deleteIfSessionEnded({
     environmentId: number;
     connection: AgentSessionResolvedConnection;
 }): Promise<Result<boolean>> {
-    const current = await getAgentSession(db.knex, { id: session.id, accountId: session.accountId, environmentId });
-    if (current.isOk() && current.value.endedAt === null) {
-        return Ok(false);
-    }
+    try {
+        const current = await getAgentSession(db.knex, { id: session.id, accountId: session.accountId, environmentId });
+        if (current.isOk() && current.value.endedAt === null) {
+            return Ok(false);
+        }
 
-    const deleted = await deleteSessionResults(
-        { id: session.id, environmentId, resolvedConnections: { [connection.integrationId]: connection } },
-        { deadline: new Date(Date.now() + ENDED_SESSION_DELETE_BUDGET_MS) }
-    );
-    if (deleted.isErr()) {
-        return Err(deleted.error);
+        const deleted = await deleteSessionResults(
+            { id: session.id, environmentId, resolvedConnections: { [connection.integrationId]: connection } },
+            { deadline: new Date(Date.now() + ENDED_SESSION_DELETE_BUDGET_MS) }
+        );
+        if (deleted.isErr()) {
+            return Err(deleted.error);
+        }
+        return Ok(true);
+    } catch (err) {
+        return Err(new Error('failed_to_check_session_ended', { cause: err }));
     }
-    return Ok(true);
 }
 
 async function storeToolResult({
