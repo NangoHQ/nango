@@ -1,0 +1,55 @@
+---
+title: 'Geocodio - How do I link my account?'
+sidebarTitle: 'Geocodio'
+---
+
+## Overview
+
+To authenticate with Geocodio, you need:
+
+1. **API Key** — an API key from your Geocodio dashboard.
+2. **Region** — the Geocodio API host of your account.
+
+This guide will show you how to get both.
+
+### Prerequisites
+
+- A Geocodio account. Pay-as-you-go includes 2,500 free lookups per day, and no credit card is required until you exceed the free tier. If you don't have an account, [sign up](https://dash.geocod.io).
+
+### Step 1: Create an API key
+
+1. Sign in to the [Geocodio dashboard](https://dash.geocod.io) and click **API Keys** in the left sidebar.
+2. Click **Create an API key** (or **Create API Key** if you already have a key).
+
+<img src="/api-integrations/geocodio/api_keys_page.png" alt="Geocodio API Keys page with the Create an API key button"/>
+
+3. Enter a name for the key. Keep the default Geocoding **Single and Batch** permission, and turn on Lists or Distance only if you need them.
+4. Click **Create**.
+
+<img src="/api-integrations/geocodio/create_api_key_form.png" alt="Geocodio create API key form with the permission options and the Create button"/>
+
+<Note>By default, an API key can only access the single and batch geocoding endpoints. Enable other permissions per key on the **API Keys** page.</Note>
+
+### Step 2: Copy your API key
+
+In the API keys table, click the copy button next to your new key to copy it to your clipboard.
+
+<img src="/api-integrations/geocodio/api_key_created.png" alt="Geocodio API Keys table with the copy button next to the new key"/>
+
+### Step 3: Choose your region
+
+Pick the host that matches your Geocodio account:
+
+- `api.geocod.io` — self-serve accounts, managed at [dash.geocod.io](https://dash.geocod.io).
+- `api.enterprise.geocod.io` — Geocodio Enterprise accounts, managed at [dash.enterprise.geocod.io](https://dash.enterprise.geocod.io). Enterprise uses a separate account and API key.
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Geocodio.
+2. Select your host in the **Region** field.
+3. Enter your API key in the **API Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/geocodio/form.png" alt="Geocodio Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Geocodio.
