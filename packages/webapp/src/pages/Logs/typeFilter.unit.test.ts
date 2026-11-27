@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { typesOptions } from './constants';
-import { withoutAll } from './filters';
+import { normalizeTypes, withoutAll } from './filters';
 import { groupState, toggleGroup, toggleSubtype, typeLabel } from './typeFilter';
 
 import type { TypeOption } from './constants';
@@ -54,6 +54,14 @@ describe('typeLabel', () => {
     it('names a type or a subtype under its type', () => {
         expect(typeLabel('sync', typesOptions)).toBe('Sync');
         expect(typeLabel('sync:run', typesOptions)).toBe('Sync run');
+    });
+});
+
+describe('normalizeTypes', () => {
+    it('maps types the menu has no row for onto their type', () => {
+        expect(normalizeTypes(['tool:call', 'function:invoke', 'sync:run'])).toEqual(['tool', 'function', 'sync:run']);
+        expect(normalizeTypes(['action', 'action:run', 'tool'])).toEqual(['tool']);
+        expect(normalizeTypes(['all'])).toEqual([]);
     });
 });
 

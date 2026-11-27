@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -37,10 +37,10 @@ export function useGetOperation(env: string, params: GetOperation['Params']) {
     };
 }
 
-export function useSearchFilters(enabled: boolean, env: string, body: SearchFilters['Body']) {
-    const { data, error, isFetching } = useQuery<SearchFilters['Success'], APIError>({
+function searchFiltersQuery(env: string, body: SearchFilters['Body']) {
+    return {
         queryKey: ['logs', 'filters', env, body.category, body.search],
-        queryFn: async ({ signal }): Promise<SearchFilters['Success']> => {
+        queryFn: async ({ signal }: { signal: AbortSignal }): Promise<SearchFilters['Success']> => {
             const res = await apiFetch(`/api/v1/logs/filters?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify(body),
@@ -54,11 +54,23 @@ export function useSearchFilters(enabled: boolean, env: string, body: SearchFilt
 
             return json;
         },
+        staleTime: 60_000
+    };
+}
+
+export function useSearchFilters(enabled: boolean, env: string, body: SearchFilters['Body']) {
+    const { data, error, isError, isFetching, refetch } = useQuery<SearchFilters['Success'], APIError>({
+        ...searchFiltersQuery(env, body),
         enabled,
         placeholderData: keepPreviousData
     });
 
-    return { data, error: error?.json, loading: isFetching };
+    return { data, error: error?.json, isError, loading: isFetching, refetch };
+}
+
+export function usePrefetchSearchFilters(env: string) {
+    const queryClient = useQueryClient();
+    return (category: SearchFilters['Body']['category']) => void queryClient.prefetchQuery(searchFiltersQuery(env, { category }));
 }
 
 export function usePostInsights(env: string, body: PostInsights['Body']) {

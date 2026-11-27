@@ -11,6 +11,7 @@ import { cn } from '@/utils/utils';
 import type { Period, PeriodPreset } from '@/utils/dates';
 
 const dateTimeFormat = 'LLL dd, yyyy, HH:mm:ss';
+const compactDateTimeFormat = 'LLL d, HH:mm';
 
 export interface PeriodSelectorProps {
     period: Period | null;
@@ -18,10 +19,11 @@ export interface PeriodSelectorProps {
     onChange: (date: Period | null, live: boolean) => void;
     presets: PeriodPreset[];
     defaultPreset?: PeriodPreset;
-    size?: 'sm' | 'md';
+    density?: 'default' | 'compact';
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, size = 'md' }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, density = 'default' }: PeriodSelectorProps) => {
+    const compact = density === 'compact';
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
@@ -72,10 +74,11 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             return selectedPreset.label;
         }
         if (period) {
-            return `${format(period.from, dateTimeFormat)} - ${format(period.to ?? new Date(), dateTimeFormat)}`;
+            const pattern = compact ? compactDateTimeFormat : dateTimeFormat;
+            return `${format(period.from, pattern)} - ${format(period.to ?? new Date(), pattern)}`;
         }
         return 'No period selected';
-    }, [period, selectedPreset]);
+    }, [period, selectedPreset, compact]);
 
     return (
         <Popover
@@ -94,8 +97,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="outline" size={size} className="grow truncate tabular-nums">
-                    <Calendar size={size === 'sm' ? 14 : 18} />
+                <Button variant={compact ? 'outline-filled' : 'outline'} size={compact ? 'sm' : 'md'} className="grow truncate tabular-nums">
+                    <Calendar size={compact ? 14 : 18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>

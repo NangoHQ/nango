@@ -1,99 +1,39 @@
-import { Menu } from '@base-ui/react';
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupKbd, LinkButton, StatusIndicator } from '@nangohq/design-system';
 
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { FilterMenu } from '@/components/ui/FilterMenu';
 import { FilterTrigger } from '@/components/ui/FilterTrigger';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
-import { useSearchFilters } from '../../../hooks/useLogs';
+import { usePrefetchSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
-import { last24hPreset, logsPresets } from '../../../utils/logs';
+import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { statusOptions, typesOptions } from '../constants';
 import { useLogsFilters } from '../filters';
 import { groupState, toggleGroup, toggleSubtype, typeLabel } from '../typeFilter';
+import { MoreFilters } from './MoreFilters';
+import { OperationStatus } from './OperationStatus';
+import { RemoteFilterMenu, toggled } from './RemoteFilterMenu';
 
 import type { Period } from '../../../utils/dates';
 import type { LogsState, LogsType } from '../constants';
+import type { MoreFilter } from './MoreFilters';
 import type { FilterCheckState, FilterMenuOption } from '@/components/ui/FilterMenu';
-import type { StatusIndicatorProps } from '@nangohq/design-system';
-import type { AnalyticsEventProperties, SearchFiltersCategory } from '@nangohq/types';
+import type { AnalyticsEventProperties } from '@nangohq/types';
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
-type FacetKey = 'status' | 'type' | 'integration' | 'connection' | 'function' | 'agentSession';
-
-const MAX_REMOTE_VALUES = 20;
-
-const statusTones: Record<LogsState, StatusIndicatorProps['tone']> = {
-    success: 'success',
-    failed: 'danger',
-    timeout: 'warning',
-    running: 'info',
-    waiting: 'muted',
-    cancelled: 'muted'
-};
+type FacetKey = 'status' | 'type' | 'integration';
 
 const statusMenuOptions: FilterMenuOption[] = statusOptions.map((option) => ({
     value: option.value,
     label: option.label,
-    icon: <StatusIndicator tone={statusTones[option.value]} />
+    icon: <OperationStatus state={option.value} withLabel={false} animated={false} />
 }));
 
 const typeMenuOptions: FilterMenuOption[] = typesOptions.map((option) => ({ value: option.value, label: option.label, children: option.children }));
-
-const toggled = <T extends string>(selected: T[], value: T): T[] => (selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]);
-
-interface FacetMenuProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    anchor?: React.RefObject<HTMLElement | null>;
-}
-
-const RemoteFacet: React.FC<
-    FacetMenuProps & {
-        label: string;
-        category: SearchFiltersCategory;
-        selected: string[];
-        onChange: (selected: string[]) => void;
-        alwaysShowTrigger: boolean;
-    }
-> = ({ label, category, selected, onChange, open, onOpenChange, anchor, alwaysShowTrigger }) => {
-    const env = useStore((state) => state.env);
-    const [search, setSearch] = useState('');
-    const debouncedSearch = useDebouncedValue(search.trim(), 250);
-    const { data, loading } = useSearchFilters(open, env, { category, search: debouncedSearch || undefined });
-
-    // Selected values stay listed when the server's page or the search leaves them out, so they can be unticked.
-    const options = useMemo(() => {
-        const keys = data?.data.map((item) => item.key) ?? [];
-        const missing = debouncedSearch ? [] : selected.filter((value) => !keys.includes(value));
-        return [...missing, ...keys].map((key) => ({ value: key, label: key, mono: category !== 'integration' }));
-    }, [data, selected, debouncedSearch, category]);
-
-    const showTrigger = alwaysShowTrigger || selected.length > 0;
-
-    return (
-        <FilterMenu
-            trigger={showTrigger ? <FilterTrigger label={label} count={selected.length} selectedLabel={selected[0]} /> : undefined}
-            anchor={anchor}
-            open={open}
-            onOpenChange={onOpenChange}
-            options={options}
-            selected={selected}
-            onToggle={(value) => onChange(toggled(selected, value))}
-            onClear={() => onChange([])}
-            searchable
-            searchPlaceholder={`Search ${label.toLowerCase()}s…`}
-            onSearchChange={setSearch}
-            loading={loading}
-            max={MAX_REMOTE_VALUES}
-        />
-    );
-};
 
 const LogsSearch: React.FC = () => {
     const [search, setSearch] = useSearchQueryState();
@@ -116,7 +56,7 @@ const LogsSearch: React.FC = () => {
     }, []);
 
     return (
-        <div className="w-64">
+        <div className="max-w-64 min-w-40 grow basis-40">
             <InputGroup size="sm">
                 <InputGroupAddon>
                     <Search />
@@ -151,13 +91,12 @@ const LogsSearch: React.FC = () => {
 export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count }) => {
     const [search, setSearch] = useSearchQueryState();
     const filters = useLogsFilters();
+    const prefetch = usePrefetchSearchFilters(useStore((state) => state.env));
     const [openFacet, setOpenFacet] = useState<FacetKey | null>(null);
-    const moreRef = useRef<HTMLButtonElement>(null);
 
-    const facetProps = (key: FacetKey): FacetMenuProps => ({
+    const facetProps = (key: FacetKey) => ({
         open: openFacet === key,
-        onOpenChange: (open) => setOpenFacet(open ? key : null),
-        anchor: moreRef
+        onOpenChange: (open: boolean) => setOpenFacet(open ? key : null)
     });
 
     const tracked =
@@ -190,12 +129,23 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
         setTypes(parent ? toggleSubtype(filters.types, parent, value as LogsType) : toggled(filters.types, value as LogsType));
     };
 
-    const secondary: { key: FacetKey; label: string; selected: string[] }[] = [
-        { key: 'connection', label: 'Connection', selected: filters.connections },
-        { key: 'function', label: 'Function', selected: filters.syncs },
-        { key: 'agentSession', label: 'Agent session', selected: filters.agentSessions }
+    const moreFilters: MoreFilter[] = [
+        {
+            key: 'connection',
+            label: 'Connection',
+            category: 'connection',
+            selected: filters.connections,
+            onChange: tracked('connection', filters.setConnections)
+        },
+        { key: 'function', label: 'Function', category: 'syncConfig', selected: filters.syncs, onChange: tracked('script', filters.setSyncs) },
+        {
+            key: 'agentSession',
+            label: 'Agent session',
+            category: 'agentSession',
+            selected: filters.agentSessions,
+            onChange: tracked('agent_session', filters.setAgentSessions)
+        }
     ];
-    const unsetSecondary = secondary.filter((facet) => facet.selected.length === 0);
 
     const anyFilter =
         Boolean(search) ||
@@ -217,10 +167,25 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
         void filters.setLive(live);
     };
 
+    // Live mode slides the stored window. Unslid, it stops matching "Last 24 hours" a minute after it was set.
+    const displayedPeriod = filters.isLive
+        ? slidePeriod({ from: filters.period[0], to: filters.period[1] })
+        : { from: filters.period[0], to: filters.period[1] };
+
+    const toggleLive = () => {
+        track('logs:filter_update', { filter: 'period' });
+        if (filters.isLive) {
+            const frozen = slidePeriod({ from: filters.period[0], to: filters.period[1] });
+            void filters.setPeriod([frozen.from, frozen.to ?? new Date()]);
+        }
+        void filters.setLive(!filters.isLive);
+    };
+
     return (
         <div className="flex flex-wrap items-center gap-1.5">
             <LogsSearch />
             <FilterMenu
+                label="Status"
                 trigger={
                     <FilterTrigger
                         label="Status"
@@ -235,6 +200,7 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
                 onClear={() => setStates([])}
             />
             <FilterMenu
+                label="Type"
                 trigger={
                     <FilterTrigger label="Type" count={filters.types.length} selectedLabel={filters.types[0] && typeLabel(filters.types[0], typesOptions)} />
                 }
@@ -245,72 +211,28 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
                 onToggle={toggleType}
                 onClear={() => setTypes([])}
             />
-            <RemoteFacet
+            <RemoteFilterMenu
                 label="Integration"
                 category="integration"
                 selected={filters.integrations}
                 onChange={tracked('integration', filters.setIntegrations)}
-                alwaysShowTrigger
+                trigger={
+                    <FilterTrigger
+                        label="Integration"
+                        count={filters.integrations.length}
+                        selectedLabel={filters.integrations[0]}
+                        onPointerEnter={() => prefetch('integration')}
+                        onFocus={() => prefetch('integration')}
+                    />
+                }
                 {...facetProps('integration')}
             />
-            <RemoteFacet
-                label="Connection"
-                category="connection"
-                selected={filters.connections}
-                onChange={tracked('connection', filters.setConnections)}
-                alwaysShowTrigger={false}
-                {...facetProps('connection')}
-            />
-            <RemoteFacet
-                label="Function"
-                category="syncConfig"
-                selected={filters.syncs}
-                onChange={tracked('script', filters.setSyncs)}
-                alwaysShowTrigger={false}
-                {...facetProps('function')}
-            />
-            <RemoteFacet
-                label="Agent session"
-                category="agentSession"
-                selected={filters.agentSessions}
-                onChange={tracked('agent_session', filters.setAgentSessions)}
-                alwaysShowTrigger={false}
-                {...facetProps('agentSession')}
-            />
-            {unsetSecondary.length > 0 && (
-                <Menu.Root>
-                    <Menu.Trigger
-                        ref={moreRef}
-                        render={
-                            <Button variant="outline" size="sm">
-                                More filters
-                                <ChevronDown className="size-3 text-icon-secondary" />
-                            </Button>
-                        }
-                    />
-                    <Menu.Portal>
-                        <Menu.Positioner side="bottom" align="start" sideOffset={4} className="isolate z-50">
-                            <Menu.Popup className="flex min-w-48 flex-col rounded-ds-sm border-ds-1 border-border-default bg-surface-overlay p-1 shadow-md outline-none">
-                                {unsetSecondary.map((facet) => (
-                                    <Menu.Item
-                                        key={facet.key}
-                                        onClick={() => setOpenFacet(facet.key)}
-                                        className="flex h-7 cursor-pointer items-center gap-2 rounded-ds-xs px-2 text-ds-sm text-text-secondary outline-none select-none data-highlighted:bg-state-hover data-highlighted:text-text-strong"
-                                    >
-                                        <span className="flex-1">{facet.label}</span>
-                                        <ChevronRight className="size-3 text-icon-secondary" />
-                                    </Menu.Item>
-                                ))}
-                            </Menu.Popup>
-                        </Menu.Positioner>
-                    </Menu.Portal>
-                </Menu.Root>
-            )}
+            <MoreFilters filters={moreFilters} />
             <div>
                 <PeriodSelector
-                    size="sm"
-                    isLive={filters.isLive && !search}
-                    period={{ from: filters.period[0], to: filters.period[1] }}
+                    density="compact"
+                    isLive={false}
+                    period={displayedPeriod}
                     onChange={onPeriodChange}
                     presets={logsPresets}
                     defaultPreset={last24hPreset}
@@ -323,7 +245,27 @@ export const OperationsToolbar: React.FC<{ count: React.ReactNode }> = ({ count 
                     </LinkButton>
                 </div>
             )}
-            <div className="ml-auto flex items-center whitespace-nowrap type-text-regular-xs text-text-secondary tabular-nums">{count}</div>
+            <div className="ml-auto flex items-center gap-2 whitespace-nowrap type-text-regular-xs text-text-secondary tabular-nums">
+                {!search && (
+                    <>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={toggleLive}
+                            title={
+                                filters.isLive
+                                    ? 'Showing new operations as they arrive. Click to pause.'
+                                    : 'Paused. Click to show new operations as they arrive.'
+                            }
+                        >
+                            <StatusIndicator tone={filters.isLive ? 'success' : 'muted'} pulse={filters.isLive}>
+                                {filters.isLive ? 'Live' : 'Paused'}
+                            </StatusIndicator>
+                        </Button>
+                    </>
+                )}
+                {count}
+            </div>
         </div>
     );
 };

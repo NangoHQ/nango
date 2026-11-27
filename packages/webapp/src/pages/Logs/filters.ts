@@ -20,6 +20,18 @@ export function withoutAll<T extends string>(values: (T | 'all')[]): T[] {
     return values.filter((value): value is T => value !== 'all');
 }
 
+// Types the menu has no row for. Links and the panel's "show only this type" still write them.
+const typeAliases: Partial<Record<LogsType, LogsType>> = {
+    action: 'tool',
+    'action:run': 'tool',
+    'tool:call': 'tool',
+    'function:invoke': 'function'
+};
+
+export function normalizeTypes(values: (LogsType | 'all')[]): LogsType[] {
+    return [...new Set(withoutAll(values).map((value) => typeAliases[value] ?? value))];
+}
+
 export function useLogsFilters() {
     const [isLive, setLive] = useQueryState('live', parseLive);
     const [rawStates, setStates] = useQueryState('states', parseStates);
@@ -31,7 +43,7 @@ export function useLogsFilters() {
     const [period, setPeriod] = useQueryState('period', parsePeriod);
 
     const states = useMemo(() => withoutAll<LogsState>(rawStates), [rawStates]);
-    const types = useMemo(() => withoutAll<LogsType>(rawTypes), [rawTypes]);
+    const types = useMemo(() => normalizeTypes(rawTypes), [rawTypes]);
     const integrations = useMemo(() => withoutAll(rawIntegrations), [rawIntegrations]);
     const connections = useMemo(() => withoutAll(rawConnections), [rawConnections]);
     const syncs = useMemo(() => withoutAll(rawSyncs), [rawSyncs]);
