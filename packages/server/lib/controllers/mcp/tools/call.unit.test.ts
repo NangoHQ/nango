@@ -181,7 +181,7 @@ describe('callToolsTool', () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
         vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
             logCtx: undefined,
-            result: Err(new McpActionInputError('Invalid input: input must be object'))
+            result: Err(new McpActionInputError('input must be object'))
         });
         const result = await callToolsTool.handler(validArguments, context);
         expect(result.isErr()).toBe(true);

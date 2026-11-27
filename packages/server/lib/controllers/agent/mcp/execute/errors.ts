@@ -54,7 +54,7 @@ export function actionExecutionErrorToMcp({
             return toolUnavailableError({ integrationId, toolName });
         case 'invalid_input':
             return new PublicMcpError(
-                `Tool '${toolName}' on integration '${integrationId}' rejected its input: ${error.message.replace(/\.$/, '')}. Correct the input and call it again.`,
+                `Tool '${toolName}' on integration '${integrationId}' rejected its input: ${error.detail}. Correct the input and call it again.`,
                 { code: 'invalid_input', integrationId }
             );
         case 'action_failed':

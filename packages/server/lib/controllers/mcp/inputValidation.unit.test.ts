@@ -32,13 +32,28 @@ describe('validateMcpActionInput', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.code).toBe('invalid_input');
-            expect(result.error.message).toBe('Invalid input: input must be object. Pass a JSON value matching the input schema.');
+            expect(result.error.message).toBe('input must be object');
         }
         expect(validateMcpActionInput(action, { calendarId: 'primary' }).isOk()).toBe(true);
     });
 
-    it.each([undefined, {}, { calendarId: 123 }, { calendarId: 'primary', extra: true }])('rejects invalid object input %j', (input) => {
-        expect(validateMcpActionInput(deployed(objectSchema), input).isErr()).toBe(true);
+    it.each([undefined, null, {}, [], 123, { calendarId: 123 }, { calendarId: 'primary', extra: true }])('lets non-string input %j through', (input) => {
+        expect(validateMcpActionInput(deployed(objectSchema), input).isOk()).toBe(true);
+    });
+
+    it('rejects a string when no branch of the schema accepts one', () => {
+        const action = deployed({ definitions: { Input: { anyOf: [{ type: 'object', properties: { calendarId: { type: 'string' } } }, { type: 'null' }] } } });
+        const result = validateMcpActionInput(action, '{"calendarId":"primary"}');
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) expect(result.error.code).toBe('invalid_input');
+    });
+
+    it.each([
+        { type: 'string', pattern: '^[0-9]+$' },
+        { type: 'string', enum: ['a', 'b'] },
+        { anyOf: [{ type: 'string', minLength: 50 }, { type: 'null' }] }
+    ] as const)('lets a string through when the schema takes a string: %j', (schema) => {
+        expect(validateMcpActionInput(deployed({ definitions: { Input: schema } } as JSONSchema7), 'not matching').isOk()).toBe(true);
     });
 
     it.each([
@@ -51,7 +66,7 @@ describe('validateMcpActionInput', () => {
         expect(validateMcpActionInput(deployed({ definitions: { Input: { type } } }), input).isOk()).toBe(true);
     });
 
-    it('supports nested references and reports a missing field', () => {
+    it('does not validate nested fields', () => {
         const schema: JSONSchema7 = {
             definitions: {
                 Input: { type: 'object', properties: { event: { $ref: '#/definitions/Event' } }, required: ['event'] },
@@ -60,9 +75,9 @@ describe('validateMcpActionInput', () => {
         };
         const action = deployed(schema);
         expect(validateMcpActionInput(action, { event: { summary: 'Focus time' } }).isOk()).toBe(true);
-        const result = validateMcpActionInput(action, { event: {} });
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) expect(result.error.message).toContain('summary');
+        expect(validateMcpActionInput(action, { event: {} }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, {}).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, '{"event":{"summary":"Focus time"}}').isErr()).toBe(true);
     });
 
     it('preserves omitted input for optional object and null schemas', () => {
@@ -71,11 +86,11 @@ describe('validateMcpActionInput', () => {
         }
     });
 
-    it('accepts empty MCP arguments for no-input actions without accepting nonempty values', () => {
+    it('accepts any structured arguments for no-input actions', () => {
         const action = deployed({ definitions: { Input: { type: 'null' } } });
         expect(validateMcpActionInput(action, {}).isOk()).toBe(true);
-        expect(validateMcpActionInput(action, { unexpected: true }).isErr()).toBe(true);
-        expect(validateMcpActionInput(action, []).isErr()).toBe(true);
+        expect(validateMcpActionInput(action, { unexpected: true }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, []).isOk()).toBe(true);
         expect(validateMcpActionInput(action, '').isErr()).toBe(true);
     });
 
@@ -85,7 +100,7 @@ describe('validateMcpActionInput', () => {
     });
 
     it('distinguishes an invalid schema from invalid caller input', () => {
-        const result = validateMcpActionInput(deployed({ definitions: {} }), {});
+        const result = validateMcpActionInput(deployed({ definitions: {} }), '{}');
         expect(result.isErr()).toBe(true);
         if (result.isErr()) expect(result.error.code).toBe('invalid_schema');
     });
@@ -112,7 +127,8 @@ describe('validateMcpActionInput', () => {
         expect(validateMcpActionInput(action, { id: 'order', patch: [{ op: 'add', path: '/value', value: { nested: [true, null, 'text'] } }] }).isOk()).toBe(
             true
         );
-        expect(validateMcpActionInput(action, { id: 'order', patch: [{ op: 'invalid', path: '/value' }] }).isErr()).toBe(true);
+        expect(validateMcpActionInput(action, { id: 'order', patch: [{ op: 'invalid', path: '/value' }] }).isOk()).toBe(true);
+        expect(validateMcpActionInput(action, '{"id":"order"}').isErr()).toBe(true);
     });
 
     it.each(flows)('can compile the input schemas for $providerConfigKey', (integration) => {
@@ -120,7 +136,7 @@ describe('validateMcpActionInput', () => {
         for (const action of integration.actions) {
             const tool = getCatalogTool(integration.providerConfigKey, action.name);
             if (!tool) throw new Error('Missing catalog action');
-            const result = validateMcpActionInput({ kind: 'catalog', tool }, undefined);
+            const result = validateMcpActionInput({ kind: 'catalog', tool }, '');
             if (result.isErr() && result.error.code === 'invalid_schema')
                 failures.push(`${integration.providerConfigKey}/${action.name}: ${String(result.error.cause)}`);
         }

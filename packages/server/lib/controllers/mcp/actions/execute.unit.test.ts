@@ -71,7 +71,7 @@ describe('executeMcpAction input validation', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.code).toBe('invalid_input');
-            expect(result.error.message).toContain('input must be object');
+            expect(result.error.message).toBe('Invalid input: input must be object. Pass a JSON value matching the input schema.');
         }
         expect(mocks.triggerAction).not.toHaveBeenCalled();
         expect(createLog).not.toHaveBeenCalled();
@@ -87,14 +87,25 @@ describe('executeMcpAction input validation', () => {
         expect(mocks.triggerAction).not.toHaveBeenCalled();
     });
 
-    it('reports a broken MCP input schema as an internal failure without execution', async () => {
+    it('runs the action when its input schema cannot be compiled', async () => {
         const { run } = setup();
         const resolvedAction = { ...action, config: { ...action.config, id: 8406, models_json_schema: { definitions: {} } } };
-        const { result } = await run({}, false, resolvedAction);
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) expect(result.error.code).toBe('internal_error');
-        expect(mocks.triggerAction).not.toHaveBeenCalled();
+        const input = '{"calendarId":"primary"}';
+        const { result } = await run(input, false, resolvedAction);
+        expect(result.isOk()).toBe(true);
+        expect(mocks.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ input }));
     });
+
+    it.each([{}, { calendarId: 123 }, { calendarId: 'primary', extra: true }, { calendarId: 'primary', nested: { extra: true } }])(
+        'runs the action with structured input the schema does not match: %j',
+        async (input) => {
+            const { run, getIntegration } = setup();
+            const { result } = await run(input);
+            expect(result.isOk()).toBe(true);
+            expect(getIntegration).toHaveBeenCalledTimes(1);
+            expect(mocks.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ input }));
+        }
+    );
 
     it('passes valid input to the orchestrator unchanged', async () => {
         const { run } = setup();

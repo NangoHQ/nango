@@ -13,6 +13,10 @@ const logger = getLogger('Server.MCP.Actions');
 export class McpActionInputError extends Error {
     readonly code = 'invalid_input';
     readonly nangoError = undefined;
+
+    constructor(readonly detail: string) {
+        super(`Invalid input: ${detail}. Pass a JSON value matching the input schema.`);
+    }
 }
 
 export type McpActionExecutionError = ActionExecutionError | McpActionInputError;
@@ -25,6 +29,8 @@ export async function executeMcpAction({
 }: Parameters<typeof executeAction>[0] & {
     resolvedAction?: Exclude<ResolvedLegacyAction, { kind: 'missing' }>;
 }): Promise<McpActionExecution> {
+    if (typeof args.input !== 'string') return await executeAction(args);
+
     try {
         let action = resolvedAction;
         if (!action) {
@@ -43,7 +49,10 @@ export async function executeMcpAction({
 
         const validation = validateMcpActionInput(action, args.input);
         if (validation.isErr()) {
-            if (validation.error.code === 'invalid_schema') throw validation.error;
+            if (validation.error.code === 'invalid_schema') {
+                logger.warning('Skipping MCP action input validation, the input schema is unusable', { err: validation.error });
+                return await executeAction(args);
+            }
             return {
                 logCtx: undefined,
                 functionSource: action.kind === 'deployed' ? action.config.source : 'catalog',

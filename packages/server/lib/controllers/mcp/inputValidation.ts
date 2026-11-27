@@ -14,6 +14,7 @@ const ajv = new Ajv({ strict: false, allErrors: false, formats: { e164: /^\+[1-9
 addFormats(ajv);
 const validators = new Map<string, ValidateFunction>();
 const MAX_VALIDATORS = 1000;
+const TYPE_MISMATCH_KEYWORDS = new Set(['type', 'anyOf', 'oneOf']);
 
 export class McpInputValidationError extends Error {
     constructor(
@@ -30,6 +31,11 @@ export function validateMcpActionInput(action: Exclude<ResolvedLegacyAction, { k
     const schema = action.kind === 'catalog' ? action.tool.jsonSchema : action.config.models_json_schema;
     // Older deployments may not have a JSON schema. Keep their existing behavior.
     if (!model || !schema) {
+        return Ok(undefined);
+    }
+    // Only a JSON-encoded string sent in place of structured input is rejected.
+    // Anything else reaches the action as it does over REST.
+    if (typeof input !== 'string') {
         return Ok(undefined);
     }
 
@@ -64,18 +70,11 @@ export function validateMcpActionInput(action: Exclude<ResolvedLegacyAction, { k
             if (oldest !== undefined) validators.delete(oldest);
         }
 
-        // MCP clients send {} for omitted arguments. Actions with null schemas
-        // represent no input, while optional object schemas can accept {}. Keep
-        // the original value unchanged when handing it to the runner.
-        const omittedInput = input === undefined || (typeof input === 'object' && input !== null && !Array.isArray(input) && Object.keys(input).length === 0);
-        const valid = omittedInput ? validate(null) || validate(input ?? {}) : validate(input);
-        if (!valid) {
-            return Err(
-                new McpInputValidationError(
-                    'invalid_input',
-                    `Invalid input: ${ajv.errorsText(validate.errors, { dataVar: 'input' })}. Pass a JSON value matching the input schema.`
-                )
-            );
+        // A string the schema accepts as a string type passes, even when it
+        // fails a narrower constraint such as a pattern or an enum.
+        const isTypeMismatch = !validate(input) && (validate.errors ?? []).every((error) => TYPE_MISMATCH_KEYWORDS.has(error.keyword));
+        if (isTypeMismatch) {
+            return Err(new McpInputValidationError('invalid_input', ajv.errorsText(validate.errors, { dataVar: 'input' })));
         }
         return Ok(undefined);
     } catch (err) {
