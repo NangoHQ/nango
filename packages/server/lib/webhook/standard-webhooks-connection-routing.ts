@@ -47,7 +47,8 @@ function standardWebhooksConnectionRouting<T extends object>(webhookType?: strin
         // The default window, 5 minutes either way, is the one the Standard Webhooks reference libraries and
         // OpenAI's SDK use. It doesn't drop retries: the spec has the sender sign every attempt again with the
         // attempt's own `webhook-timestamp`, keeping only `webhook-id`, so the window covers clock skew and time in
-        // transit, not the retry schedule. PostHog, for one, signs each attempt just before sending it.
+        // transit, not the retry schedule. PostHog signs each attempt just before sending it, and a real OpenAI
+        // retry, a minute after a failed delivery, kept its `webhook-id` and came with a new timestamp.
         // https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
         if (validateSvixSignature({ secret, headers, rawBody }) !== 'valid') {
             return Err(new NangoError('webhook_invalid_signature'));
