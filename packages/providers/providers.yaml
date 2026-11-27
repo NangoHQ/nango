@@ -12093,7 +12093,7 @@ currencyapi:
             title: API Key
             description: Your currencyapi live or sandbox API key.
             pattern: '^cur_[A-Za-z0-9_]+$'
-            example: cur_live_Xb7Q********************************m2Tz
+            example: cur_live_Xb7Q****************m2Tz
             doc_section: '#step-1-copy-your-api-key'
 
 currents-api:
@@ -19611,7 +19611,7 @@ gender-api:
             type: string
             title: API Key
             description: Your Gender API key.
-            example: z577********************************************************a0sh
+            example: z577****************a0sh
             pattern: '^[A-Za-z0-9]{32,}$'
             doc_section: '#step-1-create-an-api-key'
 
@@ -32323,7 +32323,7 @@ printnode:
             title: API Key
             description: Your PrintNode API Key.
             secret: true
-            example: m9ZI***********************************S99e
+            example: m9ZI****************S99e
             pattern: '^[A-Za-z0-9]+$'
             doc_section: '#step-1-create-an-api-key'
         password:
@@ -35273,7 +35273,7 @@ seamless-ai:
             title: API Key
             description: Your Seamless.AI API key
             pattern: '^[A-Za-z0-9+/=]{20,}$'
-            example: q7Zk************************************************************************************************************************************************************************Wd3+
+            example: q7Zk****************Wd3+
             doc_section: '#step-1-create-an-api-key'
 
 segment:
