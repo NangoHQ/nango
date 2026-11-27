@@ -6,9 +6,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system'
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { formatDateToLogFormat } from '@/utils/utils';
-import { operationTypeLabel } from './components/OperationProperties';
 import { OperationStatus } from './components/OperationStatus';
-import { formatDuration, formatElapsed, formatOperationTime } from './format';
+import { formatDuration, formatElapsed, formatOperationTime, operationTypeLabel } from './format';
 
 import type { SearchOperationsData } from '@nangohq/types';
 

@@ -1,6 +1,16 @@
 import { format, isSameDay } from 'date-fns';
 
 import { millisecondsToRuntime } from '../../utils/utils';
+import { typesOptions } from './constants';
+
+import type { OperationRow } from '@nangohq/types';
+
+const typeLabels: Record<string, string> = { action: 'Tool', ...Object.fromEntries(typesOptions.map((opt) => [opt.value, opt.label])) };
+
+export function operationTypeLabel(operation: Pick<OperationRow, 'operation'>): { type: string; action: string } {
+    const { type, action } = operation.operation;
+    return { type: typeLabels[type] ?? type, action: action.replaceAll('_', ' ') };
+}
 
 export function formatOperationTime(createdAt: string, now: Date): string {
     const date = new Date(createdAt);
