@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TASK_TOKEN_DISPATCH_BUFFER_SECS } from '../internal-auth.js';
 import { assertInternalTlsCompatibleWithLambda, lambdaNodeProvider } from './lambda.js';
 
 import type { Node } from '@nangohq/fleet';
@@ -162,5 +163,20 @@ describe('lambda function environment', () => {
 
         const { Variables: variables } = created.input['Environment'] as { Variables: Record<string, string> };
         expect(variables).toMatchObject({ NANGO_PROXY_IDLE_TIMEOUT_MS: '300000', NANGO_PROXY_MAX_RETRY_WAIT_MS: '600000' });
+    });
+
+    it('drops an async invoke that waits longer than the task token buffer', async () => {
+        const res = await lambdaNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const eventConfig = await vi.waitFor(() => {
+            const command = sent.find((call) => call.commandName === 'PutFunctionEventInvokeConfigCommand');
+            if (!command) {
+                throw new Error('PutFunctionEventInvokeConfigCommand was never sent');
+            }
+            return command;
+        });
+
+        expect(eventConfig.input['MaximumEventAgeInSeconds']).toBe(TASK_TOKEN_DISPATCH_BUFFER_SECS);
     });
 });

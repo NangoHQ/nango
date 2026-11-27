@@ -9,7 +9,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';
-import { mintTaskAuthToken } from '../internal-auth.js';
+import { runnerAuth } from '../internal-auth.js';
 import { getLambdaTenantId, getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -17,6 +17,9 @@ import type { Fleet } from '@nangohq/fleet';
 import type { NangoProps, Result, RoutingContext } from '@nangohq/types';
 
 const logger = getLogger('LambdaRuntimeAdapter');
+
+/** Room for taskAuthToken and internalAuthToken. The size check runs before those fields exist. */
+const TASK_TOKEN_PAYLOAD_OVERHEAD_BYTES = 8 * 1024;
 
 const client = new LambdaClient();
 const s3 = new S3Client();
@@ -141,34 +144,46 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
-        const internalAuthToken = await mintTaskAuthToken(params.taskId, params.nangoProps);
-        const authFields = internalAuthToken ? { internalAuthToken } : {};
-        const payload = {
+        const preview = JSON.stringify({
             taskId: params.taskId,
             nangoProps: params.nangoProps,
             code: params.code,
-            codeParams: params.codeParams,
-            ...authFields
-        };
-        const payloadString = JSON.stringify(payload);
-        const payloadSize = Buffer.byteLength(payloadString, 'utf8');
+            codeParams: params.codeParams
+        });
+        // Count the token before it is minted so a payload near the inline maximum is offloaded first.
+        const payloadSize = Buffer.byteLength(preview, 'utf8') + TASK_TOKEN_PAYLOAD_OVERHEAD_BYTES;
         if (payloadSize > envs.LAMBDA_PAYLOAD_LIMIT_BYTES) {
             return Err(new Error(`Payload size exceeds limit: ${payloadSize} bytes > ${envs.LAMBDA_PAYLOAD_LIMIT_BYTES} bytes`));
         }
-        if (payloadSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
-            const [codeRef, codeParamsRef] = await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)]);
-            return Ok(
-                JSON.stringify({
-                    taskId: params.taskId,
-                    nangoProps: params.nangoProps,
-                    codeRef: codeRef,
-                    codeParamsRef: codeParamsRef,
-                    ...authFields
-                })
+        // Upload before minting. The token clock starts at mint, and the function's kill clock starts later.
+        const offloaded =
+            payloadSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME
+                ? await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)])
+                : undefined;
+        const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
+        const authFields = internalAuthToken ? { internalAuthToken } : {};
+        const payload = offloaded
+            ? JSON.stringify({
+                  taskId: params.taskId,
+                  nangoProps,
+                  codeRef: offloaded[0],
+                  codeParamsRef: offloaded[1],
+                  ...authFields
+              })
+            : JSON.stringify({
+                  taskId: params.taskId,
+                  nangoProps,
+                  code: params.code,
+                  codeParams: params.codeParams,
+                  ...authFields
+              });
+        const finalSize = Buffer.byteLength(payload, 'utf8');
+        if (!offloaded && envs.LAMBDA_PAYLOADS_BUCKET_NAME && finalSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) {
+            return Err(
+                new Error(`Payload size exceeds inline maximum after adding the task token: ${finalSize} bytes > ${envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES} bytes`)
             );
-        } else {
-            return Ok(payloadString);
         }
+        return Ok(payload);
     }
 
     async invoke(params: {

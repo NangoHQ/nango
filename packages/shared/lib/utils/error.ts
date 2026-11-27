@@ -828,6 +828,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'An unknown error occurred with the function runtime';
                 break;
 
+            case 'function_runtime_event_age_exceeded':
+                this.status = 500;
+                this.message = 'The function was not started because it waited too long to run';
+                break;
+
             case 'execution_timeout':
                 this.status = 500;
                 this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';

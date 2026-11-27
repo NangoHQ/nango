@@ -3,13 +3,16 @@ import {
     createRunnerDispatchToken,
     exportRunnerPublicKey,
     INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_PERSIST,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    INTERNAL_SERVICE_AUDIENCE_SERVER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     mint,
     nodeSubject,
     signerForService,
+    taskScopesForScriptType,
     taskSubject
 } from '@nangohq/internal-auth';
 
@@ -17,9 +20,19 @@ import { envs } from './env.js';
 
 import type { NangoProps } from '@nangohq/types';
 
+/**
+ * Extra time on a lifecycle token so it is still valid when the runner starts.
+ * Lambda uses the same five minutes as its maximum event age and drops a queued
+ * invoke that waits longer. There is no refresh.
+ */
+export const TASK_TOKEN_DISPATCH_BUFFER_SECS = 5 * 60;
+
 function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
     const killAfterMs = nangoProps?.lifecycle?.killAfterMs;
-    return killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
+    if (killAfterMs === undefined) {
+        return INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
+    }
+    return Math.ceil(killAfterMs / 1000) + TASK_TOKEN_DISPATCH_BUFFER_SECS;
 }
 
 function jobsSigner() {
@@ -27,16 +40,45 @@ function jobsSigner() {
 }
 
 /**
- * Mint a task-bound token for putTask/heartbeat. Uses the jobs Ed25519 key when configured,
- * otherwise the legacy HMAC signing key. Returns null when neither is set.
+ * Mint the legacy HMAC task token for putTask/heartbeat. Returns null when the signing key is unset.
+ * `runnerAuth` mints the Ed25519 capability token when the jobs key is configured, and only calls this otherwise.
  */
-export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): Promise<string | null> {
-    const expiresInSecs = taskExpiresInSecs(nangoProps);
+export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): string | null {
+    return createInternalServiceToken({ taskId, expiresInSecs: taskExpiresInSecs(nangoProps) }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+}
+
+const TASK_CAPABILITY_AUDIENCES = [INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_PERSIST, INTERNAL_SERVICE_AUDIENCE_SERVER] as const;
+
+/**
+ * Mint the runner credential once. With a jobs Ed25519 key, `taskAuthToken` and `internalAuthToken` are the
+ * same capability token. Without one, the payload keeps `secretKey` and `internalAuthToken` stays the legacy
+ * jobs token. `NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY` removes `secretKey` and refuses to dispatch with neither.
+ */
+export async function runnerAuth(taskId: string, props: NangoProps): Promise<{ nangoProps: NangoProps; internalAuthToken: string | null }> {
     const signer = jobsSigner();
-    if (signer) {
-        return mint(signer, { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: expiresInSecs });
+    if (envs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY && !signer) {
+        throw new Error('NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is true, but jobs has no Ed25519 key to mint a task capability token.');
     }
-    return createInternalServiceToken({ taskId, expiresInSecs }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+    if (!signer) {
+        const { taskAuthToken: _stale, ...withoutToken } = props;
+        return { nangoProps: props.taskAuthToken ? withoutToken : props, internalAuthToken: mintTaskAuthToken(taskId, props) };
+    }
+    const token = await mint(signer, {
+        sub: taskSubject(taskId),
+        aud: TASK_CAPABILITY_AUDIENCES,
+        ttlSecs: taskExpiresInSecs(props),
+        res: {
+            environmentId: props.environmentId,
+            connectionId: props.nangoConnectionId,
+            ...(props.syncId ? { syncId: props.syncId } : {})
+        },
+        scopes: taskScopesForScriptType(props.scriptType)
+    });
+    const { secretKey: _secretKey, ...withoutSecret } = props;
+    return {
+        nangoProps: { ...(envs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY ? withoutSecret : props), taskAuthToken: token },
+        internalAuthToken: token
+    };
 }
 
 /**

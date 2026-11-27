@@ -2,8 +2,18 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { report } from '@nangohq/utils';
+
 import { handle } from '../execution/operations/handler.js';
 import { LambdaInvocationsProcessor } from './lambda.processor.js';
+
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...(actual as Record<string, unknown>),
+        report: vi.fn()
+    };
+});
 
 const mockListen = vi.fn();
 const mockStop = vi.fn().mockResolvedValue(undefined);
@@ -194,6 +204,38 @@ describe('LambdaInvocationsProcessor', () => {
         );
     });
 
+    it('fails the task when Lambda discards an invoke that exceeded the maximum event age', async () => {
+        let onMessage: (message: { body: string }) => Promise<void> = undefined!;
+        mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
+            onMessage = cb;
+        });
+
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+
+        const nangoProps = minimalNangoProps();
+        await onMessage({
+            body: JSON.stringify({
+                requestContext: { condition: 'EventAgeExceeded', approximateInvokeCount: 1 },
+                requestPayload: { taskId: 'task-aged', nangoProps }
+            })
+        });
+
+        expect(handle).toHaveBeenCalledTimes(1);
+        expect(handle).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 'task-aged',
+                error: {
+                    type: 'function_runtime_event_age_exceeded',
+                    payload: { errorMessage: 'Lambda discarded the invocation because it exceeded the maximum event age' },
+                    status: 500
+                },
+                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0.5 },
+                functionRuntime: 'lambda'
+            })
+        );
+    });
+
     it('should not call handle when functionError is not Unhandled', async () => {
         let onMessage: (message: { body: string }) => Promise<void> = undefined!;
         mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
@@ -206,6 +248,85 @@ describe('LambdaInvocationsProcessor', () => {
         await onMessage(failureMessage({ functionError: 'Handled', statusCode: 400, errorMessage: 'Validation failed', taskId: 'task-456' }));
 
         expect(handle).not.toHaveBeenCalled();
+        expect(report).not.toHaveBeenCalled();
+    });
+
+    it('fails the task when an unhandled record has no error message', async () => {
+        let onMessage: (message: { body: string }) => Promise<void> = undefined!;
+        mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
+            onMessage = cb;
+        });
+
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+
+        const nangoProps = minimalNangoProps();
+        await onMessage({
+            body: JSON.stringify({
+                responseContext: { functionError: 'Unhandled', statusCode: 500 },
+                requestPayload: { taskId: 'task-no-message', nangoProps }
+            })
+        });
+
+        expect(handle).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 'task-no-message',
+                error: expect.objectContaining({
+                    type: 'function_runtime_other',
+                    payload: { errorMessage: 'Lambda reported an unhandled error without a message' },
+                    status: 500
+                })
+            })
+        );
+    });
+
+    it('fails the task when a failure record has no function error', async () => {
+        let onMessage: (message: { body: string }) => Promise<void> = undefined!;
+        mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
+            onMessage = cb;
+        });
+
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+
+        const nangoProps = minimalNangoProps();
+        await onMessage({
+            body: JSON.stringify({
+                requestContext: { condition: 'ZeroReservedConcurrency' },
+                requestPayload: { taskId: 'task-discarded', nangoProps }
+            })
+        });
+
+        expect(report).toHaveBeenCalledTimes(1);
+        expect(handle).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 'task-discarded',
+                error: expect.objectContaining({
+                    type: 'function_runtime_other',
+                    payload: { errorMessage: 'Lambda discarded the invocation (ZeroReservedConcurrency)' }
+                })
+            })
+        );
+    });
+
+    it('reports a non-unhandled record that has no error message and does not fail the task', async () => {
+        let onMessage: (message: { body: string }) => Promise<void> = undefined!;
+        mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
+            onMessage = cb;
+        });
+
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+
+        await onMessage({
+            body: JSON.stringify({
+                responseContext: { functionError: 'Handled', statusCode: 400 },
+                requestPayload: { taskId: 'task-456', nangoProps: minimalNangoProps() }
+            })
+        });
+
+        expect(handle).not.toHaveBeenCalled();
+        expect(report).toHaveBeenCalledTimes(1);
     });
 
     it('should not call listen when LAMBDA_FAILURE_DESTINATION is not set', async () => {
