@@ -238,7 +238,9 @@ export async function resolveFunctionConnection({
             return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: `Connection '${connectionId}' is ambiguous across integrations` }));
         }
         const provider =
-            fn.kind === 'catalog' ? fn.definition.provider : (await configService.getProviderConfig(connection.provider_config_key, environmentId))?.provider;
+            fn.kind === 'catalog'
+                ? fn.definition.provider
+                : (await configService.getIntegrationSummary(environmentId, connection.provider_config_key))?.provider;
         if (!provider) {
             return Err(notFound());
         }

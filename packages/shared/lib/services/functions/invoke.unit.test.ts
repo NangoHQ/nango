@@ -11,7 +11,6 @@ import { invokeFunction, resolveFunctionConnection } from './invoke.js';
 import { clearFunctionInputValidatorCache } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ResolvedFunction, ResolvedInlineFunction, resolveFunctionByUuid } from './lookup/service.js';
 import type * as logs from '@nangohq/logs';
 import type { DBConnection, DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -310,7 +309,7 @@ describe('invokeFunction', () => {
 describe('invokeFunction with an inline function', () => {
     beforeEach(() => {
         lookup.mockResolvedValue(Ok(inlineFunction()));
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue({ provider: 'github' } as ProviderConfig);
+        vi.spyOn(configService, 'getIntegrationSummary').mockResolvedValue({ provider: 'github', display_name: null });
     });
 
     it('runs it on the connection of the given integration, with no input and no concurrency limit', async () => {
