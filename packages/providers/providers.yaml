@@ -21589,7 +21589,7 @@ gsc-wizard:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://mcp.gscwizard.com/v1
+        base_url: https://mcp.gscwizard.com
         headers:
             authorization: Bearer ${apiKey}
         retry:
@@ -21598,7 +21598,7 @@ gsc-wizard:
         verification:
             method: GET
             endpoints:
-                - /account
+                - /v1/account
     docs: https://nango.dev/docs/api-integrations/gsc-wizard
     docs_connect: https://nango.dev/docs/api-integrations/gsc-wizard/connect
     credentials:
