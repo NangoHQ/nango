@@ -1334,6 +1334,8 @@
               "integrations/all/greenhouse-onboarding",
               "api-integrations/grist",
               "api-integrations/groqcloud",
+              "api-integrations/gsc-wizard",
+              "api-integrations/gsc-wizard-mcp",
               "api-integrations/gtmetrix",
               "integrations/all/gumroad",
               "integrations/all/guru",

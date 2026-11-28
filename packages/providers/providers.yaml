@@ -21582,6 +21582,70 @@ groqcloud:
             pattern: '^gsk_[A-Za-z0-9]+$'
             doc_section: '#step-1-create-an-api-key'
 
+gsc-wizard:
+    display_name: GSC Wizard
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mcp.gscwizard.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/gsc-wizard
+    docs_connect: https://nango.dev/docs/api-integrations/gsc-wizard/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your GSC Wizard API key.
+            example: gscw_live_3f9a****************************_7c1e********************************************
+            pattern: '^gscw_live_[0-9a-f]{32}_[0-9a-f]{48}$'
+            doc_section: '#step-1-create-an-api-key'
+
+gsc-wizard-mcp:
+    display_name: GSC Wizard (MCP)
+    categories:
+        - marketing
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://tool.gscwizard.com/oauth/authorize
+    token_url: https://tool.gscwizard.com/api/oauth/token
+    registration_url: https://tool.gscwizard.com/api/oauth/register
+    default_scopes:
+        - mcp:read
+        - mcp:write
+    authorization_params:
+        response_type: code
+        resource: https://mcp.gscwizard.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.gscwizard.com/mcp
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.gscwizard.com/mcp
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.gscwizard.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/gsc-wizard-mcp
+
 gumroad:
     display_name: Gumroad
     categories:
