@@ -40,11 +40,11 @@
         "prepublishOnly": "npm run copy:files"
     },
     "dependencies": {
-        "@babel/core": "7.29.7",
-        "@babel/parser": "7.29.7",
+        "@babel/core": "7.29.13",
+        "@babel/parser": "7.29.15",
         "@babel/preset-typescript": "7.29.7",
-        "@babel/traverse": "7.29.7",
-        "@babel/types": "7.29.7",
+        "@babel/traverse": "7.29.15",
+        "@babel/types": "7.29.15",
         "@nangohq/nango-yaml": "0.72.6",
         "@nangohq/node": "0.72.6",
         "@nangohq/providers": "0.72.6",
