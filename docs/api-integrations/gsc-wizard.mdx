@@ -1,0 +1,116 @@
+---
+title: 'GSC Wizard'
+sidebarTitle: 'GSC Wizard'
+description: 'Integrate your application with the GSC Wizard API'
+---
+
+## 🚀 Quickstart
+
+Connect to GSC Wizard with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _GSC Wizard_.
+    </Step>
+    <Step id="authorize-gsc-wizard" title="Authorize GSC Wizard">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your GSC Wizard API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-gsc-wizard-api" title="Call the GSC Wizard API">
+    Let's make your first request to the GSC Wizard API to list the Search Console properties of the connected account. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/sites" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/sites',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Every GSC Wizard tool is also available as `POST /tools/<name>` with a JSON body. For example, to get a property's clicks, impressions, CTR, and average position over the last 28 days against the 28 days before:
+
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/tools/get_site_summary" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{ "siteUrl": "sc-domain:example.com", "days": 28 }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        ```typescript
+        const summary = await nango.post({
+            endpoint: '/tools/get_site_summary',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { siteUrl: 'sc-domain:example.com', days: 28 }
+        });
+
+        console.log(summary.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 GSC Wizard integration guides
+
+- [How do I link my account?](/api-integrations/gsc-wizard/connect)  
+Create a GSC Wizard API key to connect your account.
+
+Things to know:
+
+- Pass a `siteUrl` exactly as `GET /sites` returns it: `sc-domain:example.com` for a domain property, `https://www.example.com/` for a URL-prefix property.
+- A read-only key can call every read tool, but no tool that changes data, such as `create_annotation` or `submit_sitemap`.
+- Errors come back as `{ "error": { "code", "message", "nextStep" } }`. A rate-limited request gets HTTP 429 with a `Retry-After` header.
+- To connect an AI agent to the GSC Wizard MCP server with OAuth instead of an API key, use [GSC Wizard (MCP)](/api-integrations/gsc-wizard-mcp).
+
+Official docs: [GSC Wizard REST API](https://www.gscwizard.com/docs/ai-assistants/n8n-and-rest-api.html) and the [OpenAPI spec](https://mcp.gscwizard.com/v1/openapi.json)
+
+## 🧩 Pre-built syncs & actions for GSC Wizard
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/gsc-wizard/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

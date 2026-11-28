@@ -16243,6 +16243,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `greenhouse-onboarding` | Greenhouse (Onboarding API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-onboarding.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-onboarding/connect.md) |  | ats |
 | `grist` | Grist | API_KEY | [docs](https://nango.dev/docs/api-integrations/grist.md) | [connect](https://nango.dev/docs/api-integrations/grist/connect.md) |  | productivity |
 | `groqcloud` | GroqCloud | API_KEY | [docs](https://nango.dev/docs/api-integrations/groqcloud.md) | [connect](https://nango.dev/docs/api-integrations/groqcloud/connect.md) |  | other |
+| `gsc-wizard` | GSC Wizard | API_KEY | [docs](https://nango.dev/docs/api-integrations/gsc-wizard.md) | [connect](https://nango.dev/docs/api-integrations/gsc-wizard/connect.md) |  | marketing, analytics |
+| `gsc-wizard-mcp` | GSC Wizard (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/gsc-wizard-mcp.md) |  |  | marketing, analytics, mcp |
 | `gtmetrix` | GTmetrix | BASIC | [docs](https://nango.dev/docs/api-integrations/gtmetrix.md) | [connect](https://nango.dev/docs/api-integrations/gtmetrix/connect.md) |  | analytics |
 | `gumroad` | Gumroad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gumroad.md) |  |  | design, e-commerce, payment |
 | `guru` | Guru | BASIC | [docs](https://nango.dev/docs/integrations/all/guru.md) | [connect](https://nango.dev/docs/integrations/all/guru/connect.md) |  | knowledge-base |
