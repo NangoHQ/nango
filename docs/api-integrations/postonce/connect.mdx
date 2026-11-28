@@ -1,0 +1,33 @@
+---
+title: 'PostOnce - How do I link my account?'
+sidebarTitle: 'PostOnce'
+---
+
+## Overview
+
+To authenticate with PostOnce, you need:
+
+1. **API Key** — an API key created under **Preferences → API keys** in your PostOnce dashboard.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A PostOnce account. If you don't have one, [sign up](https://postonce.to/). If your plan does not include API access, the **API keys** tab shows an upgrade prompt instead of the create form.
+
+### Step 1: Create an API key
+
+1. Sign in to the [PostOnce dashboard](https://postonce.to/dashboard).
+2. Open [Preferences](https://postonce.to/dashboard/preferences), then the **API keys** tab.
+3. Enter a **Key name**.
+4. Open **Scopes** and select the scopes your app needs. Keep `accounts:read` selected: Nango uses it to verify the key.
+5. Click **Create**.
+6. Copy the key. It starts with `po_live_` and is shown only once.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with PostOnce.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to PostOnce.

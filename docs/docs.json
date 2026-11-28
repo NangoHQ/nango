@@ -1740,6 +1740,7 @@
               "api-integrations/posthog-oauth",
               "api-integrations/postman",
               "api-integrations/postmark",
+              "api-integrations/postonce",
               "api-integrations/postscript",
               "api-integrations/practicefusion",
               "api-integrations/predictleads",
