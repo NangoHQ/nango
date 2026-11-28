@@ -159,15 +159,17 @@ const safeUndiciCache = new Map<string, UndiciAgent>();
  * connection target (socketPath, path, host, hostname, port, localAddress, family, …) or
  * replace the DNS resolver (lookup) is intentionally excluded, otherwise a caller could
  * bypass the policy-enforcing safe lookup — e.g. by connecting directly to a Unix socket.
+ * `rejectUnauthorized` and `checkServerIdentity` are excluded too: server certificate and
+ * hostname verification must never be turned off for outbound traffic. To trust a private
+ * chain, pass `ca` instead.
  */
 const SAFE_UNDICI_CONNECT_OPTION_KEYS = new Set<string>([
-    // TLS material / verification
+    // TLS material
     'ca',
     'cert',
     'key',
     'pfx',
     'passphrase',
-    'rejectUnauthorized',
     'servername',
     'ciphers',
     'minVersion',
