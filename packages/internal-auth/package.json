@@ -33,7 +33,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "@types/express": "5.0.2",
+        "@types/express": "5.0.6",
         "express": "5.1.0",
         "vitest": "4.1.12"
     },
