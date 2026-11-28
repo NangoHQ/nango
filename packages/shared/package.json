@@ -23,7 +23,7 @@
         "@azure/identity": "4.14.1",
         "@azure/storage-blob": "12.33.0",
         "@babel/parser": "7.28.0",
-        "@google-cloud/storage": "8.1.0",
+        "@google-cloud/storage": "8.4.0",
         "@babel/traverse": "7.28.0",
         "@babel/types": "7.28.2",
         "@hapi/boom": "10.0.1",
