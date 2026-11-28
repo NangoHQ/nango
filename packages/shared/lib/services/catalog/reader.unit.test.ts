@@ -69,7 +69,7 @@ function integration(overrides: Partial<FlowZeroJson> = {}): FlowZeroJson {
     };
 }
 
-/** A catalog source over a whole manifest, like the catalog store reading flows.zero.json. */
+/** A catalog source over a list of provider entries. */
 function sourceFor(manifest: FlowsZeroJson): CatalogSource {
     return {
         getEntry: (provider) => manifest.find((entry) => entry.providerConfigKey === provider) ?? null,

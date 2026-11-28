@@ -3,7 +3,9 @@ import path from 'node:path';
 
 import yaml from 'js-yaml';
 
-import type { FlowsZeroJson, Provider } from '@nangohq/types';
+import { readTemplateCatalog } from './template-catalog.js';
+
+import type { Provider } from '@nangohq/types';
 
 const prettyAuthModes: Record<string, string> = {
     OAUTH1: 'OAuth',
@@ -21,7 +23,7 @@ const prettyAuthModes: Record<string, string> = {
     MCP_OAUTH2: 'MCP OAuth2'
 };
 
-const flowsPath = 'packages/shared/flows.zero.json';
+const catalogPath = 'packages/shared';
 const providersPath = 'packages/providers/providers.yaml';
 const docsPaths = ['docs/integrations/all', 'docs/api-integrations'];
 const snippetsPath = 'docs/snippets/generated';
@@ -29,8 +31,7 @@ const snippetsPath = 'docs/snippets/generated';
 // TODO: remove once alias providers declare webhook support in providers.yaml explicitly.
 const snippetSkipList = new Set(['confluence']);
 
-const flowsString = await fs.readFile(flowsPath, 'utf-8');
-const flows = JSON.parse(flowsString) as FlowsZeroJson;
+const flows = await readTemplateCatalog((file) => fs.readFile(path.join(catalogPath, file), 'utf-8'));
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};

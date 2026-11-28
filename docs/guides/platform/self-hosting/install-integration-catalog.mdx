@@ -76,7 +76,7 @@ Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the
     git clone https://github.com/NangoHQ/nango
     cd nango
     git checkout <NANGO-COMMIT-SHA>
-    git log -1 --format=%s -- packages/shared/flows.zero.json
+    git log -1 --format=%s -- packages/shared/catalog.json
     ```
 
     The SHA at the end of the output is the `integration-templates` commit to use in the next step:
@@ -84,6 +84,10 @@ Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the
     ```
     chore(integration-templates): automatic update from https://github.com/NangoHQ/integration-templates/commit/<COMMIT-SHA>
     ```
+
+    <Note>
+    Older images read their catalog from `packages/shared/flows.zero.json`. If that file exists in your checkout, use `flows.zero.json` in place of `catalog.json` in this step and in [Verify the build](#verify-the-build).
+    </Note>
   </Step>
 
   <Step id="build-the-catalog" title="Build the catalog at that commit">
@@ -106,8 +110,8 @@ Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the
 
     ```bash
     # from the integration-templates directory
-    shasum -a 256 internal/flows.zero.json
-    shasum -a 256 ../nango/packages/shared/flows.zero.json
+    shasum -a 256 internal/catalog.json
+    shasum -a 256 ../nango/packages/shared/catalog.json
     ```
 
     The two hashes must match. If they differ, return to step 1, confirm you checked out the Nango commit from your image tag, and rebuild.

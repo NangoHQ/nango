@@ -1,6 +1,8 @@
 import yaml from 'js-yaml';
 import { $ } from 'zx';
 
+import { readTemplateCatalog } from './template-catalog.js';
+
 import type { FlowZeroJson, Provider } from '@nangohq/types';
 
 interface FormattedFlow {
@@ -97,6 +99,12 @@ for (const [date, added] of months) {
 }
 
 async function getFlows(sha: string): Promise<FlowZeroJson[] | undefined> {
+    const catalog = await $`git show ${sha}:packages/shared/catalog.json`.nothrow().quiet();
+    if (catalog.exitCode === 0) {
+        return await readTemplateCatalog(async (file) => (await $`git show ${sha}:packages/shared/${file}`.quiet()).toString());
+    }
+
+    // Before the catalog was split per provider, it was one file
     const flowsZeroJson = await $`git show ${sha}:packages/shared/flows.zero.json`.nothrow().quiet();
     if (flowsZeroJson.exitCode === 0) {
         return JSON.parse(flowsZeroJson.toString()) as FlowZeroJson[];
